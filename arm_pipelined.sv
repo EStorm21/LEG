@@ -1,7 +1,6 @@
 // arm_pipelined.v
 // David_Harris@hmc.edu 4 January 2014
 // Pipelined implementation of a subset of ARMv7
-// modified by Max Waugaman, mwaugaman@hmc.edu
 
 // 16 32-bit registers
 // Data-processing instructions
