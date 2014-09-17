@@ -217,8 +217,60 @@ module ahb_disk(input  logic        HCLK,
   always_ff @(posedge HCLK)
     if (HWRITE & HSEL) disk[HADDR] <= HWDATA;
 endmodule
+
 //------------------------------------------------------
 //--------------------CACHE-----------------------------
+//------------------------------------------------------
+//------------------------------------------------------
+module cache_read_only (input  logic [31:0] addr,
+                         output logic [31:0] rdata,
+                         output logic [31:0] hit);
+
+endmodule
+
+module cache_memory (input logic [31:0] indata,
+                     input logic [31:0] addr,
+                     input logic write,
+                     output logic v,
+                     output logic [22:0] tag,
+                     output logic [31:0] outdata);
+
+endmodule
+
+// Cache controller works according to schematic
+module cache_controller (input  logic clk,
+                         input  logic reset,
+                         input  logic hit,
+                         input  logic validData,
+                         output logic write,
+                         output logic memread);
+  typedef enum logic [1:0] {CACHEREAD, MEMREAD, CACHEWRITE} statetype;
+  statetype state, nextstate;
+
+  // state register
+  always_ff @(posedge clk, posedge reset)
+    if (reset) state <= CACHEREAD;
+    else       state <= nextstate;
+
+  // next state logic
+  always_comb
+    case (state)
+      CACHEREAD: if (hit)         nextstate <= CACHEREAD;
+                 else             nextstate <= MEMREAD;
+      MEMREAD:   if (~validData)  nextstate <= MEMREAD;
+                 else             nextstate <= CACHEWRITE;
+      CACHEWRITE:if (~hit)        nextstate <= CACHEWRITE;
+                 else             nextstate <= CACHEREAD;
+      default: nextstate <= CACHEREAD;
+    endcase
+
+  // output logic
+  assign memread = (state == MEMREAD);
+  assign write   = (state == CACHEWRITE);
+
+endmodule
+//------------------------------------------------------
+//------------------------------------------------------
 //------------------------------------------------------
 //------------------------------------------------------
 
