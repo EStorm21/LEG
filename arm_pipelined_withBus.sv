@@ -222,19 +222,58 @@ endmodule
 //--------------------CACHE-----------------------------
 //------------------------------------------------------
 //------------------------------------------------------
-module cache_read_only (input  logic [31:0] addr,
+module cache_read_only (input logic clk,
+                        input logic reset,
+                        input  logic [31:0] memData,
+                        input  logic [31:0] addr,
+                        input  logic validData,
                          output logic [31:0] rdata,
-                         output logic [31:0] hit);
+                         output logic hit,
+                         output logic memread);
+    logic write;
+    logic rv;
+    logic rtag[22:0];
+
+    cache_memory cm(clk, memdata, addr, write, reset,
+                    rv, rtag, rdata );
+    cache_controller cc(clk, reset, hit, validData,
+                        write, memread);
+
+    // Create the logic for a hit. Note that if there is a cache miss,
+    // hit stays false until the new data has been retrieved. This way hit
+    // can also be used as a stall signal.
+    assign hit = rv & (addr[31:10] == rtag);
 
 endmodule
 
-module cache_memory (input logic [31:0] indata,
+module cache_memory (input logic clk,
+                     input logic [31:0] wdata, // Create 896B Cache (128 entries)
                      input logic [31:0] addr,
                      input logic write,
-                     output logic v,
-                     output logic [22:0] tag,
-                     output logic [31:0] outdata);
+                     input logic reset,
+                     output logic rv,
+                     output logic [22:0] rtag,
+                     output logic [31:0] rdata);
+  logic [22:0] tag[2944:0]; // 128 entries x 23 bits
+  logic [127:0] v;          // 128 entries x 1 bit
+  logic [6:0]  set[895:0];  // 128 entries x 7 bits
+  logic [31:0] data[3967:0];// 128 entries x 32 bits
 
+  // Read the data from the cache immediately
+  assign rset = addr[9:2];
+  assign rtag = addr[31:10];
+  assign rv = v[rset];
+  assign rdata = data[rset];
+
+  // Write to the cache
+  always_ff @(posedge clk, reset)
+    if (reset)
+      v = 'b0;
+    else if (write) begin
+      data[rset] <= wdata; // write the data
+      v[rset]    <= 1'b1;  // write the valid bit
+      tag[rset]  <= rtag;  // write the tag
+    end
 endmodule
 
 // Cache controller works according to schematic
