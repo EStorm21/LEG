@@ -2,10 +2,6 @@
 //--------------------CACHE-----------------------------
 //------------------------------------------------------
 //------------------------------------------------------
-// clk, MemWriteM, DataAdrM, WriteDataM, ReadDataM
-// dmem(input  logic        clk, we,
-//             input  logic [31:0] a, wd,
-//             output logic [31:0] rd)
 module data_cache (input logic clk, we,
                    input  logic [31:0] a, wd,
                    input  logic validData,
@@ -42,7 +38,8 @@ module data_cache_memory (input logic clk, we,
   initial
     begin
       $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
-      v = 'b1;
+      for (int i = 0; i <= 65535; i++)
+        v[i] = 1; // How do I initialize the valid bits to 1?
     end
 
   // Read the data from the cache immediately
