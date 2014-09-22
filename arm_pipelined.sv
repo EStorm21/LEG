@@ -117,9 +117,20 @@ module top(input  logic        clk, reset,
   // instantiate processor and memories
   arm arm(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
           WriteDataM, ReadDataM);
-  imem imem(PCF, InstrF);
-  dmem dmem(.clk(clk), .we(MemWriteM), .a(DataAdrM), 
-            .wd(WriteDataM), .rd(ReadDataM));
+  // cache outputs
+  logic ihit;
+  logic ivalidData;
+  logic imemread;
+  logic dhit;
+  logic dvalidData;
+  logic dmemread;
+  instr_cache imem(.clk(clk), .a(PCF), .rd(InstrF), .hit(ihit), 
+                   .validData(ivalidData), .memread(imemread));
+  data_cache dmem(.clk(clk), .hit(dhit), .validData(dvalidData), .memread(dmemread),
+                  .a(DataAdrM), .rd(ReadDataM), .wd(WriteDataM), .we(MemWriteM));
+  // imem imem(PCF, InstrF);
+  // dmem dmem(.clk(clk), .we(MemWriteM), .a(DataAdrM), 
+  //           .wd(WriteD), .rd(ReadDataM));
 endmodule
 
 module dmem(input  logic        clk, we,
