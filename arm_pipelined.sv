@@ -118,7 +118,8 @@ module top(input  logic        clk, reset,
   arm arm(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
           WriteDataM, ReadDataM);
   imem imem(PCF, InstrF);
-  dmem dmem(clk, MemWriteM, DataAdrM, WriteDataM, ReadDataM);
+  dmem dmem(.clk(clk), .we(MemWriteM), .a(DataAdrM), 
+            .wd(WriteDataM), .rd(ReadDataM));
 endmodule
 
 module dmem(input  logic        clk, we,
@@ -128,7 +129,7 @@ module dmem(input  logic        clk, we,
   logic [31:0] RAM[2097151:0];
   
   initial
-      $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
+      $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
 
   assign rd = RAM[a[22:2]]; // word aligned
 
@@ -142,7 +143,7 @@ module imem(input  logic [31:0] a,
   logic [31:0] RAM[2097151:0];
 
   initial
-      $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
+      $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
 
   assign rd = RAM[a[22:2]]; // word aligned
 endmodule
