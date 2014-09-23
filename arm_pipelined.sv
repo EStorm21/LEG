@@ -2,6 +2,8 @@
 // David_Harris@hmc.edu 4 January 2014
 // Pipelined implementation of a subset of ARMv7
 
+// Last updated 23 Sept 2014 2am
+
 // 16 32-bit registers
 // Data-processing instructions
 //   ADD, SUB, AND, ORR
@@ -128,7 +130,7 @@ module dmem(input  logic        clk, we,
   logic [31:0] RAM[2097151:0];
   
   initial
-      $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
+      $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/NewGithubversions/test_1000_7.dat",RAM);
 
   assign rd = RAM[a[22:2]]; // word aligned
 
@@ -142,7 +144,7 @@ module imem(input  logic [31:0] a,
   logic [31:0] RAM[2097151:0];
 
   initial
-      $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
+      $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/NewGithubversions/test_1000_7.dat",RAM);
 
   assign rd = RAM[a[22:2]]; // word aligned
 endmodule
@@ -154,7 +156,8 @@ module arm(input  logic        clk, reset,
            output logic [31:0] ALUOutM, WriteDataM,
            input  logic [31:0] ReadDataM);
 
-  logic [1:0]  RegSrcD, ImmSrcD, ALUControlE;
+  logic [1:0]  RegSrcD, ImmSrcD;
+  logic [3:0]  ALUControlE;
   logic        ALUSrcE, BranchTakenE, MemtoRegW, PCSrcW, RegWriteW;
   logic [3:0]  ALUFlagsE;
   logic [31:0] InstrD;
@@ -169,7 +172,8 @@ module arm(input  logic        clk, reset,
                MemWriteM,
                MemtoRegW, PCSrcW, RegWriteW,
                RegWriteM, MemtoRegE, PCWrPendingF,
-               FlushE);
+               FlushE, 
+               swapALUinputs, doNotWriteReg, previousCflag); // These two inputs added by me
   datapath dp(clk, reset, 
               RegSrcD, ImmSrcD, 
               ALUSrcE, BranchTakenE, ALUControlE,
@@ -178,7 +182,8 @@ module arm(input  logic        clk, reset,
               ALUOutM, WriteDataM, ReadDataM,
               ALUFlagsE,
               Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
-              ForwardAE, ForwardBE, StallF, StallD, FlushD);
+              ForwardAE, ForwardBE, StallF, StallD, FlushD, 
+              doNotWriteReg, swapALUinputs, previousCflag); // Added this line, 1 output 2 inputs
   hazard h(clk, reset, Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
            RegWriteM, RegWriteW, BranchTakenE, MemtoRegE,
            PCWrPendingF, PCSrcW,
@@ -192,17 +197,21 @@ module controller(input  logic         clk, reset,
                   input  logic [3:0]   ALUFlagsE,
                   output logic [1:0]   RegSrcD, ImmSrcD, 
                   output logic         ALUSrcE, BranchTakenE,
-                  output logic [1:0]   ALUControlE,
+                  output logic [3:0]   ALUControlE,
                   output logic         MemWriteM,
                   output logic         MemtoRegW, PCSrcW, RegWriteW,
                   // hazard interface
                   output logic         RegWriteM, MemtoRegE,
                   output logic         PCWrPendingF,
-                  input  logic         FlushE);
+                  input  logic         FlushE,
+                  // Recently added by Ivan and Cassie
+                  output logic         swapALUinputs,
+                  input logic          doNotWriteReg,
+                  output logic         previousCflag);
 
   logic [9:0] controlsD;
   logic       CondExE, ALUOpD;
-  logic [1:0] ALUControlD;
+  logic [3:0] ALUControlD;
   logic       ALUSrcD;
   logic       MemtoRegD, MemtoRegM;
   logic       RegWriteD, RegWriteE, RegWriteGatedE;
@@ -211,6 +220,7 @@ module controller(input  logic         clk, reset,
   logic [1:0] FlagWriteD, FlagWriteE;
   logic       PCSrcD, PCSrcE, PCSrcM;
   logic [3:0] FlagsE, FlagsNextE, CondE;
+  logic       RegWriteEpreMux;
 
   // Decode stage
   
@@ -226,22 +236,39 @@ module controller(input  logic         clk, reset,
 
   assign {RegSrcD, ImmSrcD, ALUSrcD, MemtoRegD, 
           RegWriteD, MemWriteD, BranchD, ALUOpD} = controlsD; 
-          
+ //------------------------------- MAJOR BLOCK ADDED HERE ------------------------ 
+  
+   always_comb
+     if (ALUOpD) begin                     // which Data-processing Instr?
+      ALUControlD = InstrD[24:21];  // Always passes Instruction codes to ALUControlD
+      FlagWriteD[1]   = InstrD[20];       // update N and Z Flags if S bit is set
+      FlagWriteD[0]   = InstrD[20] & (ALUControlD == 4'b0100 | ALUControlD == 4'b0010);
+    end else begin
+      ALUControlD     = 4'b0100;      // perform addition for non-dataprocessing instr
+      FlagWriteD      = 2'b00;        // don't update Flags
+    end 
+ 
+  
+
+  /*
+// ========================== MAJOR BLOCK GOING ABOVE ^ ============================
   always_comb
-    if (ALUOpD) begin                 // which Data-processing Instr?
+    if (ALUOpD) begin                   // which Data-processing Instr?
       case(InstrD[24:21]) 
-  	    4'b0100: ALUControlD = 2'b00; // ADD
-  	    4'b0010: ALUControlD = 2'b01; // SUB
-        4'b0000: ALUControlD = 2'b10; // AND
-  	    4'b1100: ALUControlD = 2'b11; // ORR
-  	    default: ALUControlD = 2'bx;  // unimplemented
+  	    4'b0100: ALUControlD = 4'b0000; // ADD
+  	    4'b0010: ALUControlD = 4'b0001; // SUB
+       4'b0000: ALUControlD = 4'b0010; // AND
+  	    4'b1100: ALUControlD = 4'b0011; // ORR
+  	    default: ALUControlD = 4'bx;    // unimplemented
       endcase
-      FlagWriteD[1]   = InstrD[20];   // update N and Z Flags if S bit is set
+      FlagWriteD[1]   = InstrD[20];    // update N and Z Flags if S bit is set
       FlagWriteD[0]   = InstrD[20] & (ALUControlD == 2'b00 | ALUControlD == 2'b01);
     end else begin
-      ALUControlD     = 2'b00;        // perform addition for non-dataprocessing instr
+      ALUControlD     = 4'b0000;      // perform addition for non-dataprocessing instr
       FlagWriteD      = 2'b00;        // don't update Flags
     end
+  // ------------------------------- END ------------------------------------------
+   */
 
   assign PCSrcD       = (((InstrD[15:12] == 4'b1111) & RegWriteD) | BranchD);
     
@@ -249,7 +276,7 @@ module controller(input  logic         clk, reset,
   floprc #(7) flushedregsE(clk, reset, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE});
-  flopr #(3)  regsE(clk, reset,
+  flopr #(5)  regsE(clk, reset,
                     {ALUSrcD, ALUControlD},
                     {ALUSrcE, ALUControlE});
                     
@@ -259,9 +286,17 @@ module controller(input  logic         clk, reset,
   // write and Branch controls are conditional
   conditional Cond(CondE, FlagsE, ALUFlagsE, FlagWriteE, CondExE, FlagsNextE);
   assign BranchTakenE    = BranchE & CondExE;
-  assign RegWriteGatedE  = RegWriteE & CondExE;
+  assign RegWriteEpreMux = RegWriteE & CondExE;
   assign MemWriteGatedE  = MemWriteE & CondExE;
   assign PCSrcGatedE     = PCSrcE & CondExE;
+  
+  // disable write to register for flag-setting instructions
+  assign RegWriteGatedE = doNotWriteReg ? 1'b0 : RegWriteEpreMux; 
+  
+  // enable signal for swapping inputs a and b to alu
+  assign swapALUinputs = (InstrD[24:21] == 4'b0111) || (InstrD[24:21] == 4'b0011); // Swap if RSB or RSC
+  // create carry-in bit for carry instructions to send to ALU 
+  assign previousCflag = FlagsE[1];
   
   // Memory stage
   flopr #(4) regsM(clk, reset,
@@ -317,7 +352,7 @@ endmodule
 module datapath(input  logic        clk, reset,
                 input  logic [1:0]  RegSrcD, ImmSrcD,
                 input  logic        ALUSrcE, BranchTakenE,
-                input  logic [1:0]  ALUControlE, 
+                input  logic [3:0]  ALUControlE, 
                 input  logic        MemtoRegW, PCSrcW, RegWriteW,
                 output logic [31:0] PCF,
                 input  logic [31:0] InstrF,
@@ -328,7 +363,9 @@ module datapath(input  logic        clk, reset,
                 // hazard logic
                 output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
                 input  logic [1:0]  ForwardAE, ForwardBE,
-                input  logic        StallF, StallD, FlushD);
+                input  logic        StallF, StallD, FlushD,
+                output logic        doNotWriteReg,
+                input logic         swapALUinputs, previousCflag);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
@@ -337,6 +374,7 @@ module datapath(input  logic        clk, reset,
   logic [31:0] ReadDataW, ALUOutW, ResultW;
   logic [3:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3M, WA3W;
   logic        Match_1D_E, Match_2D_E;
+  logic [31:0] ALUSrcA, ALUSrcB;
                 
   // Fetch stage
   mux2 #(32) pcnextmux(PCPlus4F, ResultW, PCSrcW, PCnext1F);
@@ -364,7 +402,10 @@ module datapath(input  logic        clk, reset,
   mux3 #(32)  byp1mux(rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(rd2E, ResultW, ALUOutM, ForwardBE, WriteDataE);
   mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, SrcBE);
-  alu         alu(SrcAE, SrcBE, ALUControlE, ALUResultE, ALUFlagsE);
+  mux2 #(32)  alu_inA(SrcAE, SrcBE, swapALUinputs, ALUSrcA); 
+  mux2 #(32)  alu_inB(SrcBE, SrcAE, swapALUinputs, ALUSrcB); 
+  
+  alu         alu(ALUSrcA, ALUSrcB, ALUControlE, ALUResultE, ALUFlagsE, previousCflag, doNotWriteReg);
   
   // Memory Stage
   flopr #(32) aluresreg(clk, reset, ALUResultE, ALUOutM);
@@ -464,28 +505,97 @@ module extend(input  logic [23:0] Instr,
 endmodule
 
 module alu(input  logic [31:0] a, b,
-           input  logic [1:0]  ALUControl,
+           input  logic [3:0]  ALUControl,
            output logic [31:0] Result,
-           output logic [3:0]  Flags);
+           output logic [3:0]  Flags,
+           input logic previousCflag,
+           output logic doNotWriteReg);
 
-  logic        neg, zero, carry, overflow;
+  logic        neg, zero, carry, overflow, invertB, aluCarry;
   logic [31:0] condinvb;
   logic [32:0] sum;
 
+ 
+// ---------------------------- MAJOR BLOCK ADDED HERE -----------------------
+// checks for bits 4'b001? 
+  assign invertB = (ALUControl[3:1] == 3'b001) ||   //SUB, RSB
+                   (ALUControl[3:1] == 3'b011) ||   //SBC, RSC
+                   (ALUControl[3:0] == 4'b1010) ||  //CMP
+                   (ALUControl[3:0] == 4'b1111);    //MVN
+                 
+  always_comb
+    casex (ALUControl[3:0])
+      4'b0010: aluCarry = 1'b1;   // SUB, RSB
+      4'b0011: aluCarry = 1'b1;   // SUB, RSB
+      //4'b0101: aluCarry = previousCflag;   // ADC
+      //4'b0110: aluCarry = previousCflag;   // SBC
+      //4'b0111: aluCarry = previousCflag;   // RSC
+      4'b0101: aluCarry = 1'b1;   // ADC
+      4'b0110: aluCarry = 1'b1;   // SBC
+      4'b0111: aluCarry = 1'b1;   // RSC
+      4'b1010: aluCarry = 1'b1;   // CMP
+      default: aluCarry = 1'b0;
+    endcase
+  
+  assign condinvb = invertB ? ~b : b;
+  assign sum = a + condinvb + aluCarry;
+ 
+  always_comb
+    casex (ALUControl[3:0])
+      4'b0000: Result = a & b; // AND, TST
+      4'b1000: Result = a & b; // AND, TST
+      4'b0001: Result = a ^ b; // EOR, TEQ
+      4'b1001: Result = a ^ b; // EOR, TEQ
+      4'b0010: Result = sum;   // SUB, RSB
+      4'b0011: Result = sum;   // SUB, RSB
+      4'b0100: Result = sum;   // ADD, ADC, SBC, RSC
+      4'b0101: Result = sum;   // ADD, ADC, SBC, RSC
+      4'b0110: Result = sum;   // ADD, ADC, SBC, RSC
+      4'b0111: Result = sum;   // ADD, ADC, SBC, RSC
+      4'b1010: Result = sum;   // CMP, CMN
+      4'b1011: Result = sum;   // CMP, CMN
+      4'b1100: Result = a | b; // ORR
+      4'b1101: Result = sum;   // MOV, MVN
+      4'b1111: Result = sum;   // MOV, MVN
+      4'b1110: Result = a & b; // BIC
+      //default: Result = 32'bx;
+    endcase
+
+  assign doNotWriteReg = (ALUControl[3:2] == 2'b10);
+
+/*
+// -------------------------- ^^ MAJOR BLOCK GOING HERE --------------------------
   assign condinvb = ALUControl[0] ? ~b : b;
   assign sum = a + condinvb + ALUControl[0];
 
   always_comb
-    casex (ALUControl[1:0])
-      2'b0?: Result = sum;
-      2'b10: Result = a & b;
-      2'b11: Result = a | b;
+    casex (ALUControl[3:0])
+      4'b000?: Result = sum;
+      4'b0010: Result = a & b;
+      4'b0011: Result = a | b; 
     endcase
+// --------------------------------------------------------------------------------
 
+
+// Change op codes -----------
+  assign condinvb = (ALUControl[3:0]==4'b0010) ? ~b : b;
+  assign sum = a + condinvb + ALUControl[1];
+
+  always_comb
+    casex (ALUControl[3:0])
+      4'b0100: Result = sum;
+      4'b0010: Result = sum; //SUB
+      4'b0000: Result = a & b;
+      4'b1100: Result = a | b; 
+    endcase
+    
+    // ---------------- */
+
+  // Order is NZCV
   assign neg      = Result[31];
   assign zero     = (Result == 32'b0);
-  assign carry    = (ALUControl[1] == 1'b0) & sum[32];
-  assign overflow = (ALUControl[1] == 1'b0) & ~(a[31] ^ b[31] ^ ALUControl[0]) & 
+  assign carry    = (ALUControl[3:0] == 4'b0100 | ALUControl[3:0] == 4'b0010) & sum[32];
+  assign overflow = (ALUControl[3:0] == 4'b0100 | ALUControl[3:0] == 4'b0010) & ~(a[31] ^ b[31] ^ (ALUControl[3:0] == 4'b0010)) & 
                                                 (a[31] ^ sum[31]); 
   assign Flags = {neg, zero, carry, overflow};
 endmodule
@@ -554,4 +664,12 @@ module eqcmp #(parameter WIDTH = 8)
               output logic             y);
 
   assign y = (a == b); 
+endmodule
+
+module mux3 #(parameter WIDTH = 8) 
+	           (input  logic [WIDTH-1:0] d0, d1, d2,  
+	            input  logic [1:0]       s,  
+	            output logic [WIDTH-1:0] y); 
+	  
+	assign y = s[1] ? d2 : (s[0] ? d1 : d0);  
 endmodule
