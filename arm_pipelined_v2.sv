@@ -189,12 +189,12 @@ module arm(input  logic        clk, reset,
               ALUOutM, WriteDataM, ReadDataM,
               ALUFlagsE,
               Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
-              ForwardAE, ForwardBE, StallF, StallD, FlushD);
+              ForwardAE, ForwardBE, StallF, StallD, FlushD, StallE, StallM, StallW);
   hazard h(clk, reset, Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
            RegWriteM, RegWriteW, BranchTakenE, MemtoRegE,
            PCWrPendingF, PCSrcW,
            ForwardAE, ForwardBE,
-           StallF, StallD, FlushD, FlushE, dstall);
+           StallF, StallD, FlushD, FlushE, dstall, StallE, StallM, StallW);
 
 endmodule
 
@@ -339,7 +339,7 @@ module datapath(input  logic        clk, reset,
                 // hazard logic
                 output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
                 input  logic [1:0]  ForwardAE, ForwardBE,
-                input  logic        StallF, StallD, FlushD);
+                input  logic        StallF, StallD, FlushD, StallE, StallM, StallW);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
@@ -366,26 +366,26 @@ module datapath(input  logic        clk, reset,
   extend      ext(InstrD[23:0], ImmSrcD, ExtImmD);
   
   // Execute Stage
-  flopr #(32) rd1reg(clk, reset, rd1D, rd1E);
-  flopr #(32) rd2reg(clk, reset, rd2D, rd2E);
-  flopr #(32) immreg(clk, reset, ExtImmD, ExtImmE);
-  flopr #(4)  wa3ereg(clk, reset, InstrD[15:12], WA3E);
-  flopr #(4)  ra1reg(clk, reset, RA1D, RA1E);
-  flopr #(4)  ra2reg(clk, reset, RA2D, RA2E);
+  flopenr #(32) rd1reg(clk, reset, ~StallE, rd1D, rd1E);
+  flopenr #(32) rd2reg(clk, reset, ~StallE, rd2D, rd2E);
+  flopenr #(32) immreg(clk, reset, ~StallE, ExtImmD, ExtImmE);
+  flopenr #(4)  wa3ereg(clk, reset, ~StallE, InstrD[15:12], WA3E);
+  flopenr #(4)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
+  flopenr #(4)  ra2reg(clk, reset, ~StallE, RA2D, RA2E);
   mux3 #(32)  byp1mux(rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(rd2E, ResultW, ALUOutM, ForwardBE, WriteDataE);
   mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, SrcBE);
   alu         alu(SrcAE, SrcBE, ALUControlE, ALUResultE, ALUFlagsE);
   
   // Memory Stage
-  flopr #(32) aluresreg(clk, reset, ALUResultE, ALUOutM);
-  flopr #(32) wdreg(clk, reset, WriteDataE, WriteDataM);
-  flopr #(4)  wa3mreg(clk, reset, WA3E, WA3M);
+  flopenr #(32) aluresreg(clk, reset, ~StallM, ALUResultE, ALUOutM);
+  flopenr #(32) wdreg(clk, reset, ~StallM, WriteDataE, WriteDataM);
+  flopenr #(4)  wa3mreg(clk, reset, ~StallM, WA3E, WA3M);
   
   // Writeback Stage
-  flopr #(32) aluoutreg(clk, reset, ALUOutM, ALUOutW);
-  flopr #(32) rdreg(clk, reset, ReadDataM, ReadDataW);
-  flopr #(4)  wa3wreg(clk, reset, WA3M, WA3W);
+  flopenr #(32) aluoutreg(clk, reset, ~StallW, ALUOutM, ALUOutW);
+  flopenr #(32) rdreg(clk, reset, ~StallW, ReadDataM, ReadDataW);
+  flopenr #(4)  wa3wreg(clk, reset, ~StallW, WA3M, WA3W);
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, ResultW);
   
   // hazard comparison
@@ -407,7 +407,8 @@ module hazard(input  logic       clk, reset,
               output logic [1:0] ForwardAE, ForwardBE,
               output logic       StallF, StallD,
               output logic       FlushD, FlushE,
-              input  logic       dstall);
+              input  logic       dstall,
+              output logic       StallE, StallM, StallW);
                 
   // forwarding logic
   always_comb begin
@@ -431,11 +432,17 @@ module hazard(input  logic       clk, reset,
   //   When the PC might be written, stall all following instructions
   //   by stalling the fetch and flushing the decode stage
   // when a stage stalls, stall all previous and flush next
+  // Memory Access Stall
+  //   when the caches miss, stall the whole pipeline for the memory 
+  //   access. dstall is a stall from the data cache
   
   assign ldrStallD = Match_12D_E & MemtoRegE;
   
   assign StallD = ldrStallD | dstall;
   assign StallF = ldrStallD | PCWrPendingF | dstall;
+  assign StallE = dstall;
+  assign StallW = dstall;
+  assign StallM = dstall;
   assign FlushE = ldrStallD | BranchTakenE; 
   assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE;
   
