@@ -18,19 +18,22 @@ module data_cache (input logic clk, we,
     logic rv;
     logic [13:0] rtag;
 
-    data_cache_memory dcm(.clk(clk), .wd(wd), .a(a), .we(we), 
+    data_cache_memory dcm(.clk(clk), .wd(cachewd), .a(a), .we(we), 
                     .rv(rv), .rtag(rtag), .rd(rd));
-    data_cache_controller dcc(.clk(clk), .hit(hit), .validData(validData),
-                        .write(write), .memread(memread));
+    data_cache_controller dcc(.clk(clk), .hit(hit), .ds(ds),
+                        .stall(stall), .we(we), .memwrite(memwrite));
 
     // Create the logic for a hit. Note that if there is a cache miss,
     // hit stays false until the new data has been retrieved. This way hit
     // can also be used as a stall signal.
     assign hit = rv & (a[31:10] == rtag);
 
-    imem imem(PCF, InstrF);
-    dmem dmem(.clk(clk), .we(MemWriteM), .a(DataAdrM), 
-              .wd(WriteD), .rd(ReadDataM));
+    // Create Mux for the cache data input
+    mux2 #(32) writemux(memdata, wd, ds, cachewd);
+
+    // Create physical memory
+    dmem dm(.clk(clk), .we(memwrite), .a(a), 
+              .wd(wd), .rd(memdata));
 endmodule
 
 module instr_cache (input logic clk, 
@@ -116,12 +119,12 @@ endmodule
 
 // Cache controller works according to schematic
 module data_cache_controller (input  logic clk,
-                         // input  logic reset,
                          input  logic hit,
-                         input  logic validData,
-                         output logic write,
-                         output logic memread);
-  typedef enum logic [1:0] {CACHEREAD, MEMREAD, CACHEWRITE} statetype;
+                         input  logic ds,
+                         input  logic we,
+                         output logic stall,
+                         output logic memwrite);
+  typedef enum logic [1:0] {CACHEREAD, MEMREAD, MEMWRITE} statetype;
   statetype state, nextstate;
 
   // state register
@@ -132,18 +135,19 @@ module data_cache_controller (input  logic clk,
   // next state logic
   always_comb
     case (state)
-      CACHEREAD: if (hit)         nextstate <= CACHEREAD;
-                 else             nextstate <= MEMREAD;
-      MEMREAD:   if (~validData)  nextstate <= MEMREAD;
-                 else             nextstate <= CACHEWRITE;
-      CACHEWRITE:if (~hit)        nextstate <= CACHEWRITE;
-                 else             nextstate <= CACHEREAD;
+      CACHEREAD: if (hit & ~we) begin      nextstate <= CACHEREAD; end
+                 else if(~hit & ~we) begin nextstate <= MEMREAD;   end
+      MEMREAD:                        nextstate <= CACHEREAD;
+      MEMWRITE:                       nextstate <= CACHEREAD;
       default: nextstate <= CACHEREAD;
     endcase
 
   // output logic
-  assign memread = (state == MEMREAD);
-  assign write   = (state == CACHEWRITE);
+  assign stall       = (state == MEMREAD) | (state == MEMWRITE) |
+                       ((state == CACHEREAD) & (hit | we));
+  assign cachewrite  = (state == MEMREAD) | (state == MEMWRITE);
+  assign memwrite    = (state == MEMWRITE);
+  assign ds          = (state == MEMREAD);
 
 endmodule
 
