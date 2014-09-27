@@ -117,7 +117,7 @@ module top(input  logic        clk, reset,
   
   // instantiate processor and memories
   arm arm(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
-          WriteDataM, ReadDataM, dstall);
+          WriteDataM, ReadDataM, dstall, MemtoRegM);
   // cache outputs
   logic ihit;
   logic ivalidData;
@@ -125,7 +125,8 @@ module top(input  logic        clk, reset,
   instr_cache icache(.clk(clk), .a(PCF), .rd(InstrF), .hit(ihit), 
                    .validData(ivalidData), .memread(imemread));
   data_cache data_cache(.clk(clk), .a(DataAdrM), .rd(ReadDataM), 
-                        .wd(WriteDataM), .we(MemWriteM), .stall(dstall));
+                        .wd(WriteDataM), .we(MemWriteM), .stall(dstall),
+                        .MemtoRegM(MemtoRegM));
   // imem imem(PCF, InstrF);
   // dmem dmem(.clk(clk), .we(MemWriteM), .a(DataAdrM), 
   //           .wd(WriteD), .rd(ReadDataM));
@@ -163,7 +164,8 @@ module arm(input  logic        clk, reset,
            output logic        MemWriteM,
            output logic [31:0] ALUOutM, WriteDataM,
            input  logic [31:0] ReadDataM,
-           input logic dstall);
+           input logic dstall,
+           output logic MemtoRegM);
 
   logic [1:0]  RegSrcD, ImmSrcD, ALUControlE;
   logic        ALUSrcE, BranchTakenE, MemtoRegW, PCSrcW, RegWriteW;
@@ -180,7 +182,8 @@ module arm(input  logic        clk, reset,
                MemWriteM,
                MemtoRegW, PCSrcW, RegWriteW,
                RegWriteM, MemtoRegE, PCWrPendingF,
-               FlushE);
+               FlushE,
+               MemtoRegM);
   datapath dp(clk, reset, 
               RegSrcD, ImmSrcD, 
               ALUSrcE, BranchTakenE, ALUControlE,
@@ -189,12 +192,12 @@ module arm(input  logic        clk, reset,
               ALUOutM, WriteDataM, ReadDataM,
               ALUFlagsE,
               Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
-              ForwardAE, ForwardBE, StallF, StallD, FlushD, StallE, StallM, StallW);
+              ForwardAE, ForwardBE, StallF, StallD, FlushD, StallE, StallM, FlushW);
   hazard h(clk, reset, Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
            RegWriteM, RegWriteW, BranchTakenE, MemtoRegE,
            PCWrPendingF, PCSrcW,
            ForwardAE, ForwardBE,
-           StallF, StallD, FlushD, FlushE, dstall, StallE, StallM, StallW);
+           StallF, StallD, FlushD, FlushE, dstall, StallE, StallM, FlushW);
 
 endmodule
 
@@ -209,13 +212,15 @@ module controller(input  logic         clk, reset,
                   // hazard interface
                   output logic         RegWriteM, MemtoRegE,
                   output logic         PCWrPendingF,
-                  input  logic         FlushE);
+                  input  logic         FlushE,
+                  // Added for the data cache
+                  output logic         MemtoRegM);
 
   logic [9:0] controlsD;
   logic       CondExE, ALUOpD;
   logic [1:0] ALUControlD;
   logic       ALUSrcD;
-  logic       MemtoRegD, MemtoRegM;
+  logic       MemtoRegD;
   logic       RegWriteD, RegWriteE, RegWriteGatedE;
   logic       MemWriteD, MemWriteE, MemWriteGatedE;
   logic       BranchD, BranchE;
@@ -339,7 +344,7 @@ module datapath(input  logic        clk, reset,
                 // hazard logic
                 output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
                 input  logic [1:0]  ForwardAE, ForwardBE,
-                input  logic        StallF, StallD, FlushD, StallE, StallM, StallW);
+                input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
