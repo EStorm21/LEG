@@ -388,9 +388,9 @@ module datapath(input  logic        clk, reset,
   flopenr #(4)  wa3mreg(clk, reset, ~StallM, WA3E, WA3M);
   
   // Writeback Stage
-  flopenr #(32) aluoutreg(clk, reset, ~StallW, ALUOutM, ALUOutW);
-  flopenr #(32) rdreg(clk, reset, ~StallW, ReadDataM, ReadDataW);
-  flopenr #(4)  wa3wreg(clk, reset, ~StallW, WA3M, WA3W);
+  floprc #(32) aluoutreg(clk, reset, FlushW, ALUOutM, ALUOutW);
+  floprc #(32) rdreg(clk, reset, FlushW, ReadDataM, ReadDataW);
+  floprc #(4)  wa3wreg(clk, reset, FlushW, WA3M, WA3W);
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, ResultW);
   
   // hazard comparison
@@ -413,7 +413,7 @@ module hazard(input  logic       clk, reset,
               output logic       StallF, StallD,
               output logic       FlushD, FlushE,
               input  logic       dstall,
-              output logic       StallE, StallM, StallW);
+              output logic       StallE, StallM, FlushW);
                 
   // forwarding logic
   always_comb begin
@@ -446,7 +446,7 @@ module hazard(input  logic       clk, reset,
   assign StallD = ldrStallD | dstall;
   assign StallF = ldrStallD | PCWrPendingF | dstall;
   assign StallE = dstall;
-  assign StallW = dstall;
+  assign FlushW = dstall;
   assign StallM = dstall;
   assign FlushE = ldrStallD | BranchTakenE; 
   assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE;
