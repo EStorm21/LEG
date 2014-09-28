@@ -11,14 +11,14 @@ module controller(input  logic         clk, reset,
                   output logic         PCWrPendingF,
                   input  logic         FlushE,
                   // Recently added by Ivan and Cassie
-                  output logic         swapALUinputs,
+                  output logic         swapALUinputsE,
                   input logic          doNotWriteReg,
                   output logic         previousCflag);
 
   logic [9:0] controlsD;
   logic       CondExE, ALUOpD;
   logic [3:0] ALUControlD;
-  logic       ALUSrcD;
+  logic       ALUSrcD, swapALUinputsD;
   logic       MemtoRegD, MemtoRegM;
   logic       RegWriteD, RegWriteE, RegWriteGatedE;
   logic       MemWriteD, MemWriteE, MemWriteGatedE;
@@ -26,7 +26,7 @@ module controller(input  logic         clk, reset,
   logic [1:0] FlagWriteD, FlagWriteE;
   logic       PCSrcD, PCSrcE, PCSrcM;
   logic [3:0] FlagsE, FlagsNextE, CondE;
-  logic       RegWriteEpreMux;
+  logic       RegWritepreMuxE;
 
   // Decode stage
   
@@ -42,42 +42,25 @@ module controller(input  logic         clk, reset,
 
   assign {RegSrcD, ImmSrcD, ALUSrcD, MemtoRegD, 
           RegWriteD, MemWriteD, BranchD, ALUOpD} = controlsD; 
- //------------------------------- MAJOR BLOCK ADDED HERE ------------------------ 
+
   
    always_comb
      if (ALUOpD) begin                     // which Data-processing Instr?
       ALUControlD = InstrD[24:21];  // Always passes Instruction codes to ALUControlD
       FlagWriteD[1]   = InstrD[20];       // update N and Z Flags if S bit is set
-      FlagWriteD[0]   = InstrD[20] & (ALUControlD == 4'b0100 | ALUControlD == 4'b0010);
+      FlagWriteD[0]   = InstrD[20] & (ALUControlD == 4'b0100 | ALUControlD == 4'b0010 | ALUControlD == 4'b0011 | ALUControlD == 4'b0101 | 
+      ALUControlD == 4'b0110 | ALUControlD == 4'b0111); // For ADD, SUB, RSB, ADC, SBC, RSC
     end else begin
       ALUControlD     = 4'b0100;      // perform addition for non-dataprocessing instr
       FlagWriteD      = 2'b00;        // don't update Flags
     end 
  
-  
-
-  /*
-// ========================== MAJOR BLOCK GOING ABOVE ^ ============================
-  always_comb
-    if (ALUOpD) begin                   // which Data-processing Instr?
-      case(InstrD[24:21]) 
-  	    4'b0100: ALUControlD = 4'b0000; // ADD
-  	    4'b0010: ALUControlD = 4'b0001; // SUB
-       4'b0000: ALUControlD = 4'b0010; // AND
-  	    4'b1100: ALUControlD = 4'b0011; // ORR
-  	    default: ALUControlD = 4'bx;    // unimplemented
-      endcase
-      FlagWriteD[1]   = InstrD[20];    // update N and Z Flags if S bit is set
-      FlagWriteD[0]   = InstrD[20] & (ALUControlD == 2'b00 | ALUControlD == 2'b01);
-    end else begin
-      ALUControlD     = 4'b0000;      // perform addition for non-dataprocessing instr
-      FlagWriteD      = 2'b00;        // don't update Flags
-    end
-  // ------------------------------- END ------------------------------------------
-   */
 
   assign PCSrcD       = (((InstrD[15:12] == 4'b1111) & RegWriteD) | BranchD);
-    
+  
+  // enable signal for swapping inputs a and b to alu
+  assign swapALUinputsD = (InstrD[24:21] == 4'b0111) || (InstrD[24:21] == 4'b0011); // Swap if RSB or RSC    
+
   // Execute stage
   floprc #(7) flushedregsE(clk, reset, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD},
@@ -88,19 +71,19 @@ module controller(input  logic         clk, reset,
                     
   flopr  #(4) condregE(clk, reset, InstrD[31:28], CondE);
   flopr  #(4) flagsreg(clk, reset, FlagsNextE, FlagsE);
+  flopr  #(1) swapALUregsE(clk,reset, swapALUinputsD, swapALUinputsE);
+
 
   // write and Branch controls are conditional
   conditional Cond(CondE, FlagsE, ALUFlagsE, FlagWriteE, CondExE, FlagsNextE);
   assign BranchTakenE    = BranchE & CondExE;
-  assign RegWriteEpreMux = RegWriteE & CondExE;
+  assign RegWritepreMuxE = RegWriteE & CondExE;
   assign MemWriteGatedE  = MemWriteE & CondExE;
   assign PCSrcGatedE     = PCSrcE & CondExE;
   
   // disable write to register for flag-setting instructions
-  assign RegWriteGatedE = doNotWriteReg ? 1'b0 : RegWriteEpreMux; 
+  assign RegWriteGatedE = doNotWriteReg ? 1'b0 : RegWritepreMuxE; 
   
-  // enable signal for swapping inputs a and b to alu
-  assign swapALUinputs = (InstrD[24:21] == 4'b0111) || (InstrD[24:21] == 4'b0011); // Swap if RSB or RSC
   // create carry-in bit for carry instructions to send to ALU 
   assign previousCflag = FlagsE[1];
   

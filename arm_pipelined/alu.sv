@@ -21,12 +21,9 @@ module alu(input  logic [31:0] a, b,
     casex (ALUControl[3:0])
       4'b0010: aluCarry = 1'b1;   // SUB, RSB
       4'b0011: aluCarry = 1'b1;   // SUB, RSB
-      //4'b0101: aluCarry = previousCflag;   // ADC
-      //4'b0110: aluCarry = previousCflag;   // SBC
-      //4'b0111: aluCarry = previousCflag;   // RSC
-      4'b0101: aluCarry = 1'b1;   // ADC
-      4'b0110: aluCarry = 1'b1;   // SBC
-      4'b0111: aluCarry = 1'b1;   // RSC
+      4'b0101: aluCarry = previousCflag;   // ADC
+      4'b0110: aluCarry = previousCflag;   // SBC
+      4'b0111: aluCarry = previousCflag;   // RSC
       4'b1010: aluCarry = 1'b1;   // CMP
       default: aluCarry = 1'b0;
     endcase
@@ -51,45 +48,23 @@ module alu(input  logic [31:0] a, b,
       4'b1100: Result = a | b; // ORR
       4'b1101: Result = sum;   // MOV, MVN
       4'b1111: Result = sum;   // MOV, MVN
-      4'b1110: Result = a & b; // BIC
+      4'b1110: Result = a & ~b; // BIC
       //default: Result = 32'bx;
     endcase
 
-  assign doNotWriteReg = (ALUControl[3:2] == 2'b10);
+  assign doNotWriteReg = (ALUControl[3:2] == 2'b10); // TST, TEQ, CMP, CMN
 
-/*
-// -------------------------- ^^ MAJOR BLOCK GOING HERE --------------------------
-  assign condinvb = ALUControl[0] ? ~b : b;
-  assign sum = a + condinvb + ALUControl[0];
-
-  always_comb
-    casex (ALUControl[3:0])
-      4'b000?: Result = sum;
-      4'b0010: Result = a & b;
-      4'b0011: Result = a | b; 
-    endcase
-// --------------------------------------------------------------------------------
-
-
-// Change op codes -----------
-  assign condinvb = (ALUControl[3:0]==4'b0010) ? ~b : b;
-  assign sum = a + condinvb + ALUControl[1];
-
-  always_comb
-    casex (ALUControl[3:0])
-      4'b0100: Result = sum;
-      4'b0010: Result = sum; //SUB
-      4'b0000: Result = a & b;
-      4'b1100: Result = a | b; 
-    endcase
-    
-    // ---------------- */
 
   // Order is NZCV
   assign neg      = Result[31];
   assign zero     = (Result == 32'b0);
-  assign carry    = (ALUControl[3:0] == 4'b0100 | ALUControl[3:0] == 4'b0010) & sum[32];
-  assign overflow = (ALUControl[3:0] == 4'b0100 | ALUControl[3:0] == 4'b0010) & ~(a[31] ^ b[31] ^ (ALUControl[3:0] == 4'b0010)) & 
-                                                (a[31] ^ sum[31]); 
+  assign carry    = ((ALUControl[3:0] == 4'b0100/*add*/ | ALUControl[3:0] == 4'b0010/*sub*/ | ALUControl[3:0] == 4'b0011/*rsc*/ | ALUControl[3:0] == 4'b0101/*adc*/
+          | ALUControl[3:0] == 4'b0110/*sbc*/ | ALUControl[3:0] == 4'b0111/*rsc*/ | ALUControl[3:0] == 4'b1010/*cmp*/ | ALUControl[3:0] == 4'b1011/*cmn*/) & sum[32]);
+  assign overflow = (ALUControl[3:0] == 4'b0100/*add*/ | ALUControl[3:0] == 4'b0010/*sub*/ | ALUControl[3:0] == 4'b0011/*rsc*/ | ALUControl[3:0] == 4'b0101/*adc*/
+          | ALUControl[3:0] == 4'b0110/*sbc*/ | ALUControl[3:0] == 4'b0111/*rsc*/ | ALUControl[3:0] == 4'b1010/*cmp*/ | ALUControl[3:0] == 4'b1011/*cmn*/) & 
+          ~(a[31] ^ b[31] ^ (ALUControl[3:0] == 4'b0010 /*sub*/ | ALUControl[3:0] == 4'b0011/*rsc*/ | ALUControl[3:0] == 4'b0110/*sbc*/ | ALUControl[3:0] == 4'b0111/*rsc*/
+          | ALUControl[3:0] == 4'b1010/*cmp*/)) 
+          & (a[31] ^ sum[31]); 
+
   assign Flags = {neg, zero, carry, overflow};
 endmodule

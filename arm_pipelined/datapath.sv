@@ -14,7 +14,7 @@ module datapath(input  logic        clk, reset,
                 input  logic [1:0]  ForwardAE, ForwardBE,
                 input  logic        StallF, StallD, FlushD,
                 output logic        doNotWriteReg,
-                input logic         swapALUinputs, previousCflag);
+                input logic         swapALUinputsE, previousCflag);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
@@ -51,8 +51,8 @@ module datapath(input  logic        clk, reset,
   mux3 #(32)  byp1mux(rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(rd2E, ResultW, ALUOutM, ForwardBE, WriteDataE);
   mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, SrcBE);
-  mux2 #(32)  alu_inA(SrcAE, SrcBE, swapALUinputs, ALUSrcA); 
-  mux2 #(32)  alu_inB(SrcBE, SrcAE, swapALUinputs, ALUSrcB); 
+  mux2 #(32)  alu_inA(SrcAE, SrcBE, swapALUinputsE, ALUSrcA); 
+  mux2 #(32)  alu_inB(SrcBE, SrcAE, swapALUinputsE, ALUSrcB); 
   
   alu         alu(ALUSrcA, ALUSrcB, ALUControlE, ALUResultE, ALUFlagsE, previousCflag, doNotWriteReg);
   
