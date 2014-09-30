@@ -49,7 +49,7 @@ module controller(input  logic         clk, reset,
       ALUControlD = InstrD[24:21];  // Always passes Instruction codes to ALUControlD
       FlagWriteD[1]   = InstrD[20];       // update N and Z Flags if S bit is set
       FlagWriteD[0]   = InstrD[20] & (ALUControlD == 4'b0100 | ALUControlD == 4'b0010 | ALUControlD == 4'b0011 | ALUControlD == 4'b0101 | 
-      ALUControlD == 4'b0110 | ALUControlD == 4'b0111); // For ADD, SUB, RSB, ADC, SBC, RSC
+      ALUControlD == 4'b0110 | ALUControlD == 4'b0111 | ALUControlD == 4'b1010 | ALUControlD == 4'b1011); // For ADD, SUB, RSB, ADC, SBC, RSC, CMP, CMN
     end else begin
       ALUControlD     = 4'b0100;      // perform addition for non-dataprocessing instr
       FlagWriteD      = 2'b00;        // don't update Flags
