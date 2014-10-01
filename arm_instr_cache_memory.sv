@@ -10,7 +10,7 @@ module instr_cache_memory (input logic clk,
 
   initial
     begin
-      $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
+      $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);
       for (int i = 0; i <= 65535; i++)
         v[i] = 1; // How do I initialize the valid bits to 1?
     end

@@ -122,12 +122,12 @@ module top(input  logic        clk, reset,
   logic ihit;
   logic ivalidData;
   logic imemread;
-  instr_cache icache(.clk(clk), .a(PCF), .rd(InstrF), .hit(ihit), 
-                   .validData(ivalidData), .memread(imemread));
+  //instr_cache icache(.clk(clk), .a(PCF), .rd(InstrF), .hit(ihit), 
+  //                 .validData(ivalidData), .memread(imemread));
   data_cache data_cache(.clk(clk), .a(DataAdrM), .rd(ReadDataM), 
                         .wd(WriteDataM), .we(MemWriteM), .stall(dstall),
                         .MemtoRegM(MemtoRegM));
-  // imem imem(PCF, InstrF);
+  imem imem(PCF, InstrF);
   // dmem dmem(.clk(clk), .we(MemWriteM), .a(DataAdrM), 
   //           .wd(WriteD), .rd(ReadDataM));
 endmodule
@@ -139,7 +139,7 @@ module dmem(input  logic        clk, we,
   logic [31:0] RAM[2097151:0];
   
   initial
-      $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
+      $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);
 
   assign rd = RAM[a[22:2]]; // word aligned
 
@@ -153,7 +153,7 @@ module imem(input  logic [31:0] a,
   logic [31:0] RAM[2097151:0];
 
   initial
-      $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
+      $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);
 
   assign rd = RAM[a[22:2]]; // word aligned
 endmodule
@@ -182,7 +182,7 @@ module arm(input  logic        clk, reset,
                MemWriteM,
                MemtoRegW, PCSrcW, RegWriteW,
                RegWriteM, MemtoRegE, PCWrPendingF,
-               FlushE,
+               FlushE, StallE, StallM, FlushW,
                MemtoRegM);
   datapath dp(clk, reset, 
               RegSrcD, ImmSrcD, 
@@ -212,7 +212,7 @@ module controller(input  logic         clk, reset,
                   // hazard interface
                   output logic         RegWriteM, MemtoRegE,
                   output logic         PCWrPendingF,
-                  input  logic         FlushE,
+                  input  logic         FlushE, StallE, StallM, FlushW,
                   // Added for the data cache
                   output logic         MemtoRegM);
 
@@ -262,15 +262,15 @@ module controller(input  logic         clk, reset,
   assign PCSrcD       = (((InstrD[15:12] == 4'b1111) & RegWriteD) | BranchD);
     
   // Execute stage
-  floprc #(7) flushedregsE(clk, reset, FlushE, 
+  flopenrc #(7) flushedregsE(clk, reset, ~StallE, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE});
-  flopr #(3)  regsE(clk, reset,
+  flopenr #(3)  regsE(clk, reset, ~StallE,
                     {ALUSrcD, ALUControlD},
                     {ALUSrcE, ALUControlE});
                     
-  flopr  #(4) condregE(clk, reset, InstrD[31:28], CondE);
-  flopr  #(4) flagsreg(clk, reset, FlagsNextE, FlagsE);
+  flopenr  #(4) condregE(clk, reset, ~StallE, InstrD[31:28], CondE);
+  flopenr  #(4) flagsreg(clk, reset, ~StallE, FlagsNextE, FlagsE);
 
   // write and Branch controls are conditional
   conditional Cond(CondE, FlagsE, ALUFlagsE, FlagWriteE, CondExE, FlagsNextE);
@@ -280,12 +280,12 @@ module controller(input  logic         clk, reset,
   assign PCSrcGatedE     = PCSrcE & CondExE;
   
   // Memory stage
-  flopr #(4) regsM(clk, reset,
+  flopenr #(4) regsM(clk, reset, ~StallM,
                    {MemWriteGatedE, MemtoRegE, RegWriteGatedE, PCSrcGatedE},
                    {MemWriteM, MemtoRegM, RegWriteM, PCSrcM});
   
   // Writeback stage
-  flopr #(3) regsW(clk, reset,
+  floprc #(3) regsW(clk, reset, FlushW,
                    {MemtoRegM, RegWriteM, PCSrcM},
                    {MemtoRegW, RegWriteW, PCSrcW});
   
@@ -404,6 +404,11 @@ module datapath(input  logic        clk, reset,
   
 endmodule
 
+  // hazard h(clk, reset, Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
+  //          RegWriteM, RegWriteW, BranchTakenE, MemtoRegE,
+  //          PCWrPendingF, PCSrcW,
+  //          ForwardAE, ForwardBE,
+  //          StallF, StallD, FlushD, FlushE, dstall, StallE, StallM, FlushW);
 module hazard(input  logic       clk, reset,
               input  logic       Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
               input  logic       RegWriteM, RegWriteW,

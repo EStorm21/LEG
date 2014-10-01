@@ -28,7 +28,9 @@ module data_cache_controller (input  logic clk,
     endcase
 
   // output logic
-  assign stall       = (state == MEMREAD) | (state == MEMWRITE) |
+  // assign stall       = (state == MEMREAD) | (state == MEMWRITE) |
+  //                      ((state == CACHEREAD) & ( (~hit & re) | we) );
+  assign stall       = 
                        ((state == CACHEREAD) & ( (~hit & re) | we) );
   assign cachewrite  = (state == MEMREAD) | (state == MEMWRITE);
   assign memwrite    = (state == MEMWRITE);
