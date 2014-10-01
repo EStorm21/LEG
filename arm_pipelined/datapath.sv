@@ -18,7 +18,7 @@ module datapath(input  logic        clk, reset,
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
-  logic [31:0] ExtImmD, rd1D, rd2D, PCPlus8D;
+  logic [31:0] ExtImmD, rd1D, rd2D, PCPlus8D, RotImmD;
   logic [31:0] rd1E, rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, ALUResultE;
   logic [31:0] ReadDataW, ALUOutW, ResultW;
   logic [3:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3M, WA3W;
@@ -40,11 +40,15 @@ module datapath(input  logic        clk, reset,
                  WA3W, ResultW, PCPlus8D, 
                  rd1D, rd2D); 
   extend      ext(InstrD[23:0], ImmSrcD, ExtImmD);
+
+  // ------- RECENTLY ADDED BY IVAN ----------------- Currently EVERYTHING goes through Rotator
+  rotator   rotat(ExtImmD, ImmSrcD, InstrD[11:0], RotImmD); 
+  // ------------------------------------------------
   
   // Execute Stage
   flopr #(32) rd1reg(clk, reset, rd1D, rd1E);
   flopr #(32) rd2reg(clk, reset, rd2D, rd2E);
-  flopr #(32) immreg(clk, reset, ExtImmD, ExtImmE);
+  flopr #(32) immreg(clk, reset, RotImmD, ExtImmE); // Modified by Ivan
   flopr #(4)  wa3ereg(clk, reset, InstrD[15:12], WA3E);
   flopr #(4)  ra1reg(clk, reset, RA1D, RA1E);
   flopr #(4)  ra2reg(clk, reset, RA2D, RA2E);

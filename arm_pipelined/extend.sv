@@ -4,7 +4,7 @@ module extend(input  logic [23:0] Instr,
  
   always_comb
     case(ImmSrc) 
-      2'b00:   ExtImm = {24'b0, Instr[7:0]};  // 8-bit unsigned immediate
+      2'b00:   ExtImm = {24'b0, Instr[7:0]};  // 8-bit unsigned immediate - NEED TO LOOK @ 4 bits ROTATE NEXT
       2'b01:   ExtImm = {20'b0, Instr[11:0]}; // 12-bit unsigned immediate 
       2'b10:   ExtImm = {{6{Instr[23]}}, Instr[23:0], 2'b00}; // Branch
       default: ExtImm = 32'bx; // undefined
