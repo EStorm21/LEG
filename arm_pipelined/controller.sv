@@ -31,12 +31,10 @@ module controller(input  logic         clk, reset,
   // Decode stage
   
   always_comb
-  	casex(InstrD[27:26]) // RegSrcD (2) ImmSrcD (2)
-      
+  	casex(InstrD[27:26]) 
       // If 2'b00, then this is data processing instruction
   	  2'b00: if (InstrD[25]) controlsD = 10'b0000101001; // Data processing immediate
   	         else            controlsD = 10'b0000001001; // Data processing register
-      // 
   	  2'b01: if (InstrD[20]) controlsD = 10'b0001111000; // LDR
   	         else            controlsD = 10'b1001110100; // STR
   	  2'b10:                 controlsD = 10'b0110100010; // B

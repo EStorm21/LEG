@@ -1,12 +1,13 @@
 module rotator(input  logic [31:0] ExtImmD,
               input  logic [1:0]  ImmSrc,
-              input logic [11:0] InstrD,
+              input logic [31:0] InstrD,
               output logic [31:0] RotImm
-              //output logic rotatorCout,
+              //output logic rotatorCout, ---> Don't know if this is necessary yet. 
               );
  
 
   always_comb
+  if(InstrD[27:25] == 3'b001) begin
     case(InstrD[11:8]) 
       4'b0000:   RotImm = {ExtImmD[31:0]};  // 32 bit keep the same
       4'b0001:   RotImm = {ExtImmD[1:0], 24'b0, ExtImmD[7:2]}; // Rotate Right by 2 bits, need 32 bits total
@@ -26,9 +27,10 @@ module rotator(input  logic [31:0] ExtImmD,
       4'b1111:   RotImm = {22'b0, ExtImmD[7:0], 2'b0 }; // Rotate Right by 2 bits, need 32 bits total
       default: RotImm = 32'bx; // undefined
     endcase             
-
-    // Rotator carry out
-    // 
+  end
+  else begin
+    RotImm = ExtImmD[31:0];
+  end
 
 /*
 // Here's a potential nicer rotator
@@ -37,6 +39,17 @@ module rotator(input  logic [31:0] ExtImmD,
     assign rotateAmount = InstrD[11:8];
     assign temp = {ExtImmD,ExtImmD} >> rotateAmount;
     assign RotImm = temp[31:0];
-*/
+  */
+
+  /*
+reg[63:0] temp;
+integer rotateAmount;
+always_comb
+  if (ImmSrc[1:0] == 2'b00) begin
+// Here's a potential nicer rotator
+    //rotateAmount = InstrD[11:8];
+    temp = {ExtImmD,ExtImmD} >> InstrD[11:8];
+    RotImm = temp[31:0];
+  end*/
 
 endmodule

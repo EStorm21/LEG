@@ -42,7 +42,7 @@ module datapath(input  logic        clk, reset,
   extend      ext(InstrD[23:0], ImmSrcD, ExtImmD);
 
   // ------- RECENTLY ADDED BY IVAN ----------------- Currently EVERYTHING goes through Rotator
-  rotator   rotat(ExtImmD, ImmSrcD, InstrD[11:0], RotImmD); 
+  rotator   rotat(ExtImmD, ImmSrcD, InstrD, RotImmD); 
   // ------------------------------------------------
   
   // Execute Stage
