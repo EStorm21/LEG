@@ -2,7 +2,7 @@
 module data_cache_controller (input  logic clk, reset,
                          input  logic hit,
                          input  logic ds,
-                         input  logic we,
+                         input  logic MemWriteM,
                          input  logic re,
                          input  logic valid,
                          output logic cwe,
@@ -20,23 +20,26 @@ module data_cache_controller (input  logic clk, reset,
   // next state logic
   always_comb
     case (state)
-      READY: if ( (hit & ~we) |(~we & ~re) ) 
-	                                    begin nextstate <= READY; end
-                 else if((~hit & ~we) & re) 
-                                      begin nextstate <= MEMREAD;   end
-                 else                       nextstate <= MEMWRITE;
+      READY:      if ( (hit & ~MemWriteM) |(~MemWriteM & ~re) ) begin
+                    nextstate <= READY;
+                  end
+                  else if((~hit & ~MemWriteM) & re) begin
+                    nextstate <= MEMREAD;
+                  end
+                  else begin
+                    nextstate <= MEMWRITE;
+                  end
       CACHEWRITE:                     nextstate <= MOVEINSTR;
       MOVEINSTR:                      nextstate <= READY;
       MEMREAD:                        nextstate <= valid ? CACHEWRITE : MEMREAD;
-      MEMWRITE:                       nextstate <= valid ? CACHEWRITE : MEMWRITE;
+      MEMWRITE:                       nextstate <= valid ? MOVEINSTR : MEMWRITE;
       default: nextstate <= READY;
     endcase
 
   // output logic
-  // assign stall       = (state == MEMREAD) | (state == MEMWRITE) |
-  //                      ((state == READY) & ( (~hit & re) | we) );
-  assign stall       = (state== MEMREAD) | (state == MEMWRITE) |
-                       (state == CACHEWRITE) | ((state == READY) & ( (~hit & re) | we) );
+  //                      ((state == READY) & ( (~hit & re) | MemWriteM) );
+  assign stall       = (state == CACHEWRITE) | (state == MEMREAD) | 
+                       (state == MEMWRITE) | ((state == READY) & ( (~hit & re) | MemWriteM) );
   assign cwe         = (state == CACHEWRITE);
   assign memwrite    = (state == MEMWRITE);
   assign memread     = (state == MEMREAD);

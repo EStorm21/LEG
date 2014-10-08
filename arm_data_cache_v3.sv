@@ -6,27 +6,26 @@
 //--------------------CACHE-----------------------------
 //------------------------------------------------------
 //------------------------------------------------------
-// TODO: Note that both the data and instruction cache are 
-// currently read only. This behavior will change in the future.
-module data_cache (input logic clk, reset, we,  MemtoRegM, valid, 
-                   input  logic [31:0] a, wd, memdata,
+module data_cache #(parameter blocksize = 4, parameter entries = 65536)
+                  (input logic clk, reset, MemWriteM, MemtoRegM, valid, 
+                   input  logic [31:0] a, 
+                   input  logic [blocksize*32-1:0] memdata,
                    output logic [31:0] rd,
                    output logic stall, memread, memwrite);
 
-    parameter entries = 65536;
-    parameter tagbits = 30-$clog2(entries);
+    // tagbits = 32 - byte offset - block offset - set bits
+    parameter tagbits = 30-$clog2(blocksize)-$clog2(entries);
 
     logic rv;
     logic [tagbits-1:0] rtag;
-    logic [31:0] cachewd;
     logic cwe;
+    logic [blocksize*32-1:0] blockout;
 
-
-    data_cache_memory #(entries, tagbits) dcm(.clk(clk), .reset(reset), .wd(cachewd), .a(a), .we(cwe), 
-                    .rv(rv), .rtag(rtag), .rd(rd));
+    data_cache_memory #(entries, tagbits, blocksize) dcm(.clk(clk), .reset(reset), .wd(memdata), .a(a), .we(cwe), 
+                    .rv(rv), .rtag(rtag), .rd(blockout));
     
-    data_cache_controller dcc(.clk(clk), .reset(reset), .hit(hit), .ds(ds),
-                        .stall(stall), .we(we), .valid(valid),
+    data_cache_controller dcc(.clk(clk), .reset(reset), .hit(hit), .ds(ds), .MemWriteM(MemWriteM),
+                        .stall(stall), .valid(valid),
                         .memread(memread), .cwe(cwe), .memwrite(memwrite),
                         .re(MemtoRegM));
 
@@ -34,12 +33,21 @@ module data_cache (input logic clk, reset, we,  MemtoRegM, valid,
     // dmem dm(.clk(clk), .we(memwrite), .a(a), 
               // .wd(wd), .rd(memdata));
 
-    // Create the logic for a hit. Note that if there is a cache miss,
-    // hit stays false until the new data has been retrieved. This way hit
-    // can also be used as a stall signal.
-    assign hit = rv & (a[31:31-tagbits] == rtag);
+    // Create the logic for a hit.
+    assign hit = rv & (a[31:31-tagbits+1] == rtag);
 
-    // Create Mux for the cache data input
-    assign cachewd = ds ? memdata : wd;
+    // Create Mux to select the word from the block
+    // TODO: Make this mux parameterized
+    //DEBUGGING INTERNAL
+    logic [1:0] bo;
+    assign bo = a[3:2];
+    always_comb
+    case (a[3:2])
+        2'b11 : rd = blockout[31:0];
+        2'b10 : rd = blockout[2*32-1 : 32];
+        2'b01 : rd = blockout[3*32-1 : 2*32];
+        2'b00 : rd = blockout[4*32-1 : 3*32];
+        default : rd = blockout[31:0]; 
+    endcase
 
 endmodule
