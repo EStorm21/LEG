@@ -13,12 +13,16 @@ module datapath(input  logic        clk, reset,
                 output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
                 input  logic [1:0]  ForwardAE, ForwardBE,
                 input  logic        StallF, StallD, FlushD,
+                // Added by CW team fall 2014 - Handling Data processing Instrs
                 output logic        doNotWriteReg,
-                input logic         swapALUinputsE, previousCflag);
+                input logic         swapALUinputsE, previousCflag,
+                // To handle micro-op decoding
+                output logic        doNotUpdateFlagD, uOpStallD);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
-  logic [31:0] ExtImmD, rd1D, rd2D, PCPlus8D, RotImmD;
+  logic [31:0] ExtImmD, rd1D, rd2D, PCPlus8D, RotImmD, defaultInstrD, uOpInstrD;
+  logic        InstrMuxD, regFileRz;
   logic [31:0] rd1E, rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, ALUResultE;
   logic [31:0] ReadDataW, ALUOutW, ResultW;
   logic [3:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3M, WA3W;
@@ -32,8 +36,11 @@ module datapath(input  logic        clk, reset,
   adder #(32) pcadd(PCF, 32'h4, PCPlus4F);
   
   // Decode Stage
+
   assign PCPlus8D = PCPlus4F; // skip register
-  flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, InstrD);
+  flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, defaultInstrD);
+  micropsfsm uOpFSM(clk, reset, defaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, regFileRz, uOpInstrD);
+  mux2 #(32)  instrDmux(defaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   mux2 #(4)   ra1mux(InstrD[19:16], 4'b1111, RegSrcD[0], RA1D);
   mux2 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], RegSrcD[1], RA2D);
   regfile     rf(clk, RegWriteW, RA1D, RA2D,
@@ -42,7 +49,7 @@ module datapath(input  logic        clk, reset,
   extend      ext(InstrD[23:0], ImmSrcD, ExtImmD);
 
   // ------- RECENTLY ADDED BY IVAN ----------------- Currently EVERYTHING goes through Rotator
-  rotator   rotat(ExtImmD, ImmSrcD, InstrD, RotImmD); 
+  rotator   rotat(ExtImmD, InstrD, RotImmD); 
   // ------------------------------------------------
   
   // Execute Stage

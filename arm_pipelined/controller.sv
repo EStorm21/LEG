@@ -10,10 +10,12 @@ module controller(input  logic         clk, reset,
                   output logic         RegWriteM, MemtoRegE,
                   output logic         PCWrPendingF,
                   input  logic         FlushE,
-                  // Recently added by Ivan and Cassie
+                  // Recently added by CW team - for Data processing instructions
                   output logic         swapALUinputsE,
                   input logic          doNotWriteReg,
-                  output logic         previousCflag);
+                  output logic         previousCflag,
+                  // For micro-op decoding
+                  input logic           doNotUpdateFlagD);
 
   logic [9:0] controlsD;
   logic       CondExE, ALUOpD;

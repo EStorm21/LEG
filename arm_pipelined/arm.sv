@@ -14,6 +14,7 @@ module arm(input  logic        clk, reset,
   logic [1:0]  ForwardAE, ForwardBE;
   logic        StallF, StallD, FlushD, FlushE;
   logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E;
+  logic        swapALUinputsE, doNotWriteReg, previousCflag, doNotUpdateFlagD,uOpStallD;
 
   controller c(clk, reset, InstrD[31:12], ALUFlagsE, 
                RegSrcD, ImmSrcD,
@@ -22,7 +23,7 @@ module arm(input  logic        clk, reset,
                MemtoRegW, PCSrcW, RegWriteW,
                RegWriteM, MemtoRegE, PCWrPendingF,
                FlushE, 
-               swapALUinputsE, doNotWriteReg, previousCflag); // These two inputs added by me
+               swapALUinputsE, doNotWriteReg, previousCflag, doNotUpdateFlagD); // These two inputs added by me
   datapath dp(clk, reset, 
               RegSrcD, ImmSrcD, 
               ALUSrcE, BranchTakenE, ALUControlE,
@@ -32,7 +33,7 @@ module arm(input  logic        clk, reset,
               ALUFlagsE,
               Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
               ForwardAE, ForwardBE, StallF, StallD, FlushD, 
-              doNotWriteReg, swapALUinputsE, previousCflag); // Added this line, 1 output 2 inputs
+              doNotWriteReg, swapALUinputsE, previousCflag, doNotUpdateFlagD, uOpStallD); // Added this line, 1 output 2 inputs
   hazard h(clk, reset, Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
            RegWriteM, RegWriteW, BranchTakenE, MemtoRegE,
            PCWrPendingF, PCSrcW,
