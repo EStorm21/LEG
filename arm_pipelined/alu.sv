@@ -1,13 +1,19 @@
-module alu(input  logic [31:0] a, b,
+module alu(input  logic [31:0] aIn, bIn,
            input  logic [3:0]  ALUControl,
            output logic [31:0] Result,
            output logic [3:0]  Flags,
            input logic previousCflag,
            output logic doNotWriteReg);
 
-  logic        neg, zero, carry, overflow, invertB, aluCarry;
-  logic [31:0] condinvb;
+  logic        neg, zero, carry, overflow, invertB, aluCarry, reverseInputs;
+  logic [31:0] condinvb, a, b;
   logic [32:0] sum;
+
+  assign reverseInputs = (ALUControl[3:0] == 4'b0011 || //RSB
+                          ALUControl[3:0] == 4'b0111); //RSC
+
+  mux2 #(32)  alu_inA(aIn, bIn, reverseInputs, a); 
+  mux2 #(32)  alu_inB(bIn, aIn, reverseInputs, b); 
 
  
 // ---------------------------- MAJOR BLOCK ADDED HERE -----------------------

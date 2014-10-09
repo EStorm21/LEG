@@ -2,7 +2,8 @@
 
 module micropsfsm(input  logic        clk, reset,
                input  logic [31:0] defaultInstrD,
-               output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, regFileRz,
+               output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, 
+               output logic [1:0]  regFileRz,
 			   output logic [31:0] uOpInstrD);
 
 // define states READY and RSR 
@@ -31,16 +32,19 @@ always_comb
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
-					regFileRz = 1;
+					regFileRz = 2'b11;
 					nextState = rsr;
-					uOpInstrD = {defaultInstrD}; // This needs to be changed
+					uOpInstrD = {defaultInstrD[31:25], // Condition bits and RSR-type
+								4'b1101, 1'b0, // MOV instruction, Do not update flags [24:20]
+								4'b0000, 4'b1111, // If we have SBZ then 1111, we should use Rz [19:16] and [15:12]
+								defaultInstrD[11:0]}; // This needs to be MOV R1 R2 << R3. 
 				end
 				else begin
 					nextState = ready;
 					InstrMuxD = 0;
 					doNotUpdateFlagD = 0;
 					uOpStallD = 0;
-					regFileRz = 0;
+					regFileRz = 2'b0;
 					uOpInstrD = {defaultInstrD};
 				end
 			end
@@ -49,7 +53,7 @@ always_comb
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 0;
 					uOpStallD = 0;
-					regFileRz = 1;
+					regFileRz = 2'b01;
 					nextState = ready;
 				end
 			end
@@ -58,7 +62,7 @@ always_comb
 			InstrMuxD = 0;
 			doNotUpdateFlagD = 0;
 			uOpStallD = 0;
-			regFileRz = 0;
+			regFileRz = 2'b0;
 			uOpInstrD = {defaultInstrD};
 		end
 	endcase

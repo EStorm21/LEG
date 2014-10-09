@@ -11,16 +11,17 @@ module controller(input  logic         clk, reset,
                   output logic         PCWrPendingF,
                   input  logic         FlushE,
                   // Recently added by CW team - for Data processing instructions
-                  output logic         swapALUinputsE,
                   input logic          doNotWriteReg,
                   output logic         previousCflag,
                   // For micro-op decoding
-                  input logic           doNotUpdateFlagD);
+                  input logic          doNotUpdateFlagD,
+                  output logic         shiftTypeE, RvsRSRtypeE,
+                  input logic   [6:4]  shiftOpCode_E);
 
   logic [9:0] controlsD;
   logic       CondExE, ALUOpD;
   logic [3:0] ALUControlD;
-  logic       ALUSrcD, swapALUinputsD;
+  logic       ALUSrcD;
   logic       MemtoRegD, MemtoRegM;
   logic       RegWriteD, RegWriteE, RegWriteGatedE;
   logic       MemWriteD, MemWriteE, MemWriteGatedE;
@@ -28,18 +29,18 @@ module controller(input  logic         clk, reset,
   logic [1:0] FlagWriteD, FlagWriteE;
   logic       PCSrcD, PCSrcE, PCSrcM;
   logic [3:0] FlagsE, FlagsNextE, CondE;
-  logic       RegWritepreMuxE;
+  logic       RegWritepreMuxE, shiftTypeD, RvsRSRtypeD;
 
   // Decode stage
   
   always_comb
   	casex(InstrD[27:26]) 
       // If 2'b00, then this is data processing instruction
-  	  2'b00: if (InstrD[25]) controlsD = 10'b0000101001; // Data processing immediate
-  	         else            controlsD = 10'b0000001001; // Data processing register
-  	  2'b01: if (InstrD[20]) controlsD = 10'b0001111000; // LDR
-  	         else            controlsD = 10'b1001110100; // STR
-  	  2'b10:                 controlsD = 10'b0110100010; // B
+  	  2'b00: if (InstrD[25]) controlsD = 10'b00_00_101001; // Data processing immediate
+  	         else            controlsD = 10'b00_00_001001; // Data processing register
+  	  2'b01: if (InstrD[20]) controlsD = 10'b00_01_111000; // LDR
+  	         else            controlsD = 10'b10_01_110100; // STR
+  	  2'b10:                 controlsD = 10'b01_10_100010; // B
   	  default:               controlsD = 10'bx;          // unimplemented
   	endcase
 
@@ -60,11 +61,11 @@ module controller(input  logic         clk, reset,
  
 
   assign PCSrcD       = (((InstrD[15:12] == 4'b1111) & RegWriteD) | BranchD);
-  
-  // enable signal for swapping inputs a and b to alu
-  assign swapALUinputsD = (InstrD[24:21] == 4'b0111) || (InstrD[24:21] == 4'b0011); // Swap if RSB or RSC    
+  assign shiftTypeD   = (InstrD[27:25] == 3'b000 && shiftOpCode_E[4] == 0);
+  assign RvsRSRtypeD  = (InstrD[27:25] == 3'b000 && shiftOpCode_E[4] == 1);
 
   // Execute stage
+  flopr  #(2) shifterregE (clk, reset, {shiftTypeD, RvsRSRtypeD}, {shiftTypeE, RvsRSRtypeE});
   floprc #(7) flushedregsE(clk, reset, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE});
@@ -74,7 +75,6 @@ module controller(input  logic         clk, reset,
                     
   flopr  #(4) condregE(clk, reset, InstrD[31:28], CondE);
   flopr  #(4) flagsreg(clk, reset, FlagsNextE, FlagsE);
-  flopr  #(1) swapALUregsE(clk,reset, swapALUinputsD, swapALUinputsE);
 
 
   // write and Branch controls are conditional
