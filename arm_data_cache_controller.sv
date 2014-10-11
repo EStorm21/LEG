@@ -9,7 +9,7 @@ module data_cache_controller (input  logic clk, reset,
                          output logic stall,
                          output logic memwrite,
                          output logic memread);
-  typedef enum logic [2:0] {READY, MEMREAD, MEMWRITE, CACHEWRITE, MOVEINSTR} statetype;
+  typedef enum logic [2:0] {READY, MEMREAD, MEMWRITE, CACHEWRITE, NEXTINSTR} statetype;
   statetype state, nextstate;
 
   // state register
@@ -29,15 +29,14 @@ module data_cache_controller (input  logic clk, reset,
                   else begin
                     nextstate <= MEMWRITE;
                   end
-      CACHEWRITE:                     nextstate <= MOVEINSTR;
-      MOVEINSTR:                      nextstate <= READY;
+      CACHEWRITE:                     nextstate <= NEXTINSTR;
+      NEXTINSTR:                      nextstate <= READY;
       MEMREAD:                        nextstate <= valid ? CACHEWRITE : MEMREAD;
-      MEMWRITE:                       nextstate <= valid ? MOVEINSTR : MEMWRITE;
+      MEMWRITE:                       nextstate <= valid ? MEMREAD : MEMWRITE;
       default: nextstate <= READY;
     endcase
 
   // output logic
-  //                      ((state == READY) & ( (~hit & re) | MemWriteM) );
   assign stall       = (state == CACHEWRITE) | (state == MEMREAD) | 
                        (state == MEMWRITE) | ((state == READY) & ( (~hit & re) | MemWriteM) );
   assign cwe         = (state == CACHEWRITE);

@@ -1,4 +1,4 @@
-module data_cache_memory #(parameter entries = 65536, parameter tagbits = 14, 
+module data_cache_memory #(parameter lines = 65536, parameter tagbits = 14, 
                            parameter blocksize = 4)
                     (input logic clk, reset, we, 
                      input logic [blocksize*32-1:0] wd, 
@@ -7,19 +7,19 @@ module data_cache_memory #(parameter entries = 65536, parameter tagbits = 14,
                      output logic [tagbits-1:0] rtag,
                      output logic [blocksize*32-1:0] rd);
 
-  parameter setbits = $clog2(entries);
+  parameter setbits = $clog2(lines);
   parameter blockoffset = $clog2(blocksize);
 
-  logic [tagbits-1:0] tag[entries-1:0]; // n entries x tagbits
-  logic [entries-1:0] v;                // n entries x 1 bit
-  logic [setbits-1:0]  set;             // n entries 16 bit address
-  logic [blocksize*32-1:0] RAM[entries-1:0];        // n entries x 32 bits
+  logic [tagbits-1:0] tag[lines-1:0]; // n lines x tagbits
+  logic [lines-1:0] v;                // n lines x 1 bit
+  logic [setbits-1:0]  set;             // n lines 16 bit address
+  logic [blocksize*32-1:0] RAM[lines-1:0];        // n lines x 32 bits
 
   // initial
   //   begin
   //     // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);
   //     // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);
-  //     for (int i = 0; i <= entries-1; i++)
+  //     for (int i = 0; i <= lines-1; i++)
   //       v[i] = 0; 
   //   end
 
