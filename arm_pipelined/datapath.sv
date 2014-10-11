@@ -14,15 +14,21 @@ module datapath(input  logic        clk, reset,
                 input  logic [1:0]  ForwardAE, ForwardBE,
                 // Added StallE, StallM, FlushW for memory
                 input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW,
+                // Added by CW team fall 2014 - Handling Data processing Instrs
                 output logic        doNotWriteReg,
-                input logic         swapALUinputsE, previousCflag);
+                input logic         previousCflag,
+                // To handle micro-op decoding
+                output logic        doNotUpdateFlagD, uOpStallD,
+                input  logic        shiftTypeE, RvsRSRtypeE);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
-  logic [31:0] ExtImmD, rd1D, rd2D, PCPlus8D, RotImmD;
-  logic [31:0] rd1E, rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, ALUResultE;
+  logic [31:0] ExtImmD, rd1D, rd2D, PCPlus8D, RotImmD, defaultInstrD, uOpInstrD;
+  logic        InstrMuxD;
+  logic [1:0]  regFileRzD;
+  logic [31:0] rd1E, rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, ALUResultE, ALUOutputE, shifterAinE, ALUSrcBE, ShiftBE;
   logic [31:0] ReadDataW, ALUOutW, ResultW;
-  logic [3:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3M, WA3W;
+  logic [3:0]  RA1D, RA1_RnD, RA2D, RA1E, RA2E, WA3E, WA3M, WA3W;
   logic        Match_1D_E, Match_2D_E;
   logic [31:0] ALUSrcA, ALUSrcB;
                 
@@ -33,17 +39,21 @@ module datapath(input  logic        clk, reset,
   adder #(32) pcadd(PCF, 32'h4, PCPlus4F);
   
   // Decode Stage
+
   assign PCPlus8D = PCPlus4F; // skip register
-  flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, InstrD);
-  mux2 #(4)   ra1mux(InstrD[19:16], 4'b1111, RegSrcD[0], RA1D);
+  flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, defaultInstrD);
+  micropsfsm uOpFSM(clk, reset, defaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, regFileRzD, uOpInstrD);
+  mux2 #(32)  instrDmux(defaultInstrD, uOpInstrD, InstrMuxD, InstrD);
+  mux2 #(4)   ra1mux(InstrD[19:16], 4'b1111, RegSrcD[0], RA1_RnD);
+  mux2 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], regFileRzD[1], RA1D);
   mux2 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], RegSrcD[1], RA2D);
   regfile     rf(clk, RegWriteW, RA1D, RA2D,
                  WA3W, ResultW, PCPlus8D, 
-                 rd1D, rd2D); 
-  extend      ext(InstrD[23:0], ImmSrcD, ExtImmD);
+                 rd1D, rd2D, regFileRzD[0]); 
+  extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25]);
 
   // ------- RECENTLY ADDED BY IVAN ----------------- Currently EVERYTHING goes through Rotator
-  rotator   rotat(ExtImmD, ImmSrcD, InstrD[11:0], RotImmD); 
+  rotator   rotat(ExtImmD, InstrD, RotImmD); 
   // ------------------------------------------------
   
   // Execute Stage
@@ -57,11 +67,13 @@ module datapath(input  logic        clk, reset,
   flopenr #(4)  ra2reg(clk, reset, ~StallE, RA2D, RA2E);
   mux3 #(32)  byp1mux(rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(rd2E, ResultW, ALUOutM, ForwardBE, WriteDataE);
-  mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, SrcBE);
-  mux2 #(32)  alu_inA(SrcAE, SrcBE, swapALUinputsE, ALUSrcA); 
-  mux2 #(32)  alu_inB(SrcBE, SrcAE, swapALUinputsE, ALUSrcB); 
-  
-  alu         alu(ALUSrcA, ALUSrcB, ALUControlE, ALUResultE, ALUFlagsE, previousCflag, doNotWriteReg);
+  mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcBE);
+  mux2 #(32)  shifterAin(SrcAE, ExtImmE, shiftTypeE, shifterAinE); 
+  mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, shiftTypeE, SrcBE);
+
+  shifter     shiftLogic(shifterAinE, ALUSrcBE, ShiftBE);
+  alu         alu(SrcAE, SrcBE, ALUControlE, ALUOutputE, ALUFlagsE, previousCflag, doNotWriteReg);
+  mux2 #(32)  aluoutputmux(ALUOutputE, ShiftBE, RvsRSRtypeE, ALUResultE); 
   
   // Memory Stage
   flopenr #(32) aluresreg(clk, reset, ~StallM, ALUResultE, ALUOutM);
