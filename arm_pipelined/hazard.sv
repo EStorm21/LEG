@@ -5,7 +5,10 @@ module hazard(input  logic       clk, reset,
               input  logic       PCWrPendingF, PCSrcW,
               output logic [1:0] ForwardAE, ForwardBE,
               output logic       StallF, StallD,
-              output logic       FlushD, FlushE);
+              // Added dstall, StallE, StallM, and FlushW for memory
+              output logic       FlushD, FlushE, 
+              input  logic       dstall,
+              output logic       StallE, StallM, FlushW);
                 
   // forwarding logic
   always_comb begin
@@ -32,8 +35,11 @@ module hazard(input  logic       clk, reset,
   
   assign ldrStallD = Match_12D_E & MemtoRegE;
   
-  assign StallD = ldrStallD;
-  assign StallF = ldrStallD | PCWrPendingF; 
+  assign StallD = ldrStallD | dstall;
+  assign StallF = ldrStallD | PCWrPendingF | dstall;
+  assign StallE = dstall;
+  assign FlushW = dstall;
+  assign StallM = dstall;
   assign FlushE = ldrStallD | BranchTakenE; 
   assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE;
   
