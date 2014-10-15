@@ -18,16 +18,17 @@ module datapath(input  logic        clk, reset,
                 input logic         previousCflag,
                 // To handle micro-op decoding
                 output logic        doNotUpdateFlagD, uOpStallD,
-                input  logic        shiftTypeE, RvsRSRtypeE);
+                input  logic        RselectE, RSRselectE);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
   logic [31:0] ExtImmD, rd1D, rd2D, PCPlus8D, RotImmD, defaultInstrD, uOpInstrD;
   logic        InstrMuxD;
-  logic [1:0]  regFileRzD;
+  logic [3:0]  regFileRzD;
   logic [31:0] rd1E, rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, ALUResultE, ALUOutputE, shifterAinE, ALUSrcBE, ShiftBE;
   logic [31:0] ReadDataW, ALUOutW, ResultW;
-  logic [3:0]  RA1D, RA1_RnD, RA2D, RA1E, RA2E, WA3E, WA3M, WA3W;
+  logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D;
+  logic [4:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3M, WA3W;
   logic        Match_1D_E, Match_2D_E;
   logic [31:0] ALUSrcA, ALUSrcB;
                 
@@ -44,11 +45,14 @@ module datapath(input  logic        clk, reset,
   micropsfsm uOpFSM(clk, reset, defaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, regFileRzD, uOpInstrD);
   mux2 #(32)  instrDmux(defaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   mux2 #(4)   ra1mux(InstrD[19:16], 4'b1111, RegSrcD[0], RA1_RnD);
-  mux2 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], regFileRzD[1], RA1D);
-  mux2 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], RegSrcD[1], RA2D);
+  mux2 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], regFileRzD[2], RA1_4b_D);
+  assign RA1D = {regFileRzD[0], RA1_4b_D};
+  mux2 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], RegSrcD[1], RA2_4b_D);
+  assign RA2D = {regFileRzD[1], RA2_4b_D};
+
   regfile     rf(clk, RegWriteW, RA1D, RA2D,
                  WA3W, ResultW, PCPlus8D, 
-                 rd1D, rd2D, regFileRzD[0]); 
+                 rd1D, rd2D); 
   extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25]);
 
   // ------- RECENTLY ADDED BY IVAN ----------------- Currently EVERYTHING goes through Rotator
@@ -59,37 +63,37 @@ module datapath(input  logic        clk, reset,
   flopr #(32) rd1reg(clk, reset, rd1D, rd1E);
   flopr #(32) rd2reg(clk, reset, rd2D, rd2E);
   flopr #(32) immreg(clk, reset, RotImmD, ExtImmE); // Modified by Ivan
-  flopr #(4)  wa3ereg(clk, reset, InstrD[15:12], WA3E);
-  flopr #(4)  ra1reg(clk, reset, RA1D, RA1E);
-  flopr #(4)  ra2reg(clk, reset, RA2D, RA2E);
+  flopr #(5)  wa3ereg(clk, reset, {regFileRzD[2], InstrD[15:12]}, WA3E);
+  flopr #(5)  ra1reg(clk, reset, RA1D, RA1E);
+  flopr #(5)  ra2reg(clk, reset, RA2D, RA2E);
   mux3 #(32)  byp1mux(rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(rd2E, ResultW, ALUOutM, ForwardBE, WriteDataE);
   mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcBE);
-  mux2 #(32)  shifterAin(SrcAE, ExtImmE, shiftTypeE, shifterAinE); 
-  mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, shiftTypeE, SrcBE);
+  mux2 #(32)  shifterAin(SrcAE, ExtImmE, RselectE, shifterAinE); 
+  mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
 
-  shifter     shiftLogic(shifterAinE, ALUSrcBE, ShiftBE);
+  shifter     shiftLogic(shifterAinE, ALUSrcBE, ShiftBE, RselectE, RSRselectE, previousCflag);
   alu         alu(SrcAE, SrcBE, ALUControlE, ALUOutputE, ALUFlagsE, previousCflag, doNotWriteReg);
-  mux2 #(32)  aluoutputmux(ALUOutputE, ShiftBE, RvsRSRtypeE, ALUResultE); 
+  mux2 #(32)  aluoutputmux(ALUOutputE, ShiftBE, RSRselectE, ALUResultE); 
   
   // Memory Stage
   flopr #(32) aluresreg(clk, reset, ALUResultE, ALUOutM);
   flopr #(32) wdreg(clk, reset, WriteDataE, WriteDataM);
-  flopr #(4)  wa3mreg(clk, reset, WA3E, WA3M);
+  flopr #(5)  wa3mreg(clk, reset, WA3E, WA3M);
   
   // Writeback Stage
   flopr #(32) aluoutreg(clk, reset, ALUOutM, ALUOutW);
   flopr #(32) rdreg(clk, reset, ReadDataM, ReadDataW);
-  flopr #(4)  wa3wreg(clk, reset, WA3M, WA3W);
+  flopr #(5)  wa3wreg(clk, reset, WA3M, WA3W);
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, ResultW);
   
   // hazard comparison
-  eqcmp #(4) m0(WA3M, RA1E, Match_1E_M);
-  eqcmp #(4) m1(WA3W, RA1E, Match_1E_W);
-  eqcmp #(4) m2(WA3M, RA2E, Match_2E_M);
-  eqcmp #(4) m3(WA3W, RA2E, Match_2E_W);
-  eqcmp #(4) m4a(WA3E, RA1D, Match_1D_E);
-  eqcmp #(4) m4b(WA3E, RA2D, Match_2D_E);
+  eqcmp #(5) m0(WA3M, RA1E, Match_1E_M);
+  eqcmp #(5) m1(WA3W, RA1E, Match_1E_W);
+  eqcmp #(5) m2(WA3M, RA2E, Match_2E_M);
+  eqcmp #(5) m3(WA3W, RA2E, Match_2E_W);
+  eqcmp #(5) m4a(WA3E, RA1D, Match_1D_E);
+  eqcmp #(5) m4b(WA3E, RA2D, Match_2D_E);
   assign Match_12D_E = Match_1D_E | Match_2D_E;
   
 endmodule

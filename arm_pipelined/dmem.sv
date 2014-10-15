@@ -5,6 +5,7 @@ module dmem(input  logic        clk, we,
   logic [31:0] RAM[2097151:0];
   
   initial
+      //$readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/and_rstest/and_rs.dat",RAM); //andrs
       //$readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/orr_i/orr_i.dat",RAM); //adc
       //$readmemh("F:/Academics/Research Clay Wolkin - ARM v4/NewGithubversions/test_1000_7.dat",RAM); //Ivan's original
       $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/test_most_RType/test_most_RType.dat",RAM); //Rtype instr test

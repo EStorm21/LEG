@@ -23,7 +23,7 @@ module arm(input  logic        clk, reset,
                MemtoRegW, PCSrcW, RegWriteW,
                RegWriteM, MemtoRegE, PCWrPendingF,
                FlushE, 
-               doNotWriteReg, previousCflag, doNotUpdateFlagD, shiftTypeE, RvsRSRtypeE, InstrD[6:4]); // These two inputs added by me
+               doNotWriteReg, previousCflag, doNotUpdateFlagD, RselectE, RSRselectE, InstrD[6:4]); // These two inputs added by me
   datapath dp(clk, reset, 
               RegSrcD, ImmSrcD, 
               ALUSrcE, BranchTakenE, ALUControlE,
@@ -33,11 +33,11 @@ module arm(input  logic        clk, reset,
               ALUFlagsE,
               Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
               ForwardAE, ForwardBE, StallF, StallD, FlushD, 
-              doNotWriteReg, previousCflag, doNotUpdateFlagD, uOpStallD, shiftTypeE, RvsRSRtypeE); // Added this line, 1 output 2 inputs
+              doNotWriteReg, previousCflag, doNotUpdateFlagD, uOpStallD, RselectE, RSRselectE); // Added this line, 1 output 2 inputs
   hazard h(clk, reset, Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
            RegWriteM, RegWriteW, BranchTakenE, MemtoRegE,
            PCWrPendingF, PCSrcW,
            ForwardAE, ForwardBE,
-           StallF, StallD, FlushD, FlushE);
+           StallF, StallD, FlushD, FlushE, uOpStallD);
 
 endmodule

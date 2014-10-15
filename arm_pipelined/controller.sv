@@ -15,7 +15,7 @@ module controller(input  logic         clk, reset,
                   output logic         previousCflag,
                   // For micro-op decoding
                   input logic          doNotUpdateFlagD,
-                  output logic         shiftTypeE, RvsRSRtypeE,
+                  output logic         RselectE, RSRselectE,
                   input logic   [6:4]  shiftOpCode_E);
 
   logic [9:0] controlsD;
@@ -29,7 +29,7 @@ module controller(input  logic         clk, reset,
   logic [1:0] FlagWriteD, FlagWriteE;
   logic       PCSrcD, PCSrcE, PCSrcM;
   logic [3:0] FlagsE, FlagsNextE, CondE;
-  logic       RegWritepreMuxE, shiftTypeD, RvsRSRtypeD;
+  logic       RegWritepreMuxE, RselectD, RSRselectD;
 
   // Decode stage
   
@@ -60,12 +60,12 @@ module controller(input  logic         clk, reset,
     end 
  
 
-  assign PCSrcD       = (((InstrD[15:12] == 4'b1111) & RegWriteD) | BranchD);
-  assign shiftTypeD   = (InstrD[27:25] == 3'b000 && shiftOpCode_E[4] == 0);
-  assign RvsRSRtypeD  = (InstrD[27:25] == 3'b000 && shiftOpCode_E[4] == 1);
+  assign PCSrcD      = (((InstrD[15:12] == 4'b1111) & RegWriteD) | BranchD);
+  assign RselectD   = (InstrD[27:25] == 3'b000 && shiftOpCode_E[4] == 0);
+  assign RSRselectD  = (InstrD[27:25] == 3'b000 && shiftOpCode_E[4] == 1);
 
   // Execute stage
-  flopr  #(2) shifterregE (clk, reset, {shiftTypeD, RvsRSRtypeD}, {shiftTypeE, RvsRSRtypeE});
+  flopr  #(2) shifterregE (clk, reset, {RselectD, RSRselectD}, {RselectE, RSRselectE});
   floprc #(7) flushedregsE(clk, reset, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE});

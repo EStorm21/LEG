@@ -5,7 +5,9 @@ module hazard(input  logic       clk, reset,
               input  logic       PCWrPendingF, PCSrcW,
               output logic [1:0] ForwardAE, ForwardBE,
               output logic       StallF, StallD,
-              output logic       FlushD, FlushE);
+              output logic       FlushD, FlushE,
+              // For Micro-ops
+              input logic        uOpStallD);
                 
   // forwarding logic
   always_comb begin
@@ -32,8 +34,8 @@ module hazard(input  logic       clk, reset,
   
   assign ldrStallD = Match_12D_E & MemtoRegE;
   
-  assign StallD = ldrStallD;
-  assign StallF = ldrStallD | PCWrPendingF; 
+  assign StallD = ldrStallD | uOpStallD; // need to stall if uOps are called
+  assign StallF = ldrStallD | PCWrPendingF | uOpStallD; // need to stall if uOps are called
   assign FlushE = ldrStallD | BranchTakenE; 
   assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE;
   
