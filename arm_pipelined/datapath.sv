@@ -66,9 +66,9 @@ module datapath(input  logic        clk, reset,
   flopenr #(32) rd1reg(clk, reset, ~StallE, rd1D, rd1E);
   flopenr #(32) rd2reg(clk, reset, ~StallE, rd2D, rd2E);
   flopenr #(32) immreg(clk, reset, ~StallE, RotImmD, ExtImmE); // Modified by Ivan
-  flopenr #(4)  wa3ereg(clk, reset, ~StallE, {regFileRzD[2], InstrD[15:12]}, WA3E);
-  flopenr #(4)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
-  flopenr #(4)  ra2reg(clk, reset, ~StallE, RA2D, RA2E);
+  flopenr #(5)  wa3ereg(clk, reset, ~StallE, {regFileRzD[2], InstrD[15:12]}, WA3E);
+  flopenr #(5)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
+  flopenr #(5)  ra2reg(clk, reset, ~StallE, RA2D, RA2E);
   mux3 #(32)  byp1mux(rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(rd2E, ResultW, ALUOutM, ForwardBE, WriteDataE);
   mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcBE);
@@ -82,12 +82,12 @@ module datapath(input  logic        clk, reset,
   // Memory Stage
   flopenr #(32) aluresreg(clk, reset, ~StallM, ALUResultE, ALUOutM);
   flopenr #(32) wdreg(clk, reset, ~StallM, WriteDataE, WriteDataM);
-  flopenr #(4)  wa3mreg(clk, reset, ~StallM, WA3E, WA3M);
+  flopenr #(5)  wa3mreg(clk, reset, ~StallM, WA3E, WA3M);
   
   // Writeback Stage
   floprc #(32) aluoutreg(clk, reset, FlushW, ALUOutM, ALUOutW);
   floprc #(32) rdreg(clk, reset, FlushW, ReadDataM, ReadDataW);
-  floprc #(4)  wa3wreg(clk, reset, FlushW, WA3M, WA3W);
+  floprc #(5)  wa3wreg(clk, reset, FlushW, WA3M, WA3W);
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, ResultW);
   
   // hazard comparison
