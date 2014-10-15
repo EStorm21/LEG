@@ -7,9 +7,10 @@ module controller(input  logic         clk, reset,
                   output logic         MemWriteM,
                   output logic         MemtoRegW, PCSrcW, RegWriteW,
                   // hazard interface
-                  output logic         RegWriteM, MemtoRegE,
-                  output logic         PCWrPendingF,
-                  input  logic         FlushE,
+                  output logic         RegWriteM, MemtoRegE, PCWrPendingF,
+                  // Added StallE, StallM, and FlushW for memory
+                  input  logic         FlushE, StallE, StallM, FlushW,
+                  output logic         MemtoRegM,
                   // Recently added by CW team - for Data processing instructions
                   input logic          doNotWriteReg,
                   output logic         previousCflag,
@@ -21,8 +22,7 @@ module controller(input  logic         clk, reset,
   logic [9:0] controlsD;
   logic       CondExE, ALUOpD;
   logic [3:0] ALUControlD;
-  logic       ALUSrcD;
-  logic       MemtoRegD, MemtoRegM;
+  logic       ALUSrcD, swapALUinputsD, MemtoRegD;
   logic       RegWriteD, RegWriteE, RegWriteGatedE;
   logic       MemWriteD, MemWriteE, MemWriteGatedE;
   logic       BranchD, BranchE;
@@ -65,16 +65,17 @@ module controller(input  logic         clk, reset,
   assign RSRselectD  = (InstrD[27:25] == 3'b000 && shiftOpCode_E[4] == 1);
 
   // Execute stage
-  flopr  #(2) shifterregE (clk, reset, {RselectD, RSRselectD}, {RselectE, RSRselectE});
-  floprc #(7) flushedregsE(clk, reset, FlushE, 
+  // Added enables to E, M, and flush to W. Added for memory
+  flopenrc  #(2) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, RSRselectD}, {RselectE, RSRselectE});
+  flopenrc #(7) flushedregsE(clk, reset, ~StallE, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE});
-  flopr #(5)  regsE(clk, reset,
+  flopenr #(5)  regsE(clk, reset, ~StallE,
                     {ALUSrcD, ALUControlD},
                     {ALUSrcE, ALUControlE});
                     
-  flopr  #(4) condregE(clk, reset, InstrD[31:28], CondE);
-  flopr  #(4) flagsreg(clk, reset, FlagsNextE, FlagsE);
+  flopenr  #(4) condregE(clk, reset, ~StallE, InstrD[31:28], CondE);
+  flopenr  #(4) flagsreg(clk, reset, ~StallE, FlagsNextE, FlagsE);
 
 
   // write and Branch controls are conditional
@@ -91,15 +92,15 @@ module controller(input  logic         clk, reset,
   assign previousCflag = FlagsE[1];
   
   // Memory stage
-  flopr #(4) regsM(clk, reset,
+  flopenr #(4) regsM(clk, reset, ~StallM,
                    {MemWriteGatedE, MemtoRegE, RegWriteGatedE, PCSrcGatedE},
                    {MemWriteM, MemtoRegM, RegWriteM, PCSrcM});
   
   // Writeback stage
-  flopr #(3) regsW(clk, reset,
+  floprc #(3) regsW(clk, reset, FlushW,
                    {MemtoRegM, RegWriteM, PCSrcM},
                    {MemtoRegW, RegWriteW, PCSrcW});
-  
+
   // Hazard Prediction
   assign PCWrPendingF = PCSrcD | PCSrcE | PCSrcM;
 
