@@ -13,7 +13,7 @@ module controller(input  logic         clk, reset,
                   output logic         MemtoRegM,
                   // Recently added by CW team - for Data processing instructions
                   input logic          doNotWriteReg,
-                  output logic         previousCflag,
+                  output logic  [1:0]  previousCVflag,
                   // For micro-op decoding
                   input logic          doNotUpdateFlagD,
                   output logic         RselectE, RSRselectE,
@@ -89,7 +89,7 @@ module controller(input  logic         clk, reset,
   assign RegWriteGatedE = doNotWriteReg ? 1'b0 : RegWritepreMuxE; 
   
   // create carry-in bit for carry instructions to send to ALU 
-  assign previousCflag = FlagsE[1];
+  assign previousCVflag = FlagsE[1:0];
   
   // Memory stage
   flopenr #(4) regsM(clk, reset, ~StallM,
@@ -139,5 +139,5 @@ module conditional(input  logic [3:0] Cond,
     endcase
     
   assign FlagsNext[3:2] = (FlagsWrite[1] & CondEx) ? ALUFlags[3:2] : Flags[3:2];
-  assign FlagsNext[1:0] = (FlagsWrite[0] & CondEx) ? ALUFlags[1:0] : Flags[1:0];
+  assign FlagsNext[1:0] = (FlagsWrite[0] & CondEx) ? ALUFlags[1:0] : Flags[1:0]; // [1] is C flag, [0] is V flag
 endmodule

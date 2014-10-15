@@ -16,7 +16,7 @@ module datapath(input  logic        clk, reset,
                 input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW,
                 // Added by CW team fall 2014 - Handling Data processing Instrs
                 output logic        doNotWriteReg,
-                input logic         previousCflag,
+                input logic  [1:0]      previousCVflag,
                 // To handle micro-op decoding
                 output logic        doNotUpdateFlagD, uOpStallD,
                 input  logic        RselectE, RSRselectE);
@@ -75,8 +75,8 @@ module datapath(input  logic        clk, reset,
   mux2 #(32)  shifterAin(SrcAE, ExtImmE, RselectE, shifterAinE); 
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
 
-  shifter     shiftLogic(shifterAinE, ALUSrcBE, ShiftBE, RselectE, RSRselectE, previousCflag);
-  alu         alu(SrcAE, SrcBE, ALUControlE, ALUOutputE, ALUFlagsE, previousCflag, doNotWriteReg);
+  shifter     shiftLogic(shifterAinE, ALUSrcBE, ShiftBE, RselectE, RSRselectE, previousCVflag);
+  alu         alu(SrcAE, SrcBE, ALUControlE, ALUOutputE, ALUFlagsE, previousCVflag, doNotWriteReg);
   mux2 #(32)  aluoutputmux(ALUOutputE, ShiftBE, RSRselectE, ALUResultE); 
   
   // Memory Stage

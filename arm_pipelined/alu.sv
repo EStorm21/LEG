@@ -2,7 +2,7 @@ module alu(input  logic [31:0] aIn, bIn,
            input  logic [3:0]  ALUControl,
            output logic [31:0] Result,
            output logic [3:0]  Flags,
-           input logic previousCflag,
+           input logic [1:0] previousCVflag, // [1] = C flag, [0] = V flag
            output logic doNotWriteReg);
 
   logic        neg, zero, carry, overflow, invertB, aluCarry, reverseInputs;
@@ -27,9 +27,9 @@ module alu(input  logic [31:0] aIn, bIn,
     casex (ALUControl[3:0])
       4'b0010: aluCarry = 1'b1;   // SUB, RSB
       4'b0011: aluCarry = 1'b1;   // SUB, RSB
-      4'b0101: aluCarry = previousCflag;   // ADC
-      4'b0110: aluCarry = previousCflag;   // SBC
-      4'b0111: aluCarry = previousCflag;   // RSC
+      4'b0101: aluCarry = previousCVflag[1];   // ADC
+      4'b0110: aluCarry = previousCVflag[1];   // SBC
+      4'b0111: aluCarry = previousCVflag[1];   // RSC
       4'b1010: aluCarry = 1'b1;   // CMP
       default: aluCarry = 1'b0;
     endcase

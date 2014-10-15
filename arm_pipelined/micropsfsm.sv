@@ -56,7 +56,7 @@ always_comb
 					doNotUpdateFlagD = 0;
 					uOpStallD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b010}; // 5th bit of RA2D and RA1D
+								3'b010}; // 5th bit of WA3, RA2D and RA1D
 					nextState = ready;
 					uOpInstrD = {defaultInstrD[31:12], // keep the first 12 bits the same, Rd and Rn are included
 								 8'b0, 4'b0000}; // Using all zeros

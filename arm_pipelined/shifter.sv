@@ -1,7 +1,9 @@
 module shifter(input  logic [31:0] a,
 			        input logic [31:0] b,
               output logic [31:0] shiftBE,
-              input logic isRtype, isRSRtype, prevCflag);
+              input logic isRtype, isRSRtype, 
+              input logic [1:0] prevCVflag // [1] is C, [0] is V
+              );
  
 
 // [6:5] is the shift bit 
@@ -16,8 +18,8 @@ if (isRtype) // R type
   		2'b01: shiftBE = b >> a[11:7]; // LSR
   		2'b10: shiftBE = b >>> a[11:7]; // ASR
   		2'b11: begin 
-              if (a[11:7] == 5'b0) begin //RRX
-                 shiftBE = (b >> 1);// | (prevCflag << 31);
+              if (a[11:7] == 5'b0) begin  //RRX
+                 shiftBE = (b >> 1) | (prevCVflag[1] << 31); 
                  end
               else begin // ROR
   			 	     temp = {b,b} >> a[11:7];
