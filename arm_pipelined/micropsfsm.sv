@@ -3,7 +3,7 @@
 module micropsfsm(input  logic        clk, reset,
                input  logic [31:0] defaultInstrD,
                output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, 
-               output logic [1:0]  regFileRz,
+               output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD);
 
 // define states READY and RSR 
@@ -32,11 +32,12 @@ always_comb
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
-					regFileRz = 2'b11;
+					regFileRz = {1'b1, // Control inital mux for RA1D
+								3'b100}; // 5th bit of WA3, RA2D and RA1D
 					nextState = rsr;
 					uOpInstrD = {defaultInstrD[31:25], // Condition bits and RSR-type
 								4'b1101, 1'b0, // MOV instruction, Do not update flags [24:20]
-								4'b0000, 4'b1111, // If we have SBZ then 1111, we should use Rz [19:16] and [15:12]
+								4'b0000, 4'b0000, // If we have SBZ then 0000, we should use Rz, [19:16] and [15:12]
 								defaultInstrD[11:0]}; // This needs to be MOV R1 R2 << R3. 
 				end
 				else begin
@@ -44,7 +45,8 @@ always_comb
 					InstrMuxD = 0;
 					doNotUpdateFlagD = 0;
 					uOpStallD = 0;
-					regFileRz = 2'b0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of RA2D and RA1D
 					uOpInstrD = {defaultInstrD};
 				end
 			end
@@ -53,8 +55,11 @@ always_comb
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 0;
 					uOpStallD = 0;
-					regFileRz = 2'b01;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b010}; // 5th bit of RA2D and RA1D
 					nextState = ready;
+					uOpInstrD = {defaultInstrD[31:12], // keep the first 12 bits the same, Rd and Rn are included
+								 8'b0, 4'b0000}; // Using all zeros
 				end
 			end
 		default: begin
@@ -62,7 +67,8 @@ always_comb
 			InstrMuxD = 0;
 			doNotUpdateFlagD = 0;
 			uOpStallD = 0;
-			regFileRz = 2'b0;
+			regFileRz = {1'b0, // Control inital mux for RA1D
+						3'b000}; // 5th bit of RA2D and RA1D
 			uOpInstrD = {defaultInstrD};
 		end
 	endcase

@@ -11,14 +11,12 @@ module controller(input  logic         clk, reset,
                   // Added StallE, StallM, and FlushW for memory
                   input  logic         FlushE, StallE, StallM, FlushW,
                   output logic         MemtoRegM,
-                  // Recently added by Ivan and Cassie
-                  output logic         swapALUinputsE,
                   // Recently added by CW team - for Data processing instructions
                   input logic          doNotWriteReg,
                   output logic         previousCflag,
                   // For micro-op decoding
                   input logic          doNotUpdateFlagD,
-                  output logic         shiftTypeE, RvsRSRtypeE,
+                  output logic         RselectE, RSRselectE,
                   input logic   [6:4]  shiftOpCode_E);
 
   logic [9:0] controlsD;
@@ -31,7 +29,7 @@ module controller(input  logic         clk, reset,
   logic [1:0] FlagWriteD, FlagWriteE;
   logic       PCSrcD, PCSrcE, PCSrcM;
   logic [3:0] FlagsE, FlagsNextE, CondE;
-  logic       RegWritepreMuxE, shiftTypeD, RvsRSRtypeD;
+  logic       RegWritepreMuxE, RselectD, RSRselectD;
 
   // Decode stage
   
@@ -62,13 +60,13 @@ module controller(input  logic         clk, reset,
     end 
  
 
-  assign PCSrcD       = (((InstrD[15:12] == 4'b1111) & RegWriteD) | BranchD);
-  assign shiftTypeD   = (InstrD[27:25] == 3'b000 && shiftOpCode_E[4] == 0);
-  assign RvsRSRtypeD  = (InstrD[27:25] == 3'b000 && shiftOpCode_E[4] == 1);
+  assign PCSrcD      = (((InstrD[15:12] == 4'b1111) & RegWriteD) | BranchD);
+  assign RselectD   = (InstrD[27:25] == 3'b000 && shiftOpCode_E[4] == 0);
+  assign RSRselectD  = (InstrD[27:25] == 3'b000 && shiftOpCode_E[4] == 1);
 
   // Execute stage
   // Added enables to E, M, and flush to W. Added for memory
-  flopenrc  #(2) shifterregE (clk, reset, ~StallE, FlushE, {shiftTypeD, RvsRSRtypeD}, {shiftTypeE, RvsRSRtypeE});
+  flopenrc  #(2) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, RSRselectD}, {RselectE, RSRselectE});
   flopenrc #(7) flushedregsE(clk, reset, ~StallE, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE});
@@ -78,8 +76,6 @@ module controller(input  logic         clk, reset,
                     
   flopenr  #(4) condregE(clk, reset, ~StallE, InstrD[31:28], CondE);
   flopenr  #(4) flagsreg(clk, reset, ~StallE, FlagsNextE, FlagsE);
-
-  flopenr  #(1) swapALUregsE(clk,reset, ~StallE, swapALUinputsD, swapALUinputsE);
 
 
   // write and Branch controls are conditional

@@ -8,7 +8,9 @@ module hazard(input  logic       clk, reset,
               // Added dstall, StallE, StallM, and FlushW for memory
               output logic       FlushD, FlushE, 
               input  logic       dstall,
-              output logic       StallE, StallM, FlushW);
+              output logic       StallE, StallM, FlushW,
+              // For Micro-ops
+              input logic        uOpStallD);
                 
   // forwarding logic
   always_comb begin
@@ -34,9 +36,9 @@ module hazard(input  logic       clk, reset,
   // when a stage stalls, stall all previous and flush next
   
   assign ldrStallD = Match_12D_E & MemtoRegE;
-  
-  assign StallD = ldrStallD | dstall;
-  assign StallF = ldrStallD | PCWrPendingF | dstall;
+
+  assign StallD = ldrStallD | dstall | uOpStallD;
+  assign StallF = ldrStallD | PCWrPendingF | dstall | uOpStallD;
   assign StallE = dstall;
   assign FlushW = dstall;
   assign StallM = dstall;

@@ -26,8 +26,8 @@ module arm(input  logic        clk, reset,
                MemtoRegW, PCSrcW, RegWriteW,
                RegWriteM, MemtoRegE, PCWrPendingF,
                FlushE, StallE, StallM, FlushW, MemtoRegM,   // Added StallE, StallM, FlushW for memory 
-               swapALUinputsE, doNotWriteReg, previousCflag, // These two inputs added by Ivan
-               doNotUpdateFlagD, shiftTypeE, RvsRSRtypeE, InstrD[6:4]); // These two inputs added by Ivan
+               doNotWriteReg, previousCflag, // These two inputs added by Ivan
+               doNotUpdateFlagD, RselectE, RSRselectE, InstrD[6:4]); // These two inputs added by Ivan
   datapath dp(clk, reset, 
               RegSrcD, ImmSrcD, 
               ALUSrcE, BranchTakenE, ALUControlE,
@@ -38,12 +38,12 @@ module arm(input  logic        clk, reset,
               Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
               // Added StallE, StallM, FlushW for memory
               ForwardAE, ForwardBE, StallF, StallD, FlushD, StallE, StallM, FlushW,
-              doNotWriteReg, previousCflag, doNotUpdateFlagD, uOpStallD, shiftTypeE, RvsRSRtypeE); // Added this line, 1 output 2 inputs
+              doNotWriteReg, previousCflag, doNotUpdateFlagD, uOpStallD, RselectE, RSRselectE); // Added this line, 1 output 2 inputs
   hazard h(clk, reset, Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
            RegWriteM, RegWriteW, BranchTakenE, MemtoRegE,
            PCWrPendingF, PCSrcW,
            ForwardAE, ForwardBE,
            // Added dstall, StallE, StallM, and FlushW for memory
-           StallF, StallD, FlushD, FlushE, dstall, StallE, StallM, FlushW);
+           StallF, StallD, FlushD, FlushE, dstall, StallE, StallM, FlushW, uOpStallD);
 
 endmodule
