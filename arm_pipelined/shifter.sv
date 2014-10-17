@@ -33,18 +33,38 @@ if (isRtype) // R type
 else if (isRSRtype) // RSR type
   begin
   	casex(shiftOpCode_E[6:5])
-  		2'b00: begin
+  		2'b00: begin // LSL
             if(a[7:0] == 0)
               shiftBE = b;
-            else if (a[7:0] < 32) // LSL
+            else if (a[7:0] < 32) 
               shiftBE = b << a;
             else if (a[7:0] == 32)
               shiftBE = 32'b0;
             else 
               shiftBE = 32'b0;
             end
-  		2'b01: shiftBE = b >> a; // LSR
-  		2'b10: shiftBE = b >>> a; // ASR
+  		2'b01: begin // LSR
+            if(a[7:0] == 0)
+              shiftBE = b;
+            else if (a[7:0] < 32) 
+              shiftBE = b >> a;
+            else if (a[7:0] == 32)
+              shiftBE = 32'b0;
+            else 
+              shiftBE = 32'b0;
+            end
+  		2'b10: begin // ASR
+            if(a[7:0] == 0)
+              shiftBE = b;
+            else if (a[7:0] < 32) 
+              shiftBE = b >>> a;
+            else  begin
+              if (b[31] == 1'b0)
+                shiftBE = 32'b0;
+              else
+                shiftBE = 32'hFFFFFFFF;
+              end
+            end
   		2'b11: begin 
               if (a[7:0] == 8'b0)
                 shiftBE = b;
