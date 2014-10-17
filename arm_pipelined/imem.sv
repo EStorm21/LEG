@@ -4,11 +4,11 @@ module imem(input  logic [31:0] a,
   logic [31:0] RAM[2097151:0];
 
   initial
-      $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/and_i.dat",RAM); //andrs
+      $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/cmp_rs.dat",RAM);
       //$readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/orr_i/orr_i.dat",RAM); //ori
       //$readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
       // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);
-      $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/memwrite_test/memrewrite.dat", RAM);
+      //$readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/memwrite_test/memrewrite.dat", RAM);
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);
       //$readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/orr_i/orr_i.dat",RAM); //adc

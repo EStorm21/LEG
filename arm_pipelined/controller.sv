@@ -17,7 +17,8 @@ module controller(input  logic         clk, reset,
                   // For micro-op decoding
                   input logic          doNotUpdateFlagD,
                   output logic         RselectE, RSRselectE,
-                  input logic   [6:4]  shiftOpCode_E);
+                  input logic   [6:4]  shiftOpCode_D,
+                  output logic  [6:4]  shiftOpCode_E);
 
   logic [9:0] controlsD;
   logic       CondExE, ALUOpD;
@@ -61,8 +62,8 @@ module controller(input  logic         clk, reset,
  
 
   assign PCSrcD      = (((InstrD[15:12] == 4'b1111) & RegWriteD) | BranchD);
-  assign RselectD   = (InstrD[27:25] == 3'b000 && shiftOpCode_E[4] == 0);
-  assign RSRselectD  = (InstrD[27:25] == 3'b000 && shiftOpCode_E[4] == 1);
+  assign RselectD   = (InstrD[27:25] == 3'b000 && shiftOpCode_D[4] == 0);
+  assign RSRselectD  = (InstrD[27:25] == 3'b000 && shiftOpCode_D[4] == 1);
 
   // Execute stage
   // Added enables to E, M, and flush to W. Added for memory
@@ -75,7 +76,8 @@ module controller(input  logic         clk, reset,
                     {ALUSrcE, ALUControlE});
                     
   flopenr  #(4) condregE(clk, reset, ~StallE, InstrD[31:28], CondE);
-  flopenr  #(4) flagsreg(clk, reset, ~StallE, FlagsNextE, FlagsE);
+  flopenr  #(4) flagsregE(clk, reset, ~StallE, FlagsNextE, FlagsE);
+  flopenr  #(3) shiftOpCodeE(clk, reset, ~StallE, shiftOpCode_D[6:4],shiftOpCode_E[6:4]);
 
 
   // write and Branch controls are conditional

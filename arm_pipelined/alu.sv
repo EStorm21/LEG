@@ -24,7 +24,7 @@ module alu(input  logic [31:0] aIn, bIn,
                    (ALUControl[3:0] == 4'b1111);    //MVN
                  
   always_comb
-    casex (ALUControl[3:0])
+    casex (ALUControl[3:0]) // -------------------------rename to FUNCT
       4'b0010: aluCarry = 1'b1;   // SUB, RSB
       4'b0011: aluCarry = 1'b1;   // SUB, RSB
       4'b0101: aluCarry = previousCVflag[1];   // ADC
@@ -38,7 +38,7 @@ module alu(input  logic [31:0] aIn, bIn,
   assign sum = a + condinvb + aluCarry;
  
   always_comb
-    casex (ALUControl[3:0])
+    casex (ALUControl[3:0]) // ------------------------ change to 2 bit type of operation
       4'b0000: Result = a & b; // AND, TST
       4'b1000: Result = a & b; // AND, TST
       4'b0001: Result = a ^ b; // EOR, TEQ

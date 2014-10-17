@@ -19,7 +19,8 @@ module datapath(input  logic        clk, reset,
                 input logic  [1:0]      previousCVflag,
                 // To handle micro-op decoding
                 output logic        doNotUpdateFlagD, uOpStallD,
-                input  logic        RselectE, RSRselectE);
+                input  logic        RselectE, RSRselectE,
+                input  logic [6:4]  shiftOpCode_E);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
@@ -75,7 +76,7 @@ module datapath(input  logic        clk, reset,
   mux2 #(32)  shifterAin(SrcAE, ExtImmE, RselectE, shifterAinE); 
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
 
-  shifter     shiftLogic(shifterAinE, ALUSrcBE, ShiftBE, RselectE, RSRselectE, previousCVflag);
+  shifter     shiftLogic(shifterAinE, ALUSrcBE, ShiftBE, RselectE, RSRselectE, previousCVflag, shiftOpCode_E);
   alu         alu(SrcAE, SrcBE, ALUControlE, ALUOutputE, ALUFlagsE, previousCVflag, doNotWriteReg);
   mux2 #(32)  aluoutputmux(ALUOutputE, ShiftBE, RSRselectE, ALUResultE); 
   
