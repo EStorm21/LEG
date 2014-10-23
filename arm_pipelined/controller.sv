@@ -52,9 +52,7 @@ module controller(input  logic         clk, reset,
    always_comb
      if (ALUOpD) begin                     // which Data-processing Instr?
       ALUControlD = InstrD[24:21];  // Always passes Instruction codes to ALUControlD
-      FlagWriteD[1]   = InstrD[20];       // update N and Z Flags if S bit is set
-      FlagWriteD[0]   = InstrD[20] & (ALUControlD == 4'b0100 | ALUControlD == 4'b0010 | ALUControlD == 4'b0011 | ALUControlD == 4'b0101 | 
-      ALUControlD == 4'b0110 | ALUControlD == 4'b0111 | ALUControlD == 4'b1010 | ALUControlD == 4'b1011); // For ADD, SUB, RSB, ADC, SBC, RSC, CMP, CMN
+      FlagWriteD[1:0]   = {InstrD[20], InstrD[20]};       // update N and Z Flags if S bit is set
     end else begin
       ALUControlD     = 4'b0100;      // perform addition for non-dataprocessing instr
       FlagWriteD      = 2'b00;        // don't update Flags
@@ -108,9 +106,12 @@ module controller(input  logic         clk, reset,
 
 endmodule
 
+
+
+
 module conditional(input  logic [3:0] Cond,
-                   input  logic [3:0] Flags,
-                   input  logic [3:0] ALUFlags,
+                   input  logic [3:0] Flags,    // Previous flags
+                   input  logic [3:0] ALUFlags, // Incoming ALU flags
                    input  logic [1:0] FlagsWrite,
                    output logic       CondEx,
                    output logic [3:0] FlagsNext);

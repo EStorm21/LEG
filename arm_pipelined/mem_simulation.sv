@@ -44,7 +44,7 @@ module mem_simulation
     end  
   // ------------------ Actual Memory ----------------------
   initial
-      $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/cmp_rs.dat",RAM);
+      $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/teq_rsandtst_rs/teq_rs.dat",RAM); //teqrs
       //$readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
       // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);

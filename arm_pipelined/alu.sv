@@ -3,7 +3,8 @@ module alu(input  logic [31:0] aIn, bIn,
            output logic [31:0] Result,
            output logic [3:0]  Flags,
            input logic [1:0] previousCVflag, // [1] = C flag, [0] = V flag
-           output logic doNotWriteReg);
+           output logic doNotWriteReg,
+           input shifterCarryOutE);
 
   logic        neg, zero, carry, overflow, invertB, aluCarry, reverseInputs;
   logic [31:0] condinvb, a, b;
@@ -64,13 +65,84 @@ module alu(input  logic [31:0] aIn, bIn,
   // Order is NZCV
   assign neg      = Result[31];
   assign zero     = (Result == 32'b0);
-  assign carry    = ((ALUControl[3:0] == 4'b0100/*add*/ | ALUControl[3:0] == 4'b0010/*sub*/ | ALUControl[3:0] == 4'b0011/*rsc*/ | ALUControl[3:0] == 4'b0101/*adc*/
-          | ALUControl[3:0] == 4'b0110/*sbc*/ | ALUControl[3:0] == 4'b0111/*rsc*/ | ALUControl[3:0] == 4'b1010/*cmp*/ | ALUControl[3:0] == 4'b1011/*cmn*/) & sum[32]);
-  assign overflow = (ALUControl[3:0] == 4'b0100/*add*/ | ALUControl[3:0] == 4'b0010/*sub*/ | ALUControl[3:0] == 4'b0011/*rsc*/ | ALUControl[3:0] == 4'b0101/*adc*/
-          | ALUControl[3:0] == 4'b0110/*sbc*/ | ALUControl[3:0] == 4'b0111/*rsc*/ | ALUControl[3:0] == 4'b1010/*cmp*/ | ALUControl[3:0] == 4'b1011/*cmn*/) & 
-          ~(a[31] ^ b[31] ^ (ALUControl[3:0] == 4'b0010 /*sub*/ | ALUControl[3:0] == 4'b0011/*rsc*/ | ALUControl[3:0] == 4'b0110/*sbc*/ | ALUControl[3:0] == 4'b0111/*rsc*/
-          | ALUControl[3:0] == 4'b1010/*cmp*/)) 
-          & (a[31] ^ sum[31]); 
+  // FLAG HANDLING
+  always_comb
+    casex (ALUControl[3:0])
+      4'b0000:  begin // AND
+                  carry = shifterCarryOutE;
+                  overflow = previousCVflag[0];
+                end 
+      4'b1000:  begin // TST
+                  carry = shifterCarryOutE;
+                  overflow = previousCVflag[0];
+                end 
+      4'b0001:  begin // EOR
+                  carry = shifterCarryOutE;
+                  overflow = previousCVflag[0];
+                end 
+      4'b1001:  begin // TEQ
+                  carry = shifterCarryOutE;
+                  overflow = previousCVflag[0];
+                end 
+      4'b0010:  begin // SUB
+                  carry = sum[32];
+                  overflow = (a[31] ^ b[31]) & (a[31] ^ sum[31]);
+                end
+      4'b0011:  begin // RSB
+                  carry = sum[32];
+                  overflow = (a[31] ^ b[31]) & (a[31] ^ sum[31]);
+                end
+      4'b0100:  begin // ADD
+                  carry = sum[32];
+                  overflow = (a[31] ^ b[31]) & (a[31] ^ sum[31]);
+                end
+      4'b0101:  begin // ADC
+                  carry = sum[32];
+                  overflow = (a[31] ^ b[31]) & (a[31] ^ sum[31]);
+                end
+      4'b0110:  begin // SBC
+                  carry = sum[32];
+                  overflow = (a[31] ^ b[31]) & (a[31] ^ sum[31]);
+                end
+      4'b0111:  begin // RSC
+                  carry = sum[32];
+                  overflow = (a[31] ^ b[31]) & (a[31] ^ sum[31]);
+                end
+      4'b1010:  begin // CMP
+                  carry = sum[32];
+                  overflow = (a[31] ^ b[31]) & (a[31] ^ sum[31]);
+                end
+      4'b1011:  begin // CMN
+                  carry = sum[32];
+                  overflow = (a[31] ^ b[31]) & (a[31] ^ sum[31]);
+                end
+      4'b1100:  begin // ORR
+                  carry = shifterCarryOutE;
+                  overflow = previousCVflag[0];
+                end 
+      4'b1101:  begin // MOV
+                  carry = shifterCarryOutE;
+                  overflow = previousCVflag[0];
+                end 
+      4'b1111:  begin // MVN
+                  carry = shifterCarryOutE;
+                  overflow = previousCVflag[0];
+                end 
+      4'b1110:  begin // BIC
+                  carry = shifterCarryOutE;
+                  overflow = previousCVflag[0];
+                end 
+      //default: Result = 32'bx;
+    endcase
+
+
+  //assign carry    = ((ALUControl[3:0] == 4'b0100/*add*/ | ALUControl[3:0] == 4'b0010/*sub*/ | ALUControl[3:0] == 4'b0011/*rsc*/ | ALUControl[3:0] == 4'b0101/*adc*/
+  //        | ALUControl[3:0] == 4'b0110/*sbc*/ | ALUControl[3:0] == 4'b0111/*rsc*/ | ALUControl[3:0] == 4'b1010/*cmp*/ | ALUControl[3:0] == 4'b1011/*cmn*/) & sum[32]);
+  //assign overflow = (ALUControl[3:0] == 4'b0100/*add*/ | ALUControl[3:0] == 4'b0010/*sub*/ | ALUControl[3:0] == 4'b0011/*rsc*/ | ALUControl[3:0] == 4'b0101/*adc*/
+  //        | ALUControl[3:0] == 4'b0110/*sbc*/ | ALUControl[3:0] == 4'b0111/*rsc*/ | ALUControl[3:0] == 4'b1010/*cmp*/ | ALUControl[3:0] == 4'b1011/*cmn*/) & 
+  //        ~(a[31] ^ b[31] ^ (ALUControl[3:0] == 4'b0010 /*sub*/ | ALUControl[3:0] == 4'b0011/*rsc*/ | ALUControl[3:0] == 4'b0110/*sbc*/ | ALUControl[3:0] == 4'b0111/*rsc*/
+  //        | ALUControl[3:0] == 4'b1010/*cmp*/)) 
+  //        & (a[31] ^ sum[31]); 
 
   assign Flags = {neg, zero, carry, overflow};
 endmodule

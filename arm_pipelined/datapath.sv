@@ -28,6 +28,7 @@ module datapath(input  logic        clk, reset,
   logic        InstrMuxD;
   logic [3:0]  regFileRzD;
   logic [31:0] rd1E, rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, ALUResultE, ALUOutputE, shifterAinE, ALUSrcBE, ShiftBE;
+  logic        shifterCarryOutE;
   logic [31:0] ReadDataW, ALUOutW, ResultW;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D;
   logic [4:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3M, WA3W;
@@ -76,8 +77,9 @@ module datapath(input  logic        clk, reset,
   mux2 #(32)  shifterAin(SrcAE, ExtImmE, RselectE, shifterAinE); 
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
 
-  shifter     shiftLogic(shifterAinE, ALUSrcBE, ShiftBE, RselectE, RSRselectE, previousCVflag, shiftOpCode_E);
-  alu         alu(SrcAE, SrcBE, ALUControlE, ALUOutputE, ALUFlagsE, previousCVflag, doNotWriteReg);
+  shifter     shiftLogic(shifterAinE, ALUSrcBE, ShiftBE, RselectE, RSRselectE, previousCVflag, shiftOpCode_E, shifterCarryOutE);
+  flopenr #(1) shftrCarryOut(clk, reset, ~StallM, shifterCarryOutE, shifterCarryOut_cycle2E);
+  alu         alu(SrcAE, SrcBE, ALUControlE, ALUOutputE, ALUFlagsE, previousCVflag, doNotWriteReg, shifterCarryOut_cycle2E);
   mux2 #(32)  aluoutputmux(ALUOutputE, ShiftBE, RSRselectE, ALUResultE); 
   
   // Memory Stage
