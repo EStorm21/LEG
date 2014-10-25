@@ -25,11 +25,14 @@ if (isRtype) // R type
                   shifterCarryOutE = b[32-a[11:7]];
               end
   		2'b01:  begin // LSR
-              shiftBE = b >> a[11:7]; 
-              if(a[11:7] == 5'b0)
+              if(a[11:7] == 5'b0) begin
+                shiftBE = 32'b0;
                 shifterCarryOutE = b[31];
-              else
+              end
+              else begin
+                shiftBE = b >> a[11:7]; 
                 shifterCarryOutE = b[a[11:7] - 1];
+                end
               end
   		2'b10:  begin // ASR
               if(a[11:7] == 5'b0)begin
@@ -45,7 +48,7 @@ if (isRtype) // R type
                   end
                 end
               else begin
-                shiftBE = b >>> a[11:7]; 
+                shiftBE = $signed(b) >>> a[11:7]; 
                 shifterCarryOutE = b[a[11:7] - 1];
                 end
               end
@@ -63,7 +66,7 @@ if (isRtype) // R type
 	 endcase
   end
 
-else if (isRSRtype) // RSR type
+else if (isRSRtype) // RSR type - b is rm, a is rs
   begin
   	casex(shiftOpCode_E[6:5])
   		2'b00: begin // LSL
@@ -91,7 +94,7 @@ else if (isRSRtype) // RSR type
               end
             else if (a[7:0] < 32) begin
               shifterCarryOutE = b[a[7:0]-1];
-              shiftBE = b >> a;
+              shiftBE = b >> a[7:0];
               end
             else if (a[7:0] == 32) begin
               shifterCarryOutE = b[31];
@@ -108,7 +111,7 @@ else if (isRSRtype) // RSR type
               shifterCarryOutE = prevCVflag[1];
               end
             else if (a[7:0] < 32) begin
-              shiftBE = b >>> a;
+              shiftBE = $signed(b) >>> a[7:0];
               shifterCarryOutE = b[a[7:0] - 1];
               end
             else  begin

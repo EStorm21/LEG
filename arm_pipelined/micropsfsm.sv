@@ -4,14 +4,15 @@ module micropsfsm(input  logic        clk, reset,
                input  logic [31:0] defaultInstrD,
                output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, prevRSRstate,
                output logic [3:0]  regFileRz,
-			   output logic [31:0] uOpInstrD);
+			   output logic [31:0] uOpInstrD,
+			   input  logic		   StallD);
 
 // define states READY and RSR 
 // TODO: add more states for each type of instruction
 typedef enum {ready, rsr} statetype;
 statetype state, nextState;
 
-// set reset state to READY, else set state to nextstate
+// set reset state to READY, else set state to nextState
 always_ff @ (posedge clk)
 	begin
       if (reset)

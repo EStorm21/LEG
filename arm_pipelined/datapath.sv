@@ -45,7 +45,7 @@ module datapath(input  logic        clk, reset,
 
   assign PCPlus8D = PCPlus4F; // skip register
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, defaultInstrD);
-  micropsfsm uOpFSM(clk, reset, defaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, prevRSRstate, regFileRzD, uOpInstrD);
+  micropsfsm uOpFSM(clk, reset, defaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, prevRSRstate, regFileRzD, uOpInstrD, StallD);
   mux2 #(32)  instrDmux(defaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   mux2 #(4)   ra1mux(InstrD[19:16], 4'b1111, RegSrcD[0], RA1_RnD);
   mux2 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], regFileRzD[2], RA1_4b_D);
