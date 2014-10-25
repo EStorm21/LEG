@@ -15,8 +15,8 @@ module controller(input  logic         clk, reset,
                   input logic          doNotWriteReg,
                   output logic  [1:0]  previousCVflag,
                   // For micro-op decoding
-                  input logic          doNotUpdateFlagD,
-                  output logic         RselectE, RSRselectE,
+                  input logic          doNotUpdateFlagD, prevRSRstateD,
+                  output logic         RselectE, RSRselectE, prevRSRstateE,
                   input logic   [6:4]  shiftOpCode_D,
                   output logic  [6:4]  shiftOpCode_E);
 
@@ -65,7 +65,7 @@ module controller(input  logic         clk, reset,
 
   // Execute stage
   // Added enables to E, M, and flush to W. Added for memory
-  flopenrc  #(2) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, RSRselectD}, {RselectE, RSRselectE});
+  flopenrc  #(3) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, RSRselectD, prevRSRstateD}, {RselectE, RSRselectE, prevRSRstateE});
   flopenrc #(7) flushedregsE(clk, reset, ~StallE, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE});

@@ -10,7 +10,7 @@ module instr_cache_memory (input logic clk,
 
   initial
     begin
-      $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/teq_rsandtst_rs/tst_rs.dat",RAM); //teqrs
+      $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat",RAM); //teqrs
       //$readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/test_most_RType/test_most_RType.dat",RAM);
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);
       // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);

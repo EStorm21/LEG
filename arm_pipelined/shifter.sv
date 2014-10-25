@@ -13,6 +13,7 @@ reg[63:0] temp;
 
 //NOTES: LSL updated, still to do: LSR, ASR, RRX, ROR
 always_comb
+begin
 if (isRtype) // R type
   begin
   	casex(a[6:5])
@@ -139,9 +140,15 @@ else if (isRSRtype) // RSR type
   	endcase
   end
 else
-  shiftBE = b[31:0];
+  begin
+    shiftBE = b[31:0];
+    if(b[11:8] == 4'b0)
+        shifterCarryOutE = prevCVflag[1];
+    else
+        shifterCarryOutE = b[31];
+  end
 
-
+end
 /*
 // Here's a potential shifter
   integer shiftAmt;
