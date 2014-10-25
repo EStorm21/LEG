@@ -22,7 +22,7 @@ module datapath(input  logic        clk, reset,
                 input  logic        RselectE, 
                 input logic[1:0]    resultSelectE,
                 input  logic [6:4]  shiftOpCode_E,
-                input logic         multSelect);
+                input logic         multSelectD);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
@@ -50,12 +50,12 @@ module datapath(input  logic        clk, reset,
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, defaultInstrD);
   micropsfsm uOpFSM(clk, reset, defaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, regFileRzD, uOpInstrD);
   mux2 #(32)  instrDmux(defaultInstrD, uOpInstrD, InstrMuxD, InstrD);
-  mux3 #(4)   ra1mux(InstrD[19:16], 4'b1111, InstrD[3:0], {multSelect, RegSrcD[0]}, RA1_RnD);
+  mux3 #(4)   ra1mux(InstrD[19:16], 4'b1111, InstrD[3:0], {multSelectD, RegSrcD[0]}, RA1_RnD);
   mux2 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], regFileRzD[2], RA1_4b_D);
   assign RA1D = {regFileRzD[0], RA1_4b_D};
-  mux3 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], InstrD[11:8], {multSelect, RegSrcD[1]}, RA2_4b_D);
+  mux3 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], InstrD[11:8], {multSelectD, RegSrcD[1]}, RA2_4b_D);
   assign RA2D = {regFileRzD[1], RA2_4b_D};
-  mux2 #(4)  destregmux(InstrD[15:12], InstrD[19:16], multSelect, destRegD);
+  mux2 #(4)  destregmux(InstrD[15:12], InstrD[19:16], multSelectD, destRegD);
 
   regfile     rf(clk, RegWriteW, RA1D, RA2D,
                  WA3W, ResultW, PCPlus8D, 

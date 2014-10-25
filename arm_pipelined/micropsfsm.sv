@@ -40,15 +40,15 @@ always_comb
 								4'b0000, 4'b0000, // If we have SBZ then 0000, we should use Rz, [19:16] and [15:12]
 								defaultInstrD[11:0]}; // This needs to be MOV R1 R2 << R3. 
 				end
-				else if(defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 0 && defaultInstrD[4] == 1) begin
+				else if(defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 1 && defaultInstrD[4] == 1) begin //start multiply
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 0;
 					uOpStallD = 1;
 					regFileRz = {1'b1, // Control inital mux for RA1D
 								3'b100}; // 5th bit of WA3, RA2D and RA1D
 					nextState = multiply;
-					uOpInstrD = {defaultInstrD[31:22], //convert to MUL
-								1'b0, defaultInstrD[20:0]}; 
+					uOpInstrD = {defaultInstrD[31:21], //convert to MUL
+								1'b0, 4'b0000, defaultInstrD[15:0]}; 
 				end
 				else begin
 					nextState = ready;
@@ -78,10 +78,10 @@ always_comb
 						doNotUpdateFlagD = 1;
 						uOpStallD = 0;
 						regFileRz = {1'b0, // Control inital mux for RA1D
-									3'b010}; // 5th bit of WA3, RA2D and RA1D
+									3'b001}; // 5th bit of WA3, RA2D and RA1D
 						nextState = ready;
-						uOpInstrD = {4'b1110, 8'b00001000, // AL condition code, ADD funct
-									 defaultInstrD[11:8], defaultInstrD[19:16], 12'b000000000000};
+						uOpInstrD = {4'b1110, 8'b00011010, // AL condition code, MOV funct note: that MOV works better than ADD for this
+									 4'b0000, 4'b0000, 8'b00000000, defaultInstrD[15:12]};
 					end
 				end
 		default: begin
