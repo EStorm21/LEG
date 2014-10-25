@@ -8,7 +8,7 @@ module micropsfsm(input  logic        clk, reset,
 
 // define states READY and RSR 
 // TODO: add more states for each type of instruction
-typedef enum {ready, rsr} statetype;
+typedef enum {ready, rsr, multiply} statetype;
 statetype state, nextState;
 
 // set reset state to READY, else set state to nextstate
@@ -28,7 +28,7 @@ always_ff @ (posedge clk)
 always_comb
 	case(state)
 		ready: begin
-				if (defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 0 && defaultInstrD[4] == 1) begin
+				if (defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 0 && defaultInstrD[4] == 1) begin //start rsr
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
@@ -39,6 +39,16 @@ always_comb
 								4'b1101, 1'b0, // MOV instruction, Do not update flags [24:20]
 								4'b0000, 4'b0000, // If we have SBZ then 0000, we should use Rz, [19:16] and [15:12]
 								defaultInstrD[11:0]}; // This needs to be MOV R1 R2 << R3. 
+				end
+				else if(defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 0 && defaultInstrD[4] == 1) begin
+					InstrMuxD = 1;
+					doNotUpdateFlagD = 0;
+					uOpStallD = 1;
+					regFileRz = {1'b1, // Control inital mux for RA1D
+								3'b100}; // 5th bit of WA3, RA2D and RA1D
+					nextState = multiply;
+					uOpInstrD = {defaultInstrD[31:22], //convert to MUL
+								1'b0, defaultInstrD[20:0]}; 
 				end
 				else begin
 					nextState = ready;
@@ -62,6 +72,18 @@ always_comb
 								 8'b0, 4'b0000}; // Using all zeros
 				end
 			end
+		multiply:begin
+					if(defaultInstrD[21] & defaultInstrD[7] & defaultInstrD[4]) begin
+						InstrMuxD = 1;
+						doNotUpdateFlagD = 1;
+						uOpStallD = 0;
+						regFileRz = {1'b0, // Control inital mux for RA1D
+									3'b010}; // 5th bit of WA3, RA2D and RA1D
+						nextState = ready;
+						uOpInstrD = {4'b1110, 8'b00001000, // AL condition code, ADD funct
+									 defaultInstrD[11:8], defaultInstrD[19:16], 12'b000000000000};
+					end
+				end
 		default: begin
 			nextState = ready;
 			InstrMuxD = 0;
