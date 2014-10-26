@@ -18,8 +18,8 @@ module datapath(input  logic        clk, reset,
                 output logic        doNotWriteReg,
                 input logic  [1:0]      previousCVflag,
                 // To handle micro-op decoding
-                output logic        doNotUpdateFlagD, uOpStallD,
-                input  logic        RselectE, 
+                output logic        doNotUpdateFlagD, uOpStallD, prevRSRstate,
+                input  logic        RselectE, prevRSRstateE,
                 input logic[1:0]    resultSelectE,
                 input  logic [6:4]  shiftOpCode_E,
                 input logic         multSelectD);
@@ -48,7 +48,7 @@ module datapath(input  logic        clk, reset,
 
   assign PCPlus8D = PCPlus4F; // skip register
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, defaultInstrD);
-  micropsfsm uOpFSM(clk, reset, defaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, regFileRzD, uOpInstrD);
+  micropsfsm uOpFSM(clk, reset, defaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, prevRSRstate, regFileRzD, uOpInstrD, StallD);
   mux2 #(32)  instrDmux(defaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   mux3 #(4)   ra1mux(InstrD[19:16], 4'b1111, InstrD[3:0], {multSelectD, RegSrcD[0]}, RA1_RnD);
   mux2 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], regFileRzD[2], RA1_4b_D);
@@ -66,6 +66,7 @@ module datapath(input  logic        clk, reset,
   rotator   rotat(ExtImmD, InstrD, RotImmD); 
   // ------------------------------------------------
   
+
   // Execute Stage
   // ---------- RECENTLY CHANGED BY MAX --------- 
   // Added enable to StallE, StallM, and Added FlushW. (Added for memory)
@@ -83,8 +84,8 @@ module datapath(input  logic        clk, reset,
   mux2 #(4)   flagmux(ALUFlagsE, multFlagsE, resultSelectE[1], FlagsE);
 
   shifter     shiftLogic(shifterAinE, ALUSrcBE, ShiftBE, RselectE, resultSelectE[0], previousCVflag, shiftOpCode_E, shifterCarryOutE);
-  flopenr #(1) shftrCarryOut(clk, reset, ~StallM, shifterCarryOutE, shifterCarryOut_cycle2E);
-  alu         alu(SrcAE, SrcBE, ALUControlE, ALUOutputE, ALUFlagsE, previousCVflag, doNotWriteReg, shifterCarryOut_cycle2E);
+  flopenr #(1) shftrCarryOut(clk, reset, ~StallE, shifterCarryOutE, shifterCarryOut_cycle2E);
+  alu         alu(SrcAE, SrcBE, ALUControlE, ALUOutputE, ALUFlagsE, previousCVflag, doNotWriteReg, shifterCarryOut_cycle2E, shifterCarryOutE, RselectE, prevRSRstateE);
   multiplier  mult(SrcAE, SrcBE, multOutputE, multFlagsE, previousCVflag);
   mux3 #(32)  aluoutputmux(ALUOutputE, ShiftBE, multOutputE, resultSelectE, ALUResultE); 
   

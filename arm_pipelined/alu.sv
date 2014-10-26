@@ -4,11 +4,30 @@ module alu(input  logic [31:0] aIn, bIn,
            output logic [3:0]  Flags,
            input logic [1:0] previousCVflag, // [1] = C flag, [0] = V flag
            output logic doNotWriteReg,
-           input shifterCarryOutE);
+           input  logic shifterCarryOut_cycle2E, shifterCarryOut_cycle1E, RselectE, prevRSRstateE);
 
-  logic        neg, zero, carry, overflow, invertB, aluCarry, reverseInputs;
+  logic        neg, zero, carry, overflow, invertB, aluCarry, reverseInputs, shifterCarryOutE;
   logic [31:0] condinvb, a, b;
   logic [32:0] sum;
+
+  always_comb 
+  begin
+    if(prevRSRstateE)
+      shifterCarryOutE = shifterCarryOut_cycle2E;
+    else
+      shifterCarryOutE = shifterCarryOut_cycle1E;
+  end
+  /*
+  always_comb
+    casex({prevRSRstateE,RselectE})
+      2'b00: shifterCarryOutE = shifterCarryOut_cycle1E;
+      2'b01: shifterCarryOutE = shifterCarryOut_cycle1E;
+      2'b11: shifterCarryOutE = shifterCarryOut_cycle2E;
+      default: shifterCarryOutE = shifterCarryOut_cycle1E;
+    endcase*/
+  //assign shifterCarryOutE = RSRselectE ? shifterCarryOut_cycle2E : shifterCarryOut_cycle1E;
+  //assign shifterCarryOutE = RselectE ? shifterCarryOut_cycle1E : shifterCarryOut_cycle2E;
+  //assign shifterCarryOutE = shifterCarryOut_cycle2E;
 
   assign reverseInputs = (ALUControl[3:0] == 4'b0011 || //RSB
                           ALUControl[3:0] == 4'b0111); //RSC
@@ -53,8 +72,8 @@ module alu(input  logic [31:0] aIn, bIn,
       4'b1010: Result = sum;   // CMP, CMN
       4'b1011: Result = sum;   // CMP, CMN
       4'b1100: Result = a | b; // ORR
-      4'b1101: Result = sum;   // MOV, MVN
-      4'b1111: Result = sum;   // MOV, MVN
+      4'b1101: Result = b;   // MOV
+      4'b1111: Result = ~b;   // MOV, MVN
       4'b1110: Result = a & ~b; // BIC
       //default: Result = 32'bx;
     endcase
@@ -94,11 +113,11 @@ module alu(input  logic [31:0] aIn, bIn,
                 end
       4'b0100:  begin // ADD
                   carry = sum[32];
-                  overflow = (a[31] ^ b[31]) & (a[31] ^ sum[31]);
+                  overflow = ~(a[31] ^ b[31]) & (a[31] ^ sum[31]);
                 end
       4'b0101:  begin // ADC
-                  carry = sum[32];
-                  overflow = (a[31] ^ b[31]) & (a[31] ^ sum[31]);
+                  carry = sum[32]; 
+                  overflow = ~(a[31] ^ b[31]) & (a[31] ^ sum[31]);
                 end
       4'b0110:  begin // SBC
                   carry = sum[32];
@@ -114,7 +133,7 @@ module alu(input  logic [31:0] aIn, bIn,
                 end
       4'b1011:  begin // CMN
                   carry = sum[32];
-                  overflow = (a[31] ^ b[31]) & (a[31] ^ sum[31]);
+                  overflow = ~(a[31] ^ b[31]) & (a[31] ^ sum[31]);
                 end
       4'b1100:  begin // ORR
                   carry = shifterCarryOutE;
