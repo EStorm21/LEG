@@ -18,7 +18,7 @@ module datapath(input  logic        clk, reset,
                 output logic        doNotWriteReg,
                 input logic  [1:0]      previousCVflag,
                 // To handle micro-op decoding
-                output logic        doNotUpdateFlagD, uOpStallD, prevRSRstate,
+                output logic        doNotUpdateFlagD, uOpStallD, prevRSRstateD,
                 input  logic        RselectE, prevRSRstateE,
                 input logic[1:0]    resultSelectE,
                 input  logic [6:4]  shiftOpCode_E,
@@ -48,7 +48,7 @@ module datapath(input  logic        clk, reset,
 
   assign PCPlus8D = PCPlus4F; // skip register
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, defaultInstrD);
-  micropsfsm uOpFSM(clk, reset, defaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, prevRSRstate, regFileRzD, uOpInstrD, StallD);
+  micropsfsm uOpFSM(clk, reset, defaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, prevRSRstateD, regFileRzD, uOpInstrD, StallD);
   mux2 #(32)  instrDmux(defaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   mux3 #(4)   ra1mux(InstrD[19:16], 4'b1111, InstrD[3:0], {multSelectD, RegSrcD[0]}, RA1_RnD);
   mux2 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], regFileRzD[2], RA1_4b_D);

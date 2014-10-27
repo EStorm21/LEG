@@ -1,6 +1,6 @@
 module controller(input  logic         clk, reset,
-                  input  logic [31:4] InstrD,
-                  input  logic [3:0]   ALUFlagsE,
+                  input  logic [31:0] InstrD,
+                  input  logic [3:0]   FlagsE,
                   output logic [1:0]   RegSrcD, ImmSrcD, 
                   output logic         ALUSrcE, BranchTakenE,
                   output logic [3:0]   ALUControlE,
@@ -18,9 +18,9 @@ module controller(input  logic         clk, reset,
                   input logic          doNotUpdateFlagD, prevRSRstateD,
                   output logic         RselectE, prevRSRstateE,
                   output logic  [1:0]  resultSelectE,
-                  input logic   [6:4]  shiftOpCode_D,
+                  // input logic   [6:4]  shiftOpCode_D,
                   output logic  [6:4]  shiftOpCode_E,
-                  output logic         multSelect);
+                  output logic         multSelectD);
 
   logic [10:0] controlsD;
   logic       CondExE, ALUOpD;
@@ -31,12 +31,16 @@ module controller(input  logic         clk, reset,
   logic       BranchD, BranchE;
   logic [1:0] FlagWriteD, FlagWriteE;
   logic       PCSrcD, PCSrcE, PCSrcM;
-  logic [3:0] FlagsE, FlagsNextE, CondE;
+  logic [3:0] PreviousFlagsE, FlagsNextE, CondE;
   logic       RegWritepreMuxE, RselectD, RSRselectD;
   logic [1:0] resultSelectD;
+  logic [6:4] shiftOpCode_D;
+
+  assign shiftOpCode_D = InstrD[6:4];
 
   // Decode stage
   
+
   always_comb
   	casex(InstrD[27:26]) 
       // If 2'b00, then this is data processing instruction
@@ -53,7 +57,7 @@ module controller(input  logic         clk, reset,
   	endcase
 
   assign {RegSrcD, ImmSrcD, ALUSrcD, MemtoRegD, 
-          RegWriteD, MemWriteD, BranchD, ALUOpD, multSelect} = controlsD; 
+          RegWriteD, MemWriteD, BranchD, ALUOpD, multSelectD} = controlsD; 
 
   
    always_comb
@@ -69,7 +73,7 @@ module controller(input  logic         clk, reset,
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD) | BranchD);
   assign RselectD      = (InstrD[27:25] == 3'b000 && shiftOpCode_D[4] == 0);
   assign RSRselectD    = (InstrD[27:25] == 3'b000 && shiftOpCode_D[4] == 1);
-  assign resultSelectD = {multSelect, RSRselectD};
+  assign resultSelectD = {multSelectD, RSRselectD};
 
   // Execute stage
   // Added enables to E, M, and flush to W. Added for memory
@@ -82,12 +86,12 @@ module controller(input  logic         clk, reset,
                     {ALUSrcE, ALUControlE});
                     
   flopenr  #(4) condregE(clk, reset, ~StallE, InstrD[31:28], CondE);
-  flopenr  #(4) flagsregE(clk, reset, ~StallE, FlagsNextE, FlagsE);
+  flopenr  #(4) flagsregE(clk, reset, ~StallE, FlagsNextE, PreviousFlagsE);
   flopenr  #(3) shiftOpCodeE(clk, reset, ~StallE, shiftOpCode_D[6:4],shiftOpCode_E[6:4]);
 
 
   // write and Branch controls are conditional
-  conditional Cond(CondE, FlagsE, ALUFlagsE, FlagWriteE, CondExE, FlagsNextE);
+  conditional Cond(CondE, PreviousFlagsE, FlagsE, FlagWriteE, CondExE, FlagsNextE);
   assign BranchTakenE    = BranchE & CondExE;
   assign RegWritepreMuxE = RegWriteE & CondExE;
   assign MemWriteGatedE  = MemWriteE & CondExE;
@@ -97,7 +101,7 @@ module controller(input  logic         clk, reset,
   assign RegWriteGatedE = doNotWriteReg ? 1'b0 : RegWritepreMuxE; 
   
   // create carry-in bit for carry instructions to send to ALU 
-  assign previousCVflag = FlagsE[1:0];
+  assign previousCVflag = PreviousFlagsE[1:0];
   
   // Memory stage
   flopenr #(4) regsM(clk, reset, ~StallM,
