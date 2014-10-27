@@ -7,11 +7,11 @@
 //------------------------------------------------------
 //------------------------------------------------------
 module data_associative_cache #(parameter blocksize = 4, parameter lines = 65536)
-                  (input  logic clk, reset, MemWriteM, MemtoRegM, valid, 
+                  (input  logic clk, reset, MemWriteM, MemtoRegM, Valid, 
                    input  logic [31:0] a, 
-                   input  logic [blocksize*32-1:0] memdata,
+                   input  logic [blocksize*32-1:0] MemBlock,
                    output logic [31:0] rd,
-                   output logic stall, memread, memwrite);
+                   output logic Stall, MemRE, MemWE);
 
     // tagbits = 32 - byte offset - block offset - set bits
     parameter tagbits = 30-$clog2(blocksize)-$clog2(lines);
@@ -19,23 +19,24 @@ module data_associative_cache #(parameter blocksize = 4, parameter lines = 65536
     logic w1v, w2v, w1en, w2en;
     logic [tagbits-1:0] w1tag, w2tag;
     logic cwe;
-    logic [blocksize*32-1:0] w1rd, w2rd, blockout;
+    logic [blocksize*32-1:0] w1rd, w2rd, blockout, CacheOut;
+    logic RDSel;
 
     // Way 1
     data_associative_cache_memory #(lines, tagbits, blocksize) way1(
-       .clk(clk), .reset(reset), .wd(memdata), .a(a), .we(w1en), 
+       .clk(clk), .reset(reset), .wd(MemBlock), .a(a), .we(w1en), 
        .rv(w1v), .rtag(w1tag), .rd(w1rd));
 
     // Way 2
     data_associative_cache_memory #(lines, tagbits, blocksize) way2(
-       .clk(clk), .reset(reset), .wd(memdata), .a(a), .we(w2en), 
+       .clk(clk), .reset(reset), .wd(MemBlock), .a(a), .we(w2en), 
        .rv(w2v), .rtag(w2tag), .rd(w2rd));
 
     // Cache Controller
     data_associative_cache_controller dcc(
-        .clk(clk), .reset(reset), .hit(hit), .ds(ds), .MemWriteM(MemWriteM),
-        .stall(stall), .valid(valid),
-        .memread(memread), .cwe(cwe), .memwrite(memwrite),
+        .clk(clk), .reset(reset), .hit(hit), .RDSel(RDSel), .MemWriteM(MemWriteM),
+        .Stall(Stall), .Valid(Valid),
+        .MemRE(MemRE), .cwe(cwe), .MemWE(MemWE),
         .re(MemtoRegM));
 
     // Create the logic for a hit.
@@ -58,11 +59,11 @@ module data_associative_cache #(parameter blocksize = 4, parameter lines = 65536
                 w1en = w1hit;
                 w2en = w2hit;
             end else
-            // Neither or Both caches have valid data, so write to way 1
+            // Neither or Both caches have Valid data, so write to way 1
             if(~(w1v ^ w2v)) begin 
                 w1en = 1'b1;
                 w2en = 1'b0;
-            // One way has valid data, so write to the other
+            // One way has Valid data, so write to the other
             end else begin
                 w1en = ~w1v;
                 w2en = ~w2v;
@@ -70,7 +71,10 @@ module data_associative_cache #(parameter blocksize = 4, parameter lines = 65536
         end
 
     // Block selection logic
-    assign blockout = w1hit ? w1rd : w2rd;
+    assign CacheOut = w1hit ? w1rd : w2rd;
+
+    // Select CacheOut or MemBlock
+    assign blockout = RDSel ? MemBlock : CacheOut;
 
     // Word selection mux
     // TODO: Make this mux parameterized

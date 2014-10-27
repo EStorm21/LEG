@@ -24,7 +24,7 @@ module data_cache #(parameter blocksize = 4, parameter lines = 65536)
     data_cache_memory #(lines, tagbits, blocksize) dcm(.clk(clk), .reset(reset), .wd(memdata), .a(a), .we(cwe), 
                     .rv(rv), .rtag(rtag), .rd(blockout));
     
-    data_cache_controller dcc(.clk(clk), .reset(reset), .hit(hit), .ds(ds), .MemWriteM(MemWriteM),
+    data_cache_controller dcc(.clk(clk), .reset(reset), .hit(hit), .MemWriteM(MemWriteM),
                         .stall(stall), .valid(valid),
                         .memread(memread), .cwe(cwe), .memwrite(memwrite),
                         .re(MemtoRegM));

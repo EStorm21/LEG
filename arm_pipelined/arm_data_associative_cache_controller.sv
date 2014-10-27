@@ -1,15 +1,15 @@
 // Cache controller works according to schematic
 module data_associative_cache_controller (input  logic clk, reset,
                          input  logic hit,
-                         input  logic ds,
                          input  logic MemWriteM,
                          input  logic re,
-                         input  logic valid,
+                         input  logic Valid,
+                         output logic RDSel,
                          output logic cwe,
-                         output logic stall,
-                         output logic memwrite,
-                         output logic memread);
-  typedef enum logic [2:0] {READY, MEMREAD, MEMWRITE, CACHEWRITE, NEXTINSTR} statetype;
+                         output logic Stall,
+                         output logic MemWE,
+                         output logic MemRE);
+  typedef enum logic [1:0] {READY, MEMREAD, MEMWRITE, NEXTINSTR} statetype;
   statetype state, nextstate;
 
   // state register
@@ -29,19 +29,18 @@ module data_associative_cache_controller (input  logic clk, reset,
                   else begin
                     nextstate <= MEMWRITE;
                   end
-      CACHEWRITE:                     nextstate <= NEXTINSTR;
       NEXTINSTR:                      nextstate <= READY;
-      MEMREAD:                        nextstate <= valid ? CACHEWRITE : MEMREAD;
-      MEMWRITE:                       nextstate <= valid ? MEMREAD : MEMWRITE;
+      MEMREAD:                        nextstate <= Valid ? NEXTINSTR : MEMREAD;
+      MEMWRITE:                       nextstate <= Valid ? MEMREAD : MEMWRITE;
       default: nextstate <= READY;
     endcase
 
   // output logic
-  assign stall       = (state == CACHEWRITE) | (state == MEMREAD) | 
-                       (state == MEMWRITE) | ((state == READY) & ( (~hit & re) | MemWriteM) );
-  assign cwe         = (state == CACHEWRITE);
-  assign memwrite    = (state == MEMWRITE);
-  assign memread     = (state == MEMREAD);
-  assign ds          = (state == CACHEWRITE);
+  assign Stall  = (state == MEMREAD) | 
+                  (state == MEMWRITE) | ((state == READY) & ( (~hit & re) | MemWriteM) );
+  assign cwe    = (state == NEXTINSTR);
+  assign MemWE  = (state == MEMWRITE);
+  assign MemRE  = (state == MEMREAD);
+  assign RDSel  = (state == NEXTINSTR);
 
 endmodule

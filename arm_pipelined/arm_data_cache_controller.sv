@@ -1,7 +1,6 @@
 // Cache controller works according to schematic
 module data_cache_controller (input  logic clk, reset,
                          input  logic hit,
-                         input  logic ds,
                          input  logic MemWriteM,
                          input  logic re,
                          input  logic valid,
@@ -9,7 +8,7 @@ module data_cache_controller (input  logic clk, reset,
                          output logic stall,
                          output logic memwrite,
                          output logic memread);
-  typedef enum logic [2:0] {READY, MEMREAD, MEMWRITE, CACHEWRITE, NEXTINSTR} statetype;
+  typedef enum logic [2:0] {READY, MEMREAD, MEMWRITE, NEXTINSTR} statetype;
   statetype state, nextstate;
 
   // state register
@@ -29,19 +28,17 @@ module data_cache_controller (input  logic clk, reset,
                   else begin
                     nextstate <= MEMWRITE;
                   end
-      CACHEWRITE:                     nextstate <= NEXTINSTR;
       NEXTINSTR:                      nextstate <= READY;
-      MEMREAD:                        nextstate <= valid ? CACHEWRITE : MEMREAD;
+      MEMREAD:                        nextstate <= valid ? NEXTINSTR : MEMREAD;
       MEMWRITE:                       nextstate <= valid ? MEMREAD : MEMWRITE;
       default: nextstate <= READY;
     endcase
 
   // output logic
-  assign stall       = (state == CACHEWRITE) | (state == MEMREAD) | 
+  assign stall       = (state == MEMREAD) | 
                        (state == MEMWRITE) | ((state == READY) & ( (~hit & re) | MemWriteM) );
-  assign cwe         = (state == CACHEWRITE);
+  assign cwe         = (state == NEXTINSTR);
   assign memwrite    = (state == MEMWRITE);
   assign memread     = (state == MEMREAD);
-  assign ds          = (state == CACHEWRITE);
 
 endmodule
