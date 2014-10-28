@@ -17,17 +17,6 @@ module alu(input  logic [31:0] aIn, bIn,
     else
       shifterCarryOutE = shifterCarryOut_cycle1E;
   end
-  /*
-  always_comb
-    casex({prevRSRstateE,RselectE})
-      2'b00: shifterCarryOutE = shifterCarryOut_cycle1E;
-      2'b01: shifterCarryOutE = shifterCarryOut_cycle1E;
-      2'b11: shifterCarryOutE = shifterCarryOut_cycle2E;
-      default: shifterCarryOutE = shifterCarryOut_cycle1E;
-    endcase*/
-  //assign shifterCarryOutE = RSRselectE ? shifterCarryOut_cycle2E : shifterCarryOut_cycle1E;
-  //assign shifterCarryOutE = RselectE ? shifterCarryOut_cycle1E : shifterCarryOut_cycle2E;
-  //assign shifterCarryOutE = shifterCarryOut_cycle2E;
 
   assign reverseInputs = (ALUControl[3:0] == 4'b0011 || //RSB
                           ALUControl[3:0] == 4'b0111); //RSC
