@@ -37,6 +37,7 @@ always_comb
 								3'b100}; // 5th bit of WA3, RA2D and RA1D
 					prevRSRstate = 0;
 					nextState = rsr;
+					keepV = 0;
 					uOpInstrD = {defaultInstrD[31:25], // Condition bits and RSR-type
 								4'b1101, 1'b0, // MOV instruction, Do not update flags [24:20]
 								4'b0000, 4'b0000, // If we have SBZ then 0000, we should use Rz, [19:16] and [15:12]
@@ -59,6 +60,7 @@ always_comb
 					doNotUpdateFlagD = 0;
 					uOpStallD = 0;
 					prevRSRstate = 0;
+					keepV = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of RA2D and RA1D
 					uOpInstrD = {defaultInstrD};
@@ -70,6 +72,7 @@ always_comb
 					doNotUpdateFlagD = 0;
 					uOpStallD = 0;
 					prevRSRstate = 1;
+					keepV = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b010}; // 5th bit of WA3, RA2D and RA1D
 					nextState = ready;
@@ -84,6 +87,7 @@ always_comb
 						doNotUpdateFlagD = 1;
 						uOpStallD = 0;
 						prevRSRstate = 1;
+						keepV = 0;
 						regFileRz = {1'b0, // Control inital mux for RA1D
 									3'b001}; // 5th bit of WA3, RA2D and RA1D
 						nextState = ready;
@@ -96,6 +100,7 @@ always_comb
 						doNotUpdateFlagD = 0;
 						prevRSRstate = 0;
 						uOpStallD = 0;
+						keepV = 0;
 						regFileRz = {1'b0, // Control inital mux for RA1D
 									3'b000}; // 5th bit of RA2D and RA1D
 						uOpInstrD = {defaultInstrD};
@@ -104,6 +109,7 @@ always_comb
 		default: begin
 			nextState = ready;
 			InstrMuxD = 0;
+			keepV = 0;
 			doNotUpdateFlagD = 0;
 			prevRSRstate = 0;
 			uOpStallD = 0;
