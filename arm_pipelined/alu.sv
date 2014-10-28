@@ -4,7 +4,7 @@ module alu(input  logic [31:0] aIn, bIn,
            output logic [3:0]  Flags,
            input logic [1:0] previousCVflag, // [1] = C flag, [0] = V flag
            output logic doNotWriteReg,
-           input  logic shifterCarryOut_cycle2E, shifterCarryOut_cycle1E, RselectE, prevRSRstateE);
+           input  logic shifterCarryOut_cycle2E, shifterCarryOut_cycle1E, RselectE, prevRSRstateE, keepV);
 
   logic        neg, zero, carry, overflow, invertB, aluCarry, reverseInputs, shifterCarryOutE;
   logic [31:0] condinvb, a, b;
@@ -102,7 +102,7 @@ module alu(input  logic [31:0] aIn, bIn,
                 end
       4'b0100:  begin // ADD
                   carry = sum[32];
-                  overflow = ~(a[31] ^ b[31]) & (a[31] ^ sum[31]);
+                  overflow = keepV ? previousCVflag[0] : ~(a[31] ^ b[31]) & (a[31] ^ sum[31]);
                 end
       4'b0101:  begin // ADC
                   carry = sum[32]; 
