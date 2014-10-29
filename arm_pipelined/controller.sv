@@ -13,15 +13,15 @@ module controller(input  logic         clk, reset,
                   input  logic         FlushE, StallE, StallM, FlushW,
                   output logic         MemtoRegM,
                   // Recently added by CW team - for Data processing instructions
-                  input logic          doNotWriteReg,
-                  output logic  [1:0]  previousCVflag,
+                  input logic          DoNotWriteReg,
+                  output logic  [1:0]  PreviousCVFlag,
                   // For micro-op decoding
                   input logic          doNotUpdateFlagD, prevRSRstateD,
                   output logic         RselectE, prevRSRstateE,
                   output logic  [1:0]  resultSelectE,
                   // input logic   [6:4]  shiftOpCode_D,
                   output logic  [6:4]  shiftOpCode_E,
-                  output logic         multSelectD);
+                  output logic         MultSelectD);
 
   logic [10:0] controlsD;
   logic       CondExE, ALUOpD;
@@ -59,7 +59,7 @@ module controller(input  logic         clk, reset,
   	endcase
 
   assign {RegSrcD, ImmSrcD, ALUSrcD, MemtoRegD, 
-          RegWriteD, MemWriteD, BranchD, ALUOpD, multSelectD} = controlsD; 
+          RegWriteD, MemWriteD, BranchD, ALUOpD, MultSelectD} = controlsD; 
 
   
    always_comb
@@ -76,7 +76,7 @@ module controller(input  logic         clk, reset,
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD) | BranchD);
   assign RselectD      = (InstrD[27:25] == 3'b000 && shiftOpCode_D[4] == 0);
   assign RSRselectD    = (InstrD[27:25] == 3'b000 && shiftOpCode_D[4] == 1);
-  assign resultSelectD = {multSelectD, RSRselectD};
+  assign resultSelectD = {MultSelectD, RSRselectD};
 
   // Execute stage
   // Added enables to E, M, and flush to W. Added for memory
@@ -101,10 +101,10 @@ module controller(input  logic         clk, reset,
   assign PCSrcGatedE     = PCSrcE & CondExE;
   
   // disable write to register for flag-setting instructions
-  assign RegWriteGatedE = doNotWriteReg ? 1'b0 : RegWritepreMuxE; 
+  assign RegWriteGatedE = DoNotWriteReg ? 1'b0 : RegWritepreMuxE; 
   
   // create carry-in bit for carry instructions to send to ALU 
-  assign previousCVflag = PreviousFlagsE[1:0];
+  assign PreviousCVFlag = PreviousFlagsE[1:0];
   
   // Memory stage
   flopenr #(4) regsM(clk, reset, ~StallM,

@@ -48,6 +48,7 @@ always_comb
 					doNotUpdateFlagD = 0;
 					uOpStallD = 1;
 					keepV = 1;
+					prevRSRstate = 0;
 					regFileRz = {1'b1, // Control inital mux for RA1D
 								3'b100}; // 5th bit of WA3, RA2D and RA1D
 					nextState = multiply;
