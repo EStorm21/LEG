@@ -44,8 +44,8 @@ module imem_simulation
     end  
   // ------------------ Actual Memory ----------------------
   initial
-      $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
-      // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
+      // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
+      $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
       // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/memwrite_test/memrewrite.dat", RAM);
       // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);

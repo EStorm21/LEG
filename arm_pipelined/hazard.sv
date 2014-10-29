@@ -7,7 +7,7 @@ module hazard(input  logic       clk, reset,
               output logic       StallF, StallD,
               // Added dstall, StallE, StallM, and FlushW for memory
               output logic       FlushD, FlushE, 
-              input  logic       dstall,
+              input  logic       dstall, istall,
               input  logic       MultStallD,
               output logic       StallE, StallM, FlushW, StallW,
               // For Micro-ops

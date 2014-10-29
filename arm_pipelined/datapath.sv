@@ -9,7 +9,7 @@ module datapath(input  logic        clk, reset,
                 output logic [31:0] InstrD,
                 output logic [31:0] ALUOutM, WriteDataM,
                 input  logic [31:0] ReadDataM,
-                output logic [3:0]  ALUFlagsE,
+                output logic [3:0]  FlagsE,
                 // hazard logic
                 output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
                 input  logic [1:0]  ForwardAE, ForwardBE,

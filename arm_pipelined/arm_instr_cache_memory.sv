@@ -10,14 +10,6 @@ module instr_cache_memory #(parameter lines = 65536, parameter tagbits = 14,
   parameter setbits = $clog2(lines);
   parameter blockoffset = $clog2(blocksize);
 
-  initial
-    begin
-      //$readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
-      $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat",RAM); //teqrs
-      //$readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/test_most_RType/test_most_RType.dat",RAM);
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);
-      // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);
-
   logic [tagbits-1:0] tag[lines-1:0];       // n lines x tagbits
   logic [lines-1:0] v, dirty;               // n lines x 1 bit
   logic [setbits-1:0]  set;                 // n lines 16 bit address
