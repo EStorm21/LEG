@@ -21,6 +21,8 @@ module arm(input  logic        clk, reset,
   logic        swapALUinputsE, doNotWriteReg, doNotUpdateFlagD,uOpStallD, prevRSRstateD, prevRSRstateE, multSelectD, RselectE;
   logic [1:0]  previousCVflag; // [1] is C, [0] is V
   logic [1:0]  resultSelectE;
+  logic [2:0]  MultControlE;
+  logic        WriteMultLoD, MultStallD;
 
   controller c(.*);
   datapath dp(.*); 

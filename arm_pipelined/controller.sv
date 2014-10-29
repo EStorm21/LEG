@@ -4,6 +4,7 @@ module controller(input  logic         clk, reset,
                   output logic [1:0]   RegSrcD, ImmSrcD, 
                   output logic         ALUSrcE, BranchTakenE,
                   output logic [3:0]   ALUControlE,
+                  output logic [2:0]   MultControlE,
                   output logic         MemWriteM,
                   output logic         MemtoRegW, PCSrcW, RegWriteW,
                   // hazard interface
@@ -25,6 +26,7 @@ module controller(input  logic         clk, reset,
   logic [10:0] controlsD;
   logic       CondExE, ALUOpD;
   logic [3:0] ALUControlD;
+  logic [2:0] MultControlD;
   logic       ALUSrcD, swapALUinputsD, MemtoRegD;
   logic       RegWriteD, RegWriteE, RegWriteGatedE;
   logic       MemWriteD, MemWriteE, MemWriteGatedE;
@@ -46,7 +48,7 @@ module controller(input  logic         clk, reset,
       // If 2'b00, then this is data processing instruction
   	  2'b00: if (InstrD[25]) controlsD = 11'b00_00_1010010; // Data processing immediate
   	         else begin         
-                if (InstrD[7] & InstrD[4])
+                if (InstrD[7:4] == 4'b1001)
                              controlsD = 11'b00_00_0010011; // Multiply
                 else         controlsD = 11'b00_00_0010010; // Data processing register
                   end
@@ -70,6 +72,7 @@ module controller(input  logic         clk, reset,
     end 
  
 
+  assign MultControlD  = InstrD[23:21];
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD) | BranchD);
   assign RselectD      = (InstrD[27:25] == 3'b000 && shiftOpCode_D[4] == 0);
   assign RSRselectD    = (InstrD[27:25] == 3'b000 && shiftOpCode_D[4] == 1);
@@ -81,9 +84,9 @@ module controller(input  logic         clk, reset,
   flopenrc #(7) flushedregsE(clk, reset, ~StallE, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE});
-  flopenr #(5)  regsE(clk, reset, ~StallE,
-                    {ALUSrcD, ALUControlD},
-                    {ALUSrcE, ALUControlE});
+  flopenr #(8)  regsE(clk, reset, ~StallE,
+                    {ALUSrcD, ALUControlD, MultControlD},
+                    {ALUSrcE, ALUControlE, MultControlE});
                     
   flopenr  #(4) condregE(clk, reset, ~StallE, InstrD[31:28], CondE);
   flopenr  #(4) flagsregE(clk, reset, ~StallE, FlagsNextE, PreviousFlagsE);

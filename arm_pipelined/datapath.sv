@@ -2,6 +2,7 @@ module datapath(input  logic        clk, reset,
                 input  logic [1:0]  RegSrcD, ImmSrcD,
                 input  logic        ALUSrcE, BranchTakenE,
                 input  logic [3:0]  ALUControlE, 
+                input  logic [2:0]  MultControlE,
                 input  logic        MemtoRegW, PCSrcW, RegWriteW,
                 output logic [31:0] PCF,
                 input  logic [31:0] InstrF,
@@ -22,21 +23,24 @@ module datapath(input  logic        clk, reset,
                 input  logic        RselectE, prevRSRstateE,
                 input logic[1:0]    resultSelectE,
                 input  logic [6:4]  shiftOpCode_E,
-                input logic         multSelectD);
+                input logic         multSelectD,
+                input logic         WriteMultLoD,
+                output logic        MultStallD);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
   logic [31:0] ExtImmD, rd1D, rd2D, PCPlus8D, RotImmD, defaultInstrD, uOpInstrD;
   logic        InstrMuxD;
   logic [3:0]  regFileRzD;
-  logic [31:0] rd1E, rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, ALUResultE, ALUOutputE, shifterAinE, ALUSrcBE, ShiftBE, multOutputE;
+  logic [31:0] rd1E, rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, ALUResultE, ALUOutputE, shifterAinE, ALUSrcBE, ShiftBE;
+  logic [31:0] MultOutputBE, MultOutputAE;
   logic        shifterCarryOutE;
   logic [31:0] ReadDataW, ALUOutW, ResultW;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D;
-  logic [4:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3M, WA3W;
+  logic [4:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3E_1, WA3M, WA3W, RdLoD , RdLoE;
   logic        Match_1D_E, Match_2D_E;
-  logic [31:0] ALUSrcA, ALUSrcB;
-  logic [3:0]  ALUFlagsE, multFlagsE, destRegD;
+  logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
+  logic [3:0]  ALUFlagsE, MultFlagsE, DestRegD;
                 
   // Fetch stage
   mux2 #(32) pcnextmux(PCPlus4F, ResultW, PCSrcW, PCnext1F);
@@ -55,7 +59,10 @@ module datapath(input  logic        clk, reset,
   assign RA1D = {regFileRzD[0], RA1_4b_D};
   mux3 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], InstrD[11:8], {multSelectD, RegSrcD[1]}, RA2_4b_D);
   assign RA2D = {regFileRzD[1], RA2_4b_D};
-  mux2 #(4)  destregmux(InstrD[15:12], InstrD[19:16], multSelectD, destRegD);
+  mux2 #(4)  destregmux(InstrD[15:12], InstrD[19:16], multSelectD, DestRegD);
+  //Long Multiply RdLo register
+  assign RdLoD = {0, InstrD[15:12]};
+  assign MultStallD = InstrD[23] & (InstrD[7:4] == 4'b1001); //For Long Multiply
 
   regfile     rf(clk, RegWriteW, RA1D, RA2D,
                  WA3W, ResultW, PCPlus8D, 
@@ -73,22 +80,27 @@ module datapath(input  logic        clk, reset,
   flopenr #(32) rd1reg(clk, reset, ~StallE, rd1D, rd1E);
   flopenr #(32) rd2reg(clk, reset, ~StallE, rd2D, rd2E);
   flopenr #(32) immreg(clk, reset, ~StallE, RotImmD, ExtImmE); // Modified by Ivan
-  flopenr #(5)  wa3ereg(clk, reset, ~StallE, {regFileRzD[2], destRegD}, WA3E);
+  flopenr #(5)  wa3ereg(clk, reset, ~StallE, {regFileRzD[2], DestRegD}, WA3E_1);
   flopenr #(5)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
   flopenr #(5)  ra2reg(clk, reset, ~StallE, RA2D, RA2E);
+  flopenr #(5)  rdLoreg(clk, reset, ~StallE, RdLoD, RdLoE);
   flopenr #(1)  keepV(clk, reset, ~StallE, keepVD, keepVE);
+  flopenr #(1)  writeMultHi(clk, reset, ~StallE,WriteMultLoD, WriteMultLoE);
   mux3 #(32)  byp1mux(rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(rd2E, ResultW, ALUOutM, ForwardBE, WriteDataE);
   mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcBE);
   mux2 #(32)  shifterAin(SrcAE, ExtImmE, RselectE, shifterAinE); 
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
-  mux2 #(4)   flagmux(ALUFlagsE, multFlagsE, resultSelectE[1], FlagsE);
+  mux2 #(4)   flagmux(ALUFlagsE, MultFlagsE, resultSelectE[1], FlagsE);
+  mux2 #(32)  multResult(MultOutputBE, MultOutputAE, WriteMultLoE, MultOutputE);
+
+  assign WA3E = WriteMultLoE ? RdLoE : WA3E_1;
 
   shifter     shiftLogic(shifterAinE, ALUSrcBE, ShiftBE, RselectE, resultSelectE[0], previousCVflag, shiftOpCode_E, shifterCarryOutE);
   flopenr #(1) shftrCarryOut(clk, reset, ~StallE, shifterCarryOutE, shifterCarryOut_cycle2E);
   alu         alu(SrcAE, SrcBE, ALUControlE, ALUOutputE, ALUFlagsE, previousCVflag, doNotWriteReg, shifterCarryOut_cycle2E, shifterCarryOutE, RselectE, prevRSRstateE, keepVE);
-  multiplier  mult(SrcAE, SrcBE, multOutputE, multFlagsE, previousCVflag);
-  mux3 #(32)  aluoutputmux(ALUOutputE, ShiftBE, multOutputE, resultSelectE, ALUResultE); 
+  multiplier  mult(SrcAE, SrcBE, MultControlE, MultOutputBE, MultOutputAE, MultFlagsE, previousCVflag);
+  mux3 #(32)  aluoutputmux(ALUOutputE, ShiftBE, MultOutputE, resultSelectE, ALUResultE); 
   
   // Memory Stage
   flopenr #(32) aluresreg(clk, reset, ~StallM, ALUResultE, ALUOutM);

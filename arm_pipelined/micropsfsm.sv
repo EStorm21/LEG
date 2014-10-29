@@ -43,7 +43,7 @@ always_comb
 								4'b0000, 4'b0000, // If we have SBZ then 0000, we should use Rz, [19:16] and [15:12]
 								defaultInstrD[11:0]}; // This needs to be MOV R1 R2 << R3. 
 				end
-				else if(defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 1 && defaultInstrD[4] == 1) begin //start multiply
+				else if(defaultInstrD[21] && (defaultInstrD[7:4] == 4'b1001)) begin //start multiply
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 0;
 					uOpStallD = 1;
@@ -67,7 +67,7 @@ always_comb
 				end
 			end
 		rsr:begin
-				if(defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 0 && defaultInstrD[4] == 1) begin //mla
+				if(defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 0 && defaultInstrD[4] == 1) begin 
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 0;
 					uOpStallD = 0;
@@ -82,7 +82,7 @@ always_comb
 			end
 
 		multiply:begin
-					if(defaultInstrD[21] & defaultInstrD[7] & defaultInstrD[4]) begin
+					if(defaultInstrD[21] & (defaultInstrD[7:4] == 4'b1001)) begin
 						InstrMuxD = 1;
 						doNotUpdateFlagD = 1;
 						uOpStallD = 0;
