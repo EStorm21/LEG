@@ -3,7 +3,7 @@ module instr_cache_controller (input  logic clk,
                          // input  logic reset,
                          input  logic hit,
                          input  logic validData,
-                         output logic memread);
+                         output logic MemRE);
   typedef enum logic [1:0] {CACHEREAD, MEMREAD, CACHEWRITE} statetype;
   statetype state, nextstate;
 
@@ -25,6 +25,6 @@ module instr_cache_controller (input  logic clk,
     endcase
 
   // output logic
-  assign memread = (state == MEMREAD);
+  assign MemRE = (state == MEMREAD);
 
 endmodule

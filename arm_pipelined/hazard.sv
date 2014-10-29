@@ -7,8 +7,8 @@ module hazard(input  logic       clk, reset,
               output logic       StallF, StallD,
               // Added dstall, StallE, StallM, and FlushW for memory
               output logic       FlushD, FlushE, 
-              input  logic       dstall,
-              output logic       StallE, StallM, FlushW,
+              input  logic       dstall, istall,
+              output logic       StallE, StallM, FlushW, StallW,
               // For Micro-ops
               input logic        uOpStallD);
                 
@@ -37,12 +37,13 @@ module hazard(input  logic       clk, reset,
   
   assign ldrStallD = Match_12D_E & MemtoRegE;
 
-  assign StallD = ldrStallD | dstall | uOpStallD;
-  assign StallF = ldrStallD | PCWrPendingF | dstall | uOpStallD;
-  assign StallE = dstall;
-  assign FlushW = dstall;
-  assign StallM = dstall;
+  assign StallD = ldrStallD | dstall | uOpStallD | istall;
+  assign StallF = ldrStallD | PCWrPendingF | dstall | istall| uOpStallD;
+  assign StallE = dstall | istall;
+  assign FlushW = dstall | istall;
+  assign StallW = istall;
+  assign StallM = dstall | istall;
   assign FlushE = ldrStallD | BranchTakenE; 
-  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE;
+  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | istall;
   
 endmodule

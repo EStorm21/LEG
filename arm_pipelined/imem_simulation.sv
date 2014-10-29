@@ -1,7 +1,7 @@
-module mem_simulation
+module imem_simulation
             #(parameter waitCycles = 2, blocksize = 4)
-           (input  logic clk, we, re,
-            input  logic [31:0] a, wd,
+           (input  logic clk, re,
+            input  logic [31:0] a, 
             output logic [blocksize*32-1:0] rd,
             output logic Valid);
 
@@ -20,7 +20,7 @@ module mem_simulation
   // next state logic
   always_comb
     case (state)
-      IDLE:                       if (re | we) begin nextstate <= REQUESTED; end else nextstate <= IDLE;
+      IDLE:                       if (re) begin nextstate <= REQUESTED; end else nextstate <= IDLE;
       REQUESTED:                  if (count < waitCycles) begin nextstate <= REQUESTED; end else nextstate <= RETRIEVED;
       RETRIEVED:                  nextstate <= IDLE;
       default: nextstate <= IDLE;
@@ -60,8 +60,4 @@ module mem_simulation
                RAM[{a[22:4], 2'b01}], 
                RAM[{a[22:4], 2'b10}], 
                RAM[{a[22:4], 2'b11}]}; 
-
-  // Write to a word
-  always_ff @(posedge clk)
-    if (we) RAM[a[22:2]] <= wd;    
 endmodule
