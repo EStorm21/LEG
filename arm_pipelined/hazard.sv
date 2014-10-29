@@ -7,10 +7,13 @@ module hazard(input  logic       clk, reset,
               output logic       StallF, StallD,
               // Added dstall, StallE, StallM, and FlushW for memory
               output logic       FlushD, FlushE, 
-              input  logic       dstall, istall,
+              input  logic       dstall,
+              input  logic       MultStallD,
               output logic       StallE, StallM, FlushW, StallW,
               // For Micro-ops
-              input logic        uOpStallD);
+              input logic        uOpStallD,
+              // For Multiply
+              output logic       WriteMultLoD);
                 
   // forwarding logic
   always_comb begin
@@ -34,11 +37,13 @@ module hazard(input  logic       clk, reset,
   //   When the PC might be written, stall all following instructions
   //   by stalling the fetch and flushing the decode stage
   // when a stage stalls, stall all previous and flush next
+
+  flopr #(1)  MultOutputSrc(clk, reset, MultStallD, WriteMultLoD);
   
   assign ldrStallD = Match_12D_E & MemtoRegE;
-
-  assign StallD = ldrStallD | dstall | uOpStallD | istall;
-  assign StallF = ldrStallD | PCWrPendingF | dstall | istall| uOpStallD;
+  
+  assign StallD = ldrStallD | dstall | uOpStallD | istall | (MultStallD & ~WriteMultLoD);
+  assign StallF = ldrStallD | PCWrPendingF | dstall | istall | uOpStallD | (MultStallD & ~WriteMultLoD);
   assign StallE = dstall | istall;
   assign FlushW = dstall | istall;
   assign StallW = istall;

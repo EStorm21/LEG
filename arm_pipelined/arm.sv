@@ -11,39 +11,20 @@ module arm(input  logic        clk, reset,
   logic [1:0]  RegSrcD, ImmSrcD;
   logic [3:0]  ALUControlE;
   logic        ALUSrcE, BranchTakenE, MemtoRegW, PCSrcW, RegWriteW;
-  logic [3:0]  ALUFlagsE;
+  logic [3:0]  FlagsE;
+  logic [6:4]  shiftOpCode_E;
   logic [31:0] InstrD;
   logic        RegWriteM, MemtoRegE, PCWrPendingF;
   logic [1:0]  ForwardAE, ForwardBE;
-  logic        StallF, StallD, StallW, FlushD, FlushE;
+  logic        StallF, StallD, FlushD, StallE, FlushE, StallM, FlushW, StallW;
   logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E;
-  logic        swapALUinputsE, doNotWriteReg, previousCflag, doNotUpdateFlagD,uOpStallD;
+  logic        swapALUinputsE, DoNotWriteReg, doNotUpdateFlagD,uOpStallD, prevRSRstateD, prevRSRstateE, MultSelectD, RselectE;
+  logic [1:0]  PreviousCVFlag; // [1] is C, [0] is V
+  logic [1:0]  resultSelectE;
+  logic [2:0]  MultControlE;
+  logic        WriteMultLoD, MultStallD;
 
-  controller c(clk, reset, InstrD[31:12], ALUFlagsE, 
-               RegSrcD, ImmSrcD,
-               ALUSrcE, BranchTakenE, ALUControlE,
-               MemWriteM,
-               MemtoRegW, PCSrcW, RegWriteW,
-               RegWriteM, MemtoRegE, PCWrPendingF,
-               FlushE, StallE, StallM, FlushW, StallW, MemtoRegM,   // Added StallE, StallM, FlushW for memory 
-               doNotWriteReg, previousCflag, // These two inputs added by Ivan
-               doNotUpdateFlagD, RselectE, RSRselectE, InstrD[6:4]); // These two inputs added by Ivan
-  datapath dp(clk, reset, 
-              RegSrcD, ImmSrcD, 
-              ALUSrcE, BranchTakenE, ALUControlE,
-              MemtoRegW, PCSrcW, RegWriteW,
-              PCF, InstrF, InstrD,
-              ALUOutM, WriteDataM, ReadDataM,
-              ALUFlagsE,
-              Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
-              // Added StallE, StallM, FlushW for memory
-              ForwardAE, ForwardBE, StallF, StallD, FlushD, StallE, StallM, FlushW, StallW,
-              doNotWriteReg, previousCflag, doNotUpdateFlagD, uOpStallD, RselectE, RSRselectE); // Added this line, 1 output 2 inputs
-  hazard h(clk, reset, Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
-           RegWriteM, RegWriteW, BranchTakenE, MemtoRegE,
-           PCWrPendingF, PCSrcW,
-           ForwardAE, ForwardBE,
-           // Added dstall, StallE, StallM, and FlushW for memory
-           StallF, StallD, FlushD, FlushE, dstall, istall, StallE, StallM, FlushW, StallW, uOpStallD);
-
+  controller c(.*);
+  datapath dp(.*); 
+  hazard h(.*);
 endmodule
