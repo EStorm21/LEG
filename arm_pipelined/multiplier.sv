@@ -5,13 +5,17 @@ module multiplier(input  logic [31:0] aIn, bIn,
            input logic [1:0] previousCVflag); // [1] = C flag, [0] = V flag
 
   logic        neg, zero, carry, overflow;
-  logic [63:0] product;
+  logic [63:0] product, product_signed;
   logic        long, sign, accumulate;
+  logic signed [31:0] aIn_signed, bIn_signed;
 
   assign {long, sign, accumulate} = MultControlE;
 
- 
-  assign product = aIn * bIn;
+ assign aIn_signed = aIn;
+ assign bIn_signed = bIn;
+ assign product_signed = aIn_signed * bIn_signed;
+
+  assign product = sign ? product_signed : aIn * bIn;
  
 
 
