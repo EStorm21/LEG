@@ -40,7 +40,7 @@ always_comb
 					keepV = 0;
 					uOpInstrD = {defaultInstrD[31:25], // Condition bits and RSR-type
 								4'b1101, 1'b0, // MOV instruction, Do not update flags [24:20]
-								4'b0000, 4'b0000, // If we have SBZ then 0000, we should use Rz, [19:16] and [15:12]
+								4'b0000, 4'b1111, // If we have SBZ then [19:16]  shb 0000, we should use Rz [15:12]
 								defaultInstrD[11:0]}; // This needs to be MOV R1 R2 << R3. 
 				end
 				else if(defaultInstrD[21] && (defaultInstrD[7:4] == 4'b1001)) begin //start multiply
@@ -53,7 +53,9 @@ always_comb
 								3'b100}; // 5th bit of WA3, RA2D and RA1D
 					nextState = multiply;
 					uOpInstrD = {defaultInstrD[31:21], //convert to MUL
-								1'b0, 4'b0000, 4'b0000, defaultInstrD[11:0]}; 
+								1'b0, 4'b1111, // [19:16] Rd
+								4'b0000, //SBZ
+								defaultInstrD[11:0]}; 
 				end
 				else begin
 					nextState = ready;
@@ -78,7 +80,7 @@ always_comb
 								3'b010}; // 5th bit of WA3, RA2D and RA1D
 					nextState = ready;
 					uOpInstrD = {defaultInstrD[31:12], // keep the first 12 bits the same, Rd and Rn are included
-								 8'b0, 4'b0000}; // Using all zeros
+								 8'b0, 4'b1111}; // No shifting, use source Rz
 				end
 			end
 
@@ -93,7 +95,8 @@ always_comb
 									3'b001}; // 5th bit of WA3, RA2D and RA1D
 						nextState = ready;
 						uOpInstrD = {defaultInstrD[31:28], 7'b0000100, defaultInstrD[21], //condition code, ADD funct, flag update
-									 4'b0000, defaultInstrD[19:16], 8'b00000000, defaultInstrD[15:12]};
+									 4'b0000, defaultInstrD[19:16], 4'b1111, //[15:12] is Rz
+									 4'b0000, defaultInstrD[15:12]};
 					end
 					else begin
 						nextState = ready;
