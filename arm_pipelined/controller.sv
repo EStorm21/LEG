@@ -13,7 +13,8 @@ module controller(input  logic         clk, reset,
                   input  logic         FlushE, StallE, StallM, FlushW, StallW,
                   output logic         MemtoRegM,
                   // Recently added by CW team - for Data processing instructions
-                  input logic          DoNotWriteReg,
+                  output logic  [2:0]   ALUOperationE, CVUpdateE,
+                  output logic          DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryE,
                   output logic  [1:0]  PreviousCVFlag,
                   // For micro-op decoding
                   input logic          doNotUpdateFlagD, prevRSRstateD,
@@ -37,6 +38,7 @@ module controller(input  logic         clk, reset,
   logic       RegWritepreMuxE, RselectD, RSRselectD;
   logic [1:0] resultSelectD;
   logic [6:4] shiftOpCode_D;
+  logic [24:21] InstrE;
 
   assign shiftOpCode_D = InstrD[6:4];
 
@@ -77,15 +79,22 @@ module controller(input  logic         clk, reset,
   assign RSRselectD    = (InstrD[27:25] == 3'b000 && shiftOpCode_D[4] == 1);
   assign resultSelectD = {MultSelectD, RSRselectD};
 
+
+
   // Execute stage
   // Added enables to E, M, and flush to W. Added for memory
   flopenrc  #(4) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, resultSelectD, prevRSRstateD}, {RselectE, resultSelectE, prevRSRstateE});
   flopenrc #(7) flushedregsE(clk, reset, ~StallE, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE});
+
   flopenr #(8)  regsE(clk, reset, ~StallE,
                     {ALUSrcD, ALUControlD, MultControlD},
                     {ALUSrcE, ALUControlE, MultControlE});
+  // ALU Decoding
+  flopenrc #(5) passALUinstr(clk, reset, ~StallE, FlushE,
+                           {ALUOpD, InstrD[24:21]}, {ALUOpE, InstrE[24:21]});
+  alu_decoder alu_dec(ALUOpE, InstrE[24:21], PreviousCVFlag, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
                     
   flopenr  #(4) condregE(clk, reset, ~StallE, InstrD[31:28], CondE);
   flopenr  #(4) flagsregE(clk, reset, ~StallE, FlagsNextE, PreviousFlagsE);
@@ -99,7 +108,7 @@ module controller(input  logic         clk, reset,
   assign PCSrcGatedE     = PCSrcE & CondExE;
   
   // disable write to register for flag-setting instructions
-  assign RegWriteGatedE = DoNotWriteReg ? 1'b0 : RegWritepreMuxE; 
+  assign RegWriteGatedE = DoNotWriteRegE ? 1'b0 : RegWritepreMuxE; 
   
   // create carry-in bit for carry instructions to send to ALU 
   assign PreviousCVFlag = PreviousFlagsE[1:0];

@@ -18,11 +18,14 @@ module arm(input  logic        clk, reset,
   logic [1:0]  ForwardAE, ForwardBE;
   logic        StallF, StallD, FlushD, StallE, FlushE, StallM, FlushW, StallW;
   logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E;
-  logic        swapALUinputsE, DoNotWriteReg, doNotUpdateFlagD,uOpStallD, prevRSRstateD, prevRSRstateE, MultSelectD, RselectE;
+  logic        swapALUinputsE, DoNotWriteRegE, doNotUpdateFlagD,uOpStallD, prevRSRstateD, prevRSRstateE, MultSelectD, RselectE;
   logic [1:0]  PreviousCVFlag; // [1] is C, [0] is V
   logic [1:0]  resultSelectE;
   logic [2:0]  MultControlE;
   logic        WriteMultLoD, MultStallD, StalluOp;
+  // Data processing added - for decoding ALU
+  logic [2:0]  ALUOperationE, CVUpdateE;
+  logic        InvertBE, ReverseInputsE, ALUCarryE;
 
   controller c(.*);
   datapath dp(.*); 

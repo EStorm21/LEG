@@ -16,8 +16,9 @@ module datapath(input  logic        clk, reset,
                 // Added StallE, StallM, FlushW for memory
                 input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, StalluOp,
                 // Added by CW team fall 2014 - Handling Data processing Instrs
-                output logic        DoNotWriteReg,
-                input logic  [1:0]      PreviousCVFlag,
+                input logic  [1:0]  PreviousCVFlag,
+                input logic  [2:0]  CVUpdateE, ALUOperationE,
+                input logic         InvertBE, ReverseInputsE, ALUCarryE,
                 // To handle micro-op decoding
                 output logic        doNotUpdateFlagD, uOpStallD, prevRSRstateD,
                 input  logic        RselectE, prevRSRstateE,
@@ -97,7 +98,7 @@ module datapath(input  logic        clk, reset,
 
   shifter     shiftLogic(shifterAinE, ALUSrcBE, ShiftBE, RselectE, resultSelectE[0], PreviousCVFlag, shiftOpCode_E, shifterCarryOutE);
   flopenr #(1) shftrCarryOut(clk, reset, ~StallE, shifterCarryOutE, shifterCarryOut_cycle2E);
-  alu         alu(SrcAE, SrcBE, ALUControlE, ALUOutputE, ALUFlagsE, PreviousCVFlag, DoNotWriteReg, shifterCarryOut_cycle2E, shifterCarryOutE, RselectE, prevRSRstateE, keepVE);
+  alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, ALUOutputE, ALUFlagsE, PreviousCVFlag, shifterCarryOut_cycle2E, shifterCarryOutE, prevRSRstateE, keepVE); 
   multiplier  mult(SrcAE, SrcBE, MultControlE, MultOutputBE, MultOutputAE, MultFlagsE, PreviousCVFlag);
   mux3 #(32)  aluoutputmux(ALUOutputE, ShiftBE, MultOutputE, resultSelectE, ALUResultE); 
   
