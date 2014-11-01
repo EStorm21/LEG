@@ -95,8 +95,8 @@ always_comb
 									3'b001}; // 5th bit of WA3, RA2D and RA1D
 						nextState = ready;
 						uOpInstrD = {defaultInstrD[31:28], 7'b0000100, defaultInstrD[21], //condition code, ADD funct, flag update
-									 4'b0000, defaultInstrD[19:16], 4'b1111, //[15:12] is Rz
-									 4'b0000, defaultInstrD[15:12]};
+									 4'b1111, defaultInstrD[19:16], //[19:16] is Rz
+									 8'b00000000, defaultInstrD[15:12]};
 					end
 					else begin
 						nextState = ready;

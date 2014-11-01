@@ -26,6 +26,7 @@ module arm(input  logic        clk, reset,
   // Data processing added - for decoding ALU
   logic [2:0]  ALUOperationE, CVUpdateE;
   logic        InvertBE, ReverseInputsE, ALUCarryE;
+  logic [3:0]  regFileRzD;
 
   controller c(.*);
   datapath dp(.*); 

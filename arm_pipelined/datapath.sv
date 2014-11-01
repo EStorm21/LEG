@@ -26,13 +26,14 @@ module datapath(input  logic        clk, reset,
                 input  logic [6:4]  shiftOpCode_E,
                 input logic         MultSelectD,
                 input logic         WriteMultLoD,
-                output logic        MultStallD);
+                output logic        MultStallD,
+                output logic [3:0]  regFileRzD);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
   logic [31:0] ExtImmD, rd1D, rd2D, PCPlus8D, RotImmD, defaultInstrD, uOpInstrD;
   logic        InstrMuxD;
-  logic [3:0]  regFileRzD;
+  // logic [3:0]  regFileRzD;
   logic [31:0] rd1E, rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, ALUResultE, ALUOutputE, shifterAinE, ALUSrcBE, ShiftBE;
   logic [31:0] MultOutputBE, MultOutputAE;
   logic        shifterCarryOutE, WriteMultLoE;

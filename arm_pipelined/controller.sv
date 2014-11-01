@@ -20,6 +20,7 @@ module controller(input  logic         clk, reset,
                   input logic          doNotUpdateFlagD, prevRSRstateD,
                   output logic         RselectE, prevRSRstateE,
                   output logic  [1:0]  resultSelectE,
+                  input  logic  [3:0]  regFileRzD, 
                   // input logic   [6:4]  shiftOpCode_D,
                   output logic  [6:4]  shiftOpCode_E,
                   output logic         MultSelectD);
@@ -74,7 +75,7 @@ module controller(input  logic         clk, reset,
     end 
  
   assign MultControlD  = InstrD[23:21];
-  assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD) | BranchD);
+  assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~regFileRzD[2]) | BranchD);
   assign RselectD      = (InstrD[27:25] == 3'b000 && shiftOpCode_D[4] == 0);
   assign RSRselectD    = (InstrD[27:25] == 3'b000 && shiftOpCode_D[4] == 1);
   assign resultSelectD = {MultSelectD, RSRselectD};
