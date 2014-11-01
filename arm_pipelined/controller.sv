@@ -23,7 +23,7 @@ module controller(input  logic         clk, reset,
                   output logic  [6:4]  shiftOpCode_E,
                   output logic         MultSelectD);
 
-  logic [9:0] controlsD;
+  logic [10:0] controlsD;
   logic       CondExE, ALUOpD;
   logic [3:0] ALUControlD;
   logic [2:0] MultControlD;
@@ -65,9 +65,7 @@ module controller(input  logic         clk, reset,
    always_comb
      if (ALUOpD) begin                     // which Data-processing Instr?
       ALUControlD = InstrD[24:21];  // Always passes Instruction codes to ALUControlD
-      FlagWriteD[1]   = InstrD[20];       // update N and Z Flags if S bit is set
-      FlagWriteD[0]   = InstrD[20] & (ALUControlD == 4'b0100 | ALUControlD == 4'b0010 | ALUControlD == 4'b0011 | ALUControlD == 4'b0101 | 
-      ALUControlD == 4'b0110 | ALUControlD == 4'b0111 | ALUControlD == 4'b1010 | ALUControlD == 4'b1011); // For ADD, SUB, RSB, ADC, SBC, RSC, CMP, CMN
+      FlagWriteD[1:0]   = {InstrD[20], InstrD[20]};       // update N and Z Flags if S bit is set
     end else begin
       ALUControlD     = 4'b0100;      // perform addition for non-dataprocessing instr
       FlagWriteD      = 2'b00;        // don't update Flags
@@ -81,7 +79,7 @@ module controller(input  logic         clk, reset,
 
   // Execute stage
   // Added enables to E, M, and flush to W. Added for memory
-  flopenrc  #(2) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, RSRselectD}, {RselectE, RSRselectE});
+  flopenrc  #(4) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, resultSelectD, prevRSRstateD}, {RselectE, resultSelectE, prevRSRstateE});
   flopenrc #(7) flushedregsE(clk, reset, ~StallE, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE});
