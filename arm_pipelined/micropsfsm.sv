@@ -5,7 +5,7 @@ module micropsfsm(input  logic        clk, reset,
                output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, prevRSRstate, keepV,
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
-			   input  logic		   StallD);
+			   input  logic		   StalluOp);
 
 // define states READY and RSR 
 // TODO: add more states for each type of instruction
@@ -15,7 +15,7 @@ statetype state, nextState;
 // set reset state to READY, else set state to nextState
 always_ff @ (posedge clk)
 	begin
-      if (reset)
+      if (reset | StalluOp)
 	      state <= ready;
 	  else
 	      state <= nextState;

@@ -12,6 +12,7 @@ module hazard(input  logic       clk, reset,
               output logic       StallE, StallM, FlushW, StallW,
               // For Micro-ops
               input logic        uOpStallD,
+              output logic       StalluOp,
               // For Multiply
               output logic       WriteMultLoD);
                 
@@ -43,6 +44,7 @@ module hazard(input  logic       clk, reset,
   assign ldrStallD = Match_12D_E & MemtoRegE;
   
   assign StallD = ldrStallD | dstall | uOpStallD | istall | (MultStallD & ~WriteMultLoD);
+  assign StalluOp = ldrStallD | dstall | istall | (MultStallD & ~WriteMultLoD);
   assign StallF = ldrStallD | PCWrPendingF | dstall | istall | uOpStallD | (MultStallD & ~WriteMultLoD);
   assign StallE = dstall | istall;
   assign FlushW = dstall | istall;

@@ -14,7 +14,7 @@ module datapath(input  logic        clk, reset,
                 output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
                 input  logic [1:0]  ForwardAE, ForwardBE,
                 // Added StallE, StallM, FlushW for memory
-                input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW,
+                input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, StalluOp,
                 // Added by CW team fall 2014 - Handling Data processing Instrs
                 output logic        DoNotWriteReg,
                 input logic  [1:0]      PreviousCVFlag,
@@ -52,7 +52,7 @@ module datapath(input  logic        clk, reset,
 
   assign PCPlus8D = PCPlus4F; // skip register
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, defaultInstrD);
-  micropsfsm uOpFSM(clk, reset, defaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, prevRSRstateD, keepVD, regFileRzD, uOpInstrD, StallD);
+  micropsfsm uOpFSM(clk, reset, defaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, prevRSRstateD, keepVD, regFileRzD, uOpInstrD, StalluOp);
   mux2 #(32)  instrDmux(defaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   mux3 #(4)   ra1mux(InstrD[19:16], 4'b1111, InstrD[3:0], {MultSelectD, RegSrcD[0]}, RA1_RnD);
   mux3 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], RA1_RnD, {MultSelectD, regFileRzD[2]}, RA1_4b_D);

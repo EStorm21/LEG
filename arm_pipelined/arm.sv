@@ -22,7 +22,7 @@ module arm(input  logic        clk, reset,
   logic [1:0]  PreviousCVFlag; // [1] is C, [0] is V
   logic [1:0]  resultSelectE;
   logic [2:0]  MultControlE;
-  logic        WriteMultLoD, MultStallD;
+  logic        WriteMultLoD, MultStallD, StalluOp;
 
   controller c(.*);
   datapath dp(.*); 
