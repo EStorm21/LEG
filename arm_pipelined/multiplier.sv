@@ -42,10 +42,10 @@ module multiplier(input logic clk, reset, MultEnable, StallE,
 
 
 
-  assign Neg = (MultControlKept == 3'b101) ? NegAccum : Neg1;
-  assign Zero = (MultControlKept == 3'b101) ? ZeroAccum : Zero1;
-  assign ResultA = (MultControlKept == 3'b101) ? ResultAccumLongA : ResultA1;
-  assign ResultB = (MultControlKeptTwice == 3'b101) ? ResultAccumLongBKept : ResultB1;
+  assign Neg = (MultControlKept[0] & MultControlKept[2]) ? NegAccum : Neg1;
+  assign Zero = (MultControlKept[0] & MultControlKept[2]) ? ZeroAccum : Zero1;
+  assign ResultA = (MultControlKept[0] & MultControlKept[2]) ? ResultAccumLongA : ResultA1;
+  assign ResultB = (MultControlKeptTwice[0] & MultControlKeptTwice[2]) ? ResultAccumLongBKept : ResultB1;
 
   flopenr #(64)  multProd(clk, reset, ~StallE & MultEnable, Product, ProductKept);
   flopenr #(3)  multContrl(clk, reset, ~StallE & MultEnable, MultControlE, MultControlKept);
