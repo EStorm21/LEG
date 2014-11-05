@@ -24,7 +24,7 @@ module datapath(input  logic        clk, reset,
                 input  logic        RselectE, prevRSRstateE,
                 input logic[1:0]    resultSelectE,
                 input  logic [6:4]  shiftOpCode_E,
-                input logic         MultSelectD,
+                input logic         MultSelectD, MultEnable,
                 input logic         WriteMultLoD,
                 output logic        MultStallD,
                 output logic [3:0]  regFileRzD);
@@ -64,7 +64,7 @@ module datapath(input  logic        clk, reset,
   mux2 #(4)  destregmux(InstrD[15:12], InstrD[19:16], MultSelectD, DestRegD);
   //Long Multiply RdLo register
   assign RdLoD = {0, InstrD[15:12]};
-  assign MultStallD = InstrD[23] & (InstrD[7:4] == 4'b1001); //For Long Multiply
+  assign MultStallD = InstrD[23] & ~InstrD[21] & (InstrD[7:4] == 4'b1001); //For Long Multiply
 
   regfile     rf(clk, RegWriteW, RA1D, RA2D,
                  WA3W, ResultW, PCPlus8D, 
@@ -100,7 +100,7 @@ module datapath(input  logic        clk, reset,
   shifter     shiftLogic(shifterAinE, ALUSrcBE, ShiftBE, RselectE, resultSelectE[0], PreviousCVFlag, shiftOpCode_E, shifterCarryOutE);
   flopenr #(1) shftrCarryOut(clk, reset, ~StallE, shifterCarryOutE, shifterCarryOut_cycle2E);
   alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, ALUOutputE, ALUFlagsE, PreviousCVFlag, shifterCarryOut_cycle2E, shifterCarryOutE, prevRSRstateE, keepVE); 
-  multiplier  mult(SrcAE, SrcBE, MultControlE, MultOutputBE, MultOutputAE, MultFlagsE, PreviousCVFlag);
+  multiplier  mult(clk, reset, MultEnable, StallE, SrcAE, SrcBE, MultControlE, MultOutputBE, MultOutputAE, MultFlagsE, PreviousCVFlag);
   mux3 #(32)  aluoutputmux(ALUOutputE, ShiftBE, MultOutputE, resultSelectE, ALUResultE); 
   
   // Memory Stage

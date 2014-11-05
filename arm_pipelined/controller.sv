@@ -23,7 +23,7 @@ module controller(input  logic         clk, reset,
                   input  logic  [3:0]  regFileRzD, 
                   // input logic   [6:4]  shiftOpCode_D,
                   output logic  [6:4]  shiftOpCode_E,
-                  output logic         MultSelectD);
+                  output logic         MultSelectD, MultEnable);
 
   logic [10:0] controlsD;
   logic       CondExE, ALUOpD;
@@ -39,7 +39,7 @@ module controller(input  logic         clk, reset,
   logic       RegWritepreMuxE, RselectD, RSRselectD;
   logic [1:0] resultSelectD;
   logic [6:4] shiftOpCode_D;
-  logic [24:21] InstrE;
+  logic [31:0] InstrE;
 
   assign shiftOpCode_D = InstrD[6:4];
 
@@ -92,9 +92,11 @@ module controller(input  logic         clk, reset,
   flopenr #(8)  regsE(clk, reset, ~StallE,
                     {ALUSrcD, ALUControlD, MultControlD},
                     {ALUSrcE, ALUControlE, MultControlE});
+
+  assign MultEnable = InstrE[7:4] == 4'b1001;
   // ALU Decoding
-  flopenrc #(5) passALUinstr(clk, reset, ~StallE, FlushE,
-                           {ALUOpD, InstrD[24:21]}, {ALUOpE, InstrE[24:21]});
+  flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE,
+                           {ALUOpD, InstrD}, {ALUOpE, InstrE});
   alu_decoder alu_dec(ALUOpE, InstrE[24:21], PreviousCVFlag, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
                     
   flopenr  #(4) condregE(clk, reset, ~StallE, InstrD[31:28], CondE);

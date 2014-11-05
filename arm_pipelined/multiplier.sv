@@ -1,31 +1,56 @@
-module multiplier(input  logic [31:0] aIn, bIn,
+module multiplier(input logic clk, reset, MultEnable, StallE,
+           input  logic [31:0] AIn, BIn,
            input logic [2:0] MultControlE,
            output logic [31:0] ResultA, ResultB,
            output logic [3:0]  Flags,
-           input logic [1:0] previousCVflag); // [1] = C flag, [0] = V flag
+           input logic [1:0] PreviousCVflag); // [1] = C flag, [0] = V flag
 
-  logic        neg, zero, carry, overflow;
-  logic [63:0] product, product_signed;
-  logic        long, sign, accumulate;
-  logic signed [31:0] aIn_signed, bIn_signed;
+  logic        Neg, Zero, Carry, Overflow, NegAccum, ZeroAccum;
+  logic [63:0] Product, Product_signed, ProductKept, ProdAccumLong;
+  logic        Long, Sign, Accumulate;
+  logic signed [31:0] AIn_signed, BIn_signed;
+  logic [31:0] ResultA1, ResultB1, ResultAccumLongA, ResultAccumLongB, ResultAccumLongBKept;
+  logic [2:0] MultControlKept, MultControlKeptTwice;
 
-  assign {long, sign, accumulate} = MultControlE;
+  assign {Long, Sign, Accumulate} = MultControlE;
 
- assign aIn_signed = aIn;
- assign bIn_signed = bIn;
- assign product_signed = aIn_signed * bIn_signed;
+ assign AIn_signed = AIn;
+ assign BIn_signed = BIn;
+ assign Product_signed = AIn_signed * BIn_signed;
 
-  assign product = sign ? product_signed : aIn * bIn;
+  assign Product = Sign ? Product_signed : AIn * BIn;
  
 
 
   // Order is NZCV
-  assign neg      = long ? product[63] : product[31];
-  assign zero     = long ? (product == 64'b0) : (product[31:0] == 32'b0);
-  assign carry    = previousCVflag[1];
-  assign overflow = previousCVflag[0];
+  assign Neg1      = Long ? Product[63] : Product[31];
+  assign Zero1     = Long ? (Product == 64'b0) : (Product[31:0] == 32'b0);
+  assign Carry    = PreviousCVflag[1];
+  assign Overflow = PreviousCVflag[0];
 
-  assign Flags = {neg, zero, carry, overflow};
-  assign ResultA = long ? product[63:32] : product[31:0];
-  assign ResultB = long ? product[31:0] : product[63:32];
+  assign Flags = {Neg, Zero, Carry, Overflow};
+  assign ResultA1 = Long ? Product[63:32] : Product[31:0];
+  assign ResultB1 = Long ? Product[31:0] : Product[63:32];
+
+  //Long Accumulate Multiply
+  assign ProdAccumLong = ProductKept + BIn;
+  assign ResultAccumLongB = ProdAccumLong[31:0];
+  assign ResultAccumLongA = ProdAccumLong[63:32] + AIn;
+
+  assign NegAccum = ResultAccumLongA[31];
+  assign ZeroAccum = (ResultAccumLongA == 32'b0) & (ResultAccumLongB == 32'b0);
+
+
+
+  assign Neg = (MultControlKept == 3'b101) ? NegAccum : Neg1;
+  assign Zero = (MultControlKept == 3'b101) ? ZeroAccum : Zero1;
+  assign ResultA = (MultControlKept == 3'b101) ? ResultAccumLongA : ResultA1;
+  assign ResultB = (MultControlKeptTwice == 3'b101) ? ResultAccumLongBKept : ResultB1;
+
+  flopenr #(64)  multProd(clk, reset, ~StallE & MultEnable, Product, ProductKept);
+  flopenr #(3)  multContrl(clk, reset, ~StallE & MultEnable, MultControlE, MultControlKept);
+  flopenr #(3)  multContrl2(clk, reset, ~StallE & MultEnable, MultControlKept, MultControlKeptTwice);
+  flopenr #(32)  ResultBHold(clk, reset, ~StallE & MultEnable, ResultAccumLongB, ResultAccumLongBKept);
+
+
 endmodule

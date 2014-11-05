@@ -25,7 +25,7 @@ module arm(input  logic        clk, reset,
   logic        WriteMultLoD, MultStallD, StalluOp;
   // Data processing added - for decoding ALU
   logic [2:0]  ALUOperationE, CVUpdateE;
-  logic        InvertBE, ReverseInputsE, ALUCarryE;
+  logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnable;
   logic [3:0]  regFileRzD;
 
   controller c(.*);
