@@ -269,7 +269,7 @@ Disassembly of section .text:
      1bc:	ea000000 	b	1c4 <l27>
 
 000001c0 <l26>:
-     1c0:	eafffffc 	b	1b8 <l24>
+     1c0:	eafffffc 	b	  <l24>
 
 000001c4 <l27>:
      1c4:	81d62003 	bicshi	r2, r6, r3

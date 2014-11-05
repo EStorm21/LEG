@@ -40,6 +40,7 @@ module controller(input  logic         clk, reset,
   logic [1:0] resultSelectD;
   logic [6:4] shiftOpCode_D;
   logic [31:0] InstrE;
+  logic [11:0]  StateRegisterDataE;
 
   assign shiftOpCode_D = InstrD[6:4];
 
@@ -100,11 +101,15 @@ module controller(input  logic         clk, reset,
   alu_decoder alu_dec(ALUOpE, InstrE[24:21], PreviousCVFlag, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
                     
   flopenr  #(4) condregE(clk, reset, ~StallE, InstrD[31:28], CondE);
-  flopenr  #(4) flagsregE(clk, reset, ~StallE, FlagsNextE, PreviousFlagsE);
+  
+  cpsr          cpsrE(clk, reset, FlagsNextE, 6'b0, 5'b0, 2'b0, 1'b0, ~StallE, 1'b0, 1'b0, StateRegisterDataE);
+  assign  PreviousFlagsE = StateRegisterDataE[11:8];
   flopenr  #(3) shiftOpCodeE(clk, reset, ~StallE, shiftOpCode_D[6:4],shiftOpCode_E[6:4]);
-
+  //flopenr  #(4) flagsregE(clk, reset, ~StallE, FlagsNextE, PreviousFlagsE);
   // write and Branch controls are conditional
   conditional Cond(CondE, PreviousFlagsE, FlagsE, FlagWriteE, CondExE, FlagsNextE);
+
+
   assign BranchTakenE    = BranchE & CondExE;
   assign RegWritepreMuxE = RegWriteE & CondExE;
   assign MemWriteGatedE  = MemWriteE & CondExE;

@@ -45,8 +45,8 @@ module mem_simulation
   // ------------------ Actual Memory ----------------------
   initial
       // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
-      $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
-      //$readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat",RAM); //teqrs
+      //$readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
+      $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat",RAM); //teqrs
       
   // Return a block
   assign rd = {RAM[{a[22:4], 2'b00}], 
