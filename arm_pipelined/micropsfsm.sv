@@ -55,7 +55,7 @@ always_comb
 					regFileRz = {1'b1, // Control inital mux for RA1D
 								3'b100}; // 5th bit of WA3, RA2D and RA1D
 					nextState = multiply;
-					uOpInstrD = {defaultInstrD[31:21], //convert to MUL
+					uOpInstrD = {defaultInstrD[31:24], 1'b0, defaultInstrD[22], 1'b0, //convert to MUL, preserve sign
 								1'b0, 4'b1111, // [19:16] Rd
 								4'b0000, //SBZ
 								defaultInstrD[11:0]}; 
@@ -111,7 +111,7 @@ always_comb
 									3'b000}; // 5th bit of WA3, RA2D and RA1D
 						nextState = multiply2;
 						uOpInstrD = {defaultInstrD[31:24], //we need to send the values in RdLo and RdHi to the multiplier
-								3'b100, defaultInstrD[20:16], //set the flags if requested
+								3'b101, defaultInstrD[20:16], //set the flags if requested
 								defaultInstrD[15:12],
 								defaultInstrD[15:12], 4'b1001, defaultInstrD[19:16]}; 
 					end

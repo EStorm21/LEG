@@ -117,29 +117,31 @@ Disassembly of section .text:
   d4:	e08a7695 	umull	r7, sl, r5, r6
   d8:	e08bb00a 	add	fp, fp, sl
   dc:	e08a8596 	umull	r8, sl, r6, r5
-  e0:	e2509001 	subs	r9, r0, #1
+  e0:	e08a8a99 	umull	r8, sl, r9, sl
   e4:	e08bb00a 	add	fp, fp, sl
-  e8:	408ba596 	umullmi	sl, fp, r6, r5
-  ec:	e0909000 	adds	r9, r0, r0
-  f0:	e08bb00a 	add	fp, fp, sl
-  f4:	508a1596 	umullpl	r1, sl, r6, r5
+  e8:	e2509001 	subs	r9, r0, #1
+  ec:	e08bb00a 	add	fp, fp, sl
+  f0:	408ca596 	umullmi	sl, ip, r6, r5
+  f4:	e0909000 	adds	r9, r0, r0
   f8:	e08bb00a 	add	fp, fp, sl
-  fc:	e09b9695 	umulls	r9, fp, r5, r6
- 100:	4280c001 	addmi	ip, r0, #1
- 104:	528cc002 	addpl	ip, ip, #2
- 108:	e08bb00a 	add	fp, fp, sl
- 10c:	e09b9090 	umulls	r9, fp, r0, r0
- 110:	028cc004 	addeq	ip, ip, #4
- 114:	128cc008 	addne	ip, ip, #8
- 118:	e280d102 	add	sp, r0, #-2147483648	; 0x80000000
- 11c:	e09d900d 	adds	r9, sp, sp
- 120:	e08bb00a 	add	fp, fp, sl
- 124:	e09b9090 	umulls	r9, fp, r0, r0
- 128:	6280e001 	addvs	lr, r0, #1
- 12c:	7280e002 	addvc	lr, r0, #2
- 130:	e2909000 	adds	r9, r0, #0
- 134:	6280e004 	addvs	lr, r0, #4
- 138:	7280e008 	addvc	lr, r0, #8
+  fc:	508a1596 	umullpl	r1, sl, r6, r5
+ 100:	e08bb00a 	add	fp, fp, sl
+ 104:	e0919695 	umulls	r9, r1, r5, r6
+ 108:	4280c001 	addmi	ip, r0, #1
+ 10c:	528cc002 	addpl	ip, ip, #2
+ 110:	e08bb00a 	add	fp, fp, sl
+ 114:	e0919090 	umulls	r9, r1, r0, r0
+ 118:	028cc004 	addeq	ip, ip, #4
+ 11c:	128cc008 	addne	ip, ip, #8
+ 120:	e280d102 	add	sp, r0, #-2147483648	; 0x80000000
+ 124:	e09d900d 	adds	r9, sp, sp
+ 128:	e08bb00a 	add	fp, fp, sl
+ 12c:	e0919090 	umulls	r9, r1, r0, r0
+ 130:	6280e001 	addvs	lr, r0, #1
+ 134:	7280e002 	addvc	lr, r0, #2
+ 138:	e2909000 	adds	r9, r0, #0
+ 13c:	6280e004 	addvs	lr, r0, #4
+ 140:	7280e008 	addvc	lr, r0, #8
 
-0000013c <end>:
- 13c:	eafffffe 	b	13c <end>
+00000144 <end>:
+ 144:	eafffffe 	b	144 <end>

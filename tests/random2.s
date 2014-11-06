@@ -12,1092 +12,1092 @@ val: .word 0xbefffae8
 
 next: ldr R1, val1
 b next1
-val1: .word 3713248012
+val1: .word 139375285
 next1: ldr R2, val2
 b next2
-val2: .word 3761309146
+val2: .word 1021001829
 next2: ldr R3, val3
 b next3
-val3: .word 2523447745
+val3: .word 1432079966
 next3: ldr R4, val4
 b next4
-val4: .word 3629700975
+val4: .word 3347280357
 next4: ldr R5, val5
 b next5
-val5: .word 4136257131
+val5: .word 406858473
 next5: ldr R6, val6
 b next6
-val6: .word 860196383
+val6: .word 1023825821
 next6: ldr R7, val7
 b next7
-val7: .word 3832033738
+val7: .word 2001385694
 next7: ldr R8, val8
 b next8
-val8: .word 2433801635
+val8: .word 153861217
 next8: ldr R9, val9
 b next9
-val9: .word 2070190771
+val9: .word 1336729792
 next9: ldr R10, val10
 b next10
-val10: .word 3441456850
+val10: .word 164431783
 next10: ldr R11, val11
 b next11
-val11: .word 3550453745
+val11: .word 3340126704
 next11: ldr R12, val12
 b next12
-val12: .word 3258118116
+val12: .word 1750840112
 next12: ldr R14, val14
 b next14
-val14: .word 2900323732
+val14: .word 113432640
 
 # INITIALIZING STACK
 
 next14: ldr R1, val15
 b next15
-val15: .word 3856146408
+val15: .word 1147078648
 next15: str R1, [sp, #-0]
 ldr R1, val16
 b next16
-val16: .word 1859836924
+val16: .word 2045211529
 next16: str R1, [sp, #-4]
 ldr R1, val17
 b next17
-val17: .word 1870894866
+val17: .word 4001086794
 next17: str R1, [sp, #-8]
 ldr R1, val18
 b next18
-val18: .word 3512355181
+val18: .word 1015691842
 next18: str R1, [sp, #-12]
 ldr R1, val19
 b next19
-val19: .word 2984863586
+val19: .word 2124216232
 next19: str R1, [sp, #-16]
 ldr R1, val20
 b next20
-val20: .word 3596207275
+val20: .word 3310418023
 next20: str R1, [sp, #-20]
 ldr R1, val21
 b next21
-val21: .word 2350363220
+val21: .word 929449971
 next21: str R1, [sp, #-24]
 ldr R1, val22
 b next22
-val22: .word 2060345061
+val22: .word 633789551
 next22: str R1, [sp, #-28]
 ldr R1, val23
 b next23
-val23: .word 3439239887
+val23: .word 1951994846
 next23: str R1, [sp, #-32]
 ldr R1, val24
 b next24
-val24: .word 897194597
+val24: .word 2405706772
 next24: str R1, [sp, #-36]
 ldr R1, val25
 b next25
-val25: .word 1631165388
+val25: .word 107834477
 next25: str R1, [sp, #-40]
 
 # MAIN PROGRAM
 
-l1: movGTs R4, #24
-l2: adcGT R2, R11, #24
-l3: cmnHI R14, R0, ROR #9
-l4: bLS l10
-l5: sub R12, R2, #20
-l6: b l9
-l7: strCC R8,  [sp, #-32]
-l8: andHIs R1,  R10,  R2
-l9: mulPL R5, R4, R7
-l10: adds r0, r0, r0
-l11: add R6, R8, R8, RRX
-l12: andLT R9,  R12,  R11
-l13: bGT l21
-l14: add R1, R0, #1
-l15: sbcLEs R1, R14, #40
-l16: adc R2, R8, R7, RRX
-l17: mvnPLs R7, R1, RRX
-l18: addPLs R5, R0, R3
-l19: tstVC R1, R6, ASR #9
-l20: b l22
-l21: b l15
-l22: addCS R5, R11, R10
-l23: mulLSs R9, R10, R8
-l24: adds r0, r0, r0
-l25: addLEs R3, R3, R10
-l26: addMI R4, R12, #20
-l27: sbcNEs R8, R12, #32
-l28: orrGT R10,  R8,  R3
-l29: mvn R8, #12
-l30: ldr R11,  [sp, #-32]
-l31: cmpPLs R11, R5, ROR #7
-l32: mla R12, R10, R0, R5
-l33: adds r0, r0, r0
-l34: mvn R0, R4, ASR #2
-l35: bicLS R11, R3, R6
-l36: and R5,  R14,  R7
-l37: movPLs R0, R11
-l38: cmpNEs R8, #32
-l39: andVS R14,  R9,  R12
-l40: mlaGTs R6, R2, R8, R8
+l1: addLTs R4, R6, R11
+l2: andVC R4,  R5,  R12
+l3: tstVS R4, #16
+l4: bicNE R3, R6, R5, ASR #22
+l5: teqLE R0, R7
+l6: sbcGTs R7, R4, #28
+l7: sbcEQ R9, R7, #28
+l8: sbcCCs R8, R12, R1
+l9: rsbMI R2, R8, #16
+l10: cmn R10, R11
+l11: sbcVC R2, R5, R12
+l12: bicVS R5, R5, R8
+l13: ldr R11,  [sp, #-40]
+l14: cmp R12, R4, ROR R2
+l15: cmpVC R2, R14, RRX
+l16: subHI R14, R1, #36
+l17: andCSs R9,  R1,  R3
+l18: bLS l24
+l19: add R1, R0, #89
+l20: bicGE R11, R1, R4, RRX
+l21: cmpMI R3, R9
+l22: cmnLTs R0, R8
+l23: b l25
+l24: b l20
+l25: eorEQ R10,  R8,  R11
+l26: andLE R9,  R7,  R9
+l27: bicVS R9, R2, R4, LSR R9
+l28: umullVS R8, R9, R5, R1
+l29: adds r0, r0, r0
+l30: andEQs R2,  R12,  R10
+l31: mvnGEs R11, #8
+l32: eorPL R11,  R7,  R11
+l33: mvnLEs R14, R2, RRX
+l34: smullGE R4, R8, R9, R1
+l35: adds r0, r0, r0
+l36: mulMIs R8, R7, R5
+l37: adds r0, r0, r0
+l38: orrVS R2,  R3,  R3
+l39: andCSs R7,  R10,  R3
+l40: smullPL R1, R3, R12, R11
 l41: adds r0, r0, r0
-l42: mvnPLs R10, R1, RRX
-l43: eorCS R10,  R12,  R8
-l44: teqMI R5, #40
-l45: ldrLE R12,  [sp, #-32]
-l46: eor R6,  R4,  R14
-l47: bVC l57
-l48: cmnEQs R10, R10, RRX
-l49: orrVCs R3,  R7,  R6
-l50: b l54
-l51: add R1, R0, #190
-l52: subMIs R9, R3, #40
-l53: b l55
-l54: b l52
-l55: orrGE R4,  R5,  R0
-l56: bicLEs R6, R2, R7, ROR #6
-l57: cmnHIs R6, R8, ASR #25
-l58: cmnCS R4, R9, RRX
-l59: movLT R7, #24
-l60: eorHIs R1,  R2,  R12
-l61: bicEQ R10, R0, R1
-l62: bicLE R11, R1, R9, LSR R2
-l63: addVS R14, R7, #12
-l64: orrGT R4,  R6,  R9
-l65: eorVC R7,  R7,  R3
-l66: mvn R9, R10, LSR R6
-l67: movPL R3, R3, LSL #7
-l68: orrVC R10,  R0,  R7
-l69: teqEQ R14, R12, LSR R3
-l70: rsbNEs R1, R5, R11, ROR #19
-l71: bNE l79
-l72: ldr R6,  [sp, #-28]
-l73: cmnGE R10, R12
-l74: mvnNEs R14, R5
-l75: rsbCS R1, R12, R2, ROR R4
-l76: andPLs R7,  R5,  R9
-l77: tstHIs R0, R14, RRX
-l78: movPLs R3, #12
-l79: sub R14, R8, R12, LSR #2
-l80: cmnCS R0, R5
-l81: ldrPL R7,  [sp, #-40]
-l82: cmpLEs R14, R4, RRX
-l83: bVC l85
-l84: ldrMI R6,  [sp, #-24]
-l85: bCC l90
-l86: adcGT R3, R14, R4, LSR #8
-l87: eorGTs R7,  R2,  R14
-l88: mlaEQ R8, R9, R8, R2
-l89: adds r0, r0, r0
-l90: andVCs R11,  R14,  R14
-l91: sbcGEs R8, R0, R11
-l92: movCC R2, R3
-l93: cmnHI R0, #12
-l94: b l101
-l95: bVS l103
-l96: cmpCS R1, R1
-l97: andHIs R11,  R9,  R6
-l98: ldrGE R10,  [sp, #-40]
-l99: ldr R4,  [sp, #-12]
-l100: subLE R11, R7, R10, ROR #21
-l101: bCC l106
-l102: add R1, R0, #152
-l103: subGTs R6, R4, R11, LSL #7
-l104: add R7, R7, #20
-l105: b l107
-l106: b l103
-l107: mvnGT R10, R11, RRX
-l108: movGEs R11, R0, LSR #31
-l109: eorGE R10,  R10,  R7
-l110: movPL R3, #20
-l111: bicPLs R11, R3, #12
-l112: eorLTs R10,  R7,  R12
-l113: bicLEs R14, R14, #20
-l114: ldrLE R12,  [sp, #-8]
-l115: bGE l123
-l116: add R1, R0, #177
-l117: teqGTs R8, #12
-l118: cmp R10, R11
-l119: cmnLE R14, R2
-l120: tstEQs R12, #24
-l121: cmn R7, R1, ROR #25
-l122: b l124
-l123: b l117
-l124: tstNE R11, R14, ASR R6
-l125: adcPL R5, R3, #20
-l126: rsbCSs R3, R11, #24
-l127: adcNEs R9, R10, R6
-l128: addMI R1, R12, #20
-l129: andNEs R3,  R7,  R11
-l130: tstPL R6, R14, ROR #19
-l131: orrLEs R4,  R6,  R9
-l132: cmp R0, #12
-l133: adcHI R5, R9, #12
-l134: addHIs R0, R8, R11, LSR R5
-l135: subCCs R12, R10, R11, LSL R11
-l136: eor R11,  R11,  R11
-l137: movCCs R12, R2, RRX
-l138: cmpEQs R8, #20
-l139: teqCSs R8, R14, LSL R1
-l140: bVS l148
-l141: eorPLs R1,  R8,  R3
-l142: eorMI R12,  R0,  R8
-l143: rsbMI R3, R11, R14, LSL R3
-l144: movEQ R1, R0, RRX
-l145: bLE l150
-l146: teqNEs R11, R3
-l147: adcLTs R0, R2, R5
-l148: mvn R1, R8, RRX
-l149: bPL l154
-l150: add R1, R0, #141
-l151: cmnPLs R0, R2, ROR R9
-l152: mvn R1, #12
-l153: b l155
-l154: b l151
-l155: cmp R0, #24
-l156: addGTs R12, R7, R14, RRX
-l157: teqHI R5, #20
-l158: adc R14, R11, R0, ROR #7
-l159: addVCs R3, R8, #12
-l160: cmpCS R8, R8, RRX
-l161: cmpPL R14, #12
-l162: mvnHI R2, R3
-l163: andPLs R7,  R2,  R5
-l164: b l169
-l165: add R1, R0, #107
-l166: sub R6, R7, #24
-l167: subLS R14, R4, R10
-l168: b l170
-l169: b l166
-l170: mvnLT R12, R12
-l171: orrGTs R9,  R2,  R11
-l172: bLT l180
-l173: add R1, R0, #40
-l174: teqCC R1, R10
-l175: sbcCCs R14, R1, #12
-l176: rsbGEs R2, R11, #32
-l177: mvnHIs R12, R6, LSL #7
-l178: sbcGEs R4, R14, #20
-l179: b l181
-l180: b l174
-l181: movHIs R14, R4
-l182: sbcLSs R10, R14, #20
-l183: mvnGE R5, R9
-l184: subLS R8, R2, #24
-l185: strNE R6,  [sp, #-8]
-l186: bEQ l192
-l187: teqMIs R0, R1, LSR R5
-l188: movGEs R5, R11, LSR #13
-l189: mla R9, R8, R11, R12
-l190: adds r0, r0, r0
-l191: cmnLT R5, R9, RRX
-l192: orrVCs R10,  R3,  R8
-l193: movMI R2, R8, ASR R7
-l194: mvnVSs R12, R6, LSL R4
-l195: orrGE R5,  R2,  R11
-l196: teqMI R0, #24
-l197: mulVC R11, R12, R6
-l198: adds r0, r0, r0
-l199: addEQs R7, R5, R9
-l200: mvnCCs R10, R12
-l201: movGE R3, #24
-l202: b l205
-l203: eorCSs R5,  R5,  R14
-l204: b l213
-l205: add R1, R0, #14
-l206: tstLT R0, R7
-l207: mvnLEs R4, R4, LSR #7
-l208: movMIs R10, #12
-l209: mvnVCs R2, R1
-l210: cmnVS R2, R0
-l211: cmnLSs R1, #20
-l212: b l214
-l213: b l206
-l214: movHIs R2, R4
-l215: mov R10, #20
-l216: cmnCSs R10, R0, ROR R11
-l217: bVC l220
-l218: bEQ l227
-l219: add R1, R0, #112
-l220: mvnVSs R3, R5, ROR R4
-l221: cmnNE R8, R1
-l222: addCSs R10, R0, #12
-l223: sbcLS R14, R7, R8, RRX
-l224: bicMI R8, R2, R1, LSL R10
-l225: teqLTs R8, R3
-l226: b l228
-l227: b l220
-l228: subLEs R8, R12, R3, RRX
-l229: mvn R14, #24
-l230: cmpCC R14, #36
-l231: adcEQs R10, R9, R6
-l232: cmpGT R3, R7, LSR R14
-l233: mlaPLs R12, R7, R0, R0
-l234: adds r0, r0, r0
-l235: bLT l239
-l236: cmpPL R2, R4, ROR R6
-l237: rsbPLs R14, R9, R14, ROR #19
-l238: ldrEQ R8,  [sp, #-4]
-l239: bLS l246
-l240: cmpNEs R9, R12, LSL #2
-l241: cmpMIs R4, R9, RRX
-l242: adc R14, R1, R0, RRX
-l243: bNE l251
-l244: add R1, R0, #203
-l245: tstCSs R1, #24
-l246: tstCSs R10, R0
-l247: teqCC R6, R0
-l248: addLE R12, R5, #36
-l249: tstHIs R3, R8, ROR #8
-l250: b l252
-l251: b l245
-l252: add R11, R2, #24
-l253: teqCSs R0, R6
-l254: bNE l263
-l255: add R1, R0, #165
-l256: tst R4, R2
-l257: tstCSs R4, #24
-l258: cmpMI R2, R4, ROR #25
-l259: tstEQs R11, R5
-l260: cmnLS R1, #20
-l261: cmpLEs R5, R3
-l262: b l264
-l263: b l256
-l264: orrMI R4,  R7,  R9
-l265: adcMI R9, R3, R12, RRX
-l266: tstCCs R11, R3, LSL #2
-l267: bicCCs R6, R11, R9, LSL #8
-l268: cmnNEs R5, R1, ROR R12
-l269: orrCC R3,  R10,  R9
-l270: addLSs R4, R0, #24
-l271: subCS R10, R3, #12
-l272: eorMI R0,  R12,  R9
-l273: mlaLS R1, R0, R14, R14
-l274: adds r0, r0, r0
-l275: b l278
-l276: cmpCCs R9, R10, ROR R8
-l277: mla R3, R6, R9, R3
-l278: adds r0, r0, r0
-l279: bMI l283
-l280: andVC R10,  R8,  R12
-l281: andLT R6,  R14,  R11
-l282: cmpCC R12, R9
-l283: bicVCs R7, R10, R6
-l284: rsbCS R0, R2, #8
-l285: addCC R7, R6, R4
-l286: subPLs R7, R0, R9, ASR #25
-l287: teqLSs R9, R8, RRX
-l288: sub R1, R0, #24
-l289: eor R1,  R1,  R6
-l290: subGT R3, R1, #12
-l291: subVS R3, R4, R4, ASR #2
-l292: rsbLEs R11, R2, R14, LSL #7
-l293: tstEQs R9, R1
-l294: mulNE R3, R11, R6
-l295: adds r0, r0, r0
-l296: bLE l297
-l297: sbcCC R9, R0, R7
-l298: movPL R12, #36
-l299: movGTs R11, R1
-l300: ldrVS R12,  [sp, #-24]
-l301: movLEs R12, R2, LSR R7
-l302: ldr R12,  [sp, #-36]
-l303: mov R4, R10
-l304: subHIs R0, R6, R2, LSR #2
-l305: cmnMI R0, R11, LSR #2
-l306: orrLT R10,  R14,  R6
-l307: mlaVC R4, R12, R5, R1
-l308: adds r0, r0, r0
-l309: bVC l311
-l310: mulHI R5, R6, R6
-l311: adds r0, r0, r0
-l312: mvnLSs R8, R6, LSL R4
-l313: add R14, R9, R6, ROR #7
-l314: mvnNEs R12, #12
-l315: teqGT R5, #12
-l316: bicNE R1, R0, #20
-l317: add R11, R14, R10
-l318: movGT R0, #20
-l319: eorLS R7,  R14,  R3
-l320: adcHIs R11, R8, R2, LSL #2
-l321: orrLS R9,  R12,  R11
-l322: orrVCs R5,  R2,  R8
-l323: andCSs R3,  R1,  R8
-l324: rsbVCs R1, R6, R12, ASR #31
-l325: cmnVC R7, R12, ASR #8
-l326: bicLT R2, R6, #24
-l327: orrGE R4,  R0,  R9
-l328: rsb R3, R3, R7, LSL R9
-l329: andEQs R9,  R11,  R11
-l330: rsbCC R2, R6, R3, LSL R0
-l331: bicCCs R1, R8, R8, LSL #8
-l332: bVS l336
-l333: add R1, R0, #220
-l334: addPLs R11, R7, #12
-l335: b l337
-l336: b l334
-l337: mlaLT R3, R12, R5, R9
-l338: adds r0, r0, r0
-l339: eor R4,  R3,  R4
-l340: eorMI R1,  R11,  R8
-l341: rsbGE R14, R7, R8, ASR R8
-l342: cmn R14, #32
-l343: sbcLS R9, R7, R2
-l344: ldr R8,  [sp, #-4]
-l345: cmpCC R3, R1
-l346: cmpLEs R1, R10, ROR R0
-l347: orrVCs R0,  R8,  R5
-l348: and R0,  R8,  R10
-l349: movVCs R12, R4, ROR #29
-l350: bGE l357
-l351: bVC l359
-l352: bGT l359
-l353: adc R6, R2, R5
-l354: bicCC R4, R1, R12, ASR #2
-l355: addPLs R0, R4, R7
-l356: strPL R2,  [sp, #-40]
-l357: andVCs R6,  R4,  R12
-l358: mvnCCs R6, R9
-l359: eorLS R0,  R14,  R11
-l360: ldrCC R3,  [sp, #-16]
-l361: bCS l365
-l362: add R1, R0, #25
-l363: movMI R2, R8, ASR #26
-l364: b l366
-l365: b l363
-l366: andVC R8,  R9,  R1
-l367: bCS l372
-l368: add R1, R0, #26
-l369: adc R3, R8, R4, ASR R1
-l370: cmpPL R11, R7
-l371: b l373
-l372: b l369
-l373: tstEQ R2, R6
-l374: cmnMI R7, R14
-l375: sbcMIs R5, R3, R8, RRX
-l376: mulLT R7, R8, R6
-l377: adds r0, r0, r0
-l378: bicCSs R3, R8, R3
-l379: rsbCS R7, R11, #12
-l380: subGTs R10, R5, R9, LSR #7
-l381: andLE R4,  R12,  R10
-l382: mla R14, R11, R11, R9
-l383: adds r0, r0, r0
-l384: movCC R12, R4, RRX
-l385: sbcVSs R10, R11, R8, LSR #29
-l386: sbcVS R5, R4, #24
-l387: bLT l390
-l388: movNE R3, R11, RRX
-l389: cmpVSs R1, R4, LSL #9
-l390: adcEQ R0, R3, R6, ROR #7
-l391: ldr R2,  [sp, #-16]
-l392: bGE l397
-l393: add R1, R0, #190
-l394: bicVS R4, R7, #12
-l395: subVSs R2, R0, #24
-l396: b l398
-l397: b l394
-l398: mlaNEs R1, R9, R4, R9
-l399: adds r0, r0, r0
-l400: orrGTs R9,  R2,  R8
-l401: andPLs R3,  R11,  R8
-l402: mvnHI R11, #12
-l403: eor R2,  R8,  R7
-l404: ldr R14,  [sp, #-20]
-l405: mulEQs R1, R1, R11
-l406: adds r0, r0, r0
-l407: sbcMI R11, R2, R1
-l408: mvnGEs R6, R14
-l409: rsbCS R10, R14, R8, ASR R14
-l410: addCCs R6, R4, R2, LSL R10
-l411: andEQs R11,  R5,  R9
-l412: subGTs R5, R1, #12
-l413: cmpNE R12, #12
-l414: cmp R7, R0, ROR #2
-l415: bicPLs R1, R11, R8, LSR #13
-l416: adcMIs R10, R14, R2, ASR #6
-l417: mvnCS R11, R1, RRX
-l418: addLS R5, R4, #12
-l419: mulNEs R14, R9, R2
-l420: adds r0, r0, r0
-l421: eorNEs R5,  R9,  R6
-l422: teqCC R2, R9
-l423: mvnCC R1, R7
-l424: addCC R3, R11, #12
-l425: sbc R1, R8, R9, ASR R3
-l426: addCSs R5, R9, R4
-l427: tstVC R2, #20
-l428: tstCSs R14, #12
-l429: cmp R9, R0, LSL #1
-l430: eorCSs R1,  R8,  R2
-l431: bHI l440
-l432: add R1, R0, #82
-l433: addLE R0, R10, R9, RRX
-l434: subLS R4, R5, #12
-l435: add R5, R10, R1, ROR R4
-l436: cmpCC R6, R7, LSL #13
-l437: mvnNEs R2, R8, ASR #6
-l438: adcLEs R14, R8, R5, ROR R12
-l439: b l441
-l440: b l433
-l441: subLEs R14, R5, R14, ASR #19
-l442: rsbVS R6, R8, R5, ROR R10
-l443: cmpCCs R1, #24
-l444: bic R0, R9, R8
-l445: mlaGTs R3, R6, R14, R10
+l42: mla R7, R1, R2, R2
+l43: adds r0, r0, r0
+l44: umullNE R12, R2, R11, R7
+l45: adds r0, r0, r0
+l46: cmp R3, R9, RRX
+l47: mvnGTs R10, R8, ASR #22
+l48: mlaGTs R10, R6, R7, R12
+l49: adds r0, r0, r0
+l50: ldrLT R0,  [sp, #-4]
+l51: bGT l56
+l52: add R1, R0, #251
+l53: cmn R8, R2
+l54: cmpVS R3, R4, ROR R5
+l55: b l57
+l56: b l53
+l57: adcEQ R8, R11, R6, LSR R7
+l58: b l59
+l59: movLEs R3, R1
+l60: smullGTs R7, R8, R9, R9
+l61: adds r0, r0, r0
+l62: movVS R1, R1
+l63: teqNEs R4, R12, RRX
+l64: movPL R5, R5
+l65: and R4,  R10,  R6
+l66: bVC l71
+l67: add R8, R12, #28
+l68: bCC l78
+l69: b l71
+l70: tstLTs R11, R9, ASR #21
+l71: bicCCs R12, R6, R1
+l72: andLE R8,  R14,  R3
+l73: bPL l77
+l74: add R1, R0, #100
+l75: sub R7, R10, R12, LSL #19
+l76: b l78
+l77: b l75
+l78: mvnMIs R0, R7, LSR R4
+l79: cmnCCs R5, R4, ASR #18
+l80: cmpGT R8, R1
+l81: andEQ R5,  R6,  R0
+l82: adcPLs R8, R5, #8
+l83: smullHI R4, R0, R6, R12
+l84: adds r0, r0, r0
+l85: bEQ l89
+l86: add R1, R0, #221
+l87: subMIs R5, R7, #40
+l88: b l90
+l89: b l87
+l90: bGE l98
+l91: add R1, R0, #225
+l92: cmnCS R5, R10, ASR #21
+l93: tstVS R4, R3, ROR #24
+l94: rsbCSs R2, R0, R7, LSR R3
+l95: tstHI R9, R12, RRX
+l96: cmpLS R5, R9, LSR R12
+l97: b l99
+l98: b l92
+l99: mvnCSs R14, #20
+l100: teqLEs R11, R3, ROR #8
+l101: adcLTs R5, R11, R6, ASR #12
+l102: strLS R12,  [sp, #-28]
+l103: bVS l109
+l104: add R1, R0, #104
+l105: cmpVSs R4, #28
+l106: addLT R11, R6, R2, RRX
+l107: rsb R10, R9, R10
+l108: b l110
+l109: b l105
+l110: rsbVS R12, R11, R0, ASR R12
+l111: mvnEQs R4, R8
+l112: sub R8, R6, R3
+l113: andCS R9,  R9,  R1
+l114: sbcLEs R4, R6, R2, ROR #8
+l115: str R4,  [sp, #-16]
+l116: andEQs R10,  R8,  R7
+l117: andHI R6,  R2,  R7
+l118: eorEQ R11,  R4,  R14
+l119: andPL R7,  R2,  R5
+l120: eor R7,  R9,  R10
+l121: cmnLT R14, #16
+l122: adcHIs R2, R11, R8, LSR #24
+l123: mvnNEs R11, R9, ROR #17
+l124: subMI R6, R1, R10, LSR #18
+l125: bCC l131
+l126: add R1, R0, #180
+l127: adcPLs R0, R4, R5, ASR R9
+l128: sbcEQs R12, R1, R9
+l129: teq R4, R11, LSR #8
+l130: b l132
+l131: b l127
+l132: eorHIs R10,  R10,  R0
+l133: cmnVSs R11, R11, ROR #13
+l134: and R1,  R5,  R10
+l135: teqVC R14, R9, ASR R2
+l136: bPL l141
+l137: add R1, R0, #190
+l138: bicGE R1, R0, R12
+l139: movMIs R1, R11, ASR R9
+l140: b l142
+l141: b l138
+l142: mlaMI R12, R11, R6, R10
+l143: adds r0, r0, r0
+l144: cmpGT R4, #8
+l145: mulLSs R1, R8, R7
+l146: adds r0, r0, r0
+l147: bicCSs R8, R11, #4
+l148: bNE l153
+l149: add R1, R0, #6
+l150: cmnLEs R2, R0, LSL #19
+l151: cmpLT R12, R10, RRX
+l152: b l154
+l153: b l150
+l154: add R12, R3, R14
+l155: tstPLs R5, R9, LSR #13
+l156: orrGE R3,  R9,  R7
+l157: orrGT R3,  R11,  R1
+l158: mov R7, R4, LSL #3
+l159: addVCs R0, R4, #8
+l160: bicGT R12, R4, #28
+l161: sbcNE R8, R2, R12, LSL #25
+l162: orrGT R10,  R14,  R3
+l163: mvn R6, R11, ASR R4
+l164: rsbVS R11, R6, R11, LSR #13
+l165: tst R9, R11, LSR #24
+l166: bGT l175
+l167: add R1, R0, #250
+l168: tstCS R5, R1, ASR #12
+l169: bicVS R5, R12, R9
+l170: mvnCCs R11, R6, LSL #21
+l171: teqVCs R2, #8
+l172: adcHIs R0, R8, R2, ROR R5
+l173: adcVCs R2, R14, R7, RRX
+l174: b l176
+l175: b l168
+l176: mlaVSs R4, R12, R2, R12
+l177: adds r0, r0, r0
+l178: addGEs R6, R8, R0, LSL #25
+l179: tstPLs R1, R8
+l180: cmnHIs R5, #28
+l181: sbcLEs R11, R8, R10, LSR #22
+l182: cmpCC R6, R10, RRX
+l183: umullGTs R14, R1, R12, R14
+l184: adds r0, r0, r0
+l185: adc R14, R12, #28
+l186: eorPL R4,  R10,  R0
+l187: teqLSs R11, R2, LSL #19
+l188: sbcMIs R8, R6, R9, LSL #17
+l189: b l198
+l190: add R1, R0, #1
+l191: mvnEQ R3, R0
+l192: rsbLEs R14, R2, R10
+l193: rsbGEs R8, R10, R4
+l194: subCSs R8, R7, R14, ROR #24
+l195: mvnLT R14, R10
+l196: adcPLs R8, R8, R2
+l197: b l199
+l198: b l191
+l199: addLEs R11, R6, R14
+l200: subVSs R6, R1, R7, LSL #12
+l201: strGT R0,  [sp, #-28]
+l202: orrGTs R8,  R9,  R14
+l203: cmnLT R8, #28
+l204: rsbLT R12, R4, R4
+l205: mvnHI R5, #40
+l206: eorNEs R3,  R8,  R4
+l207: cmnMI R7, R7, RRX
+l208: smullGTs R8, R7, R12, R2
+l209: adds r0, r0, r0
+l210: tstLT R9, #40
+l211: smullVCs R4, R3, R5, R14
+l212: adds r0, r0, r0
+l213: cmpGEs R14, R14, ASR R8
+l214: bic R2, R10, #40
+l215: movVSs R1, R11, ROR #27
+l216: orrLSs R11,  R14,  R9
+l217: subPLs R3, R2, R11, LSR R6
+l218: cmp R3, R11, RRX
+l219: teqPLs R9, R12, ASR #19
+l220: mvnMI R10, R9, LSR R0
+l221: ldr R7,  [sp, #-8]
+l222: tstCCs R1, #8
+l223: adcHI R14, R7, R14, RRX
+l224: sbcLEs R11, R6, R6, ASR #19
+l225: movHIs R9, R5, LSR R9
+l226: bLS l227
+l227: movVSs R1, R1, ROR #19
+l228: bVS l232
+l229: eorHIs R3,  R8,  R0
+l230: smull R4, R6, R1, R1
+l231: adds r0, r0, r0
+l232: b l239
+l233: add R1, R0, #224
+l234: tstEQ R11, R14, LSR R7
+l235: tstNEs R1, R11, RRX
+l236: sbc R8, R0, #4
+l237: subLT R7, R0, R0
+l238: b l240
+l239: b l234
+l240: bic R3, R3, R11, LSL #21
+l241: mvn R5, R1, ROR R2
+l242: mulEQ R0, R2, R10
+l243: adds r0, r0, r0
+l244: orrLSs R8,  R7,  R3
+l245: bCS l249
+l246: add R1, R0, #99
+l247: rsbLS R11, R12, R2
+l248: b l250
+l249: b l247
+l250: movMI R14, R2, LSR R14
+l251: mvnVSs R6, R11
+l252: teqGT R4, R3, RRX
+l253: orr R3,  R14,  R8
+l254: tst R1, #24
+l255: mla R1, R10, R11, R2
+l256: adds r0, r0, r0
+l257: ldr R3,  [sp, #-24]
+l258: smullLT R6, R0, R14, R6
+l259: adds r0, r0, r0
+l260: cmpNE R6, R8
+l261: cmnMIs R1, R7, ROR #3
+l262: rsbCSs R12, R5, R12, LSL R11
+l263: mlaHI R1, R0, R14, R6
+l264: adds r0, r0, r0
+l265: addEQs R1, R14, R2, LSR #22
+l266: mulMIs R5, R5, R11
+l267: adds r0, r0, r0
+l268: mvnPL R9, R0, LSR #12
+l269: str R12,  [sp, #-40]
+l270: eorMIs R8,  R9,  R4
+l271: tst R3, R4, LSR R11
+l272: movGEs R14, R5
+l273: bEQ l280
+l274: bic R1, R5, R10
+l275: eorCS R4,  R3,  R2
+l276: bLE l283
+l277: rsbVCs R14, R9, R1, RRX
+l278: bCC l282
+l279: cmpLS R0, R0
+l280: addLT R0, R12, R11, LSL R12
+l281: teqGEs R7, #40
+l282: mulPL R0, R8, R5
+l283: adds r0, r0, r0
+l284: cmp R9, R6, LSL #12
+l285: tstLS R8, R11, LSR #22
+l286: eor R11,  R11,  R10
+l287: adcLSs R1, R6, #8
+l288: sbcHI R0, R11, R6, ASR R6
+l289: bicLEs R10, R1, R3, LSR R9
+l290: bEQ l298
+l291: bHI l292
+l292: eorPLs R3,  R6,  R9
+l293: addVSs R8, R1, #36
+l294: teqPLs R5, R6, RRX
+l295: cmp R3, R8
+l296: andVSs R2,  R0,  R11
+l297: tstGEs R0, #40
+l298: eorEQ R7,  R10,  R12
+l299: teqEQ R0, #40
+l300: adc R5, R3, #28
+l301: strNE R5,  [sp, #-4]
+l302: orrVCs R8,  R0,  R3
+l303: movVS R8, R14, LSL R5
+l304: subGEs R12, R1, #4
+l305: bicLTs R3, R0, #8
+l306: and R11,  R10,  R4
+l307: adcLTs R1, R5, R11
+l308: str R11,  [sp, #-8]
+l309: teqLS R8, #40
+l310: subGEs R9, R5, R9, ASR R10
+l311: orrPLs R5,  R12,  R11
+l312: andPLs R2,  R7,  R12
+l313: andLS R4,  R2,  R3
+l314: tstNE R8, #8
+l315: andVC R11,  R8,  R5
+l316: ldrNE R6,  [sp, #-12]
+l317: eor R8,  R9,  R12
+l318: andPLs R4,  R4,  R8
+l319: bNE l325
+l320: add R1, R0, #175
+l321: cmpMIs R8, R10, LSR #18
+l322: rsbPLs R7, R5, R1
+l323: adcGT R8, R3, R1, ROR R1
+l324: b l326
+l325: b l321
+l326: tstCC R8, R8, ROR R14
+l327: teqLSs R11, R7, LSL #30
+l328: bicNE R4, R11, R9
+l329: addPLs R0, R1, R10, ROR R11
+l330: cmnMIs R0, R6, RRX
+l331: movCCs R9, R0, LSR #12
+l332: tstNEs R11, R12, ROR #27
+l333: cmpLTs R11, R12, ROR R4
+l334: cmp R11, R12, ASR #12
+l335: rsbGTs R6, R9, R5
+l336: strVS R12,  [sp, #-8]
+l337: addLEs R8, R8, R1, LSR R6
+l338: orrLSs R8,  R6,  R8
+l339: ldrCS R3,  [sp, #-4]
+l340: movCCs R14, #40
+l341: bicEQs R6, R12, R3
+l342: rsbGT R4, R11, R9
+l343: bicVSs R5, R0, R5, LSL #17
+l344: movLTs R4, #40
+l345: strEQ R4,  [sp, #-16]
+l346: sbc R8, R14, R0, LSL R12
+l347: addNEs R2, R8, #16
+l348: bLS l356
+l349: add R1, R0, #172
+l350: cmnPL R2, R3, LSR R0
+l351: bicPLs R12, R12, #40
+l352: addLEs R5, R0, R14, LSL R8
+l353: subGE R11, R3, R14, ROR R11
+l354: rsbLTs R2, R5, R3, ASR #30
+l355: b l357
+l356: b l350
+l357: mvnLSs R0, R12
+l358: mvnNEs R2, R2, LSR #12
+l359: sbcGTs R4, R0, R12, LSL R4
+l360: sbcCCs R9, R0, #8
+l361: tstLE R4, #28
+l362: orrCCs R10,  R12,  R3
+l363: tstCS R1, R8, LSR R5
+l364: bVC l373
+l365: add R1, R0, #101
+l366: addCC R2, R8, R10, ROR #27
+l367: mvnPL R3, #40
+l368: sbc R8, R11, R14, LSL R14
+l369: cmnNEs R9, R6, LSL R2
+l370: mvnVC R1, R11
+l371: cmnVS R7, #40
+l372: b l374
+l373: b l366
+l374: b l384
+l375: teqNEs R11, #4
+l376: orr R14,  R6,  R4
+l377: eorEQ R5,  R0,  R4
+l378: tst R2, R1, LSL R9
+l379: andPLs R12,  R1,  R10
+l380: adc R14, R10, R6, LSR #25
+l381: teqLSs R9, R7, ASR #25
+l382: andCCs R6,  R1,  R8
+l383: teqGT R4, R3
+l384: andNEs R10,  R0,  R4
+l385: sbcHIs R0, R0, #28
+l386: rsbLSs R11, R5, R3, LSL R4
+l387: tstCS R6, R4, RRX
+l388: addGTs R5, R7, R7
+l389: adcEQs R14, R11, #4
+l390: movGE R7, R14, LSR #21
+l391: umullVSs R5, R3, R2, R11
+l392: adds r0, r0, r0
+l393: orrEQs R9,  R5,  R6
+l394: sbcGT R3, R3, R4
+l395: ldr R11,  [sp, #-12]
+l396: bicCS R10, R2, R7, RRX
+l397: cmnCS R6, R5, RRX
+l398: bVS l402
+l399: bLE l401
+l400: str R4,  [sp, #-24]
+l401: orrVC R5,  R8,  R1
+l402: bVS l410
+l403: addHI R3, R3, R1
+l404: bicCS R6, R4, R1
+l405: sbcEQ R7, R2, R1
+l406: subLTs R6, R3, R8, ASR #8
+l407: bVC l417
+l408: movEQ R2, #36
+l409: cmpVCs R0, R0, RRX
+l410: andGTs R5,  R2,  R11
+l411: umullNEs R9, R8, R14, R2
+l412: adds r0, r0, r0
+l413: orrEQ R6,  R9,  R11
+l414: smullHIs R1, R11, R8, R9
+l415: adds r0, r0, r0
+l416: teqHI R0, R14, ROR #8
+l417: umullVC R2, R10, R7, R8
+l418: adds r0, r0, r0
+l419: sbcLSs R6, R8, #4
+l420: tstGT R2, #16
+l421: orrEQs R7,  R12,  R14
+l422: strGT R12,  [sp, #-8]
+l423: movVC R9, R8, ROR R5
+l424: mov R11, #28
+l425: bicVC R10, R6, R5
+l426: bNE l433
+l427: cmn R14, R4, RRX
+l428: addCCs R2, R12, R10
+l429: mvnLTs R4, R8, ROR #13
+l430: cmnNEs R1, R11, LSL R12
+l431: subLTs R3, R7, #28
+l432: andGTs R10,  R4,  R7
+l433: addLTs R5, R1, R12, LSL R2
+l434: orrCCs R12,  R9,  R1
+l435: cmnLTs R8, #8
+l436: bCC l439
+l437: add R10, R1, #20
+l438: addGE R8, R7, R4, RRX
+l439: movMI R8, #8
+l440: smull R6, R1, R11, R5
+l441: adds r0, r0, r0
+l442: teq R12, R7, ROR R11
+l443: mulVS R0, R10, R6
+l444: adds r0, r0, r0
+l445: mlaNEs R11, R14, R2, R3
 l446: adds r0, r0, r0
-l447: orrGE R11,  R0,  R1
-l448: subCCs R5, R1, R4, LSR #7
-l449: eorLE R11,  R14,  R0
-l450: orrCC R9,  R0,  R1
-l451: bNE l458
-l452: adcHIs R8, R11, R8, LSL #2
-l453: teqGE R6, R0, LSR R14
-l454: strHI R9,  [sp, #-24]
-l455: bGE l463
-l456: sbcPL R7, R0, R10, LSR R8
-l457: tstEQs R8, R2
-l458: addLEs R12, R14, R6
-l459: bEQ l465
-l460: strLT R0,  [sp, #-8]
-l461: adcHI R5, R14, R12, ROR R3
-l462: cmpGT R3, #24
-l463: tstLE R3, R3, ASR #2
-l464: orrVS R4,  R2,  R4
-l465: mvnVSs R5, R2, RRX
-l466: subLE R8, R9, #20
-l467: eorLE R3,  R5,  R14
-l468: subPL R14, R14, R10
-l469: cmnLE R8, #12
-l470: bicLEs R12, R9, R10
-l471: bGE l478
-l472: add R1, R0, #124
-l473: addNE R0, R4, #40
-l474: mvnLS R9, #32
-l475: subGT R11, R7, R9, LSR #13
-l476: teqVCs R14, R9, ASR R6
-l477: b l479
-l478: b l473
-l479: bicGT R0, R11, R12, ROR #8
-l480: bMI l488
-l481: add R1, R0, #226
-l482: adcVSs R12, R2, R6
-l483: sbcLE R7, R10, R11
-l484: tstGE R7, R5, LSL #7
-l485: bicCCs R14, R4, R7, LSR #9
-l486: mvnVCs R6, R10, LSR #21
-l487: b l489
-l488: b l482
-l489: bPL l496
-l490: subMIs R7, R8, #24
-l491: mulVSs R2, R8, R7
-l492: adds r0, r0, r0
-l493: b l496
-l494: adc R2, R0, #12
-l495: subEQs R2, R2, #12
-l496: mlaNE R3, R4, R5, R11
-l497: adds r0, r0, r0
-l498: movLSs R5, R1
-l499: ldrPL R4,  [sp, #-8]
-l500: rsbCCs R6, R4, R2
-l501: eorVCs R9,  R7,  R3
-l502: bVC l508
-l503: teqMIs R12, R1
-l504: cmpNEs R7, R7, ASR R9
-l505: mulVC R9, R2, R8
-l506: adds r0, r0, r0
-l507: orrLS R0,  R4,  R8
-l508: teqHIs R12, #20
-l509: sbcNEs R5, R11, R6, ROR R10
-l510: mlaNEs R9, R4, R10, R5
-l511: adds r0, r0, r0
-l512: eor R4,  R6,  R5
-l513: tstLT R9, R11
-l514: cmnNEs R1, R4, RRX
-l515: bEQ l521
-l516: add R1, R0, #158
-l517: cmnLSs R7, R11, RRX
-l518: adcLS R4, R0, R11, LSR R3
-l519: cmpCSs R14, R8
-l520: b l522
-l521: b l517
-l522: movLS R9, #20
-l523: eorEQs R10,  R9,  R14
-l524: eorPLs R9,  R7,  R7
-l525: mvnLEs R1, R3, ROR #1
-l526: andNEs R3,  R6,  R6
-l527: mvnGE R10, R14, ROR #6
-l528: eorVC R8,  R11,  R11
-l529: cmp R4, R8, LSL R5
-l530: andLS R1,  R0,  R3
-l531: mulGTs R7, R5, R12
-l532: adds r0, r0, r0
-l533: ldrPL R2,  [sp, #-40]
-l534: movGTs R0, R12
-l535: mulHIs R9, R3, R14
-l536: adds r0, r0, r0
-l537: cmpLSs R5, R6, ASR #2
-l538: ldrLE R5,  [sp, #-12]
-l539: adc R4, R3, R2, LSR #31
-l540: andHIs R3,  R10,  R1
-l541: mulCS R7, R7, R6
-l542: adds r0, r0, r0
-l543: addHI R0, R3, R4, LSR #29
-l544: sbcLTs R3, R0, R0, LSR R1
-l545: eorGEs R10,  R14,  R10
-l546: rsb R4, R12, R4, LSL #7
-l547: mlaMI R2, R10, R8, R10
-l548: adds r0, r0, r0
-l549: rsbEQ R1, R0, #12
-l550: mvnNEs R0, R8, LSL R2
-l551: movHIs R9, R5
-l552: cmp R10, R11, ASR R11
-l553: b l559
-l554: add R1, R0, #185
-l555: movMI R8, R8
-l556: bicHIs R8, R8, #24
-l557: cmnGEs R4, R2, ASR #25
-l558: b l560
-l559: b l555
-l560: adcCSs R8, R12, R1
-l561: adcMI R2, R12, R2, ROR #1
-l562: andHI R2,  R10,  R12
-l563: bMI l567
-l564: add R1, R0, #37
-l565: teqGTs R14, R7, LSR R3
-l566: b l568
-l567: b l565
-l568: cmpGE R5, #20
-l569: andHI R12,  R2,  R1
-l570: adcMI R9, R7, #20
-l571: orrGE R6,  R12,  R0
-l572: mlaGTs R10, R3, R3, R3
-l573: adds r0, r0, r0
-l574: ldrCS R14,  [sp, #-24]
-l575: subNEs R8, R1, #20
-l576: orr R5,  R5,  R8
-l577: tstGE R7, R2, RRX
-l578: subVC R12, R3, R0, LSL #9
-l579: cmpPL R14, R6, LSL R2
-l580: bCS l586
-l581: mvnLTs R0, #36
-l582: cmpCC R0, R7, RRX
-l583: b l586
-l584: bGT l592
-l585: add R1, R0, #236
-l586: tstVC R5, R0, ROR R0
-l587: cmnVC R6, #20
-l588: mvnLEs R10, R7
-l589: tstCCs R6, R7, LSL #31
-l590: mvnGEs R9, #24
-l591: b l593
-l592: b l586
-l593: bGT l598
-l594: add R1, R0, #101
-l595: rsbHIs R2, R9, R7
-l596: mvnPLs R2, R0
-l597: b l599
-l598: b l595
-l599: mlaCS R14, R2, R2, R12
-l600: adds r0, r0, r0
-l601: mvnHI R12, R2, LSR #6
-l602: orrLSs R12,  R6,  R0
-l603: mvn R2, R0
-l604: teqHI R11, R6, LSR R4
-l605: bVS l615
-l606: strEQ R11,  [sp, #-40]
-l607: tst R1, R8, ASR #9
-l608: add R0, R9, R4, RRX
-l609: ldrLE R0,  [sp, #-16]
-l610: b l613
-l611: rsbCC R12, R7, R7, LSL R11
-l612: subPLs R10, R9, R4
-l613: mvnVCs R4, #24
-l614: teq R0, #12
-l615: bicMI R7, R9, #12
-l616: cmnGE R14, R3
-l617: teqHIs R0, #12
-l618: sub R1, R1, R14, ROR #9
-l619: adc R12, R11, R5, LSR R14
-l620: rsbEQs R2, R14, #20
-l621: eorLE R7,  R8,  R2
-l622: adcHI R8, R5, R6, LSL #7
-l623: bicHIs R0, R5, #12
-l624: orrEQs R4,  R9,  R6
-l625: cmpNE R3, #12
-l626: movPLs R3, R9, LSR R14
-l627: strEQ R7,  [sp, #-40]
-l628: teqLE R12, R10, LSR #9
-l629: adcEQs R11, R7, R7, ROR R8
-l630: addGEs R3, R12, #20
-l631: andPL R8,  R1,  R9
-l632: bVC l636
-l633: add R1, R0, #145
-l634: subEQs R10, R8, #20
-l635: b l637
-l636: b l634
-l637: and R12,  R14,  R0
-l638: sbc R3, R8, R7, LSL R4
-l639: teqEQs R9, #24
-l640: rsbNEs R3, R11, R12
-l641: movLTs R14, R12, ASR #8
-l642: andGTs R12,  R9,  R7
-l643: andLE R4,  R5,  R11
-l644: mvnNEs R10, R5, LSL #7
-l645: ldrLS R11,  [sp, #-32]
-l646: mulVSs R3, R7, R9
-l647: adds r0, r0, r0
-l648: cmpMIs R2, R1
-l649: rsbPLs R8, R1, R6
-l650: bGT l657
-l651: add R1, R0, #50
-l652: cmpHIs R3, #20
-l653: rsbLE R7, R6, R5, RRX
-l654: teqGEs R8, R11, LSR #1
-l655: adcCC R8, R14, R4, RRX
-l656: b l658
-l657: b l652
-l658: adcLTs R11, R1, R2, ASR #8
-l659: adcLT R11, R1, #32
-l660: ldr R2,  [sp, #-8]
-l661: cmpEQs R3, #12
-l662: tstLSs R9, R5, ASR R5
-l663: ldrLE R1,  [sp, #-12]
-l664: bicMI R2, R5, R5, LSL R8
-l665: mulCCs R3, R2, R6
-l666: adds r0, r0, r0
-l667: sbcGEs R3, R1, R8
-l668: strHI R11,  [sp, #-4]
-l669: subGT R14, R3, #20
-l670: sbcEQs R12, R7, R6, RRX
-l671: movVC R14, R4, RRX
-l672: eorGT R12,  R11,  R12
-l673: addEQs R1, R4, R3
-l674: tstMIs R1, R4, RRX
-l675: rsbLSs R0, R14, R11
-l676: orrLTs R2,  R6,  R1
-l677: subVSs R10, R9, R0
-l678: tstVSs R0, R4
-l679: bVS l686
-l680: mlaGEs R7, R5, R14, R0
-l681: adds r0, r0, r0
-l682: b l687
-l683: add R1, R0, #140
-l684: mvnCC R6, R9, LSL #19
-l685: teqCSs R10, #20
-l686: b l688
-l687: b l684
-l688: andGE R3,  R10,  R9
-l689: cmnCS R11, R8, RRX
-l690: bicLT R7, R0, #12
-l691: bEQ l692
-l692: movCS R12, R11, RRX
-l693: sbcGT R5, R6, #20
-l694: sbc R9, R9, R10, RRX
-l695: eor R9,  R14,  R11
-l696: bicPLs R0, R4, #24
-l697: andLS R6,  R11,  R8
-l698: eorEQs R12,  R9,  R1
-l699: adcHIs R5, R4, R0, RRX
-l700: tstCC R9, R0
-l701: andCCs R1,  R12,  R10
-l702: mvnVCs R7, R9, RRX
-l703: mvnLTs R8, R4, LSL #26
-l704: eorCC R8,  R12,  R11
-l705: b l712
-l706: add R1, R0, #6
-l707: movLE R9, R12, ASR R12
-l708: rsb R3, R12, R9
-l709: teqGT R14, R3
-l710: rsbLTs R7, R6, #24
-l711: b l713
-l712: b l707
-l713: subPLs R10, R2, #12
-l714: addLS R1, R2, #12
-l715: bicGEs R8, R8, R7, RRX
-l716: mvnEQs R9, R0, LSL R10
-l717: strCC R9,  [sp, #-12]
-l718: subCSs R10, R5, R12, LSR R2
-l719: bMI l722
-l720: bLS l725
-l721: add R1, R0, #13
-l722: cmnVCs R5, R7, LSR #21
-l723: rsbHIs R14, R2, #24
-l724: b l726
-l725: b l722
-l726: addCSs R5, R2, R14, ASR #7
-l727: mvnCS R3, R7
-l728: adcHI R3, R5, R6, ROR R10
-l729: cmnCC R11, #20
-l730: subPLs R0, R12, R2, LSL #2
-l731: andGT R4,  R7,  R1
-l732: ldrPL R3,  [sp, #-28]
-l733: orrVCs R9,  R5,  R1
-l734: adc R0, R4, R0, RRX
-l735: mvnMI R4, R3
-l736: adcHIs R2, R7, R9, RRX
-l737: cmnVC R3, R1, ASR R6
-l738: teqCCs R8, R4, RRX
-l739: cmn R1, #24
-l740: cmpVSs R2, #12
-l741: eor R7,  R4,  R6
-l742: subVC R8, R7, R9
-l743: and R2,  R6,  R7
-l744: tst R10, R5
-l745: sbcCC R2, R8, #20
-l746: mvnCCs R5, #20
-l747: mvnPL R5, R14, RRX
-l748: rsbCSs R12, R1, #20
-l749: cmnHI R0, #12
-l750: rsbNEs R5, R10, #24
-l751: bicCSs R6, R1, R0
-l752: b l755
-l753: rsbMI R12, R14, R5, RRX
-l754: cmpLS R2, #20
-l755: movLSs R0, R2, RRX
-l756: orrHIs R12,  R11,  R3
-l757: bEQ l761
-l758: add R1, R0, #11
-l759: mvnVSs R10, R11, ASR #31
-l760: b l762
-l761: b l759
-l762: teqEQs R6, R6, ROR R9
-l763: mvn R5, R3
-l764: orrGT R0,  R14,  R2
-l765: bicPLs R9, R6, R5
-l766: sbc R9, R8, #20
-l767: bicGEs R4, R0, R6, ASR #8
-l768: mla R8, R2, R6, R4
-l769: adds r0, r0, r0
-l770: b l775
-l771: add R1, R0, #24
-l772: tstLS R5, R10, ROR #8
-l773: mov R4, R9, LSL #31
-l774: b l776
-l775: b l772
-l776: strGE R10,  [sp, #-12]
-l777: mvnMIs R0, R4, RRX
-l778: eorLTs R10,  R12,  R7
-l779: b l783
-l780: add R1, R0, #221
-l781: rsbMI R12, R2, R11, RRX
-l782: b l784
-l783: b l781
-l784: sbcGEs R11, R0, R6
-l785: orrLE R6,  R2,  R7
-l786: andVSs R12,  R9,  R10
-l787: andLS R8,  R3,  R10
-l788: mov R7, R1, LSL R12
-l789: subGT R1, R0, #20
-l790: teqGEs R8, #24
-l791: eorLE R0,  R11,  R4
-l792: andLT R12,  R11,  R6
-l793: orrVCs R2,  R10,  R6
-l794: teq R0, R14, ASR #31
-l795: orrVSs R6,  R12,  R6
-l796: ldrMI R1,  [sp, #-16]
-l797: mulPLs R14, R2, R14
-l798: adds r0, r0, r0
-l799: adcPLs R10, R1, R2, LSL #7
-l800: cmpMIs R14, R0
-l801: mla R5, R2, R0, R10
-l802: adds r0, r0, r0
-l803: orrPLs R7,  R10,  R8
-l804: teqLT R11, #24
-l805: ldrNE R6,  [sp, #-28]
-l806: b l809
-l807: strGE R8,  [sp, #-20]
-l808: rsbVC R6, R3, R1, ROR #7
-l809: cmnGT R11, R4, ROR R3
-l810: add R1, R0, #12
-l811: bPL l817
-l812: add R1, R0, #219
-l813: movLTs R7, R7, LSR R10
-l814: cmpMI R14, R8, LSL R7
-l815: rsbVC R9, R2, R12
-l816: b l818
-l817: b l813
-l818: strMI R11,  [sp, #-32]
-l819: bCC l825
-l820: add R1, R0, #65
-l821: subCC R6, R2, #12
-l822: addGEs R9, R8, R3, ASR #7
-l823: cmpNEs R2, R12
-l824: b l826
-l825: b l821
-l826: tstNE R9, #24
-l827: orrLS R3,  R4,  R2
-l828: orrVS R10,  R1,  R6
-l829: teqLEs R3, R7, RRX
-l830: bMI l833
-l831: mvnCS R4, R8, LSL #1
-l832: sbcLE R11, R4, R0
-l833: tst R4, R3, ROR R4
-l834: eorLTs R10,  R1,  R0
-l835: andHIs R8,  R14,  R12
-l836: rsbLT R3, R8, R4, ASR R14
-l837: adc R12, R12, #24
-l838: bicGE R1, R2, #20
-l839: mvnGT R11, R2, LSL #26
-l840: orrLSs R11,  R0,  R2
-l841: andEQs R6,  R12,  R5
-l842: subMI R3, R7, R1
-l843: teq R4, R2, LSL R12
-l844: rsbNEs R12, R3, R7, LSL #31
-l845: ldrHI R0,  [sp, #-8]
-l846: bLS l854
-l847: add R1, R0, #82
-l848: sbc R7, R0, #24
-l849: rsbGTs R14, R11, R14, ASR R14
-l850: adc R9, R12, R14, LSR #9
-l851: cmn R11, R8, LSR R4
-l852: add R14, R7, R9, ROR R5
-l853: b l855
-l854: b l848
-l855: rsb R0, R0, R6
-l856: orr R4,  R1,  R0
-l857: bLE l859
-l858: ldr R14,  [sp, #-12]
-l859: eorLSs R2,  R7,  R14
-l860: rsbHIs R8, R0, R1
-l861: subPL R4, R2, R2, ASR #25
-l862: ldr R2,  [sp, #-20]
-l863: orr R14,  R6,  R8
-l864: andPLs R1,  R7,  R14
-l865: strVC R11,  [sp, #-24]
-l866: addLEs R14, R8, R4
-l867: rsbCS R12, R7, R3, ROR #8
-l868: sbc R2, R0, R12, LSL R10
-l869: mov R8, #24
-l870: movVC R9, #24
-l871: sbcHIs R6, R5, R9, ASR #7
-l872: andLS R5,  R4,  R8
-l873: bVC l882
-l874: add R1, R0, #109
-l875: sbcMI R6, R11, R12
-l876: rsbLT R12, R12, #12
-l877: rsbLE R1, R12, R8
-l878: addHI R8, R8, #20
-l879: cmpPL R5, R6, ASR R2
-l880: teqCSs R4, R0, ASR #2
-l881: b l883
-l882: b l875
-l883: sub R8, R12, R5
-l884: bCS l888
-l885: movLSs R14, R8, LSL R3
-l886: bGE l889
-l887: mvnCCs R0, R5
-l888: orrMIs R9,  R5,  R9
-l889: bLS l898
-l890: add R1, R0, #113
-l891: teqVSs R7, #36
-l892: rsb R9, R0, R12, LSL R9
-l893: adcVC R11, R1, R3, LSL R7
-l894: bicCCs R10, R8, #24
-l895: adcVS R9, R3, #36
-l896: mov R9, R4, LSL R8
-l897: b l899
-l898: b l891
-l899: bHI l906
-l900: add R1, R0, #39
-l901: tstGEs R5, R3, LSR R8
-l902: teqVSs R3, R6, LSR R7
-l903: rsbGE R10, R6, R3, LSL #21
-l904: addCC R2, R0, #32
-l905: b l907
-l906: b l901
-l907: mvnLSs R2, R0, RRX
-l908: adcLTs R0, R14, R5, LSL #13
-l909: mlaGT R4, R10, R14, R10
-l910: adds r0, r0, r0
-l911: mvnVS R8, R4, ROR R7
-l912: cmpEQs R7, R14, LSR R12
-l913: b l922
-l914: add R1, R0, #206
-l915: adc R1, R0, R12, LSR #8
-l916: cmnLT R11, #20
-l917: addHI R9, R1, R5, ROR #21
-l918: subCCs R9, R12, R9
-l919: sbcVSs R14, R3, R0
-l920: bicLSs R0, R3, R14, ROR #26
-l921: b l923
-l922: b l915
-l923: mvnMI R6, #24
-l924: rsbLSs R5, R1, R3, LSL R6
-l925: mvnCCs R6, R9, ROR #9
-l926: sbcNEs R10, R1, R1
-l927: rsbCSs R0, R14, R9, ASR #19
-l928: cmnGE R12, R9, LSL R5
-l929: bVC l936
-l930: add R1, R0, #247
-l931: subLE R10, R10, R6, LSR #7
-l932: subVS R11, R1, R12, RRX
-l933: cmnMI R5, R4, ASR #1
-l934: adcLE R11, R6, R10, ROR #29
-l935: b l937
-l936: b l931
-l937: cmnGE R12, R0, ROR R8
-l938: rsbGTs R0, R8, #24
-l939: tstVSs R2, R7, ASR R5
-l940: cmpCC R9, #24
-l941: eorLE R14,  R8,  R12
-l942: bNE l950
-l943: eorVC R11,  R7,  R3
-l944: tstGT R10, R10, ROR #9
-l945: bNE l954
-l946: add R1, R0, #55
-l947: subVC R5, R5, R5, RRX
-l948: addLEs R0, R11, R14, RRX
-l949: subVCs R10, R8, R3, LSL #26
-l950: tstLT R6, R14, LSL R3
-l951: movHIs R2, R1
-l952: adc R7, R10, #24
-l953: b l955
-l954: b l947
-l955: sub R4, R11, R7, RRX
-l956: mvnHI R2, R0, LSR R3
-l957: andEQs R12,  R6,  R5
-l958: mulHI R8, R6, R8
-l959: adds r0, r0, r0
-l960: rsbVC R10, R14, #24
-l961: adcLSs R6, R7, R9, RRX
-l962: andGTs R2,  R12,  R0
-l963: addMI R12, R4, R2, RRX
-l964: addNE R4, R8, R9
-l965: sbcCCs R11, R12, R7, ROR #13
-l966: orrCS R0,  R12,  R9
-l967: bVC l972
-l968: add R1, R0, #139
-l969: mov R4, R4, LSL R9
-l970: rsbLEs R2, R3, R12
-l971: b l973
-l972: b l969
-l973: tstLS R1, R14, LSR R6
-l974: andGT R0,  R14,  R2
-l975: mla R2, R7, R4, R7
+l447: bCS l455
+l448: add R1, R0, #216
+l449: rsb R5, R5, #28
+l450: cmpCC R4, R5
+l451: mvn R9, R8
+l452: adcCS R2, R4, R2, ROR R6
+l453: adcGT R0, R10, R3, ROR #12
+l454: b l456
+l455: b l449
+l456: sbcNE R4, R5, #8
+l457: adcCSs R12, R3, R9, LSR R11
+l458: bVS l468
+l459: rsbMI R14, R6, R6, RRX
+l460: movVCs R10, R10
+l461: teqLS R2, R4, ROR R14
+l462: rsbCSs R2, R10, R8
+l463: teqPLs R4, R2, RRX
+l464: subLTs R12, R4, R8, LSL R11
+l465: andLT R6,  R14,  R8
+l466: subGEs R14, R4, R4
+l467: adcCCs R11, R8, R10
+l468: tstPL R8, R3
+l469: rsb R8, R10, #8
+l470: teq R10, R0
+l471: strLS R10,  [sp, #-32]
+l472: eorPL R6,  R1,  R3
+l473: cmn R12, R4
+l474: tstGT R2, #40
+l475: mvnHIs R9, #36
+l476: cmpNE R11, #40
+l477: andGE R4,  R1,  R14
+l478: b l487
+l479: bPL l483
+l480: adc R12, R3, #40
+l481: tstLEs R7, R8
+l482: bic R7, R9, R8, RRX
+l483: teqCC R4, R8, RRX
+l484: subGT R12, R9, #4
+l485: addMIs R4, R8, R9
+l486: ldrCS R7,  [sp, #-8]
+l487: adcLE R11, R1, R8, RRX
+l488: sbcGT R0, R8, R1, RRX
+l489: add R7, R0, R5, ROR #27
+l490: mvnLTs R10, R3, LSL #19
+l491: movNE R10, #40
+l492: ldr R9,  [sp, #-16]
+l493: andLT R5,  R10,  R12
+l494: orrPLs R10,  R8,  R14
+l495: ldrGT R8,  [sp, #-40]
+l496: strPL R7,  [sp, #-32]
+l497: subHI R10, R7, R4, RRX
+l498: rsbHI R8, R4, #40
+l499: orrVCs R9,  R5,  R2
+l500: bLS l506
+l501: add R1, R0, #50
+l502: cmnGE R12, R1, LSR #12
+l503: subLSs R0, R4, R6, LSR #8
+l504: movVCs R10, R7
+l505: b l507
+l506: b l502
+l507: sbcNEs R10, R9, R5, LSL R2
+l508: strVC R2,  [sp, #-24]
+l509: teqGT R14, #8
+l510: movVCs R7, #8
+l511: ldr R12,  [sp, #-20]
+l512: and R4,  R1,  R9
+l513: bicLSs R12, R3, R9, LSR #8
+l514: tstLT R6, #36
+l515: bHI l519
+l516: add R1, R0, #247
+l517: sbcMI R12, R2, #28
+l518: b l520
+l519: b l517
+l520: bNE l527
+l521: add R1, R0, #43
+l522: cmpLSs R6, R11
+l523: subLE R12, R4, #40
+l524: sbcPLs R10, R4, R2, ASR #12
+l525: cmpNE R9, R1, LSR #19
+l526: b l528
+l527: b l522
+l528: teq R8, R8, LSR R6
+l529: cmnLTs R7, #40
+l530: adcLTs R0, R10, R8, ROR #25
+l531: teqMIs R1, #40
+l532: addGTs R11, R14, R12, LSR R11
+l533: mvnCS R3, R1, RRX
+l534: b l539
+l535: add R1, R0, #2
+l536: sbc R14, R7, R12, ASR #17
+l537: teqPLs R4, #28
+l538: b l540
+l539: b l536
+l540: movLSs R1, R10, LSR #22
+l541: orrCCs R3,  R7,  R1
+l542: cmpLTs R10, R5, ROR #18
+l543: cmpMI R11, R8, ROR #27
+l544: eorCCs R2,  R2,  R7
+l545: smullNEs R10, R5, R9, R0
+l546: adds r0, r0, r0
+l547: rsbVC R10, R6, #36
+l548: subLT R6, R10, #8
+l549: bVC l556
+l550: subEQs R6, R12, R8
+l551: mov R6, R3, LSR #24
+l552: subCSs R14, R14, R11
+l553: mvnVS R1, R10
+l554: mulEQs R3, R0, R8
+l555: adds r0, r0, r0
+l556: bNE l560
+l557: add R1, R0, #252
+l558: mov R5, R10
+l559: b l561
+l560: b l558
+l561: bicMIs R12, R9, R1, ASR R0
+l562: bicGEs R11, R3, R2, ASR #21
+l563: eorCCs R6,  R1,  R9
+l564: tstVC R10, R7
+l565: mvnMIs R12, R8, ROR R0
+l566: tstPL R8, R12
+l567: cmnNEs R9, R3
+l568: bCS l574
+l569: rsbEQs R1, R11, R1, ROR #22
+l570: sbcLT R2, R5, R11, ROR R4
+l571: addGEs R10, R11, R14, LSL #25
+l572: bicCCs R4, R6, R0, ROR R6
+l573: orrPL R12,  R7,  R1
+l574: orrPLs R11,  R5,  R2
+l575: tst R5, R1
+l576: bGT l580
+l577: add R1, R0, #130
+l578: bicVSs R14, R7, R7, LSR R4
+l579: b l581
+l580: b l578
+l581: tstCC R12, R0
+l582: b l587
+l583: rsbVCs R10, R9, R7
+l584: cmnHI R1, R14, LSL #3
+l585: addEQs R7, R14, R0, ROR #12
+l586: orr R3,  R7,  R4
+l587: cmpLS R8, R3
+l588: sbcCCs R6, R4, R9
+l589: subVS R6, R9, R6, LSL R1
+l590: movGE R11, #28
+l591: sbcCS R1, R6, R1
+l592: cmpVSs R3, #28
+l593: mlaLTs R10, R3, R9, R8
+l594: adds r0, r0, r0
+l595: rsbVSs R10, R4, #4
+l596: bLT l598
+l597: movVC R3, #8
+l598: subNEs R1, R10, R4
+l599: bVC l607
+l600: add R1, R0, #90
+l601: cmnPL R0, R3, LSL #19
+l602: mvnCSs R6, R14, ROR #12
+l603: cmpVSs R5, #4
+l604: addGEs R5, R9, R9, LSL #21
+l605: cmp R3, R14, ROR #22
+l606: b l608
+l607: b l601
+l608: teqLE R4, #40
+l609: strCC R3,  [sp, #-8]
+l610: cmnLE R4, R4, ASR #12
+l611: eorPLs R4,  R8,  R12
+l612: cmpVS R0, #20
+l613: cmnMIs R1, R4, ASR #30
+l614: movHIs R3, #24
+l615: bNE l622
+l616: bEQ l623
+l617: add R1, R0, #39
+l618: mvnGT R5, #28
+l619: teqLT R6, #28
+l620: bicGT R1, R7, R12
+l621: rsbVCs R9, R12, R14, RRX
+l622: b l624
+l623: b l618
+l624: rsbMI R7, R14, R5, RRX
+l625: ldrLT R10,  [sp, #-24]
+l626: eorLEs R6,  R14,  R3
+l627: eor R7,  R12,  R11
+l628: mvnEQ R8, R1, LSL R8
+l629: tstCS R5, R5, ASR R4
+l630: mvn R0, R11, ROR #3
+l631: adcNEs R3, R2, #16
+l632: sbc R5, R9, R2, ASR #21
+l633: sbcVCs R0, R7, R14, ASR R12
+l634: rsbNEs R8, R12, R8, ASR R6
+l635: movNEs R8, #40
+l636: addMI R11, R0, R2
+l637: teqMIs R0, R8, RRX
+l638: subCC R1, R3, R11
+l639: tstEQ R11, R4, ROR R7
+l640: teqVSs R1, R2
+l641: teq R2, R12, RRX
+l642: ldrCC R4,  [sp, #-12]
+l643: mvnGT R12, R8, RRX
+l644: subLSs R6, R8, R12, LSR #19
+l645: rsbCSs R8, R11, #28
+l646: tst R10, R7
+l647: ldrHI R5,  [sp, #-24]
+l648: eorVS R10,  R7,  R8
+l649: tstGEs R10, R9, ASR #12
+l650: teqLE R4, R14, LSR #24
+l651: bPL l656
+l652: cmpPLs R4, R2, ASR R6
+l653: str R10,  [sp, #-32]
+l654: addLT R1, R9, #8
+l655: subMIs R14, R14, R0, RRX
+l656: cmpGE R1, R7, RRX
+l657: bVC l665
+l658: add R1, R0, #206
+l659: add R1, R8, R9, ASR R8
+l660: cmpGT R10, R8, LSR R12
+l661: movHIs R12, #8
+l662: teqHIs R2, R8, RRX
+l663: teqPLs R10, R14, LSR #24
+l664: b l666
+l665: b l659
+l666: bicVCs R10, R12, R8, RRX
+l667: movGE R2, R6, LSL #12
+l668: teqVS R9, R2, LSL R8
+l669: cmpGE R5, R6, RRX
+l670: cmpEQs R10, R9, RRX
+l671: subGE R6, R14, R0, LSL #12
+l672: bic R14, R2, R1, RRX
+l673: rsbCC R14, R6, #28
+l674: str R14,  [sp, #-16]
+l675: bVC l677
+l676: addEQ R11, R10, R10, LSL #27
+l677: bVS l680
+l678: bCC l683
+l679: rsbCS R9, R7, R2
+l680: bLE l685
+l681: add R1, R0, #209
+l682: addLEs R8, R7, R10, LSR R4
+l683: cmpCC R3, R9, LSR #22
+l684: b l686
+l685: b l682
+l686: bNE l695
+l687: add R1, R0, #253
+l688: cmn R4, R11
+l689: rsbCSs R5, R7, R10, LSR #17
+l690: cmnLT R14, R10, RRX
+l691: teqLTs R1, R14, LSL #17
+l692: rsb R7, R3, #40
+l693: adcHIs R9, R0, R2, ASR #3
+l694: b l696
+l695: b l688
+l696: mvnVC R4, R2
+l697: mvn R7, R5, RRX
+l698: mul R14, R3, R11
+l699: adds r0, r0, r0
+l700: orrEQ R12,  R2,  R2
+l701: eorLT R4,  R11,  R11
+l702: cmnEQs R3, R1, ROR #30
+l703: cmpVC R9, R1, LSR #19
+l704: adcPLs R1, R12, R2
+l705: subVCs R0, R0, R6, ROR R11
+l706: tstLE R8, R10, LSL #3
+l707: cmnGTs R3, R8
+l708: teqHIs R14, R10, LSR #22
+l709: eorMIs R14,  R1,  R5
+l710: tstVCs R11, R4, ASR R10
+l711: bLE l714
+l712: teqEQ R7, R10, LSR #22
+l713: rsbCC R0, R1, R12
+l714: eor R0,  R10,  R8
+l715: rsbHI R5, R10, R10
+l716: bPL l721
+l717: rsbVS R14, R9, R14, LSR #22
+l718: teq R11, R1, LSL R6
+l719: bHI l723
+l720: eor R10,  R9,  R12
+l721: orrPL R3,  R2,  R4
+l722: movLEs R7, #8
+l723: bVS l728
+l724: add R1, R0, #222
+l725: adcMIs R6, R2, R11
+l726: cmnNE R5, R7, RRX
+l727: b l729
+l728: b l725
+l729: teqVS R11, R5, LSL #27
+l730: bVS l739
+l731: add R1, R0, #196
+l732: tstHIs R2, R6, LSL #21
+l733: addMI R10, R8, R11, ASR #25
+l734: movGTs R6, R9, RRX
+l735: bicLEs R4, R10, R2, LSL #27
+l736: addPL R4, R4, R7, ASR #21
+l737: sbcLEs R5, R14, R8, ROR #22
+l738: b l740
+l739: b l732
+l740: eorGE R5,  R11,  R7
+l741: bNE l749
+l742: rsbVC R9, R14, R12
+l743: add R5, R9, R7
+l744: adcLTs R12, R0, R4
+l745: ldrLE R9,  [sp, #-12]
+l746: b l755
+l747: mvnEQs R0, R2, RRX
+l748: bGT l755
+l749: andPL R0,  R1,  R7
+l750: addVCs R7, R11, R12, RRX
+l751: bicCC R14, R12, #28
+l752: rsbLE R5, R5, R11, ASR R9
+l753: bPL l759
+l754: addVCs R7, R3, #20
+l755: teqPLs R6, R10
+l756: adcPLs R7, R1, #28
+l757: eorVSs R9,  R1,  R7
+l758: addVSs R9, R1, #16
+l759: movNEs R0, R8, ROR R0
+l760: movMIs R14, R7
+l761: tstCCs R5, R14, LSL #3
+l762: cmnCC R4, R5
+l763: subNE R11, R10, #28
+l764: eorNE R2,  R6,  R1
+l765: movHIs R10, R0
+l766: umullHI R12, R8, R7, R11
+l767: adds r0, r0, r0
+l768: orr R10,  R0,  R9
+l769: smullNE R8, R5, R1, R7
+l770: adds r0, r0, r0
+l771: bic R4, R4, R14
+l772: ldr R8,  [sp, #-40]
+l773: bicGEs R12, R11, R1, ASR R12
+l774: bNE l778
+l775: bGT l782
+l776: add R1, R0, #208
+l777: subVS R3, R3, R6, LSL #12
+l778: movMIs R0, #28
+l779: cmpGTs R7, #40
+l780: addMIs R6, R10, R14, RRX
+l781: b l783
+l782: b l777
+l783: movCC R7, #8
+l784: cmp R5, #28
+l785: strGT R5,  [sp, #-28]
+l786: eor R14,  R0,  R14
+l787: orrLTs R0,  R9,  R6
+l788: add R1, R6, R8, RRX
+l789: addGEs R3, R14, R6, RRX
+l790: rsbVC R10, R6, R14, LSL #22
+l791: cmpNEs R7, #28
+l792: teqCSs R7, R1, ASR #22
+l793: rsbNEs R14, R10, R0, ASR #21
+l794: cmnCS R3, R2, RRX
+l795: addEQs R6, R5, R10, ROR R8
+l796: addGTs R6, R3, R4, LSL R0
+l797: bLS l807
+l798: tstEQs R1, R4
+l799: bPL l800
+l800: ldr R5,  [sp, #-8]
+l801: eorPLs R8,  R12,  R1
+l802: rsbVS R14, R2, R5, RRX
+l803: teqVSs R1, R11, LSR R6
+l804: umullVC R9, R5, R3, R2
+l805: adds r0, r0, r0
+l806: bCC l811
+l807: add R1, R0, #122
+l808: movVCs R11, #28
+l809: cmnPL R0, R2
+l810: b l812
+l811: b l808
+l812: bicNE R6, R10, R9, ROR #22
+l813: mvnNE R8, #20
+l814: orrNEs R3,  R6,  R12
+l815: teqCCs R12, #28
+l816: cmp R8, R6, ASR #22
+l817: bicCS R5, R9, R12, LSR #18
+l818: addHI R12, R4, R9
+l819: subPLs R6, R8, R10, LSR #13
+l820: eorGT R8,  R0,  R7
+l821: ldr R1,  [sp, #-28]
+l822: mul R11, R5, R6
+l823: adds r0, r0, r0
+l824: mvnCS R0, #8
+l825: orr R1,  R14,  R2
+l826: movVC R11, #28
+l827: bEQ l837
+l828: bHI l837
+l829: sub R14, R9, #40
+l830: adcPLs R0, R9, R14, ROR R8
+l831: tstNEs R2, R6
+l832: smullVC R8, R12, R4, R10
+l833: adds r0, r0, r0
+l834: teqGT R12, #28
+l835: eorNEs R0,  R3,  R7
+l836: str R8,  [sp, #-20]
+l837: teqCC R5, R7
+l838: bVC l842
+l839: add R1, R0, #142
+l840: teqVCs R6, #8
+l841: b l843
+l842: b l840
+l843: andCCs R7,  R8,  R11
+l844: tstEQs R0, R5, ASR #12
+l845: adcVSs R7, R2, R10, LSR #17
+l846: cmn R14, #40
+l847: bCC l854
+l848: mulCS R9, R1, R11
+l849: adds r0, r0, r0
+l850: cmpCCs R2, R1, LSR #22
+l851: movHI R11, R8, ASR R8
+l852: andMIs R4,  R5,  R8
+l853: eorLS R10,  R14,  R2
+l854: adcMI R9, R4, R0, ASR #8
+l855: orrNEs R5,  R10,  R0
+l856: addEQs R10, R3, R14, RRX
+l857: cmpVSs R3, R1
+l858: tstVS R3, R6
+l859: cmnLTs R12, R9, LSL #24
+l860: mvnHI R14, R14, RRX
+l861: movEQ R14, R10, RRX
+l862: orr R4,  R8,  R0
+l863: andLT R4,  R0,  R2
+l864: umullEQ R11, R8, R0, R0
+l865: adds r0, r0, r0
+l866: orrVS R10,  R8,  R1
+l867: orrVCs R2,  R5,  R5
+l868: smullHI R12, R6, R9, R11
+l869: adds r0, r0, r0
+l870: umullLSs R8, R14, R7, R2
+l871: adds r0, r0, r0
+l872: movLEs R10, R11, RRX
+l873: cmpLT R2, R12
+l874: bicVSs R9, R1, R1, ROR #30
+l875: addVCs R4, R12, R0, ROR R14
+l876: addVS R3, R9, R9
+l877: and R0,  R0,  R0
+l878: eorVSs R3,  R14,  R8
+l879: b l880
+l880: ldrLE R9,  [sp, #-36]
+l881: orrVSs R10,  R6,  R4
+l882: orrVS R9,  R0,  R1
+l883: bicGT R10, R1, R5
+l884: cmnNE R10, #4
+l885: orr R14,  R0,  R0
+l886: ldrGE R11,  [sp, #-28]
+l887: andMI R14,  R6,  R3
+l888: movLS R14, R12
+l889: movGTs R3, #8
+l890: adcNEs R0, R9, #8
+l891: tstLEs R0, R10, ASR R2
+l892: rsbGTs R9, R10, #40
+l893: b l897
+l894: addLT R1, R7, R1, ASR R6
+l895: andVCs R12,  R6,  R9
+l896: subCS R9, R9, R7
+l897: rsbCSs R7, R4, R1
+l898: and R2,  R2,  R3
+l899: rsbNEs R4, R3, R10, ROR #22
+l900: mvnVC R14, R7, LSL #25
+l901: b l910
+l902: adcNEs R14, R12, #36
+l903: cmnPLs R10, R9, LSR #21
+l904: adcGT R8, R1, R1, ROR R3
+l905: teqLEs R7, #8
+l906: sbcLTs R0, R5, R14
+l907: mvn R12, R2, RRX
+l908: bicEQs R9, R2, R5
+l909: mov R9, R0, ROR #3
+l910: tstLE R0, R7, RRX
+l911: cmnHIs R12, R14
+l912: bic R8, R6, R0, RRX
+l913: ldr R3,  [sp, #-32]
+l914: teqLEs R6, R11, LSR R11
+l915: subVS R3, R4, R9
+l916: cmpNEs R1, R11, ASR #17
+l917: cmpVCs R2, R10, LSL R4
+l918: umullVC R4, R12, R6, R12
+l919: adds r0, r0, r0
+l920: orrLS R8,  R5,  R0
+l921: adcHIs R6, R0, R2
+l922: bicEQs R2, R8, #40
+l923: rsbLS R5, R8, #36
+l924: smull R6, R10, R7, R11
+l925: adds r0, r0, r0
+l926: bLS l930
+l927: add R1, R0, #105
+l928: movVSs R2, #28
+l929: b l931
+l930: b l928
+l931: movNE R3, R1, RRX
+l932: cmpHIs R6, R9, LSL #19
+l933: bLE l941
+l934: add R1, R0, #219
+l935: adcCS R6, R8, R9, LSR #25
+l936: movLT R1, #40
+l937: mvnMI R9, #20
+l938: rsbLS R10, R11, R1, RRX
+l939: mvnCS R2, R2
+l940: b l942
+l941: b l935
+l942: bCC l950
+l943: add R1, R0, #251
+l944: cmpCC R5, R10, RRX
+l945: teqLS R1, R2, ASR #12
+l946: teqNEs R12, #40
+l947: rsbVSs R4, R9, R4, LSR R5
+l948: mvn R1, R14, RRX
+l949: b l951
+l950: b l944
+l951: subNE R12, R8, R8, ASR R14
+l952: cmnVCs R1, R10, RRX
+l953: andVSs R1,  R11,  R1
+l954: cmpVS R8, R1
+l955: sbcEQs R9, R6, R10
+l956: teqEQ R12, R6
+l957: bGE l966
+l958: add R1, R0, #176
+l959: sbcNE R7, R3, #4
+l960: teqMI R9, R5, ROR R1
+l961: movVSs R5, R7, LSL R12
+l962: rsbMI R8, R2, R12, RRX
+l963: bic R7, R1, R2, ASR #8
+l964: adcEQs R0, R5, R1, RRX
+l965: b l967
+l966: b l959
+l967: tst R0, R0, RRX
+l968: cmpCCs R3, R12, LSL #21
+l969: strHI R1,  [sp, #-16]
+l970: cmpGE R4, #28
+l971: teqVC R11, R10
+l972: cmnLT R1, R11
+l973: andVSs R4,  R9,  R5
+l974: mvnEQ R6, R6, RRX
+l975: mul R14, R9, R5
 l976: adds r0, r0, r0
-l977: rsb R7, R10, #20
-l978: orrLS R12,  R4,  R6
-l979: and R5,  R9,  R10
-l980: tstLTs R7, #24
-l981: strLS R1,  [sp, #-24]
-l982: bHI l987
-l983: add R1, R0, #99
-l984: adcGT R12, R11, R6
-l985: addLSs R8, R8, R10, ROR #8
-l986: b l988
-l987: b l984
-l988: b l993
-l989: bicLT R6, R12, R5, RRX
-l990: str R7,  [sp, #-40]
-l991: ldrGE R12,  [sp, #-4]
-l992: cmpGE R0, #12
-l993: addEQs R8, R7, R12
-l994: movNEs R6, R3
-l995: cmpGE R11, R10, LSL R9
-l996: bicVS R0, R2, R8, ROR R11
-l997: mvnNEs R3, R5, ASR #2
-l998: eorVSs R7,  R14,  R7
-l999: mulEQs R6, R4, R5
-l1000: adds r0, r0, r0
+l977: mvnGTs R14, #20
+l978: orrCC R0,  R5,  R3
+l979: sbcHI R7, R12, R3
+l980: cmn R1, R11, ASR #12
+l981: ldrPL R12,  [sp, #-36]
+l982: tstMI R10, #16
+l983: adcMIs R3, R12, R9, LSL #12
+l984: mov R7, R7, LSR #12
+l985: addPLs R5, R8, R2
+l986: smullCC R11, R6, R9, R1
+l987: adds r0, r0, r0
+l988: adc R8, R7, #28
+l989: strLT R5,  [sp, #-20]
+l990: cmpLT R12, R6, RRX
+l991: sbc R11, R2, #20
+l992: mulCS R2, R1, R0
+l993: adds r0, r0, r0
+l994: ldrGT R11,  [sp, #-20]
+l995: eorVS R14,  R0,  R10
+l996: eorLE R10,  R2,  R7
+l997: teqCC R9, #8
+l998: mvnEQ R10, R14
+l999: sbcNEs R1, R4, R1, ROR #21
+l1000: cmpMIs R4, R5, RRX
 end: b end
 

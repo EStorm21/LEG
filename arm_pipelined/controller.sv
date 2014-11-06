@@ -23,7 +23,8 @@ module controller(input  logic         clk, reset,
                   input  logic  [3:0]  regFileRzD, 
                   // input logic   [6:4]  shiftOpCode_D,
                   output logic  [6:4]  shiftOpCode_E,
-                  output logic         MultSelectD, MultEnable);
+                  output logic         MultSelectD, MultEnable,
+                  output logic [31:0] InstrE);
 
   logic [10:0] controlsD;
   logic       CondExE, ALUOpD;
@@ -39,7 +40,7 @@ module controller(input  logic         clk, reset,
   logic       RegWritepreMuxE, RselectD, RSRselectD;
   logic [1:0] resultSelectD;
   logic [6:4] shiftOpCode_D;
-  logic [31:0] InstrE;
+  // logic [31:0] InstrE;
 
   assign shiftOpCode_D = InstrD[6:4];
 

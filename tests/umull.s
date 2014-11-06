@@ -68,12 +68,14 @@ next14:
     umull r7, r10, r5, r6
     add r11, r11, r10
     umull r8, r10, r6, r5
+    umull r8, r10, r9, r10
+    add r11, r11, r10
 
     #conditional Execution
     #set N flag
     adds r9, r0, #-1 
     add r11, r11, r10
-    umullmi r10, r11, r6, r5
+    umullmi r10, r12, r6, r5
     #unset N flag
     adds r9, r0, r0 
     add r11, r11, r10
@@ -81,11 +83,11 @@ next14:
 
     #flag setting
     add r11, r11, r10
-    umulls r9,r11,  r5, r6
+    umulls r9,r1,  r5, r6
     addmi r12, r0, #1
     addpl r12, r12, #2
     add r11, r11, r10
-    umulls r9, r11, r0, r0
+    umulls r9, r1, r0, r0
     addeq r12, r12, #4
     addne r12, r12, #8
 
@@ -94,7 +96,7 @@ next14:
     add r13, r0, #2147483648
     adds r9, r13, r13
     add r11, r11, r10
-    umulls r9, r11, r0, r0
+    umulls r9, r1, r0, r0
     addvs r14, r0, #1
     addvc r14, r0, #2
     adds r9, r0, #0
