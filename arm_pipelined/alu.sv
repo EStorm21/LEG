@@ -1,57 +1,57 @@
-module alu(input  logic [31:0] aIn, bIn,
+module alu(input  logic [31:0] AIn, BIn,
            input  logic [2:0]  ALUOperation, CVUpdate,
            input logic         InvertB, ReverseInputs, ALUCarry,
            output logic [31:0] Result,
            output logic [3:0]  Flags,
            input logic [1:0] PreviousCVFlag, // [1] = C flag, [0] = V flag
-           input  logic shifterCarryOut_cycle2E, shifterCarryOut_cycle1E, prevRSRstateE, keepV);
+           input  logic ShifterCarryOut_cycle2E, ShifterCarryOut_cycle1E, PrevRSRstateE, KeepV);
 
-  logic        neg, zero, carry, overflow, shifterCarryOutE;
-  logic [31:0] condinvb, a, b;
-  logic [32:0] sum;
+  logic        Neg, Zero, Carry, Overflow, ShifterCarryOutE;
+  logic [31:0] Condinvb, A, B;
+  logic [32:0] Sum;
 
   always_comb 
   begin
-    if(prevRSRstateE)
-      shifterCarryOutE = shifterCarryOut_cycle2E;
+    if(PrevRSRstateE)
+      ShifterCarryOutE = ShifterCarryOut_cycle2E;
     else
-      shifterCarryOutE = shifterCarryOut_cycle1E;
+      ShifterCarryOutE = ShifterCarryOut_cycle1E;
   end
 
-  mux2 #(32)  alu_inA(aIn, bIn, ReverseInputs, a); 
-  mux2 #(32)  alu_inB(bIn, aIn, ReverseInputs, b); 
+  mux2 #(32)  alu_inA(AIn, BIn, ReverseInputs, A); 
+  mux2 #(32)  alu_inB(BIn, AIn, ReverseInputs, B); 
 
-  assign condinvb = InvertB ? ~b : b;
-  assign sum = a + condinvb + ALUCarry;
+  assign Condinvb = InvertB ? ~B : B;
+  assign Sum = A + Condinvb + ALUCarry;
  
   always_comb
     casex (ALUOperation[2:0]) // ------------------------ change to 3 bit type of operation
-      3'b000: Result = a & condinvb;
-      3'b001: Result = a ^ condinvb;
-      3'b010: Result = sum;
-      3'b011: Result = a | condinvb;
-      3'b100: Result = condinvb;
-      default: Result = sum;
+      3'b000: Result = A & Condinvb;
+      3'b001: Result = A ^ Condinvb;
+      3'b010: Result = Sum;
+      3'b011: Result = A | Condinvb;
+      3'b100: Result = Condinvb;
+      default: Result = Sum;
     endcase
 
   // Order is NZCV
-  assign neg      = Result[31];
-  assign zero     = (Result == 32'b0);
+  assign Neg      = Result[31];
+  assign Zero     = (Result == 32'b0);
   // FLAG HANDLING
   always_comb
     casex (CVUpdate[2:0])
-      3'b000: begin carry = shifterCarryOutE;  // AND, TST, EOR, TEQ, ORR, MOV, MVN, BIC
-                    overflow = PreviousCVFlag[0]; end
-      3'b101: begin carry = sum[32];           // SUB, RSB, ADC, SBC, RSC, CMP
-                    overflow = (a[31] ^ b[31]) & (a[31] ^ sum[31]); end
-      3'b100: begin carry = sum[32];           // CMN
-                    overflow = ~(a[31] ^ b[31]) & (a[31] ^ sum[31]); end
-      3'b110: begin carry = sum[32];           // ADD
-                    overflow = keepV ? PreviousCVFlag[0] : ~(a[31] ^ b[31]) & (a[31] ^ sum[31]); end
-      //default: begin carry = PreviousCVFlag[1]; 
-      //               overflow = PreviousCVFlag[0]; end
+      3'b000: begin Carry = ShifterCarryOutE;  // AND, TST, EOR, TEQ, ORR, MOV, MVN, BIC
+                    Overflow = PreviousCVFlag[0]; end
+      3'b101: begin Carry = Sum[32];           // SUB, RSB, ADC, SBC, RSC, CMP
+                    Overflow = (A[31] ^ B[31]) & (A[31] ^ Sum[31]); end
+      3'b100: begin Carry = Sum[32];           // CMN
+                    Overflow = ~(A[31] ^ B[31]) & (A[31] ^ Sum[31]); end
+      3'b110: begin Carry = Sum[32];           // ADD
+                    Overflow = KeepV ? PreviousCVFlag[0] : ~(A[31] ^ B[31]) & (A[31] ^ Sum[31]); end
+      //default: begin Carry = PreviousCVFlag[1]; 
+      //               Overflow = PreviousCVFlag[0]; end
     endcase
 
 
-  assign Flags = {neg, zero, carry, overflow};
+  assign Flags = {Neg, Zero, Carry, Overflow};
 endmodule

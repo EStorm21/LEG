@@ -5,9 +5,9 @@ module hazard(input  logic       clk, reset,
               input  logic       PCWrPendingF, PCSrcW,
               output logic [1:0] ForwardAE, ForwardBE,
               output logic       StallF, StallD,
-              // Added dstall, StallE, StallM, and FlushW for memory
+              // Added DStall, StallE, StallM, and FlushW for memory
               output logic       FlushD, FlushE, 
-              input  logic       dstall, istall,
+              input  logic       DStall, IStall,
               input  logic       MultStallD, MultStallE,
               output logic       StallE, StallM, FlushW, StallW,
               // For Micro-ops
@@ -42,14 +42,14 @@ module hazard(input  logic       clk, reset,
   
   assign ldrStallD = Match_12D_E & MemtoRegE;
   
-  assign StallD = ldrStallD | dstall | uOpStallD | istall | MultStallD;
-  assign StalluOp = ldrStallD | dstall | istall | MultStallD;
-  assign StallF = ldrStallD | PCWrPendingF | dstall | istall | uOpStallD | MultStallD;
-  assign StallE = dstall | istall;
-  assign FlushW = dstall | istall;
-  assign StallW = istall;
-  assign StallM = dstall | istall;
+  assign StallD = ldrStallD | DStall | uOpStallD | IStall | MultStallD;
+  assign StalluOp = ldrStallD | DStall | IStall | MultStallD;
+  assign StallF = ldrStallD | PCWrPendingF | DStall | IStall | uOpStallD | MultStallD;
+  assign StallE = DStall | IStall;
+  assign FlushW = DStall | IStall;
+  assign StallW = IStall;
+  assign StallM = DStall | IStall;
   assign FlushE = ldrStallD | BranchTakenE; 
-  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | istall;
+  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall;
   
 endmodule
