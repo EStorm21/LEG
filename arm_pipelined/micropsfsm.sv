@@ -9,7 +9,7 @@ module micropsfsm(input  logic        clk, reset,
 
 // define states READY and RSR 
 // TODO: add more states for each type of instruction
-typedef enum {ready, rsr, multiply, multiply2} statetype;
+typedef enum {ready, rsr, multiply} statetype;
 statetype state, nextState;
 
 // set reset state to READY, else set state to nextState
@@ -109,7 +109,7 @@ always_comb
 						keepV = 0;
 						regFileRz = {1'b0, // Control inital mux for RA1D
 									3'b000}; // 5th bit of WA3, RA2D and RA1D
-						nextState = multiply2;
+						nextState = ready;
 						uOpInstrD = {defaultInstrD[31:24], //we need to send the values in RdLo and RdHi to the multiplier
 								3'b101, defaultInstrD[20:16], //set the flags if requested
 								defaultInstrD[15:12],
@@ -127,17 +127,6 @@ always_comb
 						uOpInstrD = {defaultInstrD};
 					end
 				end
-		multiply2: begin
-			nextState = ready;
-			InstrMuxD = 0;
-			doNotUpdateFlagD = 0;
-			prevRSRstate = 0;
-			uOpStallD = 0;
-			keepV = 0;
-			regFileRz = {1'b0, // Control inital mux for RA1D
-						3'b000}; // 5th bit of RA2D and RA1D
-			uOpInstrD = {defaultInstrD};
-		end
 		default: begin
 			nextState = ready;
 			InstrMuxD = 0;
