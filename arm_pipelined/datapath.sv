@@ -62,8 +62,8 @@ module datapath(input  logic        clk, reset,
   assign RA2D = {RegFileRzD[1], RA2_4b_D};
   mux2 #(4)  destregmux(InstrD[15:12], InstrD[19:16], MultSelectD, DestRegD);
   
-  assign MultStallD = InstrD[23] & (InstrD[7:4] == 4'b1001) & ~WriteMultLoE; //For Long Multiply
-  assign MultStallE = InstrE[23] & (InstrE[7:4] == 4'b1001); //For Long Multiply
+  assign MultStallD = InstrD[23] & (InstrD[7:4] == 4'b1001) & ~InstrD[25] & ~WriteMultLoE; //For Long Multiply
+  assign MultStallE = InstrE[23] & (InstrE[7:4] == 4'b1001) & ~InstrD[25]; //For Long Multiply
 
   flopenr #(1)  MultOutputSrc(clk, reset, ~StallE, MultStallD, WriteMultLoE);
   flopenr #(1)  MultOutputSrc1(clk, reset, ~StallE, WriteMultLoE, WriteMultLoKeptE); //write the low register on the second cycle

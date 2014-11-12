@@ -7,7 +7,7 @@
 //------------------------------------------------------
 //------------------------------------------------------
 module data_associative_cache #(parameter blocksize = 4, parameter lines = 65536)
-                  (input  logic clk, reset, MemWriteM, MemtoRegM, Valid, 
+                  (input  logic clk, reset, MemWriteM, MemtoRegM, Valid, IStall,
                    input  logic [31:0] a, 
                    input  logic [blocksize*32-1:0] MemBlock,
                    output logic [31:0] rd,
@@ -19,22 +19,23 @@ module data_associative_cache #(parameter blocksize = 4, parameter lines = 65536
     logic w1v, w2v, w1en, w2en;
     logic [tagbits-1:0] w1tag, w2tag;
     logic cwe;
-    logic [blocksize*32-1:0] w1rd, w2rd, blockout, CacheOut;
+    logic [blocksize*32-1:0] W1Block, W2Block;
+    logic [31:0] w2rd, w1rd, MemRD, CacheOut;
     logic RDSel;
 
     // Way 1
     data_associative_cache_memory #(lines, tagbits, blocksize) way1(
        .clk(clk), .reset(reset), .wd(MemBlock), .a(a), .we(w1en), 
-       .rv(w1v), .rtag(w1tag), .rd(w1rd));
+       .rv(w1v), .rtag(w1tag), .rd(W1Block));
 
     // Way 2
     data_associative_cache_memory #(lines, tagbits, blocksize) way2(
        .clk(clk), .reset(reset), .wd(MemBlock), .a(a), .we(w2en), 
-       .rv(w2v), .rtag(w2tag), .rd(w2rd));
+       .rv(w2v), .rtag(w2tag), .rd(W2Block));
 
     // Cache Controller
     data_associative_cache_controller dcc(
-        .clk(clk), .reset(reset), .hit(hit), .RDSel(RDSel), .MemWriteM(MemWriteM),
+        .clk(clk), .reset(reset), .hit(hit), .IStall(IStall), .RDSel(RDSel), .MemWriteM(MemWriteM),
         .Stall(Stall), .Valid(Valid),
         .MemRE(MemRE), .cwe(cwe), .MemWE(MemWE),
         .re(MemtoRegM));
@@ -70,22 +71,43 @@ module data_associative_cache #(parameter blocksize = 4, parameter lines = 65536
             end
         end
 
-    // Block selection logic
-    assign CacheOut = w1hit ? w1rd : w2rd;
+    // Word selection mux's
+    // TODO: Make these mux's mux parameterized
 
-    // Select CacheOut or MemBlock
-    assign blockout = RDSel ? MemBlock : CacheOut;
-
-    // Word selection mux
-    // TODO: Make this mux parameterized
-    assign bo = a[3:2];
+    // Way1 Word Select
     always_comb
     case (a[3:2])
-        2'b11 : rd = blockout[31:0];
-        2'b10 : rd = blockout[2*32-1 : 32];
-        2'b01 : rd = blockout[3*32-1 : 2*32];
-        2'b00 : rd = blockout[4*32-1 : 3*32];
-        default : rd = blockout[31:0]; 
+        2'b11 : w1rd = W1Block[31:0];
+        2'b10 : w1rd = W1Block[2*32-1 : 32];
+        2'b01 : w1rd = W1Block[3*32-1 : 2*32];
+        2'b00 : w1rd = W1Block[4*32-1 : 3*32];
+        default : w1rd = W1Block[31:0]; 
     endcase
+
+    // Way2 Word Select
+    always_comb
+    case (a[3:2])
+        2'b11 : w2rd = W2Block[31:0];
+        2'b10 : w2rd = W2Block[2*32-1 : 32];
+        2'b01 : w2rd = W2Block[3*32-1 : 2*32];
+        2'b00 : w2rd = W2Block[4*32-1 : 3*32];
+        default : w2rd = W2Block[31:0]; 
+    endcase
+
+    // Way3 Word Select
+    always_comb
+    case (a[3:2])
+        2'b11 : MemRD = MemBlock[31:0];
+        2'b10 : MemRD = MemBlock[2*32-1 : 32];
+        2'b01 : MemRD = MemBlock[3*32-1 : 2*32];
+        2'b00 : MemRD = MemBlock[4*32-1 : 3*32];
+        default : MemRD = MemBlock[31:0]; 
+    endcase
+
+    // Select from the ways
+    assign CacheOut = w1hit ? w1rd : w2rd;
+
+    // Select from cache or memory
+    assign rd = RDSel ? MemRD : CacheOut;
 
 endmodule
