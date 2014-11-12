@@ -24,7 +24,7 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 65536)
        .rv(w2v), .rtag(w2tag), .rd(w2rd));
 
     // Cache Controller
-    arm_instr_cache_controller dcc(
+    arm_instr_cache_controller icc(
         .clk(clk), .reset(reset), .hit(hit), 
         .Stall(Stall), .Valid(Valid),
         .MemRE(MemRE), .cwe(cwe));
@@ -68,10 +68,10 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 65536)
     assign bo = a[3:2];
     always_comb
     case (a[3:2])
-        2'b11 : rd = blockout[31:0];
-        2'b10 : rd = blockout[2*32-1 : 32];
-        2'b01 : rd = blockout[3*32-1 : 2*32];
-        2'b00 : rd = blockout[4*32-1 : 3*32];
+        2'b00 : rd = blockout[31:0];
+        2'b01 : rd = blockout[2*32-1 : 32];
+        2'b10 : rd = blockout[3*32-1 : 2*32];
+        2'b11 : rd = blockout[4*32-1 : 3*32];
         default : rd = blockout[31:0]; 
     endcase
 

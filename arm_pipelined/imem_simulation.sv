@@ -44,7 +44,9 @@ module imem_simulation
     end  
   // ------------------ Actual Memory ----------------------
   initial
+<<<<<<< HEAD
       $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat",RAM); //teqrs
+      //$readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
       //$readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
       // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
       

@@ -1,6 +1,6 @@
 // Cache controller works according to schematic
 module data_cache_controller (input  logic clk, reset,
-                         input  logic hit,
+                         input  logic hit, IStall,
                          input  logic MemWriteM,
                          input  logic re,
                          input  logic valid,

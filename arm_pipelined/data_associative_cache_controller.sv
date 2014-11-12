@@ -1,6 +1,7 @@
 // Cache controller works according to schematic
 module data_associative_cache_controller (input  logic clk, reset,
                          input  logic hit,
+                         input  logic IStall,
                          input  logic MemWriteM,
                          input  logic re,
                          input  logic Valid,
@@ -9,7 +10,7 @@ module data_associative_cache_controller (input  logic clk, reset,
                          output logic Stall,
                          output logic MemWE,
                          output logic MemRE);
-  typedef enum logic [1:0] {READY, MEMREAD, MEMWRITE, NEXTINSTR} statetype;
+  typedef enum logic [2:0] {READY, MEMREAD, MEMWRITE, NEXTINSTR, WAIT} statetype;
   statetype state, nextstate;
 
   // state register
@@ -29,9 +30,11 @@ module data_associative_cache_controller (input  logic clk, reset,
                   else begin
                     nextstate <= MEMWRITE;
                   end
-      NEXTINSTR:                      nextstate <= READY;
+      // If the instruction memory is stalling, then wait for a new instruction
+      NEXTINSTR:                      nextstate <= IStall ? WAIT : READY;
       MEMREAD:                        nextstate <= Valid ? NEXTINSTR : MEMREAD;
       MEMWRITE:                       nextstate <= Valid ? MEMREAD : MEMWRITE;
+      WAIT:                           nextstate <= IStall ? WAIT : READY;
       default: nextstate <= READY;
     endcase
 
