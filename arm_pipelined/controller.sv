@@ -15,7 +15,7 @@ module controller(input  logic         clk, reset,
                   // Recently added by CW team - for Data processing instructions
                   output logic  [2:0]   ALUOperationE, CVUpdateE,
                   output logic          DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryE,
-                  output logic  [1:0]  PreviousCVFlag,
+                  output logic  [3:0]   PreviousFlagsE,
                   // For micro-op decoding
                   input logic          doNotUpdateFlagD, PrevRSRstateD,
                   output logic         RselectE, PrevRSRstateE,
@@ -23,7 +23,7 @@ module controller(input  logic         clk, reset,
                   input  logic  [3:0]  RegFileRzD, 
                   output logic  [6:4]  ShiftOpCode_E,
                   output logic         MultSelectD, MultEnable,
-                  output logic [31:0] InstrE);
+                  output logic [31:0]  InstrE);
 
   logic [10:0] ControlsD;
   logic       CondExE, ALUOpD;
@@ -35,7 +35,7 @@ module controller(input  logic         clk, reset,
   logic       BranchD, BranchE;
   logic [1:0] FlagWriteD, FlagWriteE;
   logic       PCSrcD, PCSrcE, PCSrcM;
-  logic [3:0] PreviousFlagsE, FlagsNextE, CondE;
+  logic [3:0] FlagsNextE, CondE;
   logic       RegWritepreMuxE, RselectD, RSRselectD;
   logic [1:0] ResultSelectD;
   logic [6:4] ShiftOpCode_D;
@@ -97,7 +97,7 @@ module controller(input  logic         clk, reset,
   // ALU Decoding
   flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE,
                            {ALUOpD, InstrD}, {ALUOpE, InstrE});
-  alu_decoder alu_dec(ALUOpE, InstrE[24:21], PreviousCVFlag, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
+  alu_decoder alu_dec(ALUOpE, InstrE[24:21], PreviousFlagsE[1:0], ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
                     
   flopenr  #(4) condregE(clk, reset, ~StallE, InstrD[31:28], CondE);
   
@@ -118,7 +118,7 @@ module controller(input  logic         clk, reset,
   assign RegWriteGatedE = DoNotWriteRegE ? 1'b0 : RegWritepreMuxE; 
   
   // create carry-in bit for carry instructions to send to ALU 
-  assign PreviousCVFlag = PreviousFlagsE[1:0];
+  // assign PreviousCVFlag = PreviousFlagsE[1:0];
   
   // Memory stage
   flopenr #(4) regsM(clk, reset, ~StallM,

@@ -16,7 +16,7 @@ module datapath(input  logic        clk, reset,
                 // Added StallE, StallM, FlushW for memory
                 input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, StalluOp,
                 // Handling Data processing Instrs
-                input logic  [1:0]  PreviousCVFlag,
+                input logic  [3:0]  PreviousFlagsE,
                 input logic  [2:0]  CVUpdateE, ALUOperationE,
                 input logic         InvertBE, ReverseInputsE, ALUCarryE,
                 // To handle micro-op decoding
@@ -53,7 +53,7 @@ module datapath(input  logic        clk, reset,
 
   assign PCPlus8D = PCPlus4F; // skip register
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
-  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, PrevRSRstateD, KeepVD, RegFileRzD, uOpInstrD, StalluOp);
+  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, PrevRSRstateD, KeepVD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   mux3 #(4)   ra1mux(InstrD[19:16], 4'b1111, InstrD[3:0], {MultSelectD, RegSrcD[0]}, RA1_RnD);
   mux3 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], RA1_RnD, {MultSelectD, RegFileRzD[2]}, RA1_4b_D);
@@ -100,10 +100,10 @@ module datapath(input  logic        clk, reset,
   //Long Multiply RdLo register
   assign RdLoE = {0, InstrE[15:12]};
 
-  shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], PreviousCVFlag, ShiftOpCode_E, ShifterCarryOutE);
+  shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], PreviousFlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
   flopenr #(1) shftrCarryOut(clk, reset, ~StallE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
-  alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, ALUOutputE, ALUFlagsE, PreviousCVFlag, ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, KeepVE); 
-  multiplier  mult(clk, reset, MultEnable, StallE, WriteMultLoKeptE, SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, PreviousCVFlag);
+  alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, ALUOutputE, ALUFlagsE, PreviousFlagsE[1:0], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, KeepVE); 
+  multiplier  mult(clk, reset, MultEnable, StallE, WriteMultLoKeptE, SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, PreviousFlagsE[1:0]);
   mux3 #(32)  aluoutputmux(ALUOutputE, ShiftBE, MultOutputE, ResultSelectE, ALUResultE); 
   
   // Memory Stage

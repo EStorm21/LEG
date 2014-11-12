@@ -5,12 +5,22 @@ module micropsfsm(input  logic        clk, reset,
                output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, prevRSRstate, keepV,
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
-			   input  logic		   StalluOp);
+			   input  logic		   StalluOp,
+			   input  logic [3:0]  Flags);
 
 // define states READY and RSR 
 // TODO: add more states for each type of instruction
-typedef enum {ready, rsr, multiply} statetype;
+typedef enum {ready, rsr, multiply, ldm} statetype;
 statetype state, nextState;
+
+// Conditional Unit
+logic CondExD;
+microps_conditional uOpCond(Flags, defaultInstrD[31:28], CondExD);
+
+// Count ones for LDM/STM
+logic [3:0] numones;
+always_comb 
+	numones = $countones(defaultInstrD[15:0]);
 
 // set reset state to READY, else set state to nextState
 always_ff @ (posedge clk)
@@ -32,7 +42,8 @@ always_ff @ (posedge clk)
 always_comb
 	case(state)
 		ready: begin
-				if (defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 0 && defaultInstrD[4] == 1) begin //start rsr
+				//start RSR type instructions
+				if (defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 0 && defaultInstrD[4] == 1) begin 
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
@@ -46,7 +57,8 @@ always_comb
 								4'b0000, 4'b1111, // If we have SBZ then [19:16]  shb 0000, we should use Rz [15:12]
 								defaultInstrD[11:0]}; // This needs to be MOV R1 R2 << R3. 
 				end
-				else if(defaultInstrD[21] && (defaultInstrD[7:4] == 4'b1001)) begin //start multiply accumulate
+				// Start multiply accumulate
+				else if(defaultInstrD[21] && (defaultInstrD[7:4] == 4'b1001)) begin 
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 0;
 					uOpStallD = 1;
@@ -60,6 +72,12 @@ always_comb
 								4'b0000, //SBZ
 								defaultInstrD[11:0]}; 
 				end
+				// LOAD MULTIPLE
+				else if(defaultInstrD[27:25] == 3'b100 && defaultInstrD[20] == 1'b1) begin
+
+					// First instruction should be a move Rz = Rn or Rz = Rn + 4 or Rz = Rn - # bits set - 4 etc...
+				end
+
 				else begin
 					nextState = ready;
 					InstrMuxD = 0;
