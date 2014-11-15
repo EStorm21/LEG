@@ -11,16 +11,29 @@ module micropsfsm(input  logic        clk, reset,
 // define states READY and RSR 
 // TODO: add more states for each type of instruction
 typedef enum {ready, rsr, multiply, ldm} statetype;
-statetype state, nextState;
+statetype state, nextState, ldmstm;
 
+// --------------------------- ADDED FOR LDM/STM -------------------------------
 // Conditional Unit
 logic CondExD;
 microps_conditional uOpCond(Flags, defaultInstrD[31:28], CondExD);
-
 // Count ones for LDM/STM
 logic [3:0] numones;
+logic [8:0] start_imm;
 always_comb 
+  begin
 	numones = $countones(defaultInstrD[15:0]);
+	casex(defaultInstrD[24:23])
+	  2'b00: start_imm = (-((numones-1)<<2));
+	  2'b01: start_imm = 0;
+	  2'b10: start_imm = (-((numones)<<2));
+	  2'b11: start_imm = 4;
+	  default: start_imm = 0;
+	endcase
+  end
+
+// --------------------------------------------------------------------------------
+
 
 // set reset state to READY, else set state to nextState
 always_ff @ (posedge clk)
