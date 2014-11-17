@@ -99,7 +99,6 @@ module datapath(input  logic        clk, reset,
   assign WA3E = WriteMultLoE ? RdLoE: WA3E_1;
   //Long Multiply RdLo register
   assign RdLoE = {0, InstrE[15:12]};
-
   shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], PreviousFlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
   flopenr #(1) shftrCarryOut(clk, reset, ~StallE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
   alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, ALUOutputE, ALUFlagsE, PreviousFlagsE[1:0], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, KeepVE); 

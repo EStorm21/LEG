@@ -42,15 +42,15 @@ module top(input  logic        clk, reset,
   //                       .MemtoRegM(MemtoRegM), .Valid(Valid), .a(DataAdrM), .MemBlock(MemRD),
   //                       .rd(ReadDataM), .Stall(DStall), .MemRE(MemRE), .MemWE(MemWE));
 
-  data_writeback_associative_cache #(4, 128) 
+  data_writeback_associative_cache #(4, 2) 
     data_cache(.clk(clk), .reset(reset), .MemWriteM(MemWriteM), .MemtoRegM(MemtoRegM), 
-               .Valid(Valid), .IStall(IStall), .a(DataAdrM), .WD(WriteDataM),
+               .BusReady(BusReadyM), .IStall(IStall), .a(DataAdrM), .WD(WriteDataM),
                .MemRD(MemRD), .MemWD(MemWD), .RD(ReadDataM), .MemAddr(MemAddr),
                .Stall(DStall), .MemRE(MemRE), .MemWE(MemWE));
 
   // Create ahb arbiter
-  ahb_arbiter ahb_arb(.HWriteM(MemWriteM), .IStall(IStall), .DStall(DStall), .HReady(HReady),
-              .HAddrM(MemAddr), .HAddrF(PCF), .HReadyF(IValid), .HReadyM(Valid),
+  ahb_arbiter ahb_arb(.HWriteM(MemWE), .IStall(IStall), .DStall(DStall), .HReady(HReady),
+              .HAddrM(MemAddr), .HAddrF(PCF), .HReadyF(IValid), .HReadyM(BusReadyM),
               .HAddr(HAddr), .HWrite(HWrite));
 
   // Create an ahb memory
