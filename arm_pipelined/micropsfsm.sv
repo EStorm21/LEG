@@ -2,7 +2,7 @@
 
 module micropsfsm(input  logic        clk, reset,
                input  logic [31:0] defaultInstrD,
-               output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, prevRSRstate, keepV,
+               output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforward, prevRSRstate, keepV,
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
 			   input  logic		   StalluOp,
@@ -32,7 +32,7 @@ always_comb
 	endcase
   end
 
-  
+
 
 // --------------------------------------------------------------------------------
 
@@ -89,6 +89,10 @@ always_comb
 				end
 				// LOAD MULTIPLE
 				else if(defaultInstrD[27:25] == 3'b100 && defaultInstrD[20] == 1'b1) begin
+					InstrMuxD = 1;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 1;
+					LDMSTMforward = 1;
 
 					// First instruction should be a move Rz = Rn or Rz = Rn + 4 or Rz = Rn - # bits set - 4 etc...
 				end
@@ -103,6 +107,7 @@ always_comb
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of RA2D and RA1D
 					uOpInstrD = {defaultInstrD};
+					LDMSTMforward = 0;
 				end
 			end
 		rsr:begin

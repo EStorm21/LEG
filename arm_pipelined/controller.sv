@@ -17,8 +17,8 @@ module controller(input  logic         clk, reset,
                   output logic          DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryE,
                   output logic  [3:0]   PreviousFlagsE,
                   // For micro-op decoding
-                  input logic          doNotUpdateFlagD, PrevRSRstateD,
-                  output logic         RselectE, PrevRSRstateE, LDRSTRshiftE,
+                  input logic          doNotUpdateFlagD, PrevRSRstateD, LDMSTMforwardD,
+                  output logic         RselectE, PrevRSRstateE, LDRSTRshiftE, LDMSTMforwardE,
                   output logic  [1:0]  ResultSelectE,
                   input  logic  [3:0]  RegFileRzD, 
                   output logic  [6:4]  ShiftOpCode_E,
@@ -42,10 +42,9 @@ module controller(input  logic         clk, reset,
   logic [11:0]  StateRegisterDataE;
 
   assign ShiftOpCode_D = InstrD[6:4];
+  assign LDRSTRshiftE = 1'b0;
 
   // Decode stage
-  
-  assign LDRSTRshiftE = 1'b0;
   always_comb
   	casex(InstrD[27:26]) 
       // If 2'b00, then this is data processing instruction
@@ -85,7 +84,8 @@ module controller(input  logic         clk, reset,
 
   // Execute stage
   // Added enables to E, M, and flush to W. Added for memory
-  flopenrc  #(4) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD}, {RselectE, ResultSelectE, PrevRSRstateE});
+  flopenrc  #(5) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD}, 
+                                                            {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE});
   flopenrc #(7) flushedregsE(clk, reset, ~StallE, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE});
