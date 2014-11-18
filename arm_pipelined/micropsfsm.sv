@@ -19,8 +19,23 @@ statetype state, nextState;
 logic CondExD;
 microps_conditional uOpCond(Flags, defaultInstrD[31:28], CondExD);
 // Count ones for LDM/STM
-logic [3:0] numones;
+logic [3:0] numones, Rd;
 logic [11:0] start_imm;
+logic [15:0] RegistersListNow, RegistersListNext;
+microps_reg_selector regSelect(RegistersListNow, RegistersListNext, Rd);
+
+always_ff @ (posedge clk)
+  begin
+  	if (reset)
+  		RegistersListNow <= 16'b0;
+  	else if ((defaultInstrD[27:25] == 3'b100 & defaultInstrD[20] == 1'b1) & state == ready)
+  		RegistersListNow <= defaultInstrD[15:0];
+  	else if (StalluOp)
+  		RegistersListNow <= RegistersListNow;
+  	else
+  		RegistersListNow <= RegistersListNext;
+  end
+
 always_comb 
   begin
 	numones = $countones(defaultInstrD[15:0]);
@@ -32,6 +47,8 @@ always_comb
 	  default: start_imm = 0;
 	endcase
   end
+// Determine First "register to load"
+
 
 
 
@@ -102,10 +119,9 @@ always_comb
 					regFileRz = {1'b0,
 								 3'b0};
 					nextState = ldm; 
+					SignExtend = 1;
+					// First instruction should be a LDR with offset
 					uOpInstrD = {32'b0};
-
-
-
 					// First instruction should be a move Rz = Rn or Rz = Rn + 4 or Rz = Rn - # bits set - 4 etc...
 				end
 
@@ -120,6 +136,7 @@ always_comb
 								3'b000}; // 5th bit of RA2D and RA1D
 					uOpInstrD = {defaultInstrD};
 					LDMSTMforward = 0;
+					SignExtend = 0;
 				end
 			end
 		rsr:begin
