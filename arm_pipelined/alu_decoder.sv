@@ -4,13 +4,13 @@ module alu_decoder(input  logic       ALUOpE,
            output   logic [2:0] ALUOperation, CVUpdate,
            output   logic     InvertB, ReverseInputs, ALUCarry, DoNotWriteReg);
 
-  assign ReverseInputs = (ALUOpE & (InstrE[24:21] == 4'b0011 || //RSB
+  assign ReverseInputs = (ALUOpE & (InstrE[24:21] == 4'b0011 | //RSB
                           InstrE[24:21] == 4'b0111)); //RSC
  
-  assign InvertB = (ALUOpE & ((InstrE[24:22] == 3'b001) ||   //SUB, RSB
-                   (InstrE[24:22] == 3'b011) ||   //SBC, RSC
-                   (InstrE[24:21] == 4'b1010) ||  //CMP
-                   (InstrE[24:21] == 4'b1111) ||  //MVN
+  assign InvertB = (ALUOpE & ((InstrE[24:22] == 3'b001) |   //SUB, RSB
+                   (InstrE[24:22] == 3'b011) |   //SBC, RSC
+                   (InstrE[24:21] == 4'b1010) |  //CMP
+                   (InstrE[24:21] == 4'b1111) |  //MVN
                    (InstrE[24:21] == 4'b1110)));    //BIC
                  
   always_comb
