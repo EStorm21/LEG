@@ -78,15 +78,6 @@ module mem_simulation
        RAM[{a[22:4], 2'b10}], 
        RAM[{a[22:4], 2'b01}], 
        RAM[{a[22:4], 2'b00}]} <= wd; 
-
-       // DEBUGGING
-       $write("wrote %h to %h",
-        {RAM[{a[22:4], 2'b11}], 
-         RAM[{a[22:4], 2'b10}], 
-         RAM[{a[22:4], 2'b01}], 
-         RAM[{a[22:4], 2'b00}]}, a[22:4]
-        );
-       $display($time, " write");
     end
     rd <= {RAM[{a[22:4], 2'b11}], 
            RAM[{a[22:4], 2'b10}], 
