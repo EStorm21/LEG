@@ -55,7 +55,8 @@ module controller(input  logic         clk, reset,
                              ControlsD = 11'b00_00_0010011; // Multiply
                 else         ControlsD = 11'b00_00_0010010; // Data processing register
                   end
-  	  2'b01: if (InstrD[20]) ControlsD = 11'b00_01_1110000; // LDR
+  	  2'b01: if (InstrD[20] & ~InstrD[25]) ControlsD = 11'b00_01_1110000; // LDR, "I-type"
+             else if (InstrD[20])          ControlsD = 11'b00_01_0110000; // LDR, "R-Type"
   	         else            ControlsD = 11'b10_01_1101000; // STR
   	  2'b10:                 ControlsD = 11'b01_10_1000100; // B
   	  default:               ControlsD = 11'bx;          // unimplemented
@@ -76,8 +77,8 @@ module controller(input  logic         clk, reset,
  
   assign MultControlD  = InstrD[23:21];
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~RegFileRzD[2]) | BranchD);
-  assign RselectD      = (InstrD[27:25] == 3'b000 && ShiftOpCode_D[4] == 0);
-  assign RSRselectD    = (InstrD[27:25] == 3'b000 && ShiftOpCode_D[4] == 1);
+  assign RselectD      = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 0) | (InstrD[27:25] == 3'b011) ;
+  assign RSRselectD    = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 1);
   assign ResultSelectD = {MultSelectD, RSRselectD};
 
 

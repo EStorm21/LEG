@@ -1,7 +1,7 @@
 module shifter(input  logic [31:0] a,
 			        input logic [31:0] b,
               output logic [31:0] shiftBE,
-              input logic isRtype, isRSRtype, 
+              input logic isRtype, isRSRtype, isLDRSTR_shift,
               input logic [1:0] prevCVflag, // [1] is C, [0] is V
               input logic [6:4] shiftOpCode_E,
               output logic      shifterCarryOutE);
@@ -11,7 +11,6 @@ module shifter(input  logic [31:0] a,
 reg[63:0] temp;
 
 
-//NOTES: LSL updated, still to do: LSR, ASR, RRX, ROR
 always_comb
 begin
 if (isRtype) // R type
@@ -141,6 +140,29 @@ else if (isRSRtype) // RSR type - b is rm, a is rs
                 end
   		      end 	
   	endcase
+  end
+else if (isLDRSTR_shift)
+  begin
+    shifterCarryOutE = 1'b0;
+    casex(a[6:5])
+      2'b00: begin // LSL
+                shiftBE = b << a[11:7]; 
+              end
+      2'b01:  begin // LSR
+                shiftBE = b >> a[11:7]; 
+              end
+      2'b10:  begin // ASR
+                shiftBE = $signed(b) >>> a[11:7]; 
+              end
+      2'b11: begin 
+              if (a[11:7] == 5'b0)  //RRX
+                 shiftBE = (b >> 1) | {prevCVflag[1], 31'b0}; 
+              else begin // ROR
+                temp = {b,b} >> a[11:7];
+                shiftBE = temp[31:0];
+                end
+             end // ROR or RRX
+   endcase
   end
 else
   begin
