@@ -21,7 +21,7 @@ module datapath(input  logic        clk, reset,
                 input logic         InvertBE, ReverseInputsE, ALUCarryE,
                 // To handle micro-op decoding
                 output logic        doNotUpdateFlagD, uOpStallD, PrevRSRstateD,
-                input  logic        RselectE, PrevRSRstateE,
+                input  logic        RselectE, PrevRSRstateE, LDRSTRshiftE,
                 input logic[1:0]    ResultSelectE,
                 input  logic [6:4]  ShiftOpCode_E,
                 input logic         MultSelectD, MultEnable,
@@ -35,7 +35,7 @@ module datapath(input  logic        clk, reset,
   logic        InstrMuxD;
   logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, ALUResultE, ALUOutputE, ShifterAinE, ALUSrcBE, ShiftBE;
   logic [31:0] MultOutputBE, MultOutputAE;
-  logic        ShifterCarryOutE, LDRSTRshiftE;
+  logic        ShifterCarryOutE;
   logic [31:0] ReadDataW, ALUOutW, ResultW;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D;
   logic [4:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3E_1, WA3M, WA3W, RdLoD , RdLoE;
@@ -43,6 +43,7 @@ module datapath(input  logic        clk, reset,
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
   logic [3:0]  ALUFlagsE, MultFlagsE, DestRegD;
                 
+
   // Fetch stage
   mux2 #(32) pcnextmux(PCPlus4F, ResultW, PCSrcW, PCnext1F);
   mux2 #(32) branchmux(PCnext1F, ALUResultE, BranchTakenE, PCnextF);

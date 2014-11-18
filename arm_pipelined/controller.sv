@@ -18,7 +18,7 @@ module controller(input  logic         clk, reset,
                   output logic  [3:0]   PreviousFlagsE,
                   // For micro-op decoding
                   input logic          doNotUpdateFlagD, PrevRSRstateD,
-                  output logic         RselectE, PrevRSRstateE,
+                  output logic         RselectE, PrevRSRstateE, LDRSTRshiftE,
                   output logic  [1:0]  ResultSelectE,
                   input  logic  [3:0]  RegFileRzD, 
                   output logic  [6:4]  ShiftOpCode_E,
@@ -45,7 +45,7 @@ module controller(input  logic         clk, reset,
 
   // Decode stage
   
-
+  assign LDRSTRshiftE = 1'b0;
   always_comb
   	casex(InstrD[27:26]) 
       // If 2'b00, then this is data processing instruction
