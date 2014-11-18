@@ -93,4 +93,44 @@ module cpsr(input  logic        clk, reset,
 
   assign SRdata = cpsr;
 
+/*
+
+      casex({reset, Exceptions})
+        7'b0_xxxxxx: 
+        7'b0_000000: CPSR_update = {cpsr[7:0]};
+        7'b0_000001: CPSR_update = {1'b1, cpsr[6], 6'b01_0011}; // Supervisor Mode
+        7'b0_000010: CPSR_update = {1'b1, cpsr[6], 6'b01_0111}; // Data Abort Mode
+        7'b0_000100: CPSR_update = {1'b1, cpsr[6], 6'b01_0111}; // Prefetch Abort Mode
+        7'b0_001000: CPSR_update = {1'b1, cpsr[6], 6'b01_1011}; // Undefined Mode
+        7'b0_010000: CPSR_update = {1'b1, cpsr[6], 6'b01_0010}; // IRQ mode
+        7'b0_100000: CPSR_update = {1'b1, cpsr[6], 6'b01_0001}; // output fast interrupt (FIQ) mode
+        default: CPSR_update = {cpsr[7:0]};
+      endcase
+
+
+
+
+      casex(Exceptions)
+        5'b00000: cpsr[31:28] <= FlagsNext;
+        5'b00001: begin // supervisor mode from software interrupt
+                  sr[1] <= cpsr;
+                  cpsr[7:0] <= CPSR_update; //FIQ, IRQ disabled, Supervisor mode
+                  end
+        5'b00010: begin // abort mode (prefetch and data-access abort)
+                  sr[2] <= cpsr;
+                  cpsr[7:0] <= CPSR_update;
+                  end
+        5'b00100: begin // undefined mode
+                  sr[3] <= cpsr;
+                  cpsr[7:0] <= CPSR_update;
+                  end
+        5'b01000: begin // interrupt (IRQ) mode
+                  sr[4] <= cpsr;
+                  cpsr[7:0] <= CPSR_update;
+                  end
+        5'b10000: begin // fast interrupt (FIQ) mode
+                  sr[5] <= cpsr;
+                  cpsr[7:0] <= CPSR_update;
+                  end
+      endcase*/
 endmodule

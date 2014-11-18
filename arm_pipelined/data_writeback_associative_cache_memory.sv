@@ -1,6 +1,6 @@
 module data_writeback_associative_cache_memory #(parameter lines = 65536, parameter tagbits = 14, 
                            parameter blocksize = 4)
-                    (input logic clk, reset, WE, BlockWE,
+                    (input logic clk, reset, WE, MemWriteM,
                      input logic [blocksize*32-1:0] WD, 
                      input logic [31:0] a,
                      output logic RV, Dirty,
@@ -34,6 +34,6 @@ module data_writeback_associative_cache_memory #(parameter lines = 65536, parame
       v[set]        <= 1'b1;               // write the valid bit
       
       // Clean the block if writing an entire block
-      DirtyBits[set]<= BlockWE ? 1'b0 : 1'b1;            
+      DirtyBits[set]<= MemWriteM ? 1'b1 : 1'b0;            
     end
 endmodule
