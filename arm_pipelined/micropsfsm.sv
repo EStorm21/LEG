@@ -2,7 +2,8 @@
 
 module micropsfsm(input  logic        clk, reset,
                input  logic [31:0] defaultInstrD,
-               output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforward, prevRSRstate, keepV,
+               output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforward, 
+               output logic 	   prevRSRstate, keepV, SignExtend,
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
 			   input  logic		   StalluOp,
@@ -11,7 +12,7 @@ module micropsfsm(input  logic        clk, reset,
 // define states READY and RSR 
 // TODO: add more states for each type of instruction
 typedef enum {ready, rsr, multiply, ldm} statetype;
-statetype state, nextState, ldmstm;
+statetype state, nextState;
 
 // --------------------------- ADDED FOR LDM/STM -------------------------------
 // Conditional Unit
@@ -19,7 +20,7 @@ logic CondExD;
 microps_conditional uOpCond(Flags, defaultInstrD[31:28], CondExD);
 // Count ones for LDM/STM
 logic [3:0] numones;
-logic [8:0] start_imm;
+logic [11:0] start_imm;
 always_comb 
   begin
 	numones = $countones(defaultInstrD[15:0]);
@@ -51,8 +52,13 @@ always_ff @ (posedge clk)
 
 
 
-// Mealy FSM that takes in defaultInstrD as input, changes states that require uOps if 
-// needed, and sets appropriate control signals and next instruction
+/* Mealy FSM that takes in defaultInstrD as input, changes states that require uOps if 
+ needed, and sets appropriate control signals and next instruction
+
+ Signals that you'll need to consider:
+ (1) InstrMuxD, (2) doNotUpdateFlagD, (3) uOpStallD, (4) regFileRz, (5) prevRSRState, (6) nextState, (7) keepV
+ (8) uOpInstrD, (9) LDMSTMforward
+*/
 
 always_comb
 	case(state)
@@ -92,7 +98,13 @@ always_comb
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
-					LDMSTMforward = 1;
+					LDMSTMforward = 0;
+					regFileRz = {1'b0,
+								 3'b0};
+					nextState = ldm; 
+					uOpInstrD = {32'b0};
+
+
 
 					// First instruction should be a move Rz = Rn or Rz = Rn + 4 or Rz = Rn - # bits set - 4 etc...
 				end

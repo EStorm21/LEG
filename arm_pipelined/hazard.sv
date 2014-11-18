@@ -24,7 +24,9 @@ module hazard(input  logic       clk, reset,
     else                             
       ForwardAE = 2'b00;
  
-    if (Match_2E_M & RegWriteM)      
+    if (LDMSTMforwardE)
+      ForwardBE = 2'b11;
+    else if (Match_2E_M & RegWriteM)
       ForwardBE = 2'b10;
     else if (Match_2E_W & RegWriteW) 
       ForwardBE = 2'b01;
