@@ -68,10 +68,16 @@ module controller(input  logic         clk, reset,
    always_comb
      if (ALUOpD) begin                     // which Data-processing Instr?
       ALUControlD = InstrD[24:21];  // Always passes Instruction codes to ALUControlD
-      FlagWriteD[1:0]   = {InstrD[20], InstrD[20]};       // update N and Z Flags if S bit is set
-    end else begin
-      ALUControlD     = 4'b0100;      // perform addition for non-dataprocessing instr
-      FlagWriteD      = 2'b00;        // don't update Flags
+      FlagWriteD[1:0]   = {InstrD[20], InstrD[20]};       // update flags if S bit is set
+    end else if (ImmSrcD == 2'b01 & InstrD[23] == 1) begin// Load Store (Rn + 12 bit offset)
+      ALUControlD     = 4'b0100;  // "Add" operation
+      FlagWriteD[1:0] = 2'b00;
+    end else if (ImmSrcD == 2'b01 & InstrD[23] == 0) begin // Load/Store (Rn - 12 bit offset)
+      ALUControlD     = 4'b0010;  // "Subtract" operation
+      FlagWriteD[1:0] = 2'b00;
+    end else begin                    
+      ALUControlD     = 4'b0100;      // perform addition for non-dataprocessing instr (branch...)
+      FlagWriteD[1:0] = 2'b00;        // don't update Flags
     end 
  
   assign MultControlD  = InstrD[23:21];

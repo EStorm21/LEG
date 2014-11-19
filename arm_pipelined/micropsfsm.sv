@@ -29,7 +29,7 @@ always_ff @ (posedge clk)
   begin
   	if (reset)
   		RegistersListNow <= 16'b0;
-  	else if ((defaultInstrD[27:25] == 3'b100 & defaultInstrD[20] == 1'b1) & state == ready)
+  	else if (defaultInstrD[27:25] == 3'b100 & state == ready)
   		RegistersListNow <= defaultInstrD[15:0];
   	else if (StalluOp)
   		RegistersListNow <= RegistersListNow;
