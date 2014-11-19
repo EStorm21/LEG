@@ -36,7 +36,7 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     // RDSel:      Select output from bus or from cache
     logic BlockWE, W1D, W2D, RDSel;
 
-    // CacheIn Logic
+    // CacheIn Logic (feedback MUX's)
     cacheIn #(blocksize) 
         w1in(.BlockWE(BlockWE), .MemWriteM(MemWriteM), 
              .MemRD(MemRD), .CacheBlock(W1BlockOut),

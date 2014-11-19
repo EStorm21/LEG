@@ -1,11 +1,10 @@
 // Cache controller works according to schematic
-module arm_instr_cache_controller (input  logic clk, reset,
-                         input  logic hit,
-                         input  logic Valid,
-                         output logic cwe,
-                         output logic Stall,
-                         output logic MemRE);
-  typedef enum logic [1:0] {READY, MEMREAD, CACHEWRITE, NEXTINSTR} statetype;
+module instr_cache_controller (input  logic clk, reset,
+                         input  logic Hit,
+                         input  logic BusReady,
+                         output logic CWE,
+                         output logic IStall, RDSel);
+  typedef enum logic [1:0] {READY, MEMREAD, NEXTINSTR} statetype;
   statetype state, nextstate;
 
   // state register
@@ -16,22 +15,21 @@ module arm_instr_cache_controller (input  logic clk, reset,
   // next state logic
   always_comb
     case (state)
-      READY:      if ( hit ) begin
+      READY:      if ( Hit ) begin
                     nextstate <= READY;
                   end
                   else begin
                     nextstate <= MEMREAD;
                   end
-      CACHEWRITE:                     nextstate <= NEXTINSTR;
       NEXTINSTR:                      nextstate <= READY;
-      MEMREAD:                        nextstate <= Valid ? CACHEWRITE : MEMREAD;
+      MEMREAD:                        nextstate <= BusReady ? NEXTINSTR : MEMREAD;
       default: nextstate <= READY;
     endcase
 
   // output logic
-  assign Stall       = (state == CACHEWRITE) | (state == MEMREAD) | 
-                       ((state == READY) & ~hit);
-  assign cwe         = (state == CACHEWRITE);
-  assign MemRE       = (state == MEMREAD);
+  assign IStall =  (state == MEMREAD) | ((state == READY) & ~Hit);
+  assign CWE   = (state == NEXTINSTR);
+  assign RDSel = (state == NEXTINSTR);
+  assign MemRE = (state == MEMREAD);
 
 endmodule

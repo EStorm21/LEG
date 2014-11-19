@@ -1,7 +1,8 @@
 // Cache controller works according to schematic
-module data_writeback_associative_cache_controller (input  logic clk, reset,
-                         input  logic Hit, IStall, Dirty, MemWriteM, MemtoRegM, BusReady, 
-                         output logic RDSel, CWE, Stall, MemWE, MemRE, BlockWE);
+module data_writeback_associative_cache_controller 
+  (input  logic clk, reset,
+   input  logic Hit, IStall, Dirty, MemWriteM, MemtoRegM, BusReady, 
+   output logic RDSel, CWE, Stall, MemWE, MemRE, BlockWE);
 
   typedef enum logic [2:0] {READY, MEMREAD, WRITEBACK, NEXTINSTR, WAIT} statetype;
   statetype state, nextstate;
@@ -23,9 +24,9 @@ module data_writeback_associative_cache_controller (input  logic clk, reset,
                   else begin
                     nextstate <= WRITEBACK;
                   end
-      // If the instruction memory is stalling, then wait for a new instruction
       WRITEBACK: nextstate <= BusReady ? MEMREAD : WRITEBACK;
       MEMREAD:   nextstate <= BusReady ? NEXTINSTR : MEMREAD;
+      // If the instruction memory is stalling, then wait for a new instruction
       NEXTINSTR: nextstate <= IStall ? WAIT : READY;
       WAIT:      nextstate <= IStall ? WAIT : READY;
       default:   nextstate <= READY;
