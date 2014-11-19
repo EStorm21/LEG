@@ -16,13 +16,14 @@ statetype state, nextState;
 
 // --------------------------- ADDED FOR LDM/STM -------------------------------
 // Conditional Unit
-logic CondExD;
+logic CondExD, readyState;
+assign readyState = (state == ready);
 microps_conditional uOpCond(Flags, defaultInstrD[31:28], CondExD);
 // Count ones for LDM/STM
 logic [3:0] numones, Rd;
 logic [11:0] start_imm;
 logic [15:0] RegistersListNow, RegistersListNext;
-microps_reg_selector regSelect(RegistersListNow, RegistersListNext, Rd);
+microps_reg_selector regSelect(defaultInstrD, readyState, RegistersListNow, RegistersListNext, Rd);
 
 always_ff @ (posedge clk)
   begin
