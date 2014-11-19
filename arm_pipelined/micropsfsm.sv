@@ -16,21 +16,24 @@ statetype state, nextState;
 
 // --------------------------- ADDED FOR LDM/STM -------------------------------
 // Conditional Unit
-logic CondExD, readyState;
+logic CondExD, readyState, Ubit_ADD, LastCycle, WriteBack;
 assign readyState = (state == ready);
 microps_conditional uOpCond(Flags, defaultInstrD[31:28], CondExD);
 // Count ones for LDM/STM
 logic [3:0] numones, Rd;
 logic [11:0] start_imm;
 logic [15:0] RegistersListNow, RegistersListNext;
+
+/* Gives you the next register to Load/Store during LDM or STM, even handles first cycle
+ */
 microps_reg_selector regSelect(defaultInstrD, readyState, RegistersListNow, RegistersListNext, Rd);
 
+/* Updates the Current Registers List that we need to select from. 
+ */
 always_ff @ (posedge clk)
   begin
   	if (reset)
   		RegistersListNow <= 16'b0;
-  	else if (defaultInstrD[27:25] == 3'b100 & state == ready)
-  		RegistersListNow <= defaultInstrD[15:0];
   	else if (StalluOp)
   		RegistersListNow <= RegistersListNow;
   	else
@@ -40,17 +43,32 @@ always_ff @ (posedge clk)
 always_comb 
   begin
 	numones = $countones(defaultInstrD[15:0]);
+	LastCycle = (numones == 1);
 	casex(defaultInstrD[24:23])
-	  2'b00: start_imm = (-((numones-1)<<2));
-	  2'b01: start_imm = 0;
-	  2'b10: start_imm = (-((numones)<<2));
-	  2'b11: start_imm = 4;
-	  default: start_imm = 0;
+	  2'b00: begin 
+	  		 start_imm = ((numones-1)<<2); // <start_add> = Rn + 4 - (#set bits * 4) 
+	  	     Ubit_ADD = 0; 				   // Used in single LDR/STR bit[23] to choose SUBTRACT
+	  	  	 end
+	  2'b01: begin 
+	  		 start_imm = 0;
+	  		 Ubit_ADD = 1;
+	  		 end
+	  2'b10: begin
+	  		 start_imm = ((numones)<<2);   // <start_add> = Rn     - (#set bits * 4) 
+	  		 Ubit_ADD = 0;				   // SUBTRACT NEEDED
+	  		 end
+	  2'b11: begin
+	  		 start_imm = 4;
+	  		 Ubit_ADD = 1;
+	  		 end
+	  default: begin start_imm = 0; Ubit_ADD = 1; end
 	endcase
   end
-// Determine First "register to load"
 
-
+// Determine First "register to load"  - DONE
+// Choose start immediate to get <start_address> = Rn + stuff - DONE
+// On first cycle, load single LDR instruction with offset 
+// On second cycle consider previous CondExD
 
 
 // --------------------------------------------------------------------------------
@@ -117,16 +135,27 @@ always_comb
 					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
 					LDMSTMforward = 0;
-					regFileRz = {1'b0,
-								 3'b0};
+					regFileRz = {1'b0,  // Control inital mux for RA1D
+								 3'b000}; // 5th bit of WA3, RA2D and RA1D
 					nextState = ldm; 
-					SignExtend = 1;
 					// First instruction should be a LDR with offset
-					uOpInstrD = {32'b0};
+					uOpInstrD = {defaultInstrD[31:28], // Cond
+								 3'b010, 			   // Load/Store SINGLE as I-type
+								 1'b1,  			   // P-bit (preindex)
+								 Ubit_ADD,			 	// U-bit (add or subtract)
+								 1'b0,					// B-bit (choose word addressing, not byte addressing)
+								 1'b0,					// W-bit (Base register should NOT be updated)
+								 defaultInstrD[20], 	// Differentiate between Load and Store | L = 1 for loads
+								 defaultInstrD[19:16],	// Still read from the same Rn
+								 Rd,					// 4 bit calculated register file to which the Load will be written back to
+								 start_imm				// 12 bits of start_imm, calculated from above
+								 };
 					// First instruction should be a move Rz = Rn or Rz = Rn + 4 or Rz = Rn - # bits set - 4 etc...
 				end
 
-				else begin
+				/* --- Stay in the READY state ----
+				 */
+				else begin 
 					nextState = ready;
 					InstrMuxD = 0;
 					doNotUpdateFlagD = 0;
@@ -140,6 +169,35 @@ always_comb
 					SignExtend = 0;
 				end
 			end
+		
+		ldm:begin
+			if(~CondExD) // If it fails conditional execution, flush Execute stage
+			  begin
+			  	nextState = ready;
+			  	InstrMuxD = 0;
+			  	doNotUpdateFlagD = 1;
+			  	uOpStallD = 0;
+			  	prevRSRstate = 0;
+			  	keepV = 0;
+			  	regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of RA2D and RA1D
+				uOpInstrD = {defaultInstrD[31:28], 		// Cond: Never execute
+							3'b001,  		// Data processing Instr
+							4'b0100, 		// Add operation
+							1'b0,			// Do not set flags
+							20'b0 			// Add R0 = R0 + 0 (never execute)
+							};
+				LDMSTMforward = 0;
+			  end
+			else if(LastCycle & WriteBack) // If it's the last cycle and NO WRITEBACK
+			  	nextState = ready;
+			else if (LastCycle) // If just last cycle and no writeback
+			  	nextState = ldm;
+
+
+			end
+
+
 		rsr:begin
 				if(defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 0 && defaultInstrD[4] == 1) begin 
 					InstrMuxD = 1;

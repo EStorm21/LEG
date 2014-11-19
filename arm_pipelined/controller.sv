@@ -96,7 +96,7 @@ module controller(input  logic         clk, reset,
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE});
 
-  flopenr #(8)  regsE(clk, reset, ~StallE,
+  flopenrc #(8)  regsE(clk, reset, ~StallE, FlushE,
                     {ALUSrcD, ALUControlD, MultControlD},
                     {ALUSrcE, ALUControlE, MultControlE});
 
@@ -106,11 +106,11 @@ module controller(input  logic         clk, reset,
                            {ALUOpD, InstrD}, {ALUOpE, InstrE});
   alu_decoder alu_dec(ALUOpE, InstrE[24:21], PreviousFlagsE[1:0], ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
                     
-  flopenr  #(4) condregE(clk, reset, ~StallE, InstrD[31:28], CondE);
+  flopenrc  #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
   
   cpsr          cpsrE(clk, reset, FlagsNextE, 6'b0, 5'b0, 2'b0, 1'b0, ~StallE, 1'b0, 1'b0, StateRegisterDataE);
   assign  PreviousFlagsE = StateRegisterDataE[11:8];
-  flopenr  #(3) shiftOpCodeE(clk, reset, ~StallE, ShiftOpCode_D[6:4],ShiftOpCode_E[6:4]);
+  flopenrc  #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, ShiftOpCode_D[6:4],ShiftOpCode_E[6:4]);
   //flopenr  #(4) flagsregE(clk, reset, ~StallE, FlagsNextE, PreviousFlagsE);
   // write and Branch controls are conditional
   conditional Cond(CondE, PreviousFlagsE, FlagsE, FlagWriteE, CondExE, FlagsNextE);
