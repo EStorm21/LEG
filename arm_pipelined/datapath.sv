@@ -27,7 +27,9 @@ module datapath(input  logic        clk, reset,
                 input logic         MultSelectD, MultEnable,
                 // input logic         WriteMultLoE,
                 output logic        MultStallD, MultStallE, 
-                output logic [3:0]  RegFileRzD);
+                output logic [3:0]  RegFileRzD,
+                // added for thumb instructions
+                input  logic        TFlag);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
@@ -48,10 +50,13 @@ module datapath(input  logic        clk, reset,
   mux2 #(32) branchmux(PCnext1F, ALUResultE, BranchTakenE, PCnextF);
   flopenr #(32) pcreg(clk, reset, ~StallF, PCnextF, PCF);
   adder #(32) pcadd(PCF, 32'h4, PCPlus4F);
+  // For thumb mode
+  adder #(32) pcaddtwo(PCF, 32'h2, PCPlus2F)
+  mux2 #(32) pcmux(PCPlus4F, PCPlus2F, TFlag, PCPlusXF)
   
   // Decode Stage
 
-  assign PCPlus8D = PCPlus4F; // skip register
+  assign PCPlus8D = PCPlusXF; // skip register *change to PCPlusXF for thumb
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, PrevRSRstateD, KeepVD, RegFileRzD, uOpInstrD, StalluOp);
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
