@@ -11,18 +11,27 @@ module hazard(input  logic       clk, reset,
               input  logic       MultStallD, MultStallE,
               output logic       StallE, StallM, FlushW, StallW,
               // For Micro-ops
-              input logic        uOpStallD,
+              input logic        uOpStallD, LDMSTMforwardE,
               output logic       StalluOp);
                 
   // forwarding logic
-  always_comb begin
-    if (Match_1E_M & RegWriteM)      ForwardAE = 2'b10;
-    else if (Match_1E_W & RegWriteW) ForwardAE = 2'b01;
-    else                             ForwardAE = 2'b00;
+  always_comb 
+  begin
+    if ((Match_1E_M & RegWriteM) | LDMSTMforwardE) 
+      ForwardAE = 2'b10;
+    else if (Match_1E_W & RegWriteW) 
+      ForwardAE = 2'b01;
+    else                             
+      ForwardAE = 2'b00;
  
-    if (Match_2E_M & RegWriteM)      ForwardBE = 2'b10;
-    else if (Match_2E_W & RegWriteW) ForwardBE = 2'b01;
-    else                             ForwardBE = 2'b00;
+    if (LDMSTMforwardE)
+      ForwardBE = 2'b11;
+    else if (Match_2E_M & RegWriteM)
+      ForwardBE = 2'b10;
+    else if (Match_2E_W & RegWriteW) 
+      ForwardBE = 2'b01;
+    else                             
+      ForwardBE = 2'b00;
   end
   
   // stalls and flushes

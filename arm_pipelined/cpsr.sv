@@ -93,11 +93,6 @@ module cpsr(input  logic        clk, reset,
 
   assign SRdata = cpsr;
 
-endmodule
-
-
-
-
 /*
 
       casex({reset, Exceptions})
@@ -138,3 +133,4 @@ endmodule
                   cpsr[7:0] <= CPSR_update;
                   end
       endcase*/
+endmodule

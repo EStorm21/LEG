@@ -18,8 +18,9 @@ module arm(input  logic        clk, reset,
   logic [1:0]  ForwardAE, ForwardBE;
   logic        StallF, StallD, FlushD, StallE, FlushE, StallM, FlushW, StallW;
   logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E;
-  logic        DoNotWriteRegE, doNotUpdateFlagD,uOpStallD, PrevRSRstateD, PrevRSRstateE, MultSelectD, RselectE;
-  logic [1:0]  PreviousCVFlag; // [1] is C, [0] is V
+  logic        DoNotWriteRegE, doNotUpdateFlagD,uOpStallD, PrevRSRstateD, PrevRSRstateE;
+  logic        LDMSTMforwardD, LDMSTMforwardE, LDRSTRshiftE, MultSelectD, RselectE;
+  logic [3:0]  PreviousFlagsE; // [1] is C, [0] is V
   logic [1:0]  ResultSelectE;
   logic [2:0]  MultControlE;
   logic        MultStallD, MultStallE, StalluOp;
