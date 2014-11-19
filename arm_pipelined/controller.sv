@@ -53,7 +53,10 @@ module controller(input  logic         clk, reset,
   	         else begin         
                 if (InstrD[7:4] == 4'b1001)
                              ControlsD = 11'b00_00_0010011; // Multiply
-                else         ControlsD = 11'b00_00_0010010; // Data processing register
+                else begin
+                   if (InstrD[19:8] == 11'b11_11_1111111)
+                             ControlsD = 11'b01_10_1000100; // BX
+                   else      ControlsD = 11'b00_00_0010010; // Data processing register
                   end
   	  2'b01: if (InstrD[20]) ControlsD = 11'b00_01_1110000; // LDR
   	         else            ControlsD = 11'b10_01_1101000; // STR
