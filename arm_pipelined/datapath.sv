@@ -20,9 +20,9 @@ module datapath(input  logic        clk, reset,
                 input logic  [2:0]  CVUpdateE, ALUOperationE,
                 input logic         InvertBE, ReverseInputsE, ALUCarryE,
                 // To handle micro-op decoding
-                output logic        doNotUpdateFlagD, uOpStallD, PrevRSRstateD,
-                input  logic        RselectE, PrevRSRstateE, LDRSTRshiftE,
-                input logic[1:0]    ResultSelectE,
+                output logic        doNotUpdateFlagD, uOpStallD, PrevRSRstateD, LDMSTMforwardD,
+                input  logic        RselectE, PrevRSRstateE, LDRSTRshiftE, 
+                input logic[1:0]    ResultSelectE, // Comes from {MultSelectD, RSRselectD}
                 input  logic [6:4]  ShiftOpCode_E,
                 input logic         MultSelectD, MultEnable,
                 // input logic         WriteMultLoE,
@@ -32,7 +32,7 @@ module datapath(input  logic        clk, reset,
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
   logic [31:0] ExtImmD, Rd1D, Rd2D, PCPlus8D, RotImmD, DefaultInstrD, uOpInstrD;
-  logic        InstrMuxD;
+  logic        InstrMuxD, SignExtendD;
   logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, ALUResultE, ALUOutputE, ShifterAinE, ALUSrcBE, ShiftBE;
   logic [31:0] MultOutputBE, MultOutputAE;
   logic        ShifterCarryOutE;
@@ -54,7 +54,8 @@ module datapath(input  logic        clk, reset,
 
   assign PCPlus8D = PCPlus4F; // skip register
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
-  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, PrevRSRstateD, KeepVD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
+  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, 
+                            PrevRSRstateD, KeepVD, SignExtendD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   mux3 #(4)   ra1mux(InstrD[19:16], 4'b1111, InstrD[3:0], {MultSelectD, RegSrcD[0]}, RA1_RnD);
   mux3 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], RA1_RnD, {MultSelectD, RegFileRzD[2]}, RA1_4b_D);
@@ -72,7 +73,7 @@ module datapath(input  logic        clk, reset,
   regfile     rf(clk, RegWriteW, RA1D, RA2D,
                  WA3W, ResultW, PCPlus8D, 
                  Rd1D, Rd2D); 
-  extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25]);
+  extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25], SignExtendD);
 
   // ------- RECENTLY ADDED BY IVAN ----------------- Currently EVERYTHING goes through Rotator
   rotator   rotat(ExtImmD, InstrD, RotImmD); 
@@ -91,7 +92,7 @@ module datapath(input  logic        clk, reset,
   flopenr #(1)  keepV(clk, reset, ~StallE, KeepVD, KeepVE);
   // flopenr #(1)  writeMultHi(clk, reset, ~StallE,WriteMultLoD, WriteMultLoE);
   mux3 #(32)  byp1mux(Rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);
-  mux3 #(32)  byp2mux(Rd2E, ResultW, ALUOutM, ForwardBE, WriteDataE);
+  mux4 #(32)  byp2mux(Rd2E, ResultW, ALUOutM, 32'h4, ForwardBE, WriteDataE);
   mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcBE);
   mux2 #(32)  shifterAin(SrcAE, ExtImmE, RselectE, ShifterAinE); 
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);

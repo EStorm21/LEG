@@ -17,8 +17,8 @@ module controller(input  logic         clk, reset,
                   output logic          DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryE,
                   output logic  [3:0]   PreviousFlagsE,
                   // For micro-op decoding
-                  input logic          doNotUpdateFlagD, PrevRSRstateD,
-                  output logic         RselectE, PrevRSRstateE, LDRSTRshiftE,
+                  input logic          doNotUpdateFlagD, PrevRSRstateD, LDMSTMforwardD,
+                  output logic         RselectE, PrevRSRstateE, LDRSTRshiftE, LDMSTMforwardE,
                   output logic  [1:0]  ResultSelectE,
                   input  logic  [3:0]  RegFileRzD, 
                   output logic  [6:4]  ShiftOpCode_E,
@@ -42,10 +42,9 @@ module controller(input  logic         clk, reset,
   logic [11:0]  StateRegisterDataE;
 
   assign ShiftOpCode_D = InstrD[6:4];
+  assign LDRSTRshiftE = 1'b0;
 
   // Decode stage
-  
-  assign LDRSTRshiftE = 1'b0;
   always_comb
   	casex(InstrD[27:26]) 
       // If 2'b00, then this is data processing instruction
@@ -69,10 +68,16 @@ module controller(input  logic         clk, reset,
    always_comb
      if (ALUOpD) begin                     // which Data-processing Instr?
       ALUControlD = InstrD[24:21];  // Always passes Instruction codes to ALUControlD
-      FlagWriteD[1:0]   = {InstrD[20], InstrD[20]};       // update N and Z Flags if S bit is set
-    end else begin
-      ALUControlD     = 4'b0100;      // perform addition for non-dataprocessing instr
-      FlagWriteD      = 2'b00;        // don't update Flags
+      FlagWriteD[1:0]   = {InstrD[20], InstrD[20]};       // update flags if S bit is set
+    end else if (ImmSrcD == 2'b01 & InstrD[23] == 1) begin// Load Store (Rn + 12 bit offset)
+      ALUControlD     = 4'b0100;  // "Add" operation
+      FlagWriteD[1:0] = 2'b00;
+    end else if (ImmSrcD == 2'b01 & InstrD[23] == 0) begin // Load/Store (Rn - 12 bit offset)
+      ALUControlD     = 4'b0010;  // "Subtract" operation
+      FlagWriteD[1:0] = 2'b00;
+    end else begin                    
+      ALUControlD     = 4'b0100;      // perform addition for non-dataprocessing instr (branch...)
+      FlagWriteD[1:0] = 2'b00;        // don't update Flags
     end 
  
   assign MultControlD  = InstrD[23:21];
@@ -85,12 +90,13 @@ module controller(input  logic         clk, reset,
 
   // Execute stage
   // Added enables to E, M, and flush to W. Added for memory
-  flopenrc  #(4) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD}, {RselectE, ResultSelectE, PrevRSRstateE});
+  flopenrc  #(5) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD}, 
+                                                            {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE});
   flopenrc #(7) flushedregsE(clk, reset, ~StallE, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE});
 
-  flopenr #(8)  regsE(clk, reset, ~StallE,
+  flopenrc #(8)  regsE(clk, reset, ~StallE, FlushE,
                     {ALUSrcD, ALUControlD, MultControlD},
                     {ALUSrcE, ALUControlE, MultControlE});
 
@@ -100,11 +106,11 @@ module controller(input  logic         clk, reset,
                            {ALUOpD, InstrD}, {ALUOpE, InstrE});
   alu_decoder alu_dec(ALUOpE, InstrE[24:21], PreviousFlagsE[1:0], ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
                     
-  flopenr  #(4) condregE(clk, reset, ~StallE, InstrD[31:28], CondE);
+  flopenrc  #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
   
   cpsr          cpsrE(clk, reset, FlagsNextE, 6'b0, 5'b0, 2'b0, 1'b0, ~StallE, 1'b0, 1'b0, StateRegisterDataE);
   assign  PreviousFlagsE = StateRegisterDataE[11:8];
-  flopenr  #(3) shiftOpCodeE(clk, reset, ~StallE, ShiftOpCode_D[6:4],ShiftOpCode_E[6:4]);
+  flopenrc  #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, ShiftOpCode_D[6:4],ShiftOpCode_E[6:4]);
   //flopenr  #(4) flagsregE(clk, reset, ~StallE, FlagsNextE, PreviousFlagsE);
   // write and Branch controls are conditional
   conditional Cond(CondE, PreviousFlagsE, FlagsE, FlagWriteE, CondExE, FlagsNextE);
