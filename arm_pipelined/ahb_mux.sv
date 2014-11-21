@@ -1,6 +1,6 @@
 module ahb_mux(input  logic HSEL,
-               input  logic [4*32-1:0] HRDATA0, // HRDATA1, HRDATA2, HRDATA3,
-               output logic [4*32-1:0] HRDATA);
+               input  logic [31:0] HRDATA0, // HRDATA1, HRDATA2, HRDATA3,
+               output logic [31:0] HRDATA);
                
   assign HRDATA = HRDATA0;
   // always_comb

@@ -2,8 +2,8 @@ module mem_simulation
             #(parameter waitCycles = 2, blocksize = 4)
            (input  logic clk, we, re,
             input  logic [31:0] a,
-            input  logic [blocksize*32-1:0] wd,
-            output logic [blocksize*32-1:0] rd,
+            input  logic [31:0] wd,
+            output logic [31:0] rd,
             output logic Valid);
 
   parameter countBits = $clog2(waitCycles) + 1;
@@ -51,10 +51,10 @@ module mem_simulation
       // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
       // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/memwrite_test/memrewrite.dat",RAM);
       // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
+      $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/memwrite_test/memrewrite.dat", RAM);
       // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);
-      $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);
+      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/ldr_strtest/ldr_str_ri.dat",RAM);
       // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/orr_i/orr_i.dat",RAM); //adc
       //$readmemh("F:/Academics/Research Clay Wolkin - ARM v4/NewGithubversions/test_1000_7.dat",RAM); //Ivan's original
@@ -74,14 +74,9 @@ module mem_simulation
   always_ff @(posedge clk) 
   begin
     if (we) begin 
-      {RAM[{a[22:4], 2'b11}], 
-       RAM[{a[22:4], 2'b10}], 
-       RAM[{a[22:4], 2'b01}], 
-       RAM[{a[22:4], 2'b00}]} <= wd; 
+       RAM[a[22:2]] <= wd; 
+       $write("writing     word %h to adr %h", wd, a); $display($time);
     end
-    rd <= {RAM[{a[22:4], 2'b11}], 
-           RAM[{a[22:4], 2'b10}], 
-           RAM[{a[22:4], 2'b01}], 
-           RAM[{a[22:4], 2'b00}]};
+    rd <= RAM[a[22:2]];
   end   
 endmodule

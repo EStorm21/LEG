@@ -1,5 +1,5 @@
 module controller(input  logic         clk, reset,
-                  input  logic [31:0] InstrD,
+                  input  logic [31:0]  InstrD,
                   input  logic [3:0]   FlagsE,
                   output logic [1:0]   RegSrcD, ImmSrcD, 
                   output logic         ALUSrcE, BranchTakenE,

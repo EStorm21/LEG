@@ -9,7 +9,7 @@
 module instr_cache #(parameter blocksize = 4, parameter lines = 2)
                   (input  logic clk, reset, BusReady,
                    input  logic [31:0] a, 
-                   input  logic [blocksize*32-1:0] MemRD,
+                   input  logic [blocksize*32-1:0] HRData,
                    output logic [31:0] RD,
                    output logic IStall);
 
@@ -32,12 +32,12 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
 
     // Way 1
     instr_cache_memory #(lines, tagbits, blocksize) way1(
-       .clk(clk), .reset(reset), .wd(MemRD), .a(a), .we(W1WE),
+       .clk(clk), .reset(reset), .wd(HRData), .a(a), .we(W1WE),
        .rv(W1V), .rtag(W1Tag), .rd(W1BlockOut));
 
     // Way 2
     instr_cache_memory #(lines, tagbits, blocksize) way2(
-       .clk(clk), .reset(reset), .wd(MemRD), .a(a), .we(W2WE), 
+       .clk(clk), .reset(reset), .wd(HRData), .a(a), .we(W2WE), 
        .rv(W2V), .rtag(W2Tag), .rd(W2BlockOut));
 
     // Cache Controller
@@ -113,11 +113,11 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
     // Way3 Word Select
     always_comb
     case (a[3:2])
-        2'b00 : MemWord = MemRD[31:0];
-        2'b01 : MemWord = MemRD[2*32-1 : 32];
-        2'b10 : MemWord = MemRD[3*32-1 : 2*32];
-        2'b11 : MemWord = MemRD[4*32-1 : 3*32];
-        default : MemWord = MemRD[31:0]; 
+        2'b00 : MemWord = HRData[31:0];
+        2'b01 : MemWord = HRData[2*32-1 : 32];
+        2'b10 : MemWord = HRData[3*32-1 : 2*32];
+        2'b11 : MemWord = HRData[4*32-1 : 3*32];
+        default : MemWord = HRData[31:0]; 
     endcase
 
     // Select from the ways

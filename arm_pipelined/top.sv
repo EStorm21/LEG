@@ -13,10 +13,10 @@ module top(input  logic        clk, reset,
   // ----------------------Added for memory------------------
   // data cache 
   logic Valid;
-  logic MemWE;
+  logic HWriteM;
   logic MemRE;
-  logic [31:0] MemAddr;
-  logic [4*32-1:0] MemRD, MemWD;
+  logic [31:0] HAddrM;
+  logic [31:0] HRData, HWData;
 
   // instr cache - Note these are temporarily separate to test the caches
   //               before a shared memory is bus is implemented.
@@ -26,39 +26,38 @@ module top(input  logic        clk, reset,
   // Wires between arbiter and ahb_lite
   logic HWrite, HReady;
   logic [31:0] HAddr;
+  logic [3:0] Mask = 4'b1111;
   
-  // instr_cache icache(.clk(clk), .a(PCF), .rd(InstrF), .hit(ihit), 
-  //                 .validData(ivalidData), .MemRE(IMemRE));
   // instruction cache with a block size of 4 words and 16 lines
-  instr_cache #(4, 8) 
-    instr_cache(.clk(clk), .reset(reset), .BusReady(BusReadyF),
-                .a(PCF), .MemRD(MemRD), .RD(InstrF), 
-                .IStall(IStall));
+  // instr_cache #(4, 8) 
+  //   instr_cache(.clk(clk), .reset(reset), .BusReady(BusReadyF),
+  //               .a(PCF), .HRData(HRData), .RD(InstrF), 
+  //               .IStall(IStall));
 
   // Read straight from the memory, then write to the cache
   // cache with a block size of 4 words and 16 lines (Parameterized block size not functional)
   // data_associative_cache #(4, 16) data_cache(.clk(clk), .reset(reset), .MemWriteM(MemWriteM), .IStall(IStall),
-  //                       .MemtoRegM(MemtoRegM), .Valid(Valid), .a(DataAdrM), .MemBlock(MemRD),
-  //                       .rd(ReadDataM), .Stall(DStall), .MemRE(MemRE), .MemWE(MemWE));
+  //                       .MemtoRegM(MemtoRegM), .Valid(Valid), .a(DataAdrM), .MemBlock(HRData),
+  //                       .rd(ReadDataM), .Stall(DStall), .MemRE(MemRE), .HWriteM(HWriteM));
 
-  data_writeback_associative_cache #(4, 8) 
+  data_writeback_associative_cache #(4, 2) 
     data_cache(.clk(clk), .reset(reset), .MemWriteM(MemWriteM), .MemtoRegM(MemtoRegM), 
                .BusReady(BusReadyM), .IStall(IStall), .a(DataAdrM), .WD(WriteDataM),
-               .MemRD(MemRD), .MemWD(MemWD), .RD(ReadDataM), .MemAddr(MemAddr),
-               .Stall(DStall), .MemRE(MemRE), .MemWE(MemWE));
+               .HRData(HRData), .Mask(Mask), .HWData(HWData), .RD(ReadDataM), .HAddr(HAddrM),
+               .Stall(DStall), .MemRE(MemRE), .HWriteM(HWriteM));
 
   // Create ahb arbiter
-  ahb_arbiter ahb_arb(.HWriteM(MemWE), .IStall(IStall), .DStall(DStall), .HReady(HReady),
-              .HAddrM(MemAddr), .HAddrF(PCF), .HReadyF(BusReadyF), .HReadyM(BusReadyM),
+  ahb_arbiter ahb_arb(.HWriteM(HWriteM), .IStall(IStall), .DStall(DStall), .HReady(HReady),
+              .HAddrM(HAddrM), .HAddrF(PCF), .HReadyF(BusReadyF), .HReadyM(BusReadyM),
               .HAddr(HAddr), .HWrite(HWrite));
 
   // Create an ahb memory
   ahb_lite ahb(.HCLK(clk), .HRESETn(reset), .HADDR(HAddr), .HWRITE(HWrite),
-               .HWDATA(MemWD), .HRDATA(MemRD), .HREADY(HReady));
+               .HWDATA(HWData), .HRDATA(HRData), .HREADY(HReady));
 
   // Create memory with a 2 cycle delay and 4 word block size (Parameterized block size not functional)
-  // mem_simulation #(2, 4) ms(.clk(clk), .we(MemWE), .re(MemRE),
-  //                   .a(DataAdrM), .wd(WriteDataM), .rd(MemRD), 
+  // mem_simulation #(2, 4) ms(.clk(clk), .we(HWriteM), .re(MemRE),
+  //                   .a(DataAdrM), .wd(WriteDataM), .rd(HRData), 
   //                   .Valid(Valid));
 
   // Create instruction memory with a 2 cycle delay and 4 word block size 
@@ -66,8 +65,8 @@ module top(input  logic        clk, reset,
   // imem_simulation #(2, 4) ims(.clk(clk), .re(IMemRE), .a(PCF), .rd(IMemBlock), 
   //                     .Valid(BusReadyF));
 
-  // imem imem(PCF, InstrF);
-  // assign IStall = 1'b0;
+  imem imem(PCF, InstrF);
+  assign IStall = 1'b0;
   // assign DStall = 1'b0;
   // dmem dmem(.clk(clk), .we(MemWriteM), .a(DataAdrM), 
   //           .wd(WriteDataM), .rd(ReadDataM));
