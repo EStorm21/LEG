@@ -74,7 +74,7 @@ next14:
   		addcc r8, r8, #8
   		addvs r8, r8, #16
   		addvc r8, r8, #32
-
+		bl end
 
 
 end:	b end				@ stay at end
