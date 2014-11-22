@@ -16,12 +16,6 @@ module data_writeback_associative_cache_memory #(parameter lines = 65536, parame
   logic [setbits-1:0]  set;                 // n lines 16 bit address
   logic [31:0] rd0, rd1, rd2, rd3;          
 
-  // Set write enables for each word memory
-  assign we0 = WE & (A[3:2] == 2'b00);
-  assign we1 = WE & (A[3:2] == 2'b01);
-  assign we2 = WE & (A[3:2] == 2'b10);
-  assign we3 = WE & (A[3:2] == 2'b11);
-
   // Read the data from the cache immediately
   assign set = A[blocksize+setbits-1:blocksize];
   assign word = A[blockoffset+2:2];         // Current word (for writing single words)
@@ -29,6 +23,12 @@ module data_writeback_associative_cache_memory #(parameter lines = 65536, parame
   assign RV = v[set];
   assign RD = {rd3, rd2, rd1, rd0};
   assign Dirty = DirtyBits[set]; 
+
+  // Set write enables for each word memory
+  assign we0 = WE & (A[3:2] == 2'b00);
+  assign we1 = WE & (A[3:2] == 2'b01);
+  assign we2 = WE & (A[3:2] == 2'b10);
+  assign we3 = WE & (A[3:2] == 2'b11);
 
   // Create four word memories
   // TODO: Replace these with a c style for loop

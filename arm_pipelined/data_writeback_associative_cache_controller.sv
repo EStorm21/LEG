@@ -2,7 +2,7 @@ module data_writeback_associative_cache_controller
   (input  logic clk, reset,
    input  logic Hit, IStall, Dirty, MemWriteM, MemtoRegM, BusReady, 
    input  logic [1:0] Counter, WordOffset,
-   output logic RDSel, CWE, Stall, HWriteM, MemRE, BlockWE, ResetCounter);
+   output logic RDSel, CWE, Stall, HWriteM, HRequestM, BlockWE, ResetCounter);
 
   typedef enum logic [2:0] {READY, MEMREAD, WRITEBACK, NEXTINSTR, WAIT} statetype;
   statetype state, nextstate;
@@ -41,7 +41,7 @@ module data_writeback_associative_cache_controller
   assign CWE    = ( (state == READY) & (MemWriteM & Hit) ) |
                   ( (state == MEMREAD) & BusReady );
   assign HWriteM = (state == WRITEBACK);
-  assign MemRE  = (state == MEMREAD);
+  assign HRequestM  = (state == MEMREAD) | (state == WRITEBACK);
   assign RDSel  = ( (state == NEXTINSTR) & (WordOffset == 2'b11) );
   assign BlockWE = (state == MEMREAD) | ( (state == NEXTINSTR)  & 
                    (~MemWriteM || MemWriteM & ~Dirty) );

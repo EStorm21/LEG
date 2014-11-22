@@ -13,7 +13,7 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
                    input  logic [3:0]  ByteMask, 
                    output logic [31:0] HWData,
                    output logic [31:0] RD, HAddr,
-                   output logic Stall, MemRE, HWriteM);
+                   output logic Stall, HRequestM, HWriteM);
 
     parameter setbits = $clog2(lines);
     parameter blockbits = $clog2(blocksize);

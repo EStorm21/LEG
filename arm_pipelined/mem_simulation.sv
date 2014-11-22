@@ -75,7 +75,6 @@ module mem_simulation
   begin
     if (we) begin 
        RAM[a[22:2]] <= wd; 
-       $write("writing     word %h to adr %h", wd, a); $display($time);
     end
     rd <= RAM[a[22:2]];
   end   
