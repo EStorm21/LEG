@@ -69,6 +69,8 @@ module controller(input  logic         clk, reset,
      if (ALUOpD) begin                     // which Data-processing Instr?
       ALUControlD = InstrD[24:21];  // Always passes Instruction codes to ALUControlD
       FlagWriteD[1:0]   = {InstrD[20], InstrD[20]};       // update flags if S bit is set
+
+    // LOAD STORE LOGIC
     end else if (ImmSrcD == 2'b01 & InstrD[23] == 1) begin// Load Store (Rn + 12 bit offset)
       ALUControlD     = 4'b0100;  // "Add" operation
       FlagWriteD[1:0] = 2'b00;
