@@ -25,8 +25,8 @@ module controller(input  logic         clk, reset,
                   output logic         MultSelectD, MultEnable,
                   output logic [31:0]  InstrE);
 
-  logic [10:0] ControlsD;
-  logic       CondExE, ALUOpD;
+  logic [11:0] ControlsD;
+  logic       CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
   logic [3:0] ALUControlD;
   logic [2:0] MultControlD;
   logic       ALUSrcD, MemtoRegD;
@@ -48,21 +48,21 @@ module controller(input  logic         clk, reset,
   always_comb
   	casex(InstrD[27:26]) 
       // If 2'b00, then this is data processing instruction
-  	  2'b00: if (InstrD[25]) ControlsD = 11'b00_00_1010010; // Data processing immediate
+  	  2'b00: if (InstrD[25]) ControlsD = 12'b00_00_1010_0100; // Data processing immediate   0x52
   	         else begin         
                 if (InstrD[7:4] == 4'b1001)
-                             ControlsD = 11'b00_00_0010011; // Multiply
-                else         ControlsD = 11'b00_00_0010010; // Data processing register
+                             ControlsD = 12'b00_00_0010_0110; // Multiply                    0x13
+                else         ControlsD = 12'b00_00_0010_0100; // Data processing register    0x12
                   end
-  	  2'b01: if (InstrD[20] & ~InstrD[25]) ControlsD = 11'b00_01_1110000; // LDR, "I-type"
-             else if (InstrD[20])          ControlsD = 11'b00_01_0110000; // LDR, "R-Type"
-  	         else            ControlsD = 11'b10_01_1101000; // STR
-  	  2'b10:                 ControlsD = 11'b01_10_1000100; // B
-  	  default:               ControlsD = 11'bx;          // unimplemented
+  	  2'b01: if (InstrD[20] & ~InstrD[25]) ControlsD = 12'b00_01_1110_0001; // LDR, "I-type" 0xf0
+             else if (InstrD[20])          ControlsD = 12'b00_01_0110_0001; // LDR, "R-Type" 0xb0
+  	         else            ControlsD = 12'b10_01_1101_0001; // STR                         0x4e8
+  	  2'b10:                 ControlsD = 12'b01_10_1000_1000; // B                           0x344
+  	  default:               ControlsD = 12'bx;          // unimplemented
   	endcase
 
   assign {RegSrcD, ImmSrcD, ALUSrcD, MemtoRegD, 
-          RegWriteD, MemWriteD, BranchD, ALUOpD, MultSelectD} = ControlsD; 
+          RegWriteD, MemWriteD, BranchD, ALUOpD, MultSelectD, ldrstrALUopD} = ControlsD; 
 
   
    always_comb
@@ -71,10 +71,10 @@ module controller(input  logic         clk, reset,
       FlagWriteD[1:0]   = {InstrD[20], InstrD[20]};       // update flags if S bit is set
 
     // LOAD STORE LOGIC
-    end else if (ImmSrcD == 2'b01 & InstrD[23] == 1) begin// Load Store (Rn + 12 bit offset)
+    end else if ((ImmSrcD == 2'b01) & InstrD[23]) begin// Load Store (Rn + 12 bit offset)
       ALUControlD     = 4'b0100;  // "Add" operation
       FlagWriteD[1:0] = 2'b00;
-    end else if (ImmSrcD == 2'b01 & InstrD[23] == 0) begin // Load/Store (Rn - 12 bit offset)
+    end else if ((ImmSrcD == 2'b01) & ~InstrD[23]) begin // Load/Store (Rn - 12 bit offset)
       ALUControlD     = 4'b0010;  // "Subtract" operation
       FlagWriteD[1:0] = 2'b00;
     end else begin                    
@@ -94,9 +94,9 @@ module controller(input  logic         clk, reset,
   // Added enables to E, M, and flush to W. Added for memory
   flopenrc  #(5) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD}, 
                                                             {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE});
-  flopenrc #(7) flushedregsE(clk, reset, ~StallE, FlushE, 
-                           {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD},
-                           {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE});
+  flopenrc #(8) flushedregsE(clk, reset, ~StallE, FlushE, 
+                           {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD, ldrstrALUopD},
+                           {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE, ldrstrALUopE});
 
   flopenrc #(8)  regsE(clk, reset, ~StallE, FlushE,
                     {ALUSrcD, ALUControlD, MultControlD},
@@ -105,8 +105,8 @@ module controller(input  logic         clk, reset,
   assign MultEnable = InstrE[7:4] == 4'b1001;
   // ALU Decoding
   flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE,
-                           {ALUOpD, InstrD}, {ALUOpE, InstrE});
-  alu_decoder alu_dec(ALUOpE, InstrE[24:21], PreviousFlagsE[1:0], ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
+                           {(ALUOpD|ldrstrALUopD), InstrD}, {ALUOpE, InstrE});
+  alu_decoder alu_dec(ALUOpE, ALUControlE, PreviousFlagsE[1:0], ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
                     
   flopenrc  #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
   
