@@ -195,8 +195,12 @@ always_comb
 						uOpInstrD = {defaultInstrD[31:28], 	// Condition bits
 									4'b0101, defaultInstrD[23:20], // Use simplest load/store, keep same control bits
 									defaultInstrD[19:12], 	// Same Rd and Rn
-									defaultInstrD[11:0]	 	// Offset = 0
+									defaultInstrD[11:0]	 	// Offset = <12bitImm>
 									};
+					end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21]) begin // register shifted type, post increment
+						nextState = pindexldrstr;
+					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21]) begin
+						nextState = pindexldrstr;
 					end
 					else begin // NOT POST-INCREMENT OR !
 						nextState = ready;

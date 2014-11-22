@@ -54,8 +54,8 @@ module controller(input  logic         clk, reset,
                              ControlsD = 12'b00_00_0010_0110; // Multiply                    0x13
                 else         ControlsD = 12'b00_00_0010_0100; // Data processing register    0x12
                   end
-  	  2'b01: if (InstrD[20] & ~InstrD[25]) ControlsD = 12'b00_01_1110_0001; // LDR, "I-type" 0xf0
-             else if (InstrD[20])          ControlsD = 12'b00_01_0110_0001; // LDR, "R-Type" 0xb0
+  	  2'b01: if (InstrD[20] & ~InstrD[25])       ControlsD = 12'b00_01_1110_0001; // LDR, "I-type" 0xf0
+             else if (InstrD[20] & InstrD[25])   ControlsD = 12'b00_01_0110_0001; // LDR, "R-Type" 0xb0
   	         else            ControlsD = 12'b10_01_1101_0001; // STR                         0x4e8
   	  2'b10:                 ControlsD = 12'b01_10_1000_1000; // B                           0x344
   	  default:               ControlsD = 12'bx;          // unimplemented
