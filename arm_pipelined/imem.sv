@@ -7,6 +7,7 @@ module imem(input  logic [31:0] a,
       //$readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/and_rstest/and_rs.dat",RAM); //andrs
       //$readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
       // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat",RAM); //teqrs
+       // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat",RAM); //teqrs
       //$readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/orr_i/orr_i.dat",RAM); //ori
       $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);

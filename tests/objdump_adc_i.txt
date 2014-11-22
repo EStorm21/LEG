@@ -125,6 +125,7 @@ Disassembly of section .text:
   f4:	32888008 	addcc	r8, r8, #8
   f8:	62888010 	addvs	r8, r8, #16
   fc:	72888020 	addvc	r8, r8, #32
+ 100:	ebffffff 	bl	104 <end>
 
-00000100 <end>:
- 100:	eafffffe 	b	100 <end>
+00000104 <end>:
+ 104:	eafffffe 	b	104 <end>
