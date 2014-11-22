@@ -3,7 +3,7 @@
 module micropsfsm(input  logic        clk, reset,
                input  logic [31:0] defaultInstrD,
                output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforward, 
-               output logic 	   prevRSRstate, keepV, SignExtend,
+               output logic 	   prevRSRstate, keepV, SignExtend, noRotate,
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
 			   input  logic		   StalluOp,
@@ -11,7 +11,7 @@ module micropsfsm(input  logic        clk, reset,
 
 // define states READY and RSR 
 // TODO: add more states for each type of instruction
-typedef enum {ready, rsr, multiply, ldm, bl, ldmWriteback} statetype;
+typedef enum {ready, rsr, multiply, ldm, bl, ldmWriteback, pindexldrstr} statetype;
 statetype state, nextState;
 
 // --------------------------- ADDED FOR LDM/STM -------------------------------
@@ -92,8 +92,8 @@ always_ff @ (posedge clk)
  needed, and sets appropriate control signals and next instruction
 
  Signals that you'll need to consider:
- (1) InstrMuxD, (2) doNotUpdateFlagD, (3) uOpStallD, (4) regFileRz, (5) prevRSRState, (6) nextState, (7) keepV
- (8) uOpInstrD, (9) LDMSTMforward
+ (1) InstrMuxD, (2) doNotUpdateFlagD, (3) uOpStallD, (4) regFileRz, (5) prevRSRstate, (6) nextState, (7) keepV
+ (8) uOpInstrD, (9) LDMSTMforward, (10) noRotate,
 */
 
 always_comb
@@ -151,7 +151,7 @@ always_comb
 								 start_imm				// 12 bits of start_imm, calculated from above
 								 };
 					// First instruction should be a move Rz = Rn or Rz = Rn + 4 or Rz = Rn - # bits set - 4 etc...
-				end
+				end 
 				else if(defaultInstrD[27:24]== 4'b1011) begin // bl
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 0;
@@ -165,6 +165,39 @@ always_comb
 								3'b000, 4'b1101, 1'b0, // MOV instruction, Do not update flags 
 								4'b0000, 4'b1110, // SBZ, link register destination
 								8'b00000000, 4'b1111}; // source is unshifted R15
+				end
+
+				// ---------- Load Store Post Increment Mode ------------
+				else if (defaultInstrD[27:25] == 2'b01) begin // ldr/str post-increment mode
+					if(defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin // i type, post increment
+						nextState = pindexldrstr;
+						InstrMuxD = 1;
+						doNotUpdateFlagD = 1;
+						uOpStallD = 1;
+						regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+						prevRSRstate = 0;
+						noRotate = 0;
+						uOpInstrD = {defaultInstrD[31:28], 	// Condition bits
+									5'b01011, defaultInstrD[23:20], // Use simplest load/store, keep same control bits
+									defaultInstrD[19:12], 	// Same Rd and Rn
+									12'b0  				 	// Offset = 0
+									};
+					end
+					else begin // NOT POST-INCREMENT OR !
+						nextState = ready;
+						InstrMuxD = 0;
+						doNotUpdateFlagD = 0;
+						uOpStallD = 0;
+						prevRSRstate = 0;
+						keepV = 0;
+						regFileRz = {1'b0, // Control inital mux for RA1D
+									3'b000}; // 5th bit of RA2D and RA1D
+						uOpInstrD = {defaultInstrD};
+						LDMSTMforward = 0;
+						SignExtend = 0;
+						noRotate = 0;
+					end 
 				end
 
 				/* --- Stay in the READY state ----
@@ -181,6 +214,7 @@ always_comb
 					uOpInstrD = {defaultInstrD};
 					LDMSTMforward = 0;
 					SignExtend = 0;
+					noRotate = 0;
 				end
 			end
 		
@@ -249,6 +283,36 @@ always_comb
 							};
 				end
 			end
+
+		pindexldrstr: begin
+			if(defaultInstrD[27:26] == 2'b01) begin // ldr/str post increment type
+				if(defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin // specificially i type
+					InstrMuxD = 1;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 0;
+					prevRSRstate = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					nextState = ready;
+					noRotate = 1;
+					if(defaultInstrD[23]) begin
+						uOpInstrD = {defaultInstrD[31:28], 3'b001, // dataprocessing i-type
+									4'b0100, 1'b0, // Add, do not set flags
+									defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + 12bit_offset
+									defaultInstrD[11:0] 			// 12bit offset
+									};
+					end else begin
+						uOpInstrD = {defaultInstrD[31:28], 3'b001, // dataprocessing i-type
+									4'b0010, 1'b0, // Subtract, do not set flags
+									defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn - 12bit_offset
+									defaultInstrD[11:0] 			// 12bit offset
+									};
+					end
+				end
+
+			end
+
+		end
 
 		bl:begin
 				if(defaultInstrD[27:24]== 4'b1011) begin
