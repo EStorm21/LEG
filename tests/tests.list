@@ -1,6 +1,6 @@
 #comment out lines like this
 #adc_r
-#and_r
+and_r
 #bic_r
 #cmn_r
 #cmp_r
@@ -35,7 +35,7 @@
 #eor_rs
 #mov_rs
 #mvn_rs
-#orr_rs
+orr_rs
 #rsb_rs
 #rsc_rs
 #sbc_rs
@@ -46,7 +46,7 @@
 rand0
 random1
 #mul
-#mla
+mla
 #smull
 #umull
 #umlal
