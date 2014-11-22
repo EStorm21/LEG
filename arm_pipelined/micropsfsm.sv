@@ -175,13 +175,27 @@ always_comb
 						doNotUpdateFlagD = 1;
 						uOpStallD = 1;
 						regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of WA3, RA2D and RA1D
+									3'b000}; // 5th bit of WA3, RA2D and RA1D
 						prevRSRstate = 0;
 						noRotate = 0;
 						uOpInstrD = {defaultInstrD[31:28], 	// Condition bits
 									5'b01011, defaultInstrD[22:20], // Use simplest load/store, keep same control bits
 									defaultInstrD[19:12], 	// Same Rd and Rn
 									12'b0  				 	// Offset = 0
+									};
+					end else if (defaultInstrD[25:24] == 2'b01 & defaultInstrD[21]) begin // Uses the ! operator
+						nextState = pindexldrstr;
+						InstrMuxD = 1;
+						doNotUpdateFlagD = 1;
+						uOpStallD = 1;
+						regFileRz = {1'b0, // Control inital mux for RA1D
+									3'b000}; // 5th bit of WA3, RA2D and RA1D
+						prevRSRstate = 0;
+						noRotate = 1;
+						uOpInstrD = {defaultInstrD[31:28], 	// Condition bits
+									4'b0101, defaultInstrD[23:20], // Use simplest load/store, keep same control bits
+									defaultInstrD[19:12], 	// Same Rd and Rn
+									defaultInstrD[11:0]	 	// Offset = 0
 									};
 					end
 					else begin // NOT POST-INCREMENT OR !
@@ -287,6 +301,30 @@ always_comb
 		pindexldrstr: begin
 			if(defaultInstrD[27:26] == 2'b01) begin // ldr/str post increment type
 				if(defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin // specificially i type
+					InstrMuxD = 1;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 0;
+					prevRSRstate = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					nextState = ready;
+					noRotate = 1;
+					if(defaultInstrD[23]) begin
+						uOpInstrD = {defaultInstrD[31:28], 3'b001, // dataprocessing i-type
+									4'b0100, 1'b0, // Add, do not set flags
+									defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + 12bit_offset
+									defaultInstrD[11:0] 			// 12bit offset
+									};
+					end else begin
+						uOpInstrD = {defaultInstrD[31:28], 3'b001, // dataprocessing i-type
+									4'b0010, 1'b0, // Subtract, do not set flags
+									defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn - 12bit_offset
+									defaultInstrD[11:0] 			// 12bit offset
+									};
+					end
+				end
+
+				else if(defaultInstrD[25:24] == 2'b01 & defaultInstrD[21]) begin // specificially i type
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 0;
