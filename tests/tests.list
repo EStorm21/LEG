@@ -41,7 +41,7 @@
 #sbc_rs
 #teq_rs
 #tst_rs
-#ldr_str_ri
+ldr_str_ri
 #memrewrite
 rand0
 random1
