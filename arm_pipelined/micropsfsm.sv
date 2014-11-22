@@ -11,7 +11,7 @@ module micropsfsm(input  logic        clk, reset,
 
 // define states READY and RSR 
 // TODO: add more states for each type of instruction
-typedef enum {ready, rsr, multiply, ldm, ldmWriteback} statetype;
+typedef enum {ready, rsr, multiply, ldm, bl, ldmWriteback} statetype;
 statetype state, nextState;
 
 // --------------------------- ADDED FOR LDM/STM -------------------------------
@@ -152,6 +152,20 @@ always_comb
 								 };
 					// First instruction should be a move Rz = Rn or Rz = Rn + 4 or Rz = Rn - # bits set - 4 etc...
 				end
+				else if(defaultInstrD[27:24]== 4'b1011) begin // bl
+					InstrMuxD = 1;
+					doNotUpdateFlagD = 0;
+					uOpStallD = 1;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					prevRSRstate = 0;
+					nextState = bl;
+					keepV = 0;
+					uOpInstrD = {defaultInstrD[31:28], // Condition bits
+								3'b000, 4'b1101, 1'b0, // MOV instruction, Do not update flags 
+								4'b0000, 4'b1110, // SBZ, link register destination
+								8'b00000000, 4'b1111}; // source is unshifted R15
+				end
 
 				/* --- Stay in the READY state ----
 				 */
@@ -235,6 +249,20 @@ always_comb
 							};
 				end
 			end
+
+		bl:begin
+				if(defaultInstrD[27:24]== 4'b1011) begin
+					InstrMuxD = 1;
+					doNotUpdateFlagD = 0;
+					uOpStallD = 0;
+					prevRSRstate = 0;
+					keepV = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					nextState = ready;
+					uOpInstrD = {defaultInstrD[31:25], 1'b0, defaultInstrD[23:0]};//branch without link
+				end
+		   end
 
 
 		rsr:begin

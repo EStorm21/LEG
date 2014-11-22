@@ -1,78 +1,129 @@
-module instr_cache #(parameter blocksize = 4, parameter lines = 65536)
-                  (input  logic clk, reset, Valid, 
+// arm_cache.v
+// mwaugaman@hmc.edu 22 September 2014
+// Data and Instruction Cache for ARM v4
+
+//------------------------------------------------------
+//--------------------CACHE-----------------------------
+//------------------------------------------------------
+//------------------------------------------------------
+module instr_cache #(parameter blocksize = 4, parameter lines = 2)
+                  (input  logic clk, reset, BusReady,
                    input  logic [31:0] a, 
-                   input  logic [blocksize*32-1:0] MemBlock,
-                   output logic [31:0] rd,
-                   output logic Stall, MemRE);
+                   input  logic [blocksize*32-1:0] MemRD,
+                   output logic [31:0] RD,
+                   output logic IStall);
 
+    parameter setbits = $clog2(lines);
     // tagbits = 32 - byte offset - block offset - set bits
-    parameter tagbits = 30-$clog2(blocksize)-$clog2(lines);
+    parameter tagbits = 30-$clog2(blocksize)-setbits;
 
-    logic w1v, w2v, w1en, w2en;
-    logic [tagbits-1:0] w1tag, w2tag;
-    logic cwe;
-    logic [blocksize*32-1:0] w1rd, w2rd, blockout;
+    // W1V:   valid bit for way 1
+    // W1EN:  enable way 1, select way 1 for writeback
+    // W1WE:  way 1 write enable, W1WE = W1EN & CWE
+    // RDSel: Select output from bus or cache
+    logic W1V, W2V, W1EN, W2EN, W1WE, W2WE, RDSel;        
+    logic [tagbits-1:0] W1Tag, W2Tag;
+    logic CWE;                                        // Cache write enable
+    logic [blocksize*32-1:0] W1BlockOut, W2BlockOut;  // Way output (4 words)
+    // W2RD:       Word selected from way 2 output
+    // MemWord:    Word selected from memory in block
+    // CacheOut:   Word chosen from way 1 or 2
+    logic [31:0] W1RD, W2RD, MemWord, CacheOut;
 
     // Way 1
     instr_cache_memory #(lines, tagbits, blocksize) way1(
-       .clk(clk), .reset(reset), .wd(MemBlock), .a(a), .we(w1en), 
-       .rv(w1v), .rtag(w1tag), .rd(w1rd));
+       .clk(clk), .reset(reset), .wd(MemRD), .a(a), .we(W1WE),
+       .rv(W1V), .rtag(W1Tag), .rd(W1BlockOut));
 
     // Way 2
     instr_cache_memory #(lines, tagbits, blocksize) way2(
-       .clk(clk), .reset(reset), .wd(MemBlock), .a(a), .we(w2en), 
-       .rv(w2v), .rtag(w2tag), .rd(w2rd));
+       .clk(clk), .reset(reset), .wd(MemRD), .a(a), .we(W2WE), 
+       .rv(W2V), .rtag(W2Tag), .rd(W2BlockOut));
 
     // Cache Controller
-    arm_instr_cache_controller icc(
-        .clk(clk), .reset(reset), .hit(hit), 
-        .Stall(Stall), .Valid(Valid),
-        .MemRE(MemRE), .cwe(cwe));
+    instr_cache_controller dcc(.*);
 
-    // Create the logic for a hit.
-    assign w1hit = (w1v & (a[31:31-tagbits+1] == w1tag));
-    assign w2hit = (w2v & (a[31:31-tagbits+1] == w2tag));
-    assign hit = w1hit | w2hit;
+    // Create the logic for a Hit.
+    logic [tagbits-1:0] Tag;
+    logic W1Hit, W2Hit;
+    assign Tag = a[31:31-tagbits+1];
+    assign W1Hit = (W1V & (Tag == W1Tag));
+    assign W2Hit = (W2V & (Tag == W2Tag));
+    assign Hit = W1Hit | W2Hit;
+
+    // Create LRU Table
+    logic [lines-1:0] LRU;
+    logic [setbits-1:0] set;
+    assign set = a[blocksize+setbits-1:blocksize];
+    always_ff @(posedge clk, posedge reset)
+        if(reset) begin
+            LRU <= 'b0;
+        end else if (W1WE | W2WE) begin
+            LRU[set] <= W2WE;
+        end
 
     // Write-to logic
-    // IN: w1v, w2v, cwe
-    // OUT: w1en, w2en
+    // IN: W1V, W2V, LRU 
+    // OUT: W1EN, W2EN
     always_comb
         begin
-            // If we aren't writing to a cache, then don't write
-            if(~cwe) begin
-                w1en = 1'b0;
-                w2en = 1'b0;
+            // If there is a Hit in either cache, then write to the Hit cache
+            if( W1Hit | W2Hit) begin
+                W1EN = W1Hit;
+                W2EN = W2Hit;
             end else
-            // If there is a hit in either cache, then write to the hit cache
-            if( w1hit | w2hit) begin
-                w1en = w1hit;
-                w2en = w2hit;
-            end else
-            // Neither or Both caches have Valid data, so write to way 1
-            if(~(w1v ^ w2v)) begin 
-                w1en = 1'b1;
-                w2en = 1'b0;
+            // Neither or Both caches have Valid data, so write to LRU cache
+            if(~(W1V ^ W2V)) begin 
+                W1EN = LRU[set];
+                W2EN = ~LRU[set];
             // One way has Valid data, so write to the other
             end else begin
-                w1en = ~w1v;
-                w2en = ~w2v;
+                W1EN = ~W1V;
+                W2EN = ~W2V;
             end
         end
 
-    // Block selection logic
-    assign blockout = w1hit ? w1rd : w2rd;
+    // Write Enable And gates
+    assign W1WE = W1EN & CWE;
+    assign W2WE = W2EN & CWE;
 
-    // Word selection mux
-    // TODO: Make this mux parameterized
-    assign bo = a[3:2];
+    // Word selection mux's
+    // TODO: Make these mux's mux parameterized
+
+    // Way1 Word Select
     always_comb
     case (a[3:2])
-        2'b00 : rd = blockout[31:0];
-        2'b01 : rd = blockout[2*32-1 : 32];
-        2'b10 : rd = blockout[3*32-1 : 2*32];
-        2'b11 : rd = blockout[4*32-1 : 3*32];
-        default : rd = blockout[31:0]; 
+        2'b00 : W1RD = W1BlockOut[31:0];
+        2'b01 : W1RD = W1BlockOut[2*32-1 : 32];
+        2'b10 : W1RD = W1BlockOut[3*32-1 : 2*32];
+        2'b11 : W1RD = W1BlockOut[4*32-1 : 3*32];
+        default : W1RD = W1BlockOut[31:0]; 
     endcase
+
+    // Way2 Word Select
+    always_comb
+    case (a[3:2])
+        2'b00 : W2RD = W2BlockOut[31:0];
+        2'b01 : W2RD = W2BlockOut[2*32-1 : 32];
+        2'b10 : W2RD = W2BlockOut[3*32-1 : 2*32];
+        2'b11 : W2RD = W2BlockOut[4*32-1 : 3*32];
+        default : W2RD = W2BlockOut[31:0]; 
+    endcase
+
+    // Way3 Word Select
+    always_comb
+    case (a[3:2])
+        2'b00 : MemWord = MemRD[31:0];
+        2'b01 : MemWord = MemRD[2*32-1 : 32];
+        2'b10 : MemWord = MemRD[3*32-1 : 2*32];
+        2'b11 : MemWord = MemRD[4*32-1 : 3*32];
+        default : MemWord = MemRD[31:0]; 
+    endcase
+
+    // Select from the ways
+    assign CacheOut = W1Hit ? W1RD : W2RD;
+
+    // Select from cache or memory
+    assign RD = RDSel ? MemWord : CacheOut;
 
 endmodule
