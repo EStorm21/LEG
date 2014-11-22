@@ -1,4 +1,3 @@
-// Cache controller works according to schematic
 module data_writeback_associative_cache_controller 
   (input  logic clk, reset,
    input  logic Hit, IStall, Dirty, MemWriteM, MemtoRegM, BusReady, 

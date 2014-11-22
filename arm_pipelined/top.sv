@@ -26,7 +26,7 @@ module top(input  logic        clk, reset,
   // Wires between arbiter and ahb_lite
   logic HWrite, HReady;
   logic [31:0] HAddr;
-  logic [3:0] Mask = 4'b1111;
+  logic [3:0] ByteMask = 4'b1111;
   
   // instruction cache with a block size of 4 words and 16 lines
   // instr_cache #(4, 8) 
@@ -42,8 +42,8 @@ module top(input  logic        clk, reset,
 
   data_writeback_associative_cache #(4, 2) 
     data_cache(.clk(clk), .reset(reset), .MemWriteM(MemWriteM), .MemtoRegM(MemtoRegM), 
-               .BusReady(BusReadyM), .IStall(IStall), .a(DataAdrM), .WD(WriteDataM),
-               .HRData(HRData), .Mask(Mask), .HWData(HWData), .RD(ReadDataM), .HAddr(HAddrM),
+               .BusReady(BusReadyM), .IStall(IStall), .A(DataAdrM), .WD(WriteDataM),
+               .HRData(HRData), .ByteMask(ByteMask), .HWData(HWData), .RD(ReadDataM), .HAddr(HAddrM),
                .Stall(DStall), .MemRE(MemRE), .HWriteM(HWriteM));
 
   // Create ahb arbiter

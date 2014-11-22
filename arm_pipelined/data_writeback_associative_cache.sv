@@ -1,4 +1,4 @@
-// arm_cache.v
+// data_writeback_associative_cache.v
 // mwaugaman@hmc.edu 22 September 2014
 // Data and Instruction Cache for ARM v4
 
@@ -8,9 +8,9 @@
 //------------------------------------------------------
 module data_writeback_associative_cache #(parameter blocksize = 4, parameter lines = 2)
                   (input  logic clk, reset, MemWriteM, MemtoRegM, BusReady, IStall,
-                   input  logic [31:0] a, WD,
+                   input  logic [31:0] A, WD,
                    input  logic [31:0] HRData,
-                   input  logic [3:0]  Mask,
+                   input  logic [3:0]  ByteMask, 
                    output logic [31:0] HWData,
                    output logic [31:0] RD, HAddr,
                    output logic Stall, MemRE, HWriteM);
@@ -63,33 +63,33 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
 
 
     // Create New Address using the counter as the word offset
-    assign ANew = ResetCounter ? a : {a[31:4], Counter, a[1:0]};
+    assign ANew = ResetCounter ? A : {A[31:4], Counter, A[1:0]};
 
     // Mux for CacheRDSel
-    assign WordOffset = a[blockbits+1:2];
+    assign WordOffset = A[blockbits+1:2];
     assign CacheRDSel = HWriteM ? Counter : WordOffset;
 
     // Way 1
     data_writeback_associative_cache_memory #(lines, tagbits, blocksize) way1(
-       .clk(clk), .reset(reset), .WD(CacheWD), .a(ANew), .WE(W1WE), .MemWriteM(MemWriteM),
-       .Mask(Mask), .RV(W1V), .Dirty(W1D), .RTag(W1Tag), .RD(W1BlockOut));
+       .clk(clk), .reset(reset), .WD(CacheWD), .A(ANew), .WE(W1WE), .MemWriteM(MemWriteM),
+       .ByteMask(ByteMask), .RV(W1V), .Dirty(W1D), .RTag(W1Tag), .RD(W1BlockOut));
 
     // Way 2
     data_writeback_associative_cache_memory #(lines, tagbits, blocksize) way2(
-       .clk(clk), .reset(reset), .WD(CacheWD), .a(ANew), .WE(W2WE), .MemWriteM(MemWriteM),
-       .Mask(Mask), .RV(W2V), .Dirty(W2D), .RTag(W2Tag), .RD(W2BlockOut));
+       .clk(clk), .reset(reset), .WD(CacheWD), .A(ANew), .WE(W2WE), .MemWriteM(MemWriteM),
+       .ByteMask(ByteMask), .RV(W2V), .Dirty(W2D), .RTag(W2Tag), .RD(W2BlockOut));
 
     // Cache Controller
     data_writeback_associative_cache_controller dcc(.*);
 
     // Create the logic for a Hit.
-    assign Tag = a[31:31-tagbits+1];
+    assign Tag = A[31:31-tagbits+1];
     assign W1Hit = (W1V & (Tag == W1Tag));
     assign W2Hit = (W2V & (Tag == W2Tag));
     assign Hit = W1Hit | W2Hit;
 
     // Create LRU Table
-    assign set = a[blocksize+setbits-1:blocksize];
+    assign set = A[blocksize+setbits-1:blocksize];
     always_ff @(posedge clk, posedge reset)
         if(reset) begin
             LRU <= 'b0;
@@ -134,27 +134,17 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     assign HAddr = HWriteM ? CachedAddr : ANew;
 
     // Word selection mux's
-    // TODO: Make these mux's mux parameterized
+    // Way1 Word select mux
+    mux4 #(32) c1mux
+        (W1BlockOut[31:0],        W1BlockOut[2*32-1:32],
+         W1BlockOut[3*32-1:2*32], W1BlockOut[4*32-1:3*32],
+         CacheRDSel, W1RD);
 
-    // Way1 Word Select
-    always_comb
-    case (CacheRDSel)
-        2'b00 : W1RD = W1BlockOut[31:0];
-        2'b01 : W1RD = W1BlockOut[2*32-1 : 32];
-        2'b10 : W1RD = W1BlockOut[3*32-1 : 2*32];
-        2'b11 : W1RD = W1BlockOut[4*32-1 : 3*32];
-        default : W1RD = W1BlockOut[31:0]; 
-    endcase
-
-    // Way2 Word Select
-    always_comb
-    case (CacheRDSel)
-        2'b00 : W2RD = W2BlockOut[31:0];
-        2'b01 : W2RD = W2BlockOut[2*32-1 : 32];
-        2'b10 : W2RD = W2BlockOut[3*32-1 : 2*32];
-        2'b11 : W2RD = W2BlockOut[4*32-1 : 3*32];
-        default : W2RD = W2BlockOut[31:0]; 
-    endcase
+    // Way1 Word select mux
+    mux4 #(32) c2mux
+       (W2BlockOut[31:0],        W2BlockOut[2*32-1:32],
+        W2BlockOut[3*32-1:2*32], W2BlockOut[4*32-1:3*32],
+        CacheRDSel, W2RD);
 
     // Select from the ways
     assign CacheOut = W1Hit ? W1RD : W2RD;
