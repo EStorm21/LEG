@@ -61,9 +61,9 @@ ldr R6,  [sp, #-4]
 ldr R7,  [sp, #+4]
 ldr R8,  [sp, #-400]
 ldr R9,  [sp, #+400]
-#ldr R10, [sp, #-4]!
-#ldr R11, [sp, #+4]
-#str R5,  [sp, #+4]!
+ldr R10, [sp, #-4]!
+ldr R11, [sp, #+4]
+str R5,  [sp, #+4]!
 ldr R12,[sp], #0
 str R7,  [sp], #1
 
