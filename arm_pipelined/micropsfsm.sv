@@ -168,7 +168,7 @@ always_comb
 				end
 
 				// ---------- Load Store Post Increment Mode ------------
-				else if (defaultInstrD[27:25] == 2'b01) begin // ldr/str post-increment mode
+				else if (defaultInstrD[27:26] == 2'b01) begin // ldr/str post-increment mode
 					if(defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin // i type, post increment
 						nextState = pindexldrstr;
 						InstrMuxD = 1;
@@ -179,7 +179,7 @@ always_comb
 						prevRSRstate = 0;
 						noRotate = 0;
 						uOpInstrD = {defaultInstrD[31:28], 	// Condition bits
-									5'b01011, defaultInstrD[23:20], // Use simplest load/store, keep same control bits
+									5'b01011, defaultInstrD[22:20], // Use simplest load/store, keep same control bits
 									defaultInstrD[19:12], 	// Same Rd and Rn
 									12'b0  				 	// Offset = 0
 									};
