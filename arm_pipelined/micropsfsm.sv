@@ -4,7 +4,7 @@ module micropsfsm(input  logic        clk, reset,
                input  logic [31:0] defaultInstrD,
                output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforward, 
                output logic [1:0]  STR_cycle,
-               output logic 	   prevRSRstate, keepV, SignExtend, noRotate, uOpFwdAE_D, uOpFwdBE_D,
+               output logic 	   prevRSRstate, keepV, SignExtend, noRotate, ldrstrRtype,
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
 			   input  logic		   StalluOp,
@@ -204,6 +204,25 @@ always_comb
 									defaultInstrD[19:12], 	// Same Rd and Rn
 									defaultInstrD[11:0]	 	// Offset = <12bitImm>
 									};
+
+					end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21]) begin // register shifted type, post index (EXACTLY SAME AS I TYPE)
+						nextState = ldr;
+						ldrstrRtype = 1;
+						InstrMuxD = 1;
+						doNotUpdateFlagD = 1;
+						uOpStallD = 1;
+						regFileRz = {1'b0, // Control inital mux for RA1D
+									3'b000}; // 5th bit of WA3, RA2D and RA1D
+						prevRSRstate = 0;
+						noRotate = 1; // Tells the rotator not to touch the bottom 12 bits because it needs to be carried through
+						uOpInstrD = {defaultInstrD[31:28], 	// Condition bits
+									5'b01011, defaultInstrD[22:20], // Use simplest load/store, keep same control bits
+									defaultInstrD[19:12], 	// Same Rd and Rn
+									12'b0  				 	// Offset = 0
+									};
+					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21]) begin // register shifted type, pre increment
+						nextState = ldr;
+
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21:20] == 2'b00) begin // Store, R type, no pre or post indexing
 						nextState = str;
 						STR_cycle = 2'b00;
@@ -220,12 +239,8 @@ always_comb
 									1'b0, defaultInstrD[19:16], // S = 0, Rn is same
 									4'b1111, defaultInstrD[11:0] // Add and store into Rz, leave bottom 12 bits same
 									}; 
-					end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21]) begin // register shifted type, post increment
-						nextState = ldr;
-					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21]) begin
-						nextState = ldr;
-					end
-					else begin // NOT POST-INCREMENT OR !
+					
+					end else begin // NOT POST-INCREMENT OR !
 						nextState = ready;
 						InstrMuxD = 0;
 						doNotUpdateFlagD = 0;
@@ -239,8 +254,7 @@ always_comb
 						SignExtend = 0;
 						noRotate = 0;
 						STR_cycle = 2'b0;
-						uOpFwdAE_D = 0;
-						uOpFwdBE_D = 0;
+						ldrstrRtype = 0;
 					end 
 				end
 				
@@ -263,6 +277,79 @@ always_comb
 					STR_cycle = 2'b0;
 				end
 			end
+
+		str: begin
+			if(defaultInstrD[27:26] == 2'b01) begin //
+				if(defaultInstrD[25:24] == 2'b11 & defaultInstrD[21:20] == 2'b00) begin // Basic R type, store
+					InstrMuxD = 1;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 0;
+					prevRSRstate = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b001}; // 5th bit of WA3, RA2D and RA1D
+					noRotate = 0;
+					nextState = ready;
+					STR_cycle = 2'b00;
+					uOpInstrD = {defaultInstrD[31:28], 3'b010, // Cond, I-type store
+								defaultInstrD[24:20], 4'b1111, // Default-codes, use Rz so data forwarded,
+								defaultInstrD[15:12], 12'b0 	// Rd, with 0 offset (i type)
+								};
+				end
+			end
+		end
+
+		/*
+		 * PRE or POST - INDEXED Load 
+		 */
+		ldr: begin
+			if(defaultInstrD[27:26] == 2'b01) begin // ldr post increment type
+				if(defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin // specificially i type, post index
+					InstrMuxD = 1;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 0;
+					prevRSRstate = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					nextState = ready;
+					noRotate = 1;
+					uOpInstrD = {defaultInstrD[31:28], 3'b001, // dataprocessing i-type
+								1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // Add/sub, do not set flags
+								defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + 12bit_offset
+								defaultInstrD[11:0] 			// 12bit offset
+								};
+				end else if(defaultInstrD[25:24] == 2'b01 & defaultInstrD[21]) begin // specificially i type pre index
+					InstrMuxD = 1;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 0;
+					prevRSRstate = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					nextState = ready;
+					noRotate = 1;
+					uOpInstrD = {defaultInstrD[31:28], 3'b001, // dataprocessing i-type
+								1'b0, defaultInstrD[23], ~defaultInstrD[23],1'b0, 1'b0, // Add, do not set flags
+								defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + 12bit_offset
+								defaultInstrD[11:0] 			// 12bit offset
+								};
+				end else if(defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21]) begin // r type load, post index
+					InstrMuxD = 1;
+					ldrstrRtype = 1;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 0;
+					prevRSRstate = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					nextState = ready;
+					noRotate = 1;
+					uOpInstrD = {defaultInstrD[31:28], 3'b000, // cond, dataprocessing r type
+								1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // Add/sub, do not set flags 
+								defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + shift(Rm)
+								defaultInstrD[11:0] 				// shift(Rm)
+								};
+				end
+			end
+		end
+
 		/*
 		 * LOAD MULTIPLE
 		 */
@@ -331,66 +418,6 @@ always_comb
 							};
 				end
 			end
-
-		str: begin
-			if(defaultInstrD[27:26] == 2'b01) begin //
-				if(defaultInstrD[25:24] == 2'b11 & defaultInstrD[21:20] == 2'b00) begin // Basic R type, store
-					InstrMuxD = 1;
-					doNotUpdateFlagD = 1;
-					uOpStallD = 0;
-					prevRSRstate = 0;
-					regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b001}; // 5th bit of WA3, RA2D and RA1D
-					uOpFwdAE_D = 1;
-					noRotate = 0;
-					nextState = ready;
-					STR_cycle = 2'b00;
-					uOpInstrD = {defaultInstrD[31:28], 3'b010, // Cond, I-type store
-								defaultInstrD[24:20], 4'b1111, // Default-codes, use Rz so data forwarded,
-								defaultInstrD[15:12], 12'b0 	// Rd, with 0 offset (i type)
-								};
-				end
-			end
-		end
-
-		/*
-		 * PRE or POST - INDEXED Load 
-		 */
-		ldr: begin
-			if(defaultInstrD[27:26] == 2'b01) begin // ldr post increment type
-				if(defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin // specificially i type
-					InstrMuxD = 1;
-					doNotUpdateFlagD = 1;
-					uOpStallD = 0;
-					prevRSRstate = 0;
-					regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of WA3, RA2D and RA1D
-					nextState = ready;
-					noRotate = 1;
-					uOpInstrD = {defaultInstrD[31:28], 3'b001, // dataprocessing i-type
-								1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // Add, do not set flags
-								defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + 12bit_offset
-								defaultInstrD[11:0] 			// 12bit offset
-								};
-				end
-
-				else if(defaultInstrD[25:24] == 2'b01 & defaultInstrD[21]) begin // specificially i type
-					InstrMuxD = 1;
-					doNotUpdateFlagD = 1;
-					uOpStallD = 0;
-					prevRSRstate = 0;
-					regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of WA3, RA2D and RA1D
-					nextState = ready;
-					noRotate = 1;
-					uOpInstrD = {defaultInstrD[31:28], 3'b001, // dataprocessing i-type
-								1'b0, defaultInstrD[23], ~defaultInstrD[23],1'b0, 1'b0, // Add, do not set flags
-								defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + 12bit_offset
-								defaultInstrD[11:0] 			// 12bit offset
-								};
-				end
-			end
-		end
 
 		bl:begin
 				if(defaultInstrD[27:24]== 4'b1011) begin

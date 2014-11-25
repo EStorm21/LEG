@@ -18,8 +18,8 @@ module controller(input  logic         clk, reset,
                   output logic          DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryE,
                   output logic  [3:0]   PreviousFlagsE,
                   // For micro-op decoding
-                  input logic          doNotUpdateFlagD, PrevRSRstateD, LDMSTMforwardD, uOpFwdAE_D, uOpFwdBE_D,
-                  output logic         RselectE, PrevRSRstateE, LDRSTRshiftE, LDMSTMforwardE, uOpFwdAE_E, uOpFwdBE_E,
+                  input logic          doNotUpdateFlagD, PrevRSRstateD, LDMSTMforwardD, ldrstrRtypeD,
+                  output logic         RselectE, PrevRSRstateE, LDRSTRshiftE, LDMSTMforwardE, 
                   output logic  [1:0]  ResultSelectE,
                   input  logic  [3:0]  RegFileRzD, 
                   output logic  [6:4]  ShiftOpCode_E,
@@ -68,8 +68,9 @@ module controller(input  logic         clk, reset,
   /*
    * Notes: ldrstrALUopD gives Loads and Stores the ability to choose alu function add or subtract.
    */
-  assign {RegSrcD, ImmSrcD, ALUSrcD, MemtoRegD, 
-          RegWriteD, MemWriteD, BranchD, ALUOpD, MultSelectD, ldrstrALUopD} = ControlsD; 
+  assign {RegSrcD, ImmSrcD,     // 2 bits each
+          ALUSrcD, MemtoRegD, RegWriteD, MemWriteD, 
+          BranchD, ALUOpD, MultSelectD, ldrstrALUopD} = ControlsD; 
 
   
    always_comb
@@ -78,10 +79,10 @@ module controller(input  logic         clk, reset,
       FlagWriteD[1:0]   = {InstrD[20], InstrD[20]};       // update flags if S bit is set
 
     // LOAD STORE LOGIC
-    end else if ((ImmSrcD == 2'b01) & InstrD[23]) begin// Load Store (Rn + 12 bit offset)
+    end else if ((InstrD[27:26] == 2'b01) & InstrD[23]) begin// Load Store (Rn + 12 bit offset)
       ALUControlD     = 4'b0100;  // "Add" operation
       FlagWriteD[1:0] = 2'b00;
-    end else if ((ImmSrcD == 2'b01) & ~InstrD[23]) begin // Load/Store (Rn - 12 bit offset)
+    end else if ((InstrD[27:26] == 2'b01) & ~InstrD[23]) begin // Load/Store (Rn - 12 bit offset)
       ALUControlD     = 4'b0010;  // "Subtract" operation
       FlagWriteD[1:0] = 2'b00;
     end else begin                    
@@ -91,16 +92,16 @@ module controller(input  logic         clk, reset,
  
   assign MultControlD  = InstrD[23:21];
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~RegFileRzD[2]) | BranchD);
-  assign RselectD      = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 0) | (InstrD[27:25] == 3'b011) ;
+  assign RselectD      = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 0) | ldrstrRtypeD ;
   assign RSRselectD    = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 1);
   assign ResultSelectD = {MultSelectD, RSRselectD};
-  assign LDRSTRshiftD  =  (InstrD[27:25] == 3'b011);
+  assign LDRSTRshiftD  = ldrstrRtypeD;
 
 
   // Execute stage
   // Added enables to E, M, and flush to W. Added for memory
-  flopenrc  #(8) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD, LDRSTRshiftD, uOpFwdAE_D, uOpFwdBE_D}, 
-                                                            {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE, LDRSTRshiftE, uOpFwdAE_E, uOpFwdBE_E});
+  flopenrc  #(6) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD, LDRSTRshiftD}, 
+                                                            {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE, LDRSTRshiftE});
   flopenrc #(8) flushedregsE(clk, reset, ~StallE, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD, ldrstrALUopD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE, ldrstrALUopE});
