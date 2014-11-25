@@ -17,7 +17,7 @@ module hazard(input  logic       clk, reset,
   // forwarding logic
   always_comb 
   begin
-    if ((Match_1E_M & RegWriteM) | LDMSTMforwardE) 
+    if ((Match_1E_M & RegWriteM) | LDMSTMforwardE | uOpFwdAE_E)  // Fwds data from Memory Stage to Execute Stage (1 stage back)
       ForwardAE = 2'b10;
     else if (Match_1E_W & RegWriteW) 
       ForwardAE = 2'b01;
@@ -26,7 +26,7 @@ module hazard(input  logic       clk, reset,
  
     if (LDMSTMforwardE)
       ForwardBE = 2'b11;
-    else if (Match_2E_M & RegWriteM)
+    else if ((Match_2E_M & RegWriteM) | uOpFwdBE_E) // Fwds data from Memory Stage to Execute Stage (1 stage back)
       ForwardBE = 2'b10;
     else if (Match_2E_W & RegWriteW) 
       ForwardBE = 2'b01;

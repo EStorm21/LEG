@@ -56,7 +56,8 @@ module controller(input  logic         clk, reset,
                   end
   	  2'b01: if (InstrD[20] & ~InstrD[25])       ControlsD = 12'b00_01_1110_0001; // LDR, "I-type" 0xf0
              else if (InstrD[20] & InstrD[25])   ControlsD = 12'b00_00_0110_0001; // LDR, "R-Type" 0xb0
-             else if (~InstrD[20] & ~InstrD[25] & STR_cycleD == 2'b00)   ControlsD = 12'b10_01_1101_0001;
+             else if (~InstrD[20] & ~InstrD[25])   ControlsD = 12'b10_01_1101_0001; // STR, "I-type"
+             else if (~InstrD[20] & InstrD[25])    ControlsD = 12'b10_00_0101_0001; // STR, "R-type"
               /*
   	         else if (~InstrD[20] & ~InstrD[25]) ControlsD = 12'b10_01_1101_0001; // STR  "I-type" 0x4e8
              else if   (~InstrD[20] & InstrD[25])  ControlsD = 12'b00_00_0101_0001;*/
@@ -64,6 +65,9 @@ module controller(input  logic         clk, reset,
   	  default:               ControlsD = 12'bx;          // unimplemented
   	endcase
 
+  /*
+   * Notes: ldrstrALUopD gives Loads and Stores the ability to choose alu function add or subtract.
+   */
   assign {RegSrcD, ImmSrcD, ALUSrcD, MemtoRegD, 
           RegWriteD, MemWriteD, BranchD, ALUOpD, MultSelectD, ldrstrALUopD} = ControlsD; 
 
