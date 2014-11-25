@@ -11,7 +11,7 @@ module hazard(input  logic       clk, reset,
               input  logic       MultStallD, MultStallE,
               output logic       StallE, StallM, FlushW, StallW,
               // For Micro-ops
-              input logic        uOpStallD, LDMSTMforwardE,
+              input logic        uOpStallD, LDMSTMforwardE, uOpFwdAE_E, uOpFwdBE_E,
               output logic       StalluOp);
                 
   // forwarding logic

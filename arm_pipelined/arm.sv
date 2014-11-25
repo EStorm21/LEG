@@ -23,7 +23,7 @@ module arm(input  logic        clk, reset,
   logic [3:0]  PreviousFlagsE; // [1] is C, [0] is V
   logic [1:0]  ResultSelectE, STR_cycleD;
   logic [2:0]  MultControlE;
-  logic        MultStallD, MultStallE, StalluOp;
+  logic        MultStallD, MultStallE, StalluOp, uOpFwdAE_D, uOpFwdBE_D, uOpFwdAE_E, uOpFwdBE_E;
   // Data processing added - for decoding ALU
   logic [2:0]  ALUOperationE, CVUpdateE;
   logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnable;

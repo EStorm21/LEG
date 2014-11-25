@@ -18,8 +18,8 @@ module controller(input  logic         clk, reset,
                   output logic          DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryE,
                   output logic  [3:0]   PreviousFlagsE,
                   // For micro-op decoding
-                  input logic          doNotUpdateFlagD, PrevRSRstateD, LDMSTMforwardD,
-                  output logic         RselectE, PrevRSRstateE, LDRSTRshiftE, LDMSTMforwardE,
+                  input logic          doNotUpdateFlagD, PrevRSRstateD, LDMSTMforwardD, uOpFwdAE_D, uOpFwdBE_D,
+                  output logic         RselectE, PrevRSRstateE, LDRSTRshiftE, LDMSTMforwardE, uOpFwdAE_E, uOpFwdBE_E,
                   output logic  [1:0]  ResultSelectE,
                   input  logic  [3:0]  RegFileRzD, 
                   output logic  [6:4]  ShiftOpCode_E,
@@ -95,8 +95,8 @@ module controller(input  logic         clk, reset,
 
   // Execute stage
   // Added enables to E, M, and flush to W. Added for memory
-  flopenrc  #(6) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD, LDRSTRshiftD}, 
-                                                            {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE, LDRSTRshiftE});
+  flopenrc  #(8) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD, LDRSTRshiftD, uOpFwdAE_D, uOpFwdBE_D}, 
+                                                            {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE, LDRSTRshiftE, uOpFwdAE_E, uOpFwdBE_E});
   flopenrc #(8) flushedregsE(clk, reset, ~StallE, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD, ldrstrALUopD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE, ldrstrALUopE});

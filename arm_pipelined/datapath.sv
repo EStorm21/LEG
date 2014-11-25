@@ -26,7 +26,7 @@ module datapath(input  logic        clk, reset,
                 input  logic [6:4]  ShiftOpCode_E,
                 input logic         MultSelectD, MultEnable,
                 // input logic         WriteMultLoE,
-                output logic        MultStallD, MultStallE, 
+                output logic        MultStallD, MultStallE, uOpFwdAE_D, uOpFwdBE_D,
                 output logic [3:0]  RegFileRzD,
                 output logic [1:0]  STR_cycleD);
 
@@ -43,8 +43,7 @@ module datapath(input  logic        clk, reset,
   logic        Match_1D_E, Match_2D_E, WriteMultLoE, WriteMultLoD, WriteMultLoKeptE;
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
   logic [3:0]  ALUFlagsE, MultFlagsE, DestRegD;
-                
-  assign STR_cycleD = 2'b0;
+
   // Fetch stage
   mux2 #(32) pcnextmux(PCPlus4F, ResultW, PCSrcW, PCnext1F);
   mux2 #(32) branchmux(PCnext1F, ALUResultE, BranchTakenE, PCnextF);
@@ -55,8 +54,8 @@ module datapath(input  logic        clk, reset,
 
   assign PCPlus8D = PCPlus4F; // skip register
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
-  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, 
-                            PrevRSRstateD, KeepVD, SignExtendD, noRotateD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
+  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, STR_cycleD,
+                            PrevRSRstateD, KeepVD, SignExtendD, noRotateD, uOpFwdAE_D, uOpFwdBE_D, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   mux3 #(4)   ra1mux(InstrD[19:16], 4'b1111, InstrD[3:0], {MultSelectD, RegSrcD[0]}, RA1_RnD);
   mux3 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], RA1_RnD, {MultSelectD, RegFileRzD[2]}, RA1_4b_D);
