@@ -21,7 +21,7 @@ module arm(input  logic        clk, reset,
   logic        DoNotWriteRegE, doNotUpdateFlagD,uOpStallD, PrevRSRstateD, PrevRSRstateE;
   logic        LDMSTMforwardD, LDMSTMforwardE, LDRSTRshiftE, MultSelectD, RselectE;
   logic [3:0]  PreviousFlagsE; // [1] is C, [0] is V
-  logic [1:0]  ResultSelectE;
+  logic [1:0]  ResultSelectE, STR_cycleD;
   logic [2:0]  MultControlE;
   logic        MultStallD, MultStallE, StalluOp;
   // Data processing added - for decoding ALU

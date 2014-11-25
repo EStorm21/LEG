@@ -1,6 +1,7 @@
 module controller(input  logic         clk, reset,
                   input  logic [31:0]  InstrD,
                   input  logic [3:0]   FlagsE,
+                  input  logic [1:0]   STR_cycleD,
                   output logic [1:0]   RegSrcD, ImmSrcD, 
                   output logic         ALUSrcE, BranchTakenE,
                   output logic [3:0]   ALUControlE,
@@ -42,7 +43,6 @@ module controller(input  logic         clk, reset,
   logic [11:0]  StateRegisterDataE;
 
   assign ShiftOpCode_D = InstrD[6:4];
-  assign LDRSTRshiftE = 1'b0;
 
   // Decode stage
   always_comb
@@ -55,8 +55,11 @@ module controller(input  logic         clk, reset,
                 else         ControlsD = 12'b00_00_0010_0100; // Data processing register    0x12
                   end
   	  2'b01: if (InstrD[20] & ~InstrD[25])       ControlsD = 12'b00_01_1110_0001; // LDR, "I-type" 0xf0
-             else if (InstrD[20] & InstrD[25])   ControlsD = 12'b00_01_0110_0001; // LDR, "R-Type" 0xb0
-  	         else            ControlsD = 12'b10_01_1101_0001; // STR                         0x4e8
+             else if (InstrD[20] & InstrD[25])   ControlsD = 12'b00_00_0110_0001; // LDR, "R-Type" 0xb0
+             else if (~InstrD[20] & ~InstrD[25] & STR_cycleD == 2'b00)   ControlsD = 12'b10_01_1101_0001;
+              /*
+  	         else if (~InstrD[20] & ~InstrD[25]) ControlsD = 12'b10_01_1101_0001; // STR  "I-type" 0x4e8
+             else if   (~InstrD[20] & InstrD[25])  ControlsD = 12'b00_00_0101_0001;*/
   	  2'b10:                 ControlsD = 12'b01_10_1000_1000; // B                           0x344
   	  default:               ControlsD = 12'bx;          // unimplemented
   	endcase
@@ -87,13 +90,13 @@ module controller(input  logic         clk, reset,
   assign RselectD      = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 0) | (InstrD[27:25] == 3'b011) ;
   assign RSRselectD    = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 1);
   assign ResultSelectD = {MultSelectD, RSRselectD};
-
+  assign LDRSTRshiftD  =  (InstrD[27:25] == 3'b011);
 
 
   // Execute stage
   // Added enables to E, M, and flush to W. Added for memory
-  flopenrc  #(5) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD}, 
-                                                            {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE});
+  flopenrc  #(6) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD, LDRSTRshiftD}, 
+                                                            {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE, LDRSTRshiftE});
   flopenrc #(8) flushedregsE(clk, reset, ~StallE, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD, ldrstrALUopD},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE, ldrstrALUopE});

@@ -27,7 +27,8 @@ module datapath(input  logic        clk, reset,
                 input logic         MultSelectD, MultEnable,
                 // input logic         WriteMultLoE,
                 output logic        MultStallD, MultStallE, 
-                output logic [3:0]  RegFileRzD);
+                output logic [3:0]  RegFileRzD,
+                output logic [1:0]  STR_cycleD);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
@@ -43,7 +44,7 @@ module datapath(input  logic        clk, reset,
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
   logic [3:0]  ALUFlagsE, MultFlagsE, DestRegD;
                 
-
+  assign STR_cycleD = 2'b0;
   // Fetch stage
   mux2 #(32) pcnextmux(PCPlus4F, ResultW, PCSrcW, PCnext1F);
   mux2 #(32) branchmux(PCnext1F, ALUResultE, BranchTakenE, PCnextF);

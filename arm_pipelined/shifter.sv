@@ -13,7 +13,7 @@ reg[63:0] temp;
 
 always_comb
 begin
-if (isRtype) // R type
+if (isRtype & ~isLDRSTR_shift) // R type
   begin
   	casex(a[6:5])
   		2'b00: begin // LSL
@@ -65,7 +65,7 @@ if (isRtype) // R type
 	 endcase
   end
 
-else if (isRSRtype) // RSR type - b is rm, a is rs
+else if (isRSRtype & ~isLDRSTR_shift) // RSR type - b is rm, a is rs
   begin
   	casex(shiftOpCode_E[6:5])
   		2'b00: begin // LSL
