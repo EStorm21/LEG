@@ -23,6 +23,8 @@ module top(input  logic        clk, reset,
   // Wires between arbiter and ahb_lite
   logic HWrite, HReady, HRequest;
   logic [31:0] HAddrM, HAddrF, HAddr;
+
+  // TODO: ByteMask
   logic [3:0] ByteMask = 4'b1111;
   
   // instruction cache with a block size of 4 words and 16 lines

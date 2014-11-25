@@ -23,10 +23,12 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     // W1V:  valid bit for way 1
     // W1EN: enable way 1, select way 1 for writeback
     // W1WE: way 1 write enable, W1WE = W1EN & CWE
+    // ActiveByteMask: mask currently used on the cache
     logic W1V, W2V, W1EN, W2EN, W1WE, W2WE, ResetCounter;
     logic [tagbits-1:0] W1Tag, W2Tag, CachedTag;
     logic CWE;                                        // Cache write enable
     logic [blocksize*32-1:0] W1BlockOut, W2BlockOut;  // Way output (4 words)
+    logic [3:0] ActiveByteMask;
 
     // W2RD:       Word selected from way 2 output
     // MemWord:    Word selected from memory in block
@@ -72,12 +74,12 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     // Way 1
     data_writeback_associative_cache_memory #(lines, tagbits, blocksize) way1(
        .clk(clk), .reset(reset), .WD(CacheWD), .A(ANew), .WE(W1WE), .MemWriteM(MemWriteM),
-       .ByteMask(ByteMask), .RV(W1V), .Dirty(W1D), .RTag(W1Tag), .RD(W1BlockOut));
+       .ByteMask(ActiveByteMask), .RV(W1V), .Dirty(W1D), .RTag(W1Tag), .RD(W1BlockOut));
 
     // Way 2
     data_writeback_associative_cache_memory #(lines, tagbits, blocksize) way2(
        .clk(clk), .reset(reset), .WD(CacheWD), .A(ANew), .WE(W2WE), .MemWriteM(MemWriteM),
-       .ByteMask(ByteMask), .RV(W2V), .Dirty(W2D), .RTag(W2Tag), .RD(W2BlockOut));
+       .ByteMask(ActiveByteMask), .RV(W2V), .Dirty(W2D), .RTag(W2Tag), .RD(W2BlockOut));
 
     // Cache Controller
     data_writeback_associative_cache_controller dcc(.*);
