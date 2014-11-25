@@ -4,11 +4,12 @@ module top(input  logic        clk, reset,
 
   logic DStall, IStall;
   logic [31:0] PCF, InstrF, ReadDataM;
+  logic [3:0] ByteMaskM;
   
   // instantiate processor and memories
   arm arm(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
           // Added for memory (DStall, MemtoRegM)
-          WriteDataM, ReadDataM, DStall, IStall, MemtoRegM); 
+          WriteDataM, ReadDataM, DStall, IStall, MemtoRegM, ByteMaskM); 
 
   // data cache 
   logic Valid;
@@ -23,7 +24,7 @@ module top(input  logic        clk, reset,
   // Wires between arbiter and ahb_lite
   logic HWrite, HReady, HRequest;
   logic [31:0] HAddrM, HAddrF, HAddr;
-  logic [3:0] ByteMask = 4'b1111;
+  
   
   // instruction cache with a block size of 4 words and 16 lines
   instr_cache #(4, 128) 
@@ -40,7 +41,7 @@ module top(input  logic        clk, reset,
   data_writeback_associative_cache #(4, 128) 
     data_cache(.clk(clk), .reset(reset), .MemWriteM(MemWriteM), .MemtoRegM(MemtoRegM), 
                .BusReady(BusReadyM), .IStall(IStall), .A(DataAdrM), .WD(WriteDataM),
-               .HRData(HRData), .ByteMask(ByteMask), .HWData(HWData), .RD(ReadDataM), .HAddr(HAddrM),
+               .HRData(HRData), .ByteMask(ByteMaskM), .HWData(HWData), .RD(ReadDataM), .HAddr(HAddrM),
                .Stall(DStall), .HRequestM(HRequestM), .HWriteM(HWriteM));
 
   // Create ahb arbiter

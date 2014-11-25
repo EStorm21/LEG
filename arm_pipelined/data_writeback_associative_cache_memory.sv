@@ -2,7 +2,7 @@ module data_writeback_associative_cache_memory #(parameter lines = 65536, parame
                            parameter blocksize = 4)
                     (input logic clk, reset, WE, MemWriteM,
                      input logic [31:0] WD, 
-                     input logic [31:0] A, // TODO: Make a capitalized
+                     input logic [31:0] A, 
                      input logic [3:0]  ByteMask,
                      output logic RV, Dirty,
                      output logic [tagbits-1:0] RTag,
