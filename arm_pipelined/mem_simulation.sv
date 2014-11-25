@@ -50,6 +50,7 @@ module mem_simulation
       // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat",RAM); //teqrs
       // $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
 
+
   // Return a block
   // assign rd = {RAM[{a[22:4], 2'b00}], 
   //              RAM[{a[22:4], 2'b01}], 

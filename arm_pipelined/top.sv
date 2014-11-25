@@ -25,7 +25,6 @@ module top(input  logic        clk, reset,
   logic HWrite, HReady, HRequest;
   logic [31:0] HAddrM, HAddrF, HAddr;
   
-  
   // instruction cache with a block size of 4 words and 16 lines
   instr_cache #(4, 128) 
     instr_cache(.clk(clk), .reset(reset), .BusReady(BusReadyF),
