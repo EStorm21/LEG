@@ -40,8 +40,8 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     // W1D:        Way 1 dirty bit
     // W2D:        Way 2 dirty bit
     // RDSel:      Select output from bus or from cache
-    logic BlockWE, W1D, W2D, RDSel;
-    logic [tagbits-1:0] Tag;   // Tag bits
+    // Hit:        Hit in the cache
+    logic BlockWE, W1D, W2D, RDSel, Hit;
     logic [setbits-1:0] set;   // Set bits
     logic W1Hit, W2Hit;        // Hit signal from each way
     logic [lines-1:0] LRU;     // LRU Table
@@ -52,27 +52,16 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     // Create New Address using the counter as the word offset
     assign ANew = ResetCounter ? A : {A[31:4], Counter, A[1:0]};
 
-    // Way 1
-    data_writeback_associative_cache_memory #(lines, tagbits, blocksize) way1(
-       .clk(clk), .reset(reset), .WD(CacheWD), .A(ANew), .WE(W1WE), .MemWriteM(MemWriteM),
-       .ByteMask(ActiveByteMask), .RV(W1V), .Dirty(W1D), .RTag(W1Tag), .RD(W1BlockOut));
-
-    // Way 2
-    data_writeback_associative_cache_memory #(lines, tagbits, blocksize) way2(
-       .clk(clk), .reset(reset), .WD(CacheWD), .A(ANew), .WE(W2WE), .MemWriteM(MemWriteM),
-       .ByteMask(ActiveByteMask), .RV(W2V), .Dirty(W2D), .RTag(W2Tag), .RD(W2BlockOut));
+    // Create Cache memory. This module contains both way memories
+    logic DirtyIn;
+    assign DirtyIn = MemWriteM;
+    data_writeback_associative_cache_memory #(lines, tagbits, blocksize) dcmem(.*);
 
     // Cache Controller
     assign WordOffset = A[3:2]; // Create word offset for cache controller
     logic CurrLRU;              
     assign CurrLRU = LRU[set];  // Created to pass LRU[set] into cache controller
     data_writeback_associative_cache_controller dcc(.*);
-
-    // Create the logic for a Hit.
-    assign Tag = A[31:31-tagbits+1];
-    assign W1Hit = (W1V & (Tag == W1Tag));
-    assign W2Hit = (W2V & (Tag == W2Tag));
-    assign Hit = W1Hit | W2Hit;
 
     // Create LRU Table
     assign set = A[blocksize+setbits-1:blocksize];
@@ -90,19 +79,6 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     assign CachedTag = W1EN ? W1Tag : W2Tag;
     assign CachedAddr = {CachedTag, ANew[31-tagbits:0]};
     mux2 #(32) HAddrMux(ANew, CachedAddr, HWriteM, HAddr);
-
-    // Word selection mux's
-    // Way1 Word select mux
-    mux4 #(32) c1mux
-        (W1BlockOut[31:0],        W1BlockOut[2*32-1:32],
-         W1BlockOut[3*32-1:2*32], W1BlockOut[4*32-1:3*32],
-         CacheRDSel, W1RD);
-
-    // Way1 Word select mux
-    mux4 #(32) c2mux
-       (W2BlockOut[31:0],        W2BlockOut[2*32-1:32],
-        W2BlockOut[3*32-1:2*32], W2BlockOut[4*32-1:3*32],
-        CacheRDSel, W2RD);
 
     // Select from the ways
     mux2 #(32) CacheOutMux(W2RD, W1RD, W1Hit, CacheOut);
