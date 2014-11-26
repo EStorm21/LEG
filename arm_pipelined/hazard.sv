@@ -12,12 +12,16 @@ module hazard(input  logic       clk, reset,
               output logic       StallE, StallM, FlushW, StallW,
               // For Micro-ops
               input logic        uOpStallD, LDMSTMforwardE,
-              output logic       StalluOp);
+              output logic       StalluOp,
+              // For thumb
+              input  logic       BXInstrD);
                 
   // forwarding logic
   always_comb 
   begin
-    if ((Match_1E_M & RegWriteM) | LDMSTMforwardE)  // Fwds data from Memory Stage to Execute Stage (1 stage back)
+    if (BXInstrD)
+      ForwardAE = 2'b11;
+    else if ((Match_1E_M & RegWriteM) | LDMSTMforwardE)  // Fwds data from Memory Stage to Execute Stage (1 stage back)
       ForwardAE = 2'b10;
     else if (Match_1E_W & RegWriteW) 
       ForwardAE = 2'b01;
