@@ -66,5 +66,8 @@ ldr R11, [sp, #+4]
 str R5,  [sp, #+4]!
 ldr R12,[sp], #0
 str R7,  [sp], #1
+ldrb r1, [sp, #-0]
+strb r2, [sp, #2]
+ldr  r3, [sp, #-1]!
 
 end: b end

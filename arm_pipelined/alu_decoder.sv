@@ -1,6 +1,7 @@
 module alu_decoder(input  logic       ALUOpE,
            input  logic [24:21] ALUControlE,
            input  logic [1:0] PreviousCVFlag,
+           input  logic BXInstrE,
            output   logic [2:0] ALUOperation, CVUpdate,
            output   logic     InvertB, ReverseInputs, ALUCarry, DoNotWriteReg);
 
@@ -25,24 +26,25 @@ module alu_decoder(input  logic       ALUOpE,
     endcase
   
   always_comb
-    casex ({ALUOpE, ALUControlE[24:21]}) // AND(&) = 3'b000,  XOR(^) = 3'b001, SUM = 3'b010, OR(|) = 3'b011, SINGLEInput = 3'b100
-      5'b10000: ALUOperation = 3'b000; // AND
-      5'b11000: ALUOperation = 3'b000; // TST
-      5'b10001: ALUOperation = 3'b001; // EOR
-      5'b11001: ALUOperation = 3'b001; // TEQ
-      5'b10010: ALUOperation = 3'b010;   // SUB
-      5'b10011: ALUOperation = 3'b010;   // RSB
-      5'b10100: ALUOperation = 3'b010;   // ADD
-      5'b10101: ALUOperation = 3'b010;   // ADC
-      5'b10110: ALUOperation = 3'b010;   // SBC
-      5'b10111: ALUOperation = 3'b010;   // RSC
-      5'b11010: ALUOperation = 3'b010;   // CMP
-      5'b11011: ALUOperation = 3'b010;   // CMN
-      5'b11100: ALUOperation = 3'b011;  // ORR
-      5'b11101: ALUOperation = 3'b100;   // MOV
-      5'b11111: ALUOperation = 3'b100;   // MVN
-      5'b11110: ALUOperation = 3'b000;   // BIC
-      5'b0xxxx: ALUOperation = 3'b010;    // others
+    casex ({ALUOpE, ALUControlE[24:21], BXInstrE}) // AND(&) = 3'b000,  XOR(^) = 3'b001, SUM = 3'b010, OR(|) = 3'b011, SINGLEInput = 3'b100
+      6'b100000: ALUOperation = 3'b000; // AND
+      6'b110000: ALUOperation = 3'b000; // TST
+      6'b100010: ALUOperation = 3'b001; // EOR
+      6'b110010: ALUOperation = 3'b001; // TEQ
+      6'b100100: ALUOperation = 3'b010;   // SUB
+      6'b100110: ALUOperation = 3'b010;   // RSB
+      6'b101000: ALUOperation = 3'b010;   // ADD
+      6'b101010: ALUOperation = 3'b010;   // ADC
+      6'b101100: ALUOperation = 3'b010;   // SBC
+      6'b101110: ALUOperation = 3'b010;   // RSC
+      6'b110100: ALUOperation = 3'b010;   // CMP
+      6'b110110: ALUOperation = 3'b010;   // CMN
+      6'b111000: ALUOperation = 3'b011;  // ORR
+      6'b111010: ALUOperation = 3'b100;   // MOV
+      6'b001001: ALUOperation = 3'b101;   // BX
+      6'b111110: ALUOperation = 3'b100;   // MVN
+      6'b111100: ALUOperation = 3'b000;   // BIC
+      6'b0xxxx: ALUOperation = 3'b010;    // others
       default: ALUOperation = 3'b010; // Add by default
     endcase
 

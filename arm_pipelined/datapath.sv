@@ -16,49 +16,62 @@ module datapath(input  logic        clk, reset,
                 // Added StallE, StallM, FlushW for memory
                 input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, StalluOp,
                 // Handling Data processing Instrs
-                input logic  [3:0]  PreviousFlagsE,
-                input logic  [2:0]  CVUpdateE, ALUOperationE,
-                input logic         InvertBE, ReverseInputsE, ALUCarryE,
+                input  logic [3:0]  PreviousFlagsE,
+                input  logic [2:0]  CVUpdateE, ALUOperationE,
+                input  logic         InvertBE, ReverseInputsE, ALUCarryE,
                 // To handle micro-op decoding
                 output logic        doNotUpdateFlagD, uOpStallD, PrevRSRstateD, LDMSTMforwardD,
                 input  logic        RselectE, PrevRSRstateE, LDRSTRshiftE, 
-                input logic[1:0]    ResultSelectE, // Comes from {MultSelectD, RSRselectD}
+                input  logic[1:0]   ResultSelectE, // Comes from {MultSelectD, RSRselectD}
                 input  logic [6:4]  ShiftOpCode_E,
-                input logic         MultSelectD, MultEnable,
-                // input logic         WriteMultLoE,
-                output logic        MultStallD, MultStallE, 
-                output logic [3:0]  RegFileRzD);
+                input  logic        MultSelectD, MultEnable,
+                output logic        MultStallD, MultStallE, ldrstrRtypeD,
+                output logic [3:0]  RegFileRzD,
+                output logic [1:0]  STR_cycleD,
+                output logic [31:0] ALUResultE,
+                input  logic        LoadLengthW,
+                input  logic [1:0]  ByteOffsetW,
+                input  logic        WriteByteE,
+                // added for thumb instructions
+                input  logic        TFlagNextE, 
+                output logic        TFlagE);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
   logic [31:0] ExtImmD, Rd1D, Rd2D, PCPlus8D, RotImmD, DefaultInstrD, uOpInstrD;
   logic        InstrMuxD, SignExtendD, noRotateD;
-  logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, ALUResultE, ALUOutputE, ShifterAinE, ALUSrcBE, ShiftBE;
+  logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ShiftBE;
   logic [31:0] MultOutputBE, MultOutputAE;
   logic        ShifterCarryOutE;
-  logic [31:0] ReadDataW, ALUOutW, ResultW;
+  logic [31:0] ReadDataRawW, ReadDataW, ALUOutW, ResultW;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D;
   logic [4:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3E_1, WA3M, WA3W, RdLoD , RdLoE;
   logic        Match_1D_E, Match_2D_E, WriteMultLoE, WriteMultLoD, WriteMultLoKeptE;
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
   logic [3:0]  ALUFlagsE, MultFlagsE, DestRegD;
-                
 
-  // Fetch stage
+  // ====================================================================================
+  // ================================ Fetch Stage =======================================
+  // ====================================================================================
   mux2 #(32) pcnextmux(PCPlus4F, ResultW, PCSrcW, PCnext1F);
   mux2 #(32) branchmux(PCnext1F, ALUResultE, BranchTakenE, PCnextF);
   flopenr #(32) pcreg(clk, reset, ~StallF, PCnextF, PCF);
-  adder #(32) pcadd(PCF, 32'h4, PCPlus4F);
+  adder #(32) pcaddfour(PCF, 32'h4, PCPlus4F);
+  // For thumb mode
+  //adder #(32) pcaddtwo(PCF, 32'h2, PCPlus2F)
+  //mux2 #(32) pcmux(PCPlus4F, PCPlus2F, TFlagNextE, PCPlusXF)
   
-  // Decode Stage
+  // ====================================================================================
+  // ================================ Decode Stage ======================================
+  // ====================================================================================
 
-  assign PCPlus8D = PCPlus4F; // skip register
+  assign PCPlus8D = PCPlus4F; // skip register *change to PCPlusXF for thumb
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
-  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, 
-                            PrevRSRstateD, KeepVD, SignExtendD, noRotateD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
+  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, STR_cycleD,
+                            PrevRSRstateD, KeepVD, SignExtendD, noRotateD, ldrstrRtypeD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   mux3 #(4)   ra1mux(InstrD[19:16], 4'b1111, InstrD[3:0], {MultSelectD, RegSrcD[0]}, RA1_RnD);
-  mux3 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], RA1_RnD, {MultSelectD, RegFileRzD[2]}, RA1_4b_D);
+  mux3 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], RA1_RnD, {MultSelectD, (RegFileRzD[2] & RegFileRzD[3])}, RA1_4b_D);
   assign RA1D = {RegFileRzD[0], RA1_4b_D};
   mux3 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], InstrD[11:8], {MultSelectD, RegSrcD[1]}, RA2_4b_D);
   assign RA2D = {RegFileRzD[1], RA2_4b_D};
@@ -75,12 +88,11 @@ module datapath(input  logic        clk, reset,
                  Rd1D, Rd2D); 
   extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25], SignExtendD);
 
-  // ------- RECENTLY ADDED BY IVAN ----------------- Currently EVERYTHING goes through Rotator
   rotator   rotat(ExtImmD, InstrD, RotImmD, noRotateD); 
-  // ------------------------------------------------
   
-  // Execute Stage
-  // ---------- RECENTLY CHANGED BY MAX --------- 
+  // ====================================================================================
+  // ============================== Execute Stage =======================================
+  // ====================================================================================
   // Added enable to StallE, StallM, and Added FlushW. (Added for memory)
   flopenr #(32) rd1reg(clk, reset, ~StallE, Rd1D, Rd1E);
   flopenr #(32) rd2reg(clk, reset, ~StallE, Rd2D, Rd2E);
@@ -98,6 +110,9 @@ module datapath(input  logic        clk, reset,
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
   mux2 #(4)   flagmux(ALUFlagsE, MultFlagsE, ResultSelectE[1], FlagsE);
 
+  // Thumb
+  assign TFlagE = ALUSrcBE[0];
+
   assign WA3E = WriteMultLoE ? RdLoE: WA3E_1;
   //Long Multiply RdLo register
   assign RdLoE = {0, InstrE[15:12]};
@@ -107,17 +122,23 @@ module datapath(input  logic        clk, reset,
   alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, ALUOutputE, ALUFlagsE, PreviousFlagsE[1:0], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, KeepVE); 
   multiplier  mult(clk, reset, MultEnable, StallE, WriteMultLoKeptE, SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, PreviousFlagsE[1:0]);
   mux3 #(32)  aluoutputmux(ALUOutputE, ShiftBE, MultOutputE, ResultSelectE, ALUResultE); 
+  data_replicator memReplicate(WriteByteE, WriteDataE, WriteDataReplE);
   
-  // Memory Stage
+  // ====================================================================================
+  // =============================== Memory Stage =======================================
+  // ====================================================================================
   flopenr #(32) aluresreg(clk, reset, ~StallM, ALUResultE, ALUOutM);
-  flopenr #(32) wdreg(clk, reset, ~StallM, WriteDataE, WriteDataM);
+  flopenr #(32) wdreg(clk, reset, ~StallM, WriteDataReplE, WriteDataM);
   flopenr #(5)  wa3mreg(clk, reset, ~StallM, WA3E, WA3M);
   
-  // Writeback Stage
+  // ====================================================================================
+  // =============================== Writeback Stage ====================================
+  // ====================================================================================
   flopenrc #(32) aluoutreg(clk, reset, ~StallW, FlushW, ALUOutM, ALUOutW);
-  flopenrc #(32) rdreg(clk, reset, ~StallW, FlushW, ReadDataM, ReadDataW);
+  flopenrc #(32) rdreg(clk, reset, ~StallW, FlushW, ReadDataM, ReadDataRawW);
   flopenrc #(5)  wa3wreg(clk, reset, ~StallW, FlushW, WA3M, WA3W);
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, ResultW);
+  data_selector byteShift(LoadLengthW, ByteOffsetW, ReadDataRawW, ReadDataW);
   
   // hazard comparison
   eqcmp #(5) m0(WA3M, RA1E, Match_1E_M);
