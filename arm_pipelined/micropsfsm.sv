@@ -104,7 +104,8 @@ always_comb
 		 */
 		ready: begin
 				//start RSR type instructions
-				if (defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 0 && defaultInstrD[4] == 1) begin 
+				if (defaultInstrD[27:25] == 3'b0 & defaultInstrD[7] == 0 & defaultInstrD[4] == 1 
+				  & ~(defaultInstrD[27:4] == {8'b0001_0010, 12'hFFF, 4'b0001})) begin 
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
