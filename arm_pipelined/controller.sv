@@ -40,7 +40,7 @@ module controller(input  logic         clk, reset,
   logic        RegWriteD, RegWriteE, RegWriteGatedE;
   logic        MemWriteD, MemWriteE, MemWriteGatedE;
   logic        BranchD, BranchE;
-  logic        TFlag, BXInstrD;
+  logic        TFlag;
   logic [1:0]  FlagWriteD, FlagWriteE;
   logic        PCSrcD, PCSrcE, PCSrcM;
   logic [3:0]  FlagsNextE, CondE;
@@ -64,9 +64,9 @@ module controller(input  logic         clk, reset,
                 if (InstrD[7:4] == 4'b1001)
                              ControlsD = 12'b00_00_0010_01100; // Multiply                    0x13
                 else begin
-                     if ((InstrD[24:21] == 4'b1001) & (InstrD[15:12] == 4'b1111)) begin
-                              ControlsD = 12'b01_00_000010001; // BX
-                     else     ControlsD = 12'b00_00_001001000; // Data processing register
+                     if ((InstrD[24:21] == 4'b1001) & (InstrD[15:12] == 4'b1111))
+                              ControlsD = 12'b01_00_0000_10001; // BX
+                     else     ControlsD = 12'b00_00_0010_01000; // Data processing register
                      end
                   end
   	  2'b01: if (InstrD[20] & ~InstrD[25])       ControlsD = 12'b00_01_1110_00010; // LDR, "I-type" 0xf0
@@ -131,7 +131,7 @@ module controller(input  logic         clk, reset,
   // ALU Decoding
   flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE,
                            {(ALUOpD|ldrstrALUopD), InstrD}, {ALUOpE, InstrE});
-  alu_decoder alu_dec(ALUOpE, ALUControlE, PreviousFlagsE[1:0], ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
+  alu_decoder alu_dec(ALUOpE, ALUControlE, PreviousFlagsE[1:0], BXInstrE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
                     
   flopenrc  #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
   

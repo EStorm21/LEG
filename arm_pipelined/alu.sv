@@ -31,6 +31,7 @@ module alu(input  logic [31:0] AIn, BIn,
       3'b010: Result = Sum;
       3'b011: Result = A | Condinvb;
       3'b100: Result = Condinvb;
+      3'b101: Result = {Condinvb[31:1], 1'b0};
       default: Result = Sum;
     endcase
 
