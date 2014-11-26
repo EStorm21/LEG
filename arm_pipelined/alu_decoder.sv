@@ -41,7 +41,7 @@ module alu_decoder(input  logic       ALUOpE,
       6'b110110: ALUOperation = 3'b010;   // CMN
       6'b111000: ALUOperation = 3'b011;  // ORR
       6'b111010: ALUOperation = 3'b100;   // MOV
-      6'b111011: ALUOperation = 3'b101;   // BX
+      6'b001001: ALUOperation = 3'b101;   // BX
       6'b111110: ALUOperation = 3'b100;   // MVN
       6'b111100: ALUOperation = 3'b000;   // BIC
       6'b0xxxx: ALUOperation = 3'b010;    // others
