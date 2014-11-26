@@ -240,7 +240,7 @@ always_comb
 
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21:20] == 2'b00) begin // Store, r type, no pre or post indexing
 						nextState = str;
-						STR_cycle = 2'b00;
+						STR_cycle = 2'b01;
 						InstrMuxD = 1;
 						ldrstrRtype = 1;
 						doNotUpdateFlagD = 1;
@@ -258,7 +258,7 @@ always_comb
 									}; 
 					end else if (defaultInstrD[25:24] == 2'b10 & defaultInstrD[21:20] == 2'b00) begin // Store, r type, post indexed
 						nextState = str;
-						STR_cycle = 2'b00;
+						STR_cycle = 2'b10;
 						ldrstrRtype = 0;
 						InstrMuxD = 1;
 						doNotUpdateFlagD = 1;
@@ -275,7 +275,7 @@ always_comb
 									};
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21:20] == 2'b10) begin // store, r type, pre indexed (!)
 						nextState = str;
-						STR_cycle = 2'b00;
+						STR_cycle = 2'b11;
 						ldrstrRtype = 1;
 						InstrMuxD = 1;
 						doNotUpdateFlagD = 1;
@@ -342,7 +342,7 @@ always_comb
 					noRotate = 0;
 					ldrstrRtype = 0;
 					nextState = ready;
-					STR_cycle = 2'b00;
+					STR_cycle = 2'b01;
 					// after calculating Rn + shift(Rm), lets store Rd to that address
 					uOpInstrD = {defaultInstrD[31:28], 4'b0101, // Cond, I-type store
 								defaultInstrD[23:20], 4'b1111, // Default-codes, use Rz so data forwarded,
@@ -352,7 +352,7 @@ always_comb
 					nextState = ready;
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 1;
-					STR_cycle = 2'b00;
+					STR_cycle = 2'b10;
 					ldrstrRtype = 1;
 					uOpStallD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
@@ -369,7 +369,7 @@ always_comb
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 0;
-					STR_cycle = 2'b00;
+					STR_cycle = 2'b11;
 					ldrstrRtype = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of WA3, RA2D and RA1D 

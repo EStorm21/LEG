@@ -65,7 +65,7 @@ module datapath(input  logic        clk, reset,
                             PrevRSRstateD, KeepVD, SignExtendD, noRotateD, ldrstrRtypeD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   mux3 #(4)   ra1mux(InstrD[19:16], 4'b1111, InstrD[3:0], {MultSelectD, RegSrcD[0]}, RA1_RnD);
-  mux3 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], RA1_RnD, {MultSelectD, RegFileRzD[2]}, RA1_4b_D);
+  mux3 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], RA1_RnD, {MultSelectD, (RegFileRzD[2] & RegFileRzD[3])}, RA1_4b_D);
   assign RA1D = {RegFileRzD[0], RA1_4b_D};
   mux3 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], InstrD[11:8], {MultSelectD, RegSrcD[1]}, RA2_4b_D);
   assign RA2D = {RegFileRzD[1], RA2_4b_D};
