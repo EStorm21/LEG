@@ -102,22 +102,12 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     // Write-to logic
     // IN: W1V, W2V, LRU 
     // OUT: W1EN, W2EN
+    logic writeW1;
     always_comb
         begin
-            // If there is a Hit in either cache, then write to the Hit cache
-            if( W1Hit | W2Hit) begin
-                W1EN = W1Hit;
-                W2EN = W2Hit;
-            end else
-            // Neither or Both caches have Valid data, so write to LRU cache
-            if(~(W1V ^ W2V)) begin 
-                W1EN = LRU[set];
-                W2EN = ~LRU[set];
-            // One way has Valid data, so write to the other
-            end else begin
-                W1EN = ~W1V;
-                W2EN = ~W2V;
-            end
+            writeW1 = ( (~W1V & W2V) | LRU ) & ~W2Hit;
+            W1EN = writeW1 | W1Hit;
+            W2EN = ~W1EN;
         end
 
     // Write Enable And gates
