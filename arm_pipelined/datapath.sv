@@ -29,7 +29,8 @@ module datapath(input  logic        clk, reset,
                 output logic        MultStallD, MultStallE, 
                 output logic [3:0]  RegFileRzD,
                 // added for thumb instructions
-                input  logic        TFlag);
+                input  logic        TFlagNextE, 
+                output logic        TFlagE);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
@@ -50,14 +51,14 @@ module datapath(input  logic        clk, reset,
   mux2 #(32) pcnextmux(PCPlus4F, ResultW, PCSrcW, PCnext1F);
   mux2 #(32) branchmux(PCnext1F, ALUResultE, BranchTakenE, PCnextF);
   flopenr #(32) pcreg(clk, reset, ~StallF, PCnextF, PCF);
-  adder #(32) pcadd(PCF, 32'h4, PCPlus4F);
+  adder #(32) pcaddfour(PCF, 32'h4, PCPlus4F);
   // For thumb mode
-  adder #(32) pcaddtwo(PCF, 32'h2, PCPlus2F)
-  mux2 #(32) pcmux(PCPlus4F, PCPlus2F, TFlag, PCPlusXF)
+  //adder #(32) pcaddtwo(PCF, 32'h2, PCPlus2F)
+  //mux2 #(32) pcmux(PCPlus4F, PCPlus2F, TFlagNextE, PCPlusXF)
   
   // Decode Stage
 
-  assign PCPlus8D = PCPlusXF; // skip register *change to PCPlusXF for thumb
+  assign PCPlus8D = PCPlus4F; // skip register *change to PCPlusXF for thumb
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, 
                             PrevRSRstateD, KeepVD, SignExtendD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
@@ -96,12 +97,15 @@ module datapath(input  logic        clk, reset,
   // flopenr #(5)  rdLoreg(clk, reset, ~StallE, RdLoD, RdLoE);
   flopenr #(1)  keepV(clk, reset, ~StallE, KeepVD, KeepVE);
   // flopenr #(1)  writeMultHi(clk, reset, ~StallE,WriteMultLoD, WriteMultLoE);
-  mux3 #(32)  byp1mux(Rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);
+  mux4 #(32)  byp1mux(Rd1E, ResultW, ALUOutM, 32'h1, ForwardAE, SrcAE);
   mux4 #(32)  byp2mux(Rd2E, ResultW, ALUOutM, 32'h4, ForwardBE, WriteDataE);
   mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcBE);
   mux2 #(32)  shifterAin(SrcAE, ExtImmE, RselectE, ShifterAinE); 
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
   mux2 #(4)   flagmux(ALUFlagsE, MultFlagsE, ResultSelectE[1], FlagsE);
+
+  // Thumb
+  assign TFlagE = ALUSrcBE[0];
 
   assign WA3E = WriteMultLoE ? RdLoE: WA3E_1;
   //Long Multiply RdLo register

@@ -1,5 +1,5 @@
 module controller(input  logic         clk, reset,
-                  input  logic [31:0] InstrD,
+                  input  logic [31:0]  InstrD,
                   input  logic [3:0]   FlagsE,
                   output logic [1:0]   RegSrcD, ImmSrcD, 
                   output logic         ALUSrcE, BranchTakenE,
@@ -25,8 +25,8 @@ module controller(input  logic         clk, reset,
                   output logic         MultSelectD, MultEnable,
                   output logic [31:0]  InstrE,
                   // For BX instruction
-                  output logic         BXInstrE,
-                  input  logic         BXReg);
+                  output logic         BXInstrD, TFlagNextE,
+                  input  logic         TFlagE);
 
 
   logic [11:0] ControlsD;
@@ -116,8 +116,10 @@ module controller(input  logic         clk, reset,
                     
   flopenrc  #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
   
-  cpsr          cpsrE(clk, reset, FlagsNextE, 6'b0, 5'b0, 2'b0, TFlag, ~StallE, 1'b0, 1'b0, StateRegisterDataE);
+  mux2 #(1) updatetflag(PreviousTFlagE, TFlagE, BXInstrE, TFlagNextE);
+  cpsr          cpsrE(clk, reset, FlagsNextE, 6'b0, 5'b0, 2'b0, TFlagNextE, ~StallE, 1'b0, 1'b0, StateRegisterDataE);
   assign  PreviousFlagsE = StateRegisterDataE[11:8];
+  assign  PreviousTFlagE = StateRegisterDataE[5];
   flopenrc  #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, ShiftOpCode_D[6:4],ShiftOpCode_E[6:4]);
   //flopenr  #(4) flagsregE(clk, reset, ~StallE, FlagsNextE, PreviousFlagsE);
   // write and Branch controls are conditional

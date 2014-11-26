@@ -3,7 +3,7 @@ module cpsr(input  logic        clk, reset,
               input logic [5:0] Exceptions, 
               input logic [4:0] Mode,
               input logic [1:0] IrqFiq, // disables interrupt/fast-interrupts when set
-              input logic       Thumb,  // 0 indicates ARM execution, 1 indicates Thumb.
+              input logic       TFlag,  // 0 indicates ARM execution, 1 indicates Thumb.
               input logic       Enable, readSR, writeSR,
               output logic [11:0] SRdata);
 
@@ -87,7 +87,7 @@ module cpsr(input  logic        clk, reset,
         cpsr <= {cpsr[11:8], CPSR_update};
       end
       else if (Enable) begin
-        cpsr <= {FlagsNext, cpsr[7:0]};
+        cpsr <= {FlagsNext, cpsr[7:6], TFlag, cpsr[4:0]};
       end
     end
 
