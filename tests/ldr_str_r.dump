@@ -123,8 +123,12 @@ Disassembly of section .text:
   ec:	e240ee19 	sub	lr, r0, #400	; 0x190
   f0:	e79d900e 	ldr	r9, [sp, lr]
   f4:	e240e004 	sub	lr, r0, #4
-  f8:	e69dc000 	ldr	ip, [sp], r0
-  fc:	e68d700e 	str	r7, [sp], lr
+  f8:	e7bda00e 	ldr	sl, [sp, lr]!
+  fc:	e280e004 	add	lr, r0, #4
+ 100:	e79db00e 	ldr	fp, [sp, lr]
+ 104:	e7ad500e 	str	r5, [sp, lr]!
+ 108:	e69dc000 	ldr	ip, [sp], r0
+ 10c:	e68d700e 	str	r7, [sp], lr
 
-00000100 <end>:
- 100:	eafffffe 	b	100 <end>
+00000110 <end>:
+ 110:	eafffffe 	b	110 <end>
