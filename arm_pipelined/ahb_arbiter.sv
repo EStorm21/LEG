@@ -1,12 +1,13 @@
-module ahb_arbiter( input  logic HWriteM, IStall, DStall, HReady,
+module ahb_arbiter( input  logic HWriteM, IStall, DStall, HReady, HRequestF, HRequestM,
                     input  logic [31:0] HAddrF, HAddrM,
-                    output logic HReadyF, HReadyM, HWrite,
+                    output logic HReadyF, HReadyM, HWrite, HRequest,
                     output logic [31:0] HAddr);
     
     assign HWrite = HWriteM & DStall;
     assign HReadyF = IStall & ~DStall & HReady;
     assign HReadyM = DStall & HReady;
     assign HAddr = DStall ? HAddrM : HAddrF;
+    assign HRequest = HRequestF | HRequestM;
     // always_comb
     // begin
     //     // Cases:

@@ -1,6 +1,7 @@
 module controller(input  logic         clk, reset,
                   input  logic [31:0]  InstrD,
                   input  logic [3:0]   FlagsE,
+                  input  logic [1:0]   STR_cycleD,
                   output logic [1:0]   RegSrcD, ImmSrcD, 
                   output logic         ALUSrcE, BranchTakenE,
                   output logic [3:0]   ALUControlE,
@@ -9,78 +10,94 @@ module controller(input  logic         clk, reset,
                   output logic         MemtoRegW, PCSrcW, RegWriteW,
                   // hazard interface
                   output logic         RegWriteM, MemtoRegE, PCWrPendingF,
-                  // Added StallE, StallM, and FlushW for memory
                   input  logic         FlushE, StallE, StallM, FlushW, StallW,
                   output logic         MemtoRegM,
-                  // Recently added by CW team - for Data processing instructions
                   output logic  [2:0]   ALUOperationE, CVUpdateE,
                   output logic          DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryE,
                   output logic  [3:0]   PreviousFlagsE,
                   // For micro-op decoding
-                  input logic          doNotUpdateFlagD, PrevRSRstateD, LDMSTMforwardD,
-                  output logic         RselectE, PrevRSRstateE, LDRSTRshiftE, LDMSTMforwardE,
+                  input logic          doNotUpdateFlagD, PrevRSRstateD, LDMSTMforwardD, ldrstrRtypeD,
+                  output logic         RselectE, PrevRSRstateE, LDRSTRshiftE, LDMSTMforwardE, 
                   output logic  [1:0]  ResultSelectE,
                   input  logic  [3:0]  RegFileRzD, 
                   output logic  [6:4]  ShiftOpCode_E,
                   output logic         MultSelectD, MultEnable,
                   output logic [31:0]  InstrE,
+                  input  logic [31:0]  ALUResultE,
+                  output logic [3:0]   ByteMaskM,
+                  output logic         LoadLengthW,
+                  output logic [1:0]   ByteOffsetW,
+                  output logic         WriteByteE,
                   // For BX instruction
                   output logic         BXInstrD, TFlagNextE,
                   input  logic         TFlagE);
 
-
   logic [11:0] ControlsD;
-  logic       CondExE, ALUOpD;
-  logic [3:0] ALUControlD;
-  logic [2:0] MultControlD;
-  logic       ALUSrcD, MemtoRegD;
-  logic       RegWriteD, RegWriteE, RegWriteGatedE;
-  logic       MemWriteD, MemWriteE, MemWriteGatedE;
-  logic       BranchD, BranchE;
-  logic       TFlag, BXInstrD;
-  logic [1:0] FlagWriteD, FlagWriteE;
-  logic       PCSrcD, PCSrcE, PCSrcM;
-  logic [3:0] FlagsNextE, CondE;
-  logic       RegWritepreMuxE, RselectD, RSRselectD;
-  logic [1:0] ResultSelectD;
-  logic [6:4] ShiftOpCode_D;
-  logic [11:0]  StateRegisterDataE;
-
+  logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
+  logic [3:0]  ALUControlD, ByteMaskE;
+  logic [2:0]  MultControlD;
+  logic        ALUSrcD, MemtoRegD;
+  logic        RegWriteD, RegWriteE, RegWriteGatedE;
+  logic        MemWriteD, MemWriteE, MemWriteGatedE;
+  logic        BranchD, BranchE;
+  logic        TFlag, BXInstrD;
+  logic [1:0]  FlagWriteD, FlagWriteE;
+  logic        PCSrcD, PCSrcE, PCSrcM;
+  logic [3:0]  FlagsNextE, CondE;
+  logic        RegWritepreMuxE, RselectD, RSRselectD;
+  logic [1:0]  ResultSelectD;
+  logic [6:4]  ShiftOpCode_D;
+  logic [11:0] StateRegisterDataE;
+  logic        LoadLengthE, LoadLengthM;
+  logic [1:0]  ByteOffsetE, ByteOffsetM;
+ 
   assign ShiftOpCode_D = InstrD[6:4];
-  assign LDRSTRshiftE = 1'b0;
 
-  // Decode stage
+  // ====================================================================================
+  // =============================== Decode Stage =======================================
+  // ====================================================================================
   always_comb
   	casex(InstrD[27:26]) 
       // If 2'b00, then this is data processing instruction
-  	  2'b00: if (InstrD[25]) ControlsD = 12'b00_00_10100100; // Data processing immediate
+  	  2'b00: if (InstrD[25]) ControlsD = 12'b00_00_1010_01000; // Data processing immediate   0x52
   	         else begin         
                 if (InstrD[7:4] == 4'b1001)
-                             ControlsD = 12'b00_00_00100110; // Multiply
+                             ControlsD = 12'b00_00_0010_01100; // Multiply                    0x13
                 else begin
-                   if ((InstrD[24:21] == 4'b1001) & (InstrD[15:12] == 4'b1111)) begin
-                             ControlsD = 12'b01_00_00001001; // BX
-                   else      ControlsD = 12'b00_00_00100100; // Data processing register
+                     if ((InstrD[24:21] == 4'b1001) & (InstrD[15:12] == 4'b1111)) begin
+                              ControlsD = 12'b01_00_000010001; // BX
+                     else     ControlsD = 12'b00_00_001001000; // Data processing register
+                     end
                   end
-  	  2'b01: if (InstrD[20] & ~InstrD[25]) ControlsD = 12'b00_01_11100000; // LDR, "I-type"
-             else if (InstrD[20])          ControlsD = 12'b00_01_01100000; // LDR, "R-Type"
-  	         else            ControlsD = 12'b10_01_11010000; // STR
-  	  2'b10:                 ControlsD = 12'b01_10_10001000; // B
+  	  2'b01: if (InstrD[20] & ~InstrD[25])       ControlsD = 12'b00_01_1110_00010; // LDR, "I-type" 0xf0
+             else if (InstrD[20] & InstrD[25])   ControlsD = 12'b00_00_0110_00010; // LDR, "R-Type" 0xb0
+             else if (~InstrD[20] & ~InstrD[25])   ControlsD = 12'b10_01_1101_00010; // STR, "I-type"
+             else if (~InstrD[20] & InstrD[25])    ControlsD = 12'b10_00_0101_00010; // STR, "R-type"
+              /*
+  	         else if (~InstrD[20] & ~InstrD[25]) ControlsD = 12'b10_01_1101_0001; // STR  "I-type" 0x4e8
+             else if   (~InstrD[20] & InstrD[25])  ControlsD = 12'b00_00_0101_0001;*/
+  	  2'b10:                 ControlsD = 12'b01_10_1000_10000; // B                           0x344
   	  default:               ControlsD = 12'bx;          // unimplemented
   	endcase
 
-  assign {RegSrcD, ImmSrcD, ALUSrcD, MemtoRegD, 
-          RegWriteD, MemWriteD, BranchD, ALUOpD, MultSelectD, BXInstrD} = ControlsD; 
+  /*
+   * Notes: ldrstrALUopD gives Loads and Stores the ability to choose alu function add or subtract.
+   */
+  assign {RegSrcD, ImmSrcD,     // 2 bits each
+          ALUSrcD, MemtoRegD, RegWriteD, MemWriteD, 
+          BranchD, ALUOpD, MultSelectD, ldrstrALUopD, BXInstrD} = ControlsD; 
 
   
    always_comb
      if (ALUOpD) begin                     // which Data-processing Instr?
       ALUControlD = InstrD[24:21];  // Always passes Instruction codes to ALUControlD
       FlagWriteD[1:0]   = {InstrD[20], InstrD[20]};       // update flags if S bit is set
-    end else if (ImmSrcD == 2'b01 & InstrD[23] == 1) begin// Load Store (Rn + 12 bit offset)
+
+    // LOAD STORE LOGIC
+    end else if ((InstrD[27:26] == 2'b01) & InstrD[23]) begin// Load Store (Rn + 12 bit offset)
       ALUControlD     = 4'b0100;  // "Add" operation
       FlagWriteD[1:0] = 2'b00;
-    end else if (ImmSrcD == 2'b01 & InstrD[23] == 0) begin // Load/Store (Rn - 12 bit offset)
+    end else if ((InstrD[27:26] == 2'b01) & ~InstrD[23]) begin // Load/Store (Rn - 12 bit offset)
       ALUControlD     = 4'b0010;  // "Subtract" operation
       FlagWriteD[1:0] = 2'b00;
     end else begin                    
@@ -90,19 +107,21 @@ module controller(input  logic         clk, reset,
  
   assign MultControlD  = InstrD[23:21];
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~RegFileRzD[2]) | BranchD);
-  assign RselectD      = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 0) | (InstrD[27:25] == 3'b011) ;
+  assign RselectD      = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 0) | ldrstrRtypeD ;
   assign RSRselectD    = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 1);
   assign ResultSelectD = {MultSelectD, RSRselectD};
+  assign LDRSTRshiftD  = ldrstrRtypeD;
 
 
-
-  // Execute stage
+  // ====================================================================================
+  // =============================== Execute Stage ======================================
+  // ====================================================================================
   // Added enables to E, M, and flush to W. Added for memory
-  flopenrc  #(5) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD}, 
-                                                            {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE});
-  flopenrc #(8) flushedregsE(clk, reset, ~StallE, FlushE, 
-                           {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD, BXInstrD},
-                           {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE, BXInstrE});
+  flopenrc  #(6) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD, LDRSTRshiftD}, 
+                                                            {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE, LDRSTRshiftE});
+  flopenrc #(9) flushedregsE(clk, reset, ~StallE, FlushE, 
+                           {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD, ldrstrALUopD, BXInstrD},
+                           {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE, ldrstrALUopE, BXInstrE});
 
   flopenrc #(8)  regsE(clk, reset, ~StallE, FlushE,
                     {ALUSrcD, ALUControlD, MultControlD},
@@ -111,8 +130,8 @@ module controller(input  logic         clk, reset,
   assign MultEnable = InstrE[7:4] == 4'b1001;
   // ALU Decoding
   flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE,
-                           {ALUOpD, InstrD}, {ALUOpE, InstrE});
-  alu_decoder alu_dec(ALUOpE, InstrE[24:21], PreviousFlagsE[1:0], ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
+                           {(ALUOpD|ldrstrALUopD), InstrD}, {ALUOpE, InstrE});
+  alu_decoder alu_dec(ALUOpE, ALUControlE, PreviousFlagsE[1:0], ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
                     
   flopenrc  #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
   
@@ -125,6 +144,12 @@ module controller(input  logic         clk, reset,
   // write and Branch controls are conditional
   conditional Cond(CondE, PreviousFlagsE, FlagsE, FlagWriteE, CondExE, FlagsNextE);
 
+  assign LoadLengthE = InstrE[22];
+  assign ByteOffsetE = ALUResultE[1:0];
+  assign WriteByteE  = (InstrE[27:26] == 2'b01) & InstrE[22] & ~InstrE[20];
+  memory_mask MemMask(LoadLengthE, ALUResultE[1:0], ByteMaskE);
+  // assign ByteMaskE = 4'b1111;
+
 
   assign BranchTakenE    = BranchE & CondExE;
   assign RegWritepreMuxE = RegWriteE & CondExE;
@@ -134,18 +159,19 @@ module controller(input  logic         clk, reset,
   // disable write to register for flag-setting instructions
   assign RegWriteGatedE = DoNotWriteRegE ? 1'b0 : RegWritepreMuxE; 
   
-  // create carry-in bit for carry instructions to send to ALU 
-  // assign PreviousCVFlag = PreviousFlagsE[1:0];
+  // ====================================================================================
+  // =============================== Memory Stage =======================================
+  // ====================================================================================
+  flopenr #(11) regsM(clk, reset, ~StallM,
+                   {MemWriteGatedE, MemtoRegE, RegWriteGatedE, PCSrcGatedE, ByteMaskE, LoadLengthE, ByteOffsetE},
+                   {MemWriteM, MemtoRegM, RegWriteM, PCSrcM, ByteMaskM, LoadLengthM, ByteOffsetM});
   
-  // Memory stage
-  flopenr #(4) regsM(clk, reset, ~StallM,
-                   {MemWriteGatedE, MemtoRegE, RegWriteGatedE, PCSrcGatedE},
-                   {MemWriteM, MemtoRegM, RegWriteM, PCSrcM});
-  
-  // Writeback stage
-  flopenrc #(3) regsW(clk, reset, ~StallW, FlushW, 
-                   {MemtoRegM, RegWriteM, PCSrcM},
-                   {MemtoRegW, RegWriteW, PCSrcW});
+  // ====================================================================================
+  // =============================== Writeback Stage ====================================
+  // ====================================================================================
+  flopenrc #(6) regsW(clk, reset, ~StallW, FlushW, 
+                   {MemtoRegM, RegWriteM, PCSrcM, LoadLengthM, ByteOffsetM},
+                   {MemtoRegW, RegWriteW, PCSrcW, LoadLengthW, ByteOffsetW});
 
   // Hazard Prediction
   assign PCWrPendingF = PCSrcD | PCSrcE | PCSrcM;

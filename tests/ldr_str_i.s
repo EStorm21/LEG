@@ -61,11 +61,13 @@ ldr R6,  [sp, #-4]
 ldr R7,  [sp, #+4]
 ldr R8,  [sp, #-400]
 ldr R9,  [sp, #+400]
-#ldr R10, [sp, #-4]!
-#ldr R11, [sp, #+4]
-#str R5,  [sp, #+4]!
-#ldrt R12,[sp], #0
-#strt R7,  [sp], #1
+ldr R10, [sp, #-4]!
+ldr R11, [sp, #+4]
+str R5,  [sp, #+4]!
+ldr R12,[sp], #0
+str R7,  [sp], #1
+ldrb r1, [sp, #-0]
+strb r2, [sp, #2]
+ldr  r3, [sp, #-1]!
 
-#Note that this does not yet test all of post-increment options
 end: b end

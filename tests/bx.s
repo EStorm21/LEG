@@ -49,32 +49,13 @@ next12: ldr R14, val14
 b next14
 val14: .word 3273968024
 next14:
-		add r2, r0, #11
-  		add r3, r0, #12          @ initialize r3 = 12       
-		cmp r3, r2		@ set carry flag
-#adc test
-		adc r4, r3, #21		@ r4 = r3 + 21 + 1
-		add r5, r3, r2		@ r5 = r3 + r2
-		cmp r2, r3 		@ unset carry flag
-  		adc r7, r3, #21           @ r7 = r3 + 21
-  	#zero test
-  		sub r0, r0, r0
-  		adc r0, r0, r0
-  	#zero - largest
-  		adc r1, r0, #4294967295
-  		adc r1, r1, r0
-		adc r1, r1, #0xf000000f
-  		adc r6, r1, r1
-  	#flag test
-  		adcs r14, r0, #-5
-  		addeq r8, r0, #1
-  		addne r8, r8, #2
-  		adcs r14, r1, #123
-  		addcs r8, r8, #4
-  		addcc r8, r8, #8
-  		addvs r8, r8, #16
-  		addvc r8, r8, #32
-		bl end
-
+    b continue
+link:     add r3, r0, #5
+          add r2, r0, r0
+          b end
+continue: add r1, r0, #1
+          ldr r2, =link
+          bx r2
+          add r3, r0, #12
 
 end:	b end				@ stay at end

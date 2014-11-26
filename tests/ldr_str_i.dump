@@ -114,6 +114,14 @@ Disassembly of section .text:
   c8:	e59d7004 	ldr	r7, [sp, #4]
   cc:	e51d8190 	ldr	r8, [sp, #-400]	; 0x190
   d0:	e59d9190 	ldr	r9, [sp, #400]	; 0x190
+  d4:	e53da004 	ldr	sl, [sp, #-4]!
+  d8:	e59db004 	ldr	fp, [sp, #4]
+  dc:	e5ad5004 	str	r5, [sp, #4]!
+  e0:	e49dc000 	ldr	ip, [sp], #0
+  e4:	e48d7001 	str	r7, [sp], #1
+  e8:	e55d1000 	ldrb	r1, [sp, #-0]
+  ec:	e5cd2002 	strb	r2, [sp, #2]
+  f0:	e53d3001 	ldr	r3, [sp, #-1]!
 
-000000d4 <end>:
-  d4:	eafffffe 	b	d4 <end>
+000000f4 <end>:
+  f4:	eafffffe 	b	f4 <end>

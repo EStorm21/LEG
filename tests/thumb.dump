@@ -1,5 +1,5 @@
 
-adc_i_gcc.o:     file format elf32-littlearm
+thumb_gcc.o:     file format elf32-littlearm
 
 
 Disassembly of section .text:
@@ -104,27 +104,17 @@ Disassembly of section .text:
   a8:	c324c998 	.word	0xc324c998
 
 000000ac <next14>:
-  ac:	e280200b 	add	r2, r0, #11
-  b0:	e280300c 	add	r3, r0, #12
-  b4:	e1530002 	cmp	r3, r2
-  b8:	e2a34015 	adc	r4, r3, #21
-  bc:	e0835002 	add	r5, r3, r2
-  c0:	e1520003 	cmp	r2, r3
-  c4:	e2a37015 	adc	r7, r3, #21
-  c8:	e0400000 	sub	r0, r0, r0
-  cc:	e0a00000 	adc	r0, r0, r0
-  d0:	e2c01000 	sbc	r1, r0, #0
-  d4:	e0a11000 	adc	r1, r1, r0
-  d8:	e2a112ff 	adc	r1, r1, #-268435441	; 0xf000000f
-  dc:	e0a16001 	adc	r6, r1, r1
-  e0:	e2d0e004 	sbcs	lr, r0, #4
-  e4:	02808001 	addeq	r8, r0, #1
-  e8:	12888002 	addne	r8, r8, #2
-  ec:	e2b1e07b 	adcs	lr, r1, #123	; 0x7b
-  f0:	22888004 	addcs	r8, r8, #4
-  f4:	32888008 	addcc	r8, r8, #8
-  f8:	62888010 	addvs	r8, r8, #16
-  fc:	72888020 	addvc	r8, r8, #32
+  ac:	e59f1010 	ldr	r1, [pc, #16]	; c4 <end+0x4>
+  b0:	e2811001 	add	r1, r1, #1
+  b4:	e12fff11 	bx	r1
 
-00000100 <end>:
- 100:	eafffffe 	b	100 <end>
+000000b8 <thumb1>:
+  b8:	006d      	lsls	r5, r5, #1
+  ba:	4251      	negs	r1, r2
+  bc:	1a92      	subs	r2, r2, r2
+  be:	1d53      	adds	r3, r2, #5
+
+000000c0 <end>:
+  c0:	e7fe      	b.n	c0 <end>
+  c2:	0000      	.short	0x0000
+  c4:	000000b8 	.word	0x000000b8
