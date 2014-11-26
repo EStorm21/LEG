@@ -103,7 +103,7 @@ module datapath(input  logic        clk, reset,
   // flopenr #(5)  rdLoreg(clk, reset, ~StallE, RdLoD, RdLoE);
   flopenr #(1)  keepV(clk, reset, ~StallE, KeepVD, KeepVE);
   // flopenr #(1)  writeMultHi(clk, reset, ~StallE,WriteMultLoD, WriteMultLoE);
-  mux4 #(32)  byp1mux(Rd1E, ResultW, ALUOutM, 32'h1, ForwardAE, SrcAE);
+  mux3 #(32)  byp1mux(Rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);
   mux4 #(32)  byp2mux(Rd2E, ResultW, ALUOutM, 32'h4, ForwardBE, WriteDataE);
   mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcBE);
   mux2 #(32)  shifterAin(SrcAE, ExtImmE, RselectE, ShifterAinE); 
