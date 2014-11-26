@@ -47,29 +47,10 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     logic [lines-1:0] LRU;     // LRU Table
     logic [1:0] Counter, WordOffset, CacheRDSel;   // Counter for sequential buss access
 
-
-    // CacheIn Logic
     cacheIn #(blocksize) ci(.*);
-
-    // Create Counter for sequential bus access
-    always_ff @(posedge clk, posedge reset)
-        if(reset | ResetCounter) begin
-            Counter <= 0;
-        end else begin
-            if (BusReady) begin
-                Counter <= Counter + 1;
-            end else begin
-                Counter <= Counter;
-            end
-        end
-
 
     // Create New Address using the counter as the word offset
     assign ANew = ResetCounter ? A : {A[31:4], Counter, A[1:0]};
-
-    // Mux for CacheRDSel
-    assign WordOffset = A[blockbits+1:2];
-    assign CacheRDSel = HWriteM ? Counter : WordOffset;
 
     // Way 1
     data_writeback_associative_cache_memory #(lines, tagbits, blocksize) way1(
@@ -82,6 +63,9 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
        .ByteMask(ActiveByteMask), .RV(W2V), .Dirty(W2D), .RTag(W2Tag), .RD(W2BlockOut));
 
     // Cache Controller
+    assign WordOffset = A[3:2]; // Create word offset for cache controller
+    logic CurrLRU;              
+    assign CurrLRU = LRU[set];  // Created to pass LRU[set] into cache controller
     data_writeback_associative_cache_controller dcc(.*);
 
     // Create the logic for a Hit.
@@ -99,31 +83,13 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
             LRU[set] <= W2WE;
         end
 
-    // Write-to logic
-    // IN: W1V, W2V, LRU 
-    // OUT: W1EN, W2EN
-    logic writeW1;
-    always_comb
-        begin
-            writeW1 = ( (~W1V & W2V) | LRU ) & ~W2Hit;
-            W1EN = writeW1 | W1Hit;
-            W2EN = ~W1EN;
-        end
-
-    // Write Enable And gates
-    assign W1WE = W1EN & CWE;
-    assign W2WE = W2EN & CWE;
-
-    // Dirty Mux
-    assign Dirty = W1EN ? W1D : W2D;
-
     // HWData Mux
-    assign HWData = W1EN ? W1RD : W2RD;
+    mux2 #(32) HWDataMux(W2RD, W1RD, W1EN, HWData);
 
     // HAddr Mux's
     assign CachedTag = W1EN ? W1Tag : W2Tag;
     assign CachedAddr = {CachedTag, ANew[31-tagbits:0]};
-    assign HAddr = HWriteM ? CachedAddr : ANew;
+    mux2 #(32) HAddrMux(ANew, CachedAddr, HWriteM, HAddr);
 
     // Word selection mux's
     // Way1 Word select mux
@@ -139,9 +105,9 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
         CacheRDSel, W2RD);
 
     // Select from the ways
-    assign CacheOut = W1Hit ? W1RD : W2RD;
+    mux2 #(32) CacheOutMux(W2RD, W1RD, W1Hit, CacheOut);
 
     // Select from cache or memory
-    assign RD = RDSel ? HRData : CacheOut;
+    mux2 #(32) RDMux(CacheOut, HRData, RDSel, RD);
 
 endmodule
