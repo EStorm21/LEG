@@ -1,0 +1,139 @@
+
+teq_r_gcc.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <main>:
+   0:	e05f000f 	subs	r0, pc, pc
+   4:	e59fd000 	ldr	sp, [pc]	; c <val>
+   8:	ea000000 	b	10 <next>
+
+0000000c <val>:
+   c:	befffae8 	.word	0xbefffae8
+
+00000010 <next>:
+  10:	e59f1000 	ldr	r1, [pc]	; 18 <val1>
+  14:	ea000000 	b	1c <next1>
+
+00000018 <val1>:
+  18:	2265b1f3 	.word	0x2265b1f3
+
+0000001c <next1>:
+  1c:	e59f2000 	ldr	r2, [pc]	; 24 <val2>
+  20:	ea000000 	b	28 <next2>
+
+00000024 <val2>:
+  24:	d8f16ad9 	.word	0xd8f16ad9
+
+00000028 <next2>:
+  28:	e59f3000 	ldr	r3, [pc]	; 30 <val3>
+  2c:	ea000000 	b	34 <next3>
+
+00000030 <val3>:
+  30:	c386bbc2 	.word	0xc386bbc2
+
+00000034 <next3>:
+  34:	e59f4000 	ldr	r4, [pc]	; 3c <val4>
+  38:	ea000000 	b	40 <next4>
+
+0000003c <val4>:
+  3c:	414c3424 	.word	0x414c3424
+
+00000040 <next4>:
+  40:	e59f5000 	ldr	r5, [pc]	; 48 <val5>
+  44:	ea000000 	b	4c <next5>
+
+00000048 <val5>:
+  48:	7ed4d578 	.word	0x7ed4d578
+
+0000004c <next5>:
+  4c:	e59f6000 	ldr	r6, [pc]	; 54 <val6>
+  50:	ea000000 	b	58 <next6>
+
+00000054 <val6>:
+  54:	7311d8af 	.word	0x7311d8af
+
+00000058 <next6>:
+  58:	e59f7000 	ldr	r7, [pc]	; 60 <val7>
+  5c:	ea000000 	b	64 <next7>
+
+00000060 <val7>:
+  60:	a6cecc0c 	.word	0xa6cecc0c
+
+00000064 <next7>:
+  64:	e59f8000 	ldr	r8, [pc]	; 6c <val8>
+  68:	ea000000 	b	70 <next8>
+
+0000006c <val8>:
+  6c:	c9e9c606 	.word	0xc9e9c606
+
+00000070 <next8>:
+  70:	e59f9000 	ldr	r9, [pc]	; 78 <val9>
+  74:	ea000000 	b	7c <next9>
+
+00000078 <val9>:
+  78:	18072e90 	.word	0x18072e90
+
+0000007c <next9>:
+  7c:	e59fa000 	ldr	sl, [pc]	; 84 <val10>
+  80:	ea000000 	b	88 <next10>
+
+00000084 <val10>:
+  84:	0741c7bd 	.word	0x0741c7bd
+
+00000088 <next10>:
+  88:	e59fb000 	ldr	fp, [pc]	; 90 <val11>
+  8c:	ea000000 	b	94 <next11>
+
+00000090 <val11>:
+  90:	d5f4b3ac 	.word	0xd5f4b3ac
+
+00000094 <next11>:
+  94:	e59fc000 	ldr	ip, [pc]	; 9c <val12>
+  98:	ea000000 	b	a0 <next12>
+
+0000009c <val12>:
+  9c:	6ec9d294 	.word	0x6ec9d294
+
+000000a0 <next12>:
+  a0:	e59fe000 	ldr	lr, [pc]	; a8 <val14>
+  a4:	ea000000 	b	ac <next14>
+
+000000a8 <val14>:
+  a8:	c324c998 	.word	0xc324c998
+
+000000ac <next14>:
+  ac:	e2802009 	add	r2, r0, #9
+  b0:	e2403001 	sub	r3, r0, #1
+  b4:	e1320003 	teq	r2, r3
+  b8:	028240c6 	addeq	r4, r2, #198	; 0xc6
+  bc:	128250c6 	addne	r5, r2, #198	; 0xc6
+  c0:	228260c6 	addcs	r6, r2, #198	; 0xc6
+  c4:	328270c6 	addcc	r7, r2, #198	; 0xc6
+  c8:	428280c6 	addmi	r8, r2, #198	; 0xc6
+  cc:	528290c6 	addpl	r9, r2, #198	; 0xc6
+  d0:	6282a0c6 	addvs	sl, r2, #198	; 0xc6
+  d4:	7282b0c6 	addvc	fp, r2, #198	; 0xc6
+  d8:	e2802001 	add	r2, r0, #1
+  dc:	e1320003 	teq	r2, r3
+  e0:	028440c6 	addeq	r4, r4, #198	; 0xc6
+  e4:	128550c6 	addne	r5, r5, #198	; 0xc6
+  e8:	228660c6 	addcs	r6, r6, #198	; 0xc6
+  ec:	328770c6 	addcc	r7, r7, #198	; 0xc6
+  f0:	428880c6 	addmi	r8, r8, #198	; 0xc6
+  f4:	528990c6 	addpl	r9, r9, #198	; 0xc6
+  f8:	628aa0c6 	addvs	sl, sl, #198	; 0xc6
+  fc:	728bb0c6 	addvc	fp, fp, #198	; 0xc6
+ 100:	e1330002 	teq	r3, r2
+ 104:	028140c6 	addeq	r4, r1, #198	; 0xc6
+ 108:	128250c6 	addne	r5, r2, #198	; 0xc6
+ 10c:	228360c6 	addcs	r6, r3, #198	; 0xc6
+ 110:	328470c6 	addcc	r7, r4, #198	; 0xc6
+ 114:	428580c6 	addmi	r8, r5, #198	; 0xc6
+ 118:	528690c6 	addpl	r9, r6, #198	; 0xc6
+ 11c:	6287a0c6 	addvs	sl, r7, #198	; 0xc6
+ 120:	7288b0c6 	addvc	fp, r8, #198	; 0xc6
+
+00000124 <end>:
+ 124:	eafffffe 	b	124 <end>
