@@ -240,7 +240,7 @@ always_comb
 
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21:20] == 2'b00) begin // Store, r type, no pre or post indexing
 						nextState = str;
-						STR_cycle = 2'b01;
+						STR_cycle = 2'b01; // for debugging
 						InstrMuxD = 1;
 						ldrstrRtype = 1;
 						doNotUpdateFlagD = 1;
@@ -258,7 +258,7 @@ always_comb
 									}; 
 					end else if (defaultInstrD[25:24] == 2'b10 & defaultInstrD[21:20] == 2'b00) begin // Store, r type, post indexed
 						nextState = str;
-						STR_cycle = 2'b10;
+						STR_cycle = 2'b10; // for debugging
 						ldrstrRtype = 0;
 						InstrMuxD = 1;
 						doNotUpdateFlagD = 1;
@@ -275,7 +275,7 @@ always_comb
 									};
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21:20] == 2'b10) begin // store, r type, pre indexed (!)
 						nextState = str;
-						STR_cycle = 2'b11;
+						STR_cycle = 2'b11; // for debugging
 						ldrstrRtype = 1;
 						InstrMuxD = 1;
 						doNotUpdateFlagD = 1;
