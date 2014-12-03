@@ -52,10 +52,12 @@ next14:
     b continue
 link:     add r3, r0, #5
           add r2, r0, r0
-          b end
+          b brexl
 continue: add r1, r0, #1
           ldr r2, =link
           bx r2
           add r3, r0, #12
+brexl:    ldr r4, =end
+          blx r4
 
 end:	b end				@ stay at end

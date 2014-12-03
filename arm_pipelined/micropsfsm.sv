@@ -12,7 +12,7 @@ module micropsfsm(input  logic        clk, reset,
 
 // define states READY and RSR 
 // TODO: add more states for each type of instruction
-typedef enum {ready, rsr, multiply, ldm, bl, ldmWriteback, ldr, str, str2} statetype;
+typedef enum {ready, rsr, multiply, ldm, bl, ldmWriteback, ldr, str, str2, blx} statetype;
 statetype state, nextState;
 
 // --------------------------- ADDED FOR LDM/STM -------------------------------
@@ -108,7 +108,7 @@ always_comb
 		ready: begin
 				//start RSR type instructions
 				if (defaultInstrD[27:25] == 3'b0 & defaultInstrD[7] == 0 & defaultInstrD[4] == 1 
-				  & ~(defaultInstrD[27:4] == {8'b0001_0010, 12'hFFF, 4'b0001})) begin 
+				  & ~(defaultInstrD[27:6] == {8'b0001_0010, 12'hFFF, 2'b00}) & defaultInstrD[4]) begin 
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
@@ -150,6 +150,21 @@ always_comb
 								3'b000, 4'b1101, 1'b0, // MOV instruction, Do not update flags 
 								4'b0000, 4'b1110, // SBZ, link register destination
 								8'b00000000, 4'b1111}; // source is unshifted R15
+				end
+
+				else if(defaultInstrD[27:4]== {8'b00010010, 12'hfff, 4'b0011}) begin // blx
+					InstrMuxD = 1;
+					doNotUpdateFlagD = 0;
+					uOpStallD = 1;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					prevRSRstate = 0;
+					nextState = blx;
+					keepV = 0;
+					uOpInstrD = {defaultInstrD[31:28], // Condition bits
+								3'b001, 4'b0010, 1'b0, // MOV instruction, Do not update flags 
+								4'b1111, 4'b1110, // R15, link register destination
+								4'b0000, 8'b00000100}; // We need PC - 4
 				end
 
 				// ---------- LOAD/STORE Pre/Post Increment Mode ------------
@@ -527,6 +542,19 @@ always_comb
 				end
 		   end
 
+		blx:begin
+				if(defaultInstrD[27:24]== 4'b1011) begin
+					InstrMuxD = 1;
+					doNotUpdateFlagD = 0;
+					uOpStallD = 0;
+					prevRSRstate = 0;
+					keepV = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					nextState = ready;
+					uOpInstrD = {defaultInstrD[31:6], 1'b0, defaultInstrD[4:0]};//branch without link
+				end
+		   end
 
 		rsr:begin
 				if(defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 0 && defaultInstrD[4] == 1) begin 
