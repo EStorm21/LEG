@@ -13,7 +13,7 @@
 #sbc_r
 #teq_r
 #tst_r
-#adc_i
+adc_i
 #and_i
 #bic_i
 #cmn_i
@@ -51,9 +51,9 @@
 #umull
 #umlal
 #smlal
-random2
+#random2
 #ldm
 #ldr_str_i
 #ldr_str_r
-bx
+#bx
 #dhry

@@ -109,14 +109,19 @@ Disassembly of section .text:
 000000b0 <link>:
   b0:	e2803005 	add	r3, r0, #5
   b4:	e0802000 	add	r2, r0, r0
-  b8:	ea000003 	b	cc <end>
+  b8:	ea000003 	b	cc <brexl>
 
 000000bc <continue>:
   bc:	e2801001 	add	r1, r0, #1
-  c0:	e59f2008 	ldr	r2, [pc, #8]	; d0 <end+0x4>
+  c0:	e59f2010 	ldr	r2, [pc, #16]	; d8 <end+0x4>
   c4:	e12fff12 	bx	r2
   c8:	e280300c 	add	r3, r0, #12
 
-000000cc <end>:
-  cc:	eafffffe 	b	cc <end>
-  d0:	000000b0 	.word	0x000000b0
+000000cc <brexl>:
+  cc:	e59f4008 	ldr	r4, [pc, #8]	; dc <end+0x8>
+  d0:	e12fff34 	blx	r4
+
+000000d4 <end>:
+  d4:	eafffffe 	b	d4 <end>
+  d8:	000000b0 	.word	0x000000b0
+  dc:	000000d4 	.word	0x000000d4
