@@ -12,16 +12,18 @@ module micropsfsm(input  logic        clk, reset,
 
 // define states READY and RSR 
 // TODO: add more states for each type of instruction
-typedef enum {ready, rsr, multiply, ldm, bl, ldmWriteback, ldr, str, str2} statetype;
+typedef enum {ready, rsr, multiply, ldm, bl, ldmWriteback, ldr, str, str2, blx} statetype;
 statetype state, nextState;
 
 // --------------------------- ADDED FOR LDM/STM -------------------------------
 // Conditional Unit
 logic CondExD, readyState, Ubit_ADD, LastCycle, WriteBack;
 assign readyState = (state == ready);
+assign WriteBack = 0; // REMOVE THIS LATER
 microps_conditional uOpCond(Flags, defaultInstrD[31:28], CondExD);
 // Count ones for LDM/STM
-logic [3:0] numones, Rd;
+logic [4:0] numones;
+logic [3:0] Rd;
 logic [11:0] start_imm;
 logic [15:0] RegistersListNow, RegistersListNext;
 
@@ -43,7 +45,8 @@ always_ff @ (posedge clk)
 
 always_comb 
   begin
-	numones = $countones(defaultInstrD[15:0]);
+  	if(state == ready) numones = $countones(defaultInstrD[15:0]);
+  	else numones = $countones(RegistersListNow);
 	LastCycle = (numones == 1);
 	casex(defaultInstrD[24:23])
 	  2'b00: begin 
@@ -104,7 +107,8 @@ always_comb
 		 */
 		ready: begin
 				//start RSR type instructions
-				if (defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 0 && defaultInstrD[4] == 1) begin 
+				if (defaultInstrD[27:25] == 3'b0 & defaultInstrD[7] == 0 & defaultInstrD[4] == 1 
+				  & ~(defaultInstrD[27:6] == {8'b0001_0010, 12'hFFF, 2'b00}) & defaultInstrD[4]) begin 
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
@@ -133,29 +137,6 @@ always_comb
 								4'b0000, //SBZ
 								defaultInstrD[11:0]}; 
 				end
-				// LOAD MULTIPLE
-				else if(defaultInstrD[27:25] == 3'b100 && defaultInstrD[20] == 1'b1) begin
-					InstrMuxD = 1;
-					doNotUpdateFlagD = 1;
-					uOpStallD = 1;
-					LDMSTMforward = 0;
-					regFileRz = {1'b0,  // Control inital mux for RA1D
-								 3'b000}; // 5th bit of WA3, RA2D and RA1D
-					nextState = ldm; 
-					// First instruction should be a LDR with offset
-					uOpInstrD = {defaultInstrD[31:28], // Cond
-								 3'b010, 			   // Load/Store SINGLE as I-type
-								 1'b1,  			   // P-bit (preindex)
-								 Ubit_ADD,			 	// U-bit (add or subtract)
-								 1'b0,					// B-bit (choose word addressing, not byte addressing)
-								 1'b0,					// W-bit (Base register should NOT be updated)
-								 defaultInstrD[20], 	// Differentiate between Load and Store | L = 1 for loads
-								 defaultInstrD[19:16],	// Still read from the same Rn
-								 Rd,					// 4 bit calculated register file to which the Load will be written back to
-								 start_imm				// 12 bits of start_imm, calculated from above
-								 };
-					// First instruction should be a move Rz = Rn or Rz = Rn + 4 or Rz = Rn - # bits set - 4 etc...
-				end 
 				else if(defaultInstrD[27:24]== 4'b1011) begin // bl
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 0;
@@ -169,6 +150,21 @@ always_comb
 								3'b000, 4'b1101, 1'b0, // MOV instruction, Do not update flags 
 								4'b0000, 4'b1110, // SBZ, link register destination
 								8'b00000000, 4'b1111}; // source is unshifted R15
+				end
+
+				else if(defaultInstrD[27:4]== {8'b00010010, 12'hfff, 4'b0011}) begin // blx
+					InstrMuxD = 1;
+					doNotUpdateFlagD = 0;
+					uOpStallD = 1;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					prevRSRstate = 0;
+					nextState = blx;
+					keepV = 0;
+					uOpInstrD = {defaultInstrD[31:28], // Condition bits
+								3'b001, 4'b0010, 1'b0, // MOV instruction, Do not update flags 
+								4'b1111, 4'b1110, // R15, link register destination
+								4'b0000, 8'b00000100}; // We need PC - 4
 				end
 
 				// ---------- LOAD/STORE Pre/Post Increment Mode ------------
@@ -308,8 +304,29 @@ always_comb
 						ldrstrRtype = 0;
 					end 
 				end
-				
-
+				// LOAD MULTIPLE
+				else if(defaultInstrD[27:25] == 3'b100 && defaultInstrD[20] == 1'b1) begin // first cycle, calculate starting address
+					InstrMuxD = 1;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 1;
+					LDMSTMforward = 0;
+					regFileRz = {1'b0,  // Control inital mux for RA1D
+								 3'b000}; // 5th bit of WA3, RA2D and RA1D
+					nextState = ldm; 
+					// First instruction should be a LDR with offset
+					uOpInstrD = {defaultInstrD[31:28], // Cond
+								 3'b010, 			   // Load/Store SINGLE as I-type
+								 1'b1,  			   // P-bit (preindex)
+								 Ubit_ADD,			 	// U-bit (add or subtract)
+								 1'b0,					// B-bit (choose word addressing, not byte addressing)
+								 1'b0,					// W-bit (Base register should NOT be updated)
+								 defaultInstrD[20], 	// Differentiate between Load and Store | L = 1 for loads
+								 defaultInstrD[19:16],	// Still read from the same Rn
+								 Rd,					// 4 bit calculated register file to which the Load will be written back to
+								 start_imm				// 12 bits of start_imm, calculated from above
+								 };
+					// First instruction should be a move Rz = Rn or Rz = Rn + 4 or Rz = Rn - # bits set - 4 etc...
+				end 
 				/* --- Stay in the READY state ----
 				 */
 				else begin 
@@ -447,9 +464,8 @@ always_comb
 			  end
 			/* If it's the last cycle and NO WRITEBACK
 			 */
-			else if(LastCycle & WriteBack) 
-			  	nextState = ldmWriteback;
-			else if (LastCycle) begin	// If just last cycle and no writeback
+			else if(LastCycle & WriteBack) begin
+			  	//nextState = ldmWriteback;
 			  	nextState = ldm;
 			  	InstrMuxD = 1;
 				doNotUpdateFlagD = 1;
@@ -459,18 +475,37 @@ always_comb
 								3'b000}; // 5th bit of RA2D and RA1D
 				LDMSTMforward = 1;
 				uOpInstrD = {defaultInstrD[31:28],
-							3'b010, 			   // Load/Store SINGLE as I-type
+							3'b011, 			   // Load/Store SINGLE as R-type
+							1'b1,  			   	 	// P-bit (preindex)
+							1'b1,			 		// U-bit (ADD)
+							1'b0,					// B-bit (choose word addressing, not byte addressing)
+							1'b1,					// W-bit (Base register should NOT be updated)
+							defaultInstrD[20], 		// Differentiate between Load and Store | L = 1 for loads
+							4'b1111,	// Still read from the same Rn
+							Rd,						// 4 bit calculated register file to which the Load will be written back to
+							8'b0, 4'b1111			// 0 shift, ignore last 4 bits since we are pulling "4" anyways.
+							};
+			end else if (LastCycle) begin	// If just last cycle and no writeback
+			  	nextState = ready;
+			  	InstrMuxD = 1;
+				doNotUpdateFlagD = 1;
+				uOpStallD = 0;
+				prevRSRstate = 0;
+				regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of RA2D and RA1D
+				LDMSTMforward = 1;
+				uOpInstrD = {defaultInstrD[31:28],
+							3'b011, 			   // Load/Store SINGLE as R-type
 							1'b1,  			   	 	// P-bit (preindex)
 							1'b1,			 		// U-bit (ADD)
 							1'b0,					// B-bit (choose word addressing, not byte addressing)
 							1'b0,					// W-bit (Base register should NOT be updated)
 							defaultInstrD[20], 		// Differentiate between Load and Store | L = 1 for loads
-							defaultInstrD[19:16],	// Still read from the same Rn
+							4'b1111,	// Still read from the same Rn
 							Rd,						// 4 bit calculated register file to which the Load will be written back to
-							start_imm				// 12 bits of start_imm, calculated from above
+							8'b0, 4'b1111			// 0 shift, ignore last 4 bits since we are pulling "4" anyways.
 							};
-				end
-			else 		begin			// Not last cycle
+			end	else begin			// Not last cycle, load next register
 				nextState = ldm;
 				InstrMuxD = 1;
 				doNotUpdateFlagD = 1;
@@ -480,15 +515,15 @@ always_comb
 								3'b000}; // 5th bit of RA2D and RA1D
 				LDMSTMforward = 1;
 				uOpInstrD = {defaultInstrD[31:28],
-							3'b010, 			   // Load/Store SINGLE as I-type
+							3'b011, 			   // Load/Store SINGLE as R-type
 							1'b1,  			   	 	// P-bit (preindex)
 							1'b1,			 		// U-bit (ADD)
 							1'b0,					// B-bit (choose word addressing, not byte addressing)
 							1'b0,					// W-bit (Base register should NOT be updated)
 							defaultInstrD[20], 		// Differentiate between Load and Store | L = 1 for loads
-							defaultInstrD[19:16],	// Still read from the same Rn
+							4'b1111,	// Still read from the same Rn
 							Rd,						// 4 bit calculated register file to which the Load will be written back to
-							start_imm				// 12 bits of start_imm, calculated from above
+							8'b0, 4'b1111			// 0 shift, ignore last 4 bits since we are pulling "4" anyways.
 							};
 				end
 			end
@@ -507,6 +542,19 @@ always_comb
 				end
 		   end
 
+		blx:begin
+				if(defaultInstrD[27:24]== 4'b1011) begin
+					InstrMuxD = 1;
+					doNotUpdateFlagD = 0;
+					uOpStallD = 0;
+					prevRSRstate = 0;
+					keepV = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					nextState = ready;
+					uOpInstrD = {defaultInstrD[31:6], 1'b0, defaultInstrD[4:0]};//branch without link
+				end
+		   end
 
 		rsr:begin
 				if(defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 0 && defaultInstrD[4] == 1) begin 

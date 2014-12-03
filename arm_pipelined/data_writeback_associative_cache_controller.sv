@@ -1,8 +1,45 @@
 module data_writeback_associative_cache_controller 
-  (input  logic clk, reset,
-   input  logic Hit, IStall, Dirty, MemWriteM, MemtoRegM, BusReady, 
-   input  logic [1:0] Counter, WordOffset,
-   output logic RDSel, CWE, Stall, HWriteM, HRequestM, BlockWE, ResetCounter);
+  (input  logic clk, reset, W1V, W2V, CurrLRU, W1Hit, W2Hit, W1D, W2D,
+   input  logic Hit, IStall, MemWriteM, MemtoRegM, BusReady, 
+   input  logic [1:0] WordOffset,
+   output logic RDSel, CWE, Stall, HWriteM, HRequestM, BlockWE, ResetCounter,
+   output logic W1WE, W2WE, W1EN,
+   output logic [1:0] Counter, CacheRDSel);
+
+  // Control Signals
+  // Create Counter for sequential bus access
+  always_ff @(posedge clk, posedge reset)
+    if(reset | ResetCounter) begin
+        Counter <= 0;
+    end else begin
+        if (BusReady) begin
+            Counter <= Counter + 1;
+        end else begin
+            Counter <= Counter;
+        end
+    end
+
+  // CacheIn Logic
+  assign CacheRDSel = HWriteM ? Counter : WordOffset;
+
+  // Write-to logic
+  // IN: W1V, W2V, LRU 
+  // OUT: W1EN, W2EN
+  logic writeW1, W2EN;
+  always_comb
+    begin
+      writeW1 = ( (~W1V & W2V) | CurrLRU ) & ~W2Hit;
+      W1EN = writeW1 | W1Hit;
+      W2EN = ~W1EN;
+    end
+
+  // Write Enable And gates
+  assign W1WE = W1EN & CWE;
+  assign W2WE = W2EN & CWE;
+
+  // Dirty Mux
+  logic Dirty;
+  assign Dirty = W1EN ? W1D : W2D;
 
   typedef enum logic [2:0] {READY, MEMREAD, WRITEBACK, NEXTINSTR, WAIT} statetype;
   statetype state, nextstate;

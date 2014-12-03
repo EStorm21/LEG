@@ -32,7 +32,7 @@ module controller(input  logic         clk, reset,
                   output logic         BXInstrD, TFlagNextE,
                   input  logic         TFlagE);
 
-  logic [11:0] ControlsD;
+  logic [12:0] ControlsD;
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
   logic [3:0]  ALUControlD, ByteMaskE;
   logic [2:0]  MultControlD;
@@ -59,25 +59,25 @@ module controller(input  logic         clk, reset,
   always_comb
   	casex(InstrD[27:26]) 
       // If 2'b00, then this is data processing instruction
-  	  2'b00: if (InstrD[25]) ControlsD = 12'b00_00_1010_01000; // Data processing immediate   0x52
+  	  2'b00: if (InstrD[25]) ControlsD = 13'b00_00_1010_01000; // Data processing immediate   0x52
   	         else begin         
                 if (InstrD[7:4] == 4'b1001)
-                             ControlsD = 12'b00_00_0010_01100; // Multiply                    0x13
+                             ControlsD = 13'b00_00_0010_01100; // Multiply                    0x13
                 else begin
                      if ((InstrD[24:21] == 4'b1001) & (InstrD[15:12] == 4'b1111))
-                              ControlsD = 12'b01_00_0000_10001; // BX
-                     else     ControlsD = 12'b00_00_0010_01000; // Data processing register
+                              ControlsD = 13'b01_00_0000_10001; // BX
+                     else     ControlsD = 13'b00_00_0010_01000; // Data processing register
                      end
                   end
-  	  2'b01: if (InstrD[20] & ~InstrD[25])       ControlsD = 12'b00_01_1110_00010; // LDR, "I-type" 0xf0
-             else if (InstrD[20] & InstrD[25])   ControlsD = 12'b00_00_0110_00010; // LDR, "R-Type" 0xb0
-             else if (~InstrD[20] & ~InstrD[25])   ControlsD = 12'b10_01_1101_00010; // STR, "I-type"
-             else if (~InstrD[20] & InstrD[25])    ControlsD = 12'b10_00_0101_00010; // STR, "R-type"
+  	  2'b01: if (InstrD[20] & ~InstrD[25])       ControlsD = 13'b00_01_1110_00010; // LDR, "I-type" 0xf0
+             else if (InstrD[20] & InstrD[25])   ControlsD = 13'b00_00_0110_00010; // LDR, "R-Type" 0xb0
+             else if (~InstrD[20] & ~InstrD[25])   ControlsD = 13'b10_01_1101_00010; // STR, "I-type"
+             else if (~InstrD[20] & InstrD[25])    ControlsD = 13'b10_00_0101_00010; // STR, "R-type"
               /*
-  	         else if (~InstrD[20] & ~InstrD[25]) ControlsD = 12'b10_01_1101_0001; // STR  "I-type" 0x4e8
-             else if   (~InstrD[20] & InstrD[25])  ControlsD = 12'b00_00_0101_0001;*/
-  	  2'b10:                 ControlsD = 12'b01_10_1000_10000; // B                           0x344
-  	  default:               ControlsD = 12'bx;          // unimplemented
+  	         else if (~InstrD[20] & ~InstrD[25]) ControlsD = 13'b10_01_1101_0001; // STR  "I-type" 0x4e8
+             else if   (~InstrD[20] & InstrD[25])  ControlsD = 13'b00_00_0101_0001;*/
+  	  2'b10:                 ControlsD = 13'b01_10_1000_10000; // B                           0x344
+  	  default:               ControlsD = 13'bx;          // unimplemented
   	endcase
 
   /*
@@ -108,7 +108,7 @@ module controller(input  logic         clk, reset,
   assign MultControlD  = InstrD[23:21];
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~RegFileRzD[2]) | BranchD);
   assign RselectD      = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 0) | ldrstrRtypeD ;
-  assign RSRselectD    = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 1);
+  assign RSRselectD    = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 1) & ~(InstrD[27:4] == {8'b0001_0010, 12'hFFF, 4'b0001});
   assign ResultSelectD = {MultSelectD, RSRselectD};
   assign LDRSTRshiftD  = ldrstrRtypeD;
 
