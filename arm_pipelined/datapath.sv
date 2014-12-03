@@ -37,7 +37,7 @@ module datapath(input  logic        clk, reset,
                 output logic        TFlagE);
 
                           
-  logic [31:0] PCPlus4F, PCnext1F, PCnextF;
+  logic [31:0] PCPlusXF, PCnext1F, PCnextF;
   logic [31:0] ExtImmD, Rd1D, Rd2D, PCPlus8D, RotImmD, DefaultInstrD, uOpInstrD;
   logic        InstrMuxD, SignExtendD, noRotateD;
   logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ShiftBE;
@@ -49,14 +49,17 @@ module datapath(input  logic        clk, reset,
   logic        Match_1D_E, Match_2D_E, WriteMultLoE, WriteMultLoD, WriteMultLoKeptE;
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
   logic [3:0]  ALUFlagsE, MultFlagsE, DestRegD;
+  // for thumb
+  logic [31:0] PCAddNum, thumbInstrD;
 
   // ====================================================================================
   // ================================ Fetch Stage =======================================
   // ====================================================================================
-  mux2 #(32) pcnextmux(PCPlus4F, ResultW, PCSrcW, PCnext1F);
+  mux2 #(32) pcnextmux(PCPlusXF, ResultW, PCSrcW, PCnext1F);
   mux2 #(32) branchmux(PCnext1F, ALUResultE, BranchTakenE, PCnextF);
+  mux2 #(32) pcplusnum(32'h4, 32'h2, TFlagNextE, PCAddNum);
   flopenr #(32) pcreg(clk, reset, ~StallF, PCnextF, PCF);
-  adder #(32) pcaddfour(PCF, 32'h4, PCPlus4F);
+  adder #(32) pcaddfour(PCF, PCAddNum, PCPlusXF);
   // For thumb mode
   //adder #(32) pcaddtwo(PCF, 32'h2, PCPlus2F)
   //mux2 #(32) pcmux(PCPlus4F, PCPlus2F, TFlagNextE, PCPlusXF)
@@ -65,11 +68,12 @@ module datapath(input  logic        clk, reset,
   // ================================ Decode Stage ======================================
   // ====================================================================================
 
-  assign PCPlus8D = PCPlus4F; // skip register *change to PCPlusXF for thumb
+  assign PCPlus8D = PCPlusXF; // skip register *change to PCPlusXF for thumb
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, STR_cycleD,
                             PrevRSRstateD, KeepVD, SignExtendD, noRotateD, ldrstrRtypeD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
-  mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
+  thumb_decoder tInstrDecode(DefaultInstrD, thumbInstrD);
+  mux3 #(32)  instrDmux(DefaultInstrD, uOpInstrD, thumbInstrD, {TFlagNextE, InstrMuxD}, InstrD);
   mux3 #(4)   ra1mux(InstrD[19:16], 4'b1111, InstrD[3:0], {MultSelectD, RegSrcD[0]}, RA1_RnD);
   mux3 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], RA1_RnD, {MultSelectD, (RegFileRzD[2] & RegFileRzD[3])}, RA1_4b_D);
   assign RA1D = {RegFileRzD[0], RA1_4b_D};
@@ -86,7 +90,7 @@ module datapath(input  logic        clk, reset,
   regfile     rf(clk, RegWriteW, RA1D, RA2D,
                  WA3W, ResultW, PCPlus8D, 
                  Rd1D, Rd2D); 
-  extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25], SignExtendD);
+  extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25], SignExtendD, TFlagNextE);
 
   rotator   rotat(ExtImmD, InstrD, RotImmD, noRotateD); 
   

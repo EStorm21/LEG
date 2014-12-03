@@ -2,7 +2,9 @@ module extend(input  logic [23:0] Instr,
               input  logic [1:0]  ImmSrc,
               output logic [31:0] ExtImm,
               // Added to take care of RSR and R type shift instructions in Execute stage.
-              input  logic 		  RiType, SignExtend);
+              input  logic 		  RiType, SignExtend,
+              // for thumb
+              input logic       TFlag);
  
   always_comb
     case(ImmSrc) 
@@ -10,7 +12,8 @@ module extend(input  logic [23:0] Instr,
       		   else ExtImm = {20'b0, Instr[11:0]};			// Checks for Rr type with immediate shifts on register info
       2'b01:   if (SignExtend) ExtImm = {{20{Instr[11]}}, Instr[11:0]};
              else ExtImm = {20'b0, Instr[11:0]}; // 12-bit unsigned immediate for LDR and STR
-      2'b10:   ExtImm = {{6{Instr[23]}}, Instr[23:0], 2'b00}; // Branch
+      2'b10:   if (TFlag) ExtImm = {{7{Instr[23]}}, Instr[23:0], 1'b0}; // Branch (Thumb)
+             else ExtImm = {{6{Instr[23]}}, Instr[23:0], 2'b00}; // Branch (ARM)
       default: ExtImm = 32'bx; // undefined
     endcase             
 endmodule
