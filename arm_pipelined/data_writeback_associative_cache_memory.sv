@@ -1,52 +1,44 @@
 module data_writeback_associative_cache_memory #(parameter lines = 65536, parameter tagbits = 14, 
                            parameter blocksize = 4)
-                    (input logic clk, reset, WE, MemWriteM,
-                     input logic [31:0] WD, 
-                     input logic [31:0] A, 
-                     input logic [3:0]  ByteMask,
-                     output logic RV, Dirty,
-                     output logic [tagbits-1:0] RTag,
-                     output logic [blocksize*32-1:0] RD);
+                    (input logic clk, reset, W1WE, W2WE, DirtyIn,
+                     input logic [31:0] CacheWD,
+                     input logic [31:0] ANew, // TODO: Make a capitalized
+                     input logic [3:0]  ActiveByteMask,
+                     input logic [1:0]  CacheRDSel,
+                     output logic W1V, W2V, W1D, W2D, W1Hit, W2Hit, Hit,
+                     output logic [tagbits-1:0] W1Tag, W2Tag,
+                     output logic [31:0] W1RD, W2RD);
 
-  parameter setbits = $clog2(lines);
-  parameter blockoffset = $clog2(blocksize);
+logic [tagbits-1:0] Tag;
+logic [blocksize*32-1:0] W1BlockOut, W2BlockOut;
 
-  logic [tagbits-1:0] tag[lines-1:0];       // n lines x tagbits
-  logic [lines-1:0] v, DirtyBits;           // n lines x 1 bit
-  logic [setbits-1:0]  set;                 // n lines 16 bit address
-  logic [31:0] rd0, rd1, rd2, rd3;          
+// Way 1
+data_writeback_associative_cache_way #(lines, tagbits, blocksize) way1(
+  .clk(clk), .reset(reset), .WD(CacheWD), .A(ANew), .WE(W1WE), .DirtyIn(DirtyIn),
+  .ByteMask(ActiveByteMask), .RV(W1V), .Dirty(W1D), .RTag(W1Tag), .RD(W1BlockOut));
 
-  // Read the data from the cache immediately
-  assign set = A[blocksize+setbits-1:blocksize];
-  assign word = A[blockoffset+2:2];         // Current word (for writing single words)
-  assign RTag = tag[set];
-  assign RV = v[set];
-  assign RD = {rd3, rd2, rd1, rd0};
-  assign Dirty = DirtyBits[set]; 
+// Way 2
+data_writeback_associative_cache_way #(lines, tagbits, blocksize) way2(
+   .clk(clk), .reset(reset), .WD(CacheWD), .A(ANew), .WE(W2WE), .DirtyIn(DirtyIn),
+   .ByteMask(ActiveByteMask), .RV(W2V), .Dirty(W2D), .RTag(W2Tag), .RD(W2BlockOut));
 
-  // Set write enables for each word memory
-  assign we0 = WE & (A[3:2] == 2'b00);
-  assign we1 = WE & (A[3:2] == 2'b01);
-  assign we2 = WE & (A[3:2] == 2'b10);
-  assign we3 = WE & (A[3:2] == 2'b11);
+// Create the logic for a Hit.
+    assign Tag = ANew[31:31-tagbits+1];
+    assign W1Hit = (W1V & (Tag == W1Tag));
+    assign W2Hit = (W2V & (Tag == W2Tag));
+    assign Hit = W1Hit | W2Hit;
 
-  // Create four word memories
-  // TODO: Replace these with a c style for loop
-  word_memory #(lines) wm0 (.clk(clk), .we(we0), .wd(WD), .set(set), .ByteMask(ByteMask), .rd(rd0));
-  word_memory #(lines) wm1 (.clk(clk), .we(we1), .wd(WD), .set(set), .ByteMask(ByteMask), .rd(rd1));
-  word_memory #(lines) wm2 (.clk(clk), .we(we2), .wd(WD), .set(set), .ByteMask(ByteMask), .rd(rd2));
-  word_memory #(lines) wm3 (.clk(clk), .we(we3), .wd(WD), .set(set), .ByteMask(ByteMask), .rd(rd3));
+// Word selection mux's
+    // Way1 Word select mux
+    mux4 #(32) c1mux
+        (W1BlockOut[31:0],        W1BlockOut[2*32-1:32],
+         W1BlockOut[3*32-1:2*32], W1BlockOut[4*32-1:3*32],
+         CacheRDSel, W1RD);
 
-  // Write to the cache
-  always_ff @(posedge clk, posedge reset)
-    if (reset) begin
-      v         <= 'b0;
-      DirtyBits <= 'b0;
-    end else if (WE) begin
-      tag[set]      <= A[31:31-tagbits+1]; // Write the tag
-      v[set]        <= 1'b1;               // write the valid bit
-      
-      // Clean the block if writing an entire block
-      DirtyBits[set]<= MemWriteM ? 1'b1 : 1'b0;            
-    end
+    // Way1 Word select mux
+    mux4 #(32) c2mux
+       (W2BlockOut[31:0],        W2BlockOut[2*32-1:32],
+        W2BlockOut[3*32-1:2*32], W2BlockOut[4*32-1:3*32],
+        CacheRDSel, W2RD);
+
 endmodule
