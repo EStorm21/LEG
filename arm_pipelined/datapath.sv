@@ -31,7 +31,7 @@ module datapath(input  logic        clk, reset,
                 output logic [31:0] ALUResultE,
                 input  logic        LoadLengthW,
                 input  logic [1:0]  ByteOffsetW,
-                input  logic        WriteByteE,
+                input  logic        WriteByteE, IncrementE,
                 // added for thumb instructions
                 input  logic        TFlagNextE, 
                 output logic        TFlagE);
@@ -40,7 +40,7 @@ module datapath(input  logic        clk, reset,
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
   logic [31:0] ExtImmD, Rd1D, Rd2D, PCPlus8D, RotImmD, DefaultInstrD, uOpInstrD;
   logic        InstrMuxD, SignExtendD, noRotateD;
-  logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ShiftBE;
+  logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ALUSrcB4E, ShiftBE;
   logic [31:0] MultOutputBE, MultOutputAE;
   logic        ShifterCarryOutE;
   logic [31:0] ReadDataRawW, ReadDataW, ALUOutW, ResultW;
@@ -116,9 +116,10 @@ module datapath(input  logic        clk, reset,
   // ---------------------------------------------
 
   mux3 #(32)  byp1mux(Rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);
-  mux4 #(32)  byp2mux(Rd2E, ResultW, ALUOutM, 32'h4, ForwardBE, WriteDataE);
-  mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcBE);
+  mux3 #(32)  byp2mux(Rd2E, ResultW, ALUOutM, ForwardBE, WriteDataE);
+  mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcB4E);
   mux2 #(32)  shifterAin(SrcAE, ExtImmE, RselectE, ShifterAinE); 
+  mux2 #(32)  select4(ALUSrcB4E, 32'h4, IncrementE, ALUSrcBE);
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
 
   //  ------- TODO Put in controller - flag unit ------

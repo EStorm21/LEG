@@ -41,10 +41,10 @@
 #sbc_rs
 #teq_rs
 #tst_rs
-ldr_str_ri
+#ldr_str_ri
 #memrewrite
-rand0
-random1
+#rand0
+#random1
 #mul
 #mla
 #smull
@@ -54,6 +54,7 @@ random1
 random2
 ldr_str_i
 ldr_str_r
-bx
+#bx
 ldm
+stm
 #dhry
