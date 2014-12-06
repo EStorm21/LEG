@@ -51,10 +51,11 @@
 #umull
 #umlal
 #smlal
-#random2
+random2
 #ldr_str_i
 #ldr_str_r
 #bx
-#ldm
+ldm
 stm
+ldrh_strh_i
 #dhry
