@@ -30,7 +30,7 @@ module arm(input  logic        clk, reset,
   logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnable, LoadLengthW;
   logic [3:0]  RegFileRzD;
   // Thumb 
-  logic        BXInstrD, BXInstrE, TFlagNextE, TFlagE;
+  logic        BXInstrD, BXInstrE, TFlagNextE, TFlagE, IncrementE;
 
   controller c(.*);
   datapath dp(.*); 

@@ -56,4 +56,5 @@
 #ldr_str_r
 #bx
 ldm
+stm
 #dhry

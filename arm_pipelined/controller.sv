@@ -107,7 +107,7 @@ module controller(input  logic         clk, reset,
  
   assign MultControlD  = InstrD[23:21];
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~RegFileRzD[2]) | BranchD);
-  assign RselectD      = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 0) | ldrstrRtypeD ;
+  assign RselectD      = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 0) | (ldrstrRtypeD & ~LDMSTMforwardD) ;
   assign RSRselectD    = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 1) & ~(InstrD[27:4] == {8'b0001_0010, 12'hFFF, 4'b0001});
   assign ResultSelectD = {MultSelectD, RSRselectD};
   assign LDRSTRshiftD  = ldrstrRtypeD;
