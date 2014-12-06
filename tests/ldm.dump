@@ -344,6 +344,8 @@ Disassembly of section .text:
  340:	e081100e 	add	r1, r1, lr
  344:	e51fd340 	ldr	sp, [pc, #-832]	; c <val>
  348:	e89d0001 	ldm	sp, {r0}
+ 34c:	e0855005 	add	r5, r5, r5
+ 350:	e99d000c 	ldmib	sp, {r2, r3}
 
-0000034c <end>:
- 34c:	eafffffe 	b	34c <end>
+00000354 <end>:
+ 354:	eafffffe 	b	354 <end>
