@@ -17,7 +17,7 @@ statetype state, nextState;
 
 // --------------------------- ADDED FOR LDM/STM -------------------------------
 // Conditional Unit
-logic CondExD, readyState, Ubit_ADD, LastCycle, WriteBack;
+logic CondExD, readyState, Ubit_ADD, LastCycle, WriteBack, ZeroRegsLeft;
 assign readyState = (state == ready);
 assign WriteBack = 0; // REMOVE THIS LATER
 microps_conditional uOpCond(Flags, defaultInstrD[31:28], CondExD);
@@ -48,6 +48,7 @@ always_comb
   	if(state == ready) numones = $countones(defaultInstrD[15:0]);
   	else numones = $countones(RegistersListNow);
 	LastCycle = (numones == 1);
+	ZeroRegsLeft = (numones == 0);
 	casex(defaultInstrD[24:23])
 	  2'b00: begin 
 	  		 start_imm = ((numones-1)<<2); // <start_add> = Rn + 4 - (#set bits * 4) 
@@ -461,7 +462,22 @@ always_comb
 							1'b0,			// Do not set flags
 							20'b0 			// Add R0 = R0 + 0 (never execute)
 							};
-			  end
+			  end else if (ZeroRegsLeft) begin
+				nextState = ready;
+			  	InstrMuxD = 0;
+			  	doNotUpdateFlagD = 1;
+			  	uOpStallD = 0;
+			  	prevRSRstate = 0;
+			  	regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of RA2D and RA1D
+				LDMSTMforward = 0;
+				uOpInstrD = {defaultInstrD[31:28], 		// Cond: Never execute
+							3'b001,  		// Data processing Instr
+							4'b0100, 		// Add operation
+							1'b0,			// Do not set flags
+							20'b0 			// Add R0 = R0 + 0 (never execute)
+							};
+			end
 			/* If it's the last cycle and NO WRITEBACK
 			 */
 			else if(LastCycle & WriteBack) begin
@@ -549,7 +565,22 @@ always_comb
 							1'b0,			// Do not set flags
 							20'b0 			// Add R0 = R0 + 0 (never execute)
 							};
-			  end
+			end else if (ZeroRegsLeft) begin
+				nextState = ready;
+			  	InstrMuxD = 0;
+			  	doNotUpdateFlagD = 1;
+			  	uOpStallD = 0;
+			  	prevRSRstate = 0;
+			  	regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of RA2D and RA1D
+				LDMSTMforward = 0;
+				uOpInstrD = {defaultInstrD[31:28], 		// Cond: Never execute
+							3'b001,  		// Data processing Instr
+							4'b0100, 		// Add operation
+							1'b0,			// Do not set flags
+							20'b0 			// Add R0 = R0 + 0 (never execute)
+							};
+			end
 			/* If it's the last cycle and NO WRITEBACK
 			 */
 			else if(LastCycle & WriteBack) begin
