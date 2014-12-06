@@ -186,45 +186,46 @@ next32: str R1, [sp, #-68]
 
 	stmia r13, {r0-r14}
 	add r1, r1, r1
-	# add r1, r1, r2
-	# sub r0, r0, r0
-	# add r2, r0, #2
-	# mul r3, r3, r2
-	# add r1, r1, r3
-	# add r2, r0, #3
-	# mul r4, r4, r2
-	# add r1, r1, r4
-	# add r2, r0, #4
-	# mul r5, r5, r2
-	# add r1, r1, r5
-	# add r2, r0, #5
-	# mul r6, r6, r2
-	# add r1, r1, r6
-	# add r2, r0, #6
-	# mul r7, r7, r2
-	# add r1, r1, r7
-	# add r2, r0, #7
-	# mul r8, r8, r2
-	# add r1, r1, r8
-	# add r2, r0, #8
-	# mul r9, r9, r2
-	# add r1, r1, r9
-	# add r2, r0, #9
-	# mul r10, r10, r2
-	# add r1, r1, r10
-	# add r2, r0, #10
-	# mul r11, r11, r2
-	# add r1, r1, r11
-	# add r2, r0, #11
-	# mul r12, r12, r2
-	# add r1, r1, r12
-	# add r2, r0, #12
-	# mul r13, r13, r2
-	# add r1, r1, r13
-	# add r2, r0, #13
-	# mul r14, r14, r2
-	# add r1, r1, r14
-	# ldmia r13, {r0}
+	add r1, r1, r2
+	sub r0, r0, r0
+	add r2, r0, #2
+	mul r3, r3, r2
+	add r1, r1, r3
+	add r2, r0, #3
+	mul r4, r4, r2
+	add r1, r1, r4
+	add r2, r0, #4
+	mul r5, r5, r2
+	add r1, r1, r5
+	add r2, r0, #5
+	mul r6, r6, r2
+	add r1, r1, r6
+	add r2, r0, #6
+	mul r7, r7, r2
+	add r1, r1, r7
+	add r2, r0, #7
+	mul r8, r8, r2
+	add r1, r1, r8
+	add r2, r0, #8
+	mul r9, r9, r2
+	add r1, r1, r9
+	add r2, r0, #9
+	mul r10, r10, r2
+	add r1, r1, r10
+	add r2, r0, #10
+	mul r11, r11, r2
+	add r1, r1, r11
+	add r2, r0, #11
+	mul r12, r12, r2
+	add r1, r1, r12
+	add r2, r0, #12
+	mul r13, r13, r2
+	add r1, r1, r13
+	add r2, r0, #13
+	mul r14, r14, r2
+	add r1, r1, r14
+	ldr sp, val
+	ldmia r13, {r0}
 	# ldmib r13, {r2-r3}
 
 
