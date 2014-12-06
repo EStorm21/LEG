@@ -226,7 +226,8 @@ next32: str R1, [sp, #-68]
 	add r1, r1, r14
 	ldr sp, val
 	ldmia r13, {r0}
-	# ldmib r13, {r2-r3}
+	add r5, r5, r5
+	ldmib r13, {r2-r3}
 
 
 	end:    b end
