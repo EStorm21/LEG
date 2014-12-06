@@ -567,7 +567,7 @@ always_comb
 							};
 			end else if (ZeroRegsLeft) begin
 				nextState = ready;
-			  	InstrMuxD = 0;
+			  	InstrMuxD = 1;
 			  	doNotUpdateFlagD = 1;
 			  	uOpStallD = 0;
 			  	prevRSRstate = 0;

@@ -305,6 +305,131 @@ Disassembly of section .text:
  2a4:	e00a029a 	mul	sl, sl, r2
  2a8:	e081100a 	add	r1, r1, sl
  2ac:	091d0710 	ldmdbeq	sp, {r4, r8, r9, sl}
+ 2b0:	e0811001 	add	r1, r1, r1
+ 2b4:	e0811002 	add	r1, r1, r2
+ 2b8:	e0400000 	sub	r0, r0, r0
+ 2bc:	e2802002 	add	r2, r0, #2
+ 2c0:	e0030293 	mul	r3, r3, r2
+ 2c4:	e0811003 	add	r1, r1, r3
+ 2c8:	e2802003 	add	r2, r0, #3
+ 2cc:	e0040294 	mul	r4, r4, r2
+ 2d0:	e0811004 	add	r1, r1, r4
+ 2d4:	e2802004 	add	r2, r0, #4
+ 2d8:	e0050295 	mul	r5, r5, r2
+ 2dc:	e0811005 	add	r1, r1, r5
+ 2e0:	e2802005 	add	r2, r0, #5
+ 2e4:	e0060296 	mul	r6, r6, r2
+ 2e8:	e0811006 	add	r1, r1, r6
+ 2ec:	e2802006 	add	r2, r0, #6
+ 2f0:	e0070297 	mul	r7, r7, r2
+ 2f4:	e0811007 	add	r1, r1, r7
+ 2f8:	e2802007 	add	r2, r0, #7
+ 2fc:	e0080298 	mul	r8, r8, r2
+ 300:	e0811008 	add	r1, r1, r8
+ 304:	e2802008 	add	r2, r0, #8
+ 308:	e0090299 	mul	r9, r9, r2
+ 30c:	e0811009 	add	r1, r1, r9
+ 310:	e2802009 	add	r2, r0, #9
+ 314:	e00a029a 	mul	sl, sl, r2
+ 318:	e081100a 	add	r1, r1, sl
+ 31c:	e280200a 	add	r2, r0, #10
+ 320:	e00b029b 	mul	fp, fp, r2
+ 324:	e081100b 	add	r1, r1, fp
+ 328:	e280200b 	add	r2, r0, #11
+ 32c:	e00c029c 	mul	ip, ip, r2
+ 330:	e081100c 	add	r1, r1, ip
+ 334:	e280200c 	add	r2, r0, #12
+ 338:	e00d029d 	mul	sp, sp, r2
+ 33c:	e081100d 	add	r1, r1, sp
+ 340:	e280200d 	add	r2, r0, #13
+ 344:	e00e029e 	mul	lr, lr, r2
+ 348:	e081100e 	add	r1, r1, lr
+ 34c:	e51fd348 	ldr	sp, [pc, #-840]	; c <val>
+ 350:	e98d7fff 	stmib	sp, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, sp, lr}
+ 354:	e0811001 	add	r1, r1, r1
+ 358:	e0811002 	add	r1, r1, r2
+ 35c:	e0400000 	sub	r0, r0, r0
+ 360:	e2802002 	add	r2, r0, #2
+ 364:	e0030293 	mul	r3, r3, r2
+ 368:	e0811003 	add	r1, r1, r3
+ 36c:	e2802003 	add	r2, r0, #3
+ 370:	e0040294 	mul	r4, r4, r2
+ 374:	e0811004 	add	r1, r1, r4
+ 378:	e2802004 	add	r2, r0, #4
+ 37c:	e0050295 	mul	r5, r5, r2
+ 380:	e0811005 	add	r1, r1, r5
+ 384:	e2802005 	add	r2, r0, #5
+ 388:	e0060296 	mul	r6, r6, r2
+ 38c:	e0811006 	add	r1, r1, r6
+ 390:	e2802006 	add	r2, r0, #6
+ 394:	e0070297 	mul	r7, r7, r2
+ 398:	e0811007 	add	r1, r1, r7
+ 39c:	e2802007 	add	r2, r0, #7
+ 3a0:	e0080298 	mul	r8, r8, r2
+ 3a4:	e0811008 	add	r1, r1, r8
+ 3a8:	e2802008 	add	r2, r0, #8
+ 3ac:	e0090299 	mul	r9, r9, r2
+ 3b0:	e0811009 	add	r1, r1, r9
+ 3b4:	e2802009 	add	r2, r0, #9
+ 3b8:	e00a029a 	mul	sl, sl, r2
+ 3bc:	e081100a 	add	r1, r1, sl
+ 3c0:	e280200a 	add	r2, r0, #10
+ 3c4:	e00b029b 	mul	fp, fp, r2
+ 3c8:	e081100b 	add	r1, r1, fp
+ 3cc:	e280200b 	add	r2, r0, #11
+ 3d0:	e00c029c 	mul	ip, ip, r2
+ 3d4:	e081100c 	add	r1, r1, ip
+ 3d8:	e280200c 	add	r2, r0, #12
+ 3dc:	e00d029d 	mul	sp, sp, r2
+ 3e0:	e081100d 	add	r1, r1, sp
+ 3e4:	e280200d 	add	r2, r0, #13
+ 3e8:	e00e029e 	mul	lr, lr, r2
+ 3ec:	e081100e 	add	r1, r1, lr
+ 3f0:	e51fd3ec 	ldr	sp, [pc, #-1004]	; c <val>
+ 3f4:	e99d7fff 	ldmib	sp, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, sp, lr}
+ 3f8:	e0811001 	add	r1, r1, r1
+ 3fc:	e0811002 	add	r1, r1, r2
+ 400:	e0400000 	sub	r0, r0, r0
+ 404:	e2802002 	add	r2, r0, #2
+ 408:	e0030293 	mul	r3, r3, r2
+ 40c:	e0811003 	add	r1, r1, r3
+ 410:	e2802003 	add	r2, r0, #3
+ 414:	e0040294 	mul	r4, r4, r2
+ 418:	e0811004 	add	r1, r1, r4
+ 41c:	e2802004 	add	r2, r0, #4
+ 420:	e0050295 	mul	r5, r5, r2
+ 424:	e0811005 	add	r1, r1, r5
+ 428:	e2802005 	add	r2, r0, #5
+ 42c:	e0060296 	mul	r6, r6, r2
+ 430:	e0811006 	add	r1, r1, r6
+ 434:	e2802006 	add	r2, r0, #6
+ 438:	e0070297 	mul	r7, r7, r2
+ 43c:	e0811007 	add	r1, r1, r7
+ 440:	e2802007 	add	r2, r0, #7
+ 444:	e0080298 	mul	r8, r8, r2
+ 448:	e0811008 	add	r1, r1, r8
+ 44c:	e2802008 	add	r2, r0, #8
+ 450:	e0090299 	mul	r9, r9, r2
+ 454:	e0811009 	add	r1, r1, r9
+ 458:	e2802009 	add	r2, r0, #9
+ 45c:	e00a029a 	mul	sl, sl, r2
+ 460:	e081100a 	add	r1, r1, sl
+ 464:	e280200a 	add	r2, r0, #10
+ 468:	e00b029b 	mul	fp, fp, r2
+ 46c:	e081100b 	add	r1, r1, fp
+ 470:	e280200b 	add	r2, r0, #11
+ 474:	e00c029c 	mul	ip, ip, r2
+ 478:	e081100c 	add	r1, r1, ip
+ 47c:	e280200c 	add	r2, r0, #12
+ 480:	e00d029d 	mul	sp, sp, r2
+ 484:	e081100d 	add	r1, r1, sp
+ 488:	e280200d 	add	r2, r0, #13
+ 48c:	e00e029e 	mul	lr, lr, r2
+ 490:	e081100e 	add	r1, r1, lr
+ 494:	e51fd490 	ldr	sp, [pc, #-1168]	; c <val>
+ 498:	e80d0002 	stmda	sp, {r1}
+ 49c:	e0811001 	add	r1, r1, r1
+ 4a0:	e81d0002 	ldmda	sp, {r1}
 
-000002b0 <end>:
- 2b0:	eafffffe 	b	2b0 <end>
+000004a4 <end>:
+ 4a4:	eafffffe 	b	4a4 <end>
