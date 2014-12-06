@@ -248,7 +248,7 @@ Disassembly of section .text:
 
 000001c8 <next32>:
  1c8:	e50d1044 	str	r1, [sp, #-68]	; 0x44
- 1cc:	e81d7fff 	ldmda	sp, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, sp, lr} ; 13333ps
+ 1cc:	e81d7fff 	ldmda	sp, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, sp, lr}
  1d0:	e0811001 	add	r1, r1, r1
  1d4:	e0811002 	add	r1, r1, r2
  1d8:	e0400000 	sub	r0, r0, r0
@@ -302,6 +302,8 @@ Disassembly of section .text:
  298:	e2802011 	add	r2, r0, #17
  29c:	e00a029a 	mul	sl, sl, r2
  2a0:	e081100a 	add	r1, r1, sl
+ 2a4:	e88d7fff 	stm	sp, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, sp, lr}
+ 2a8:	e0811001 	add	r1, r1, r1
 
-000002a4 <end>:
- 2a4:	eafffffe 	b	2a4 <end>
+000002ac <end>:
+ 2ac:	eafffffe 	b	2ac <end>
