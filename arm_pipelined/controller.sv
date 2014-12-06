@@ -48,10 +48,11 @@ module controller(input  logic         clk, reset,
   logic [1:0]  ResultSelectD;
   logic [6:4]  ShiftOpCode_D;
   logic [11:0] StateRegisterDataE;
-  logic        LoadLengthE, LoadLengthM;
+  logic        LoadLengthE, LoadLengthM, LdrStr_Halfword;
   logic [1:0]  ByteOffsetE, ByteOffsetM;
  
   assign ShiftOpCode_D = InstrD[6:4];
+
 
   // ====================================================================================
   // =============================== Decode Stage =======================================
@@ -63,10 +64,10 @@ module controller(input  logic         clk, reset,
   	         else begin   // (~InstrD[25])      
                 if (InstrD[7:4] == 4'b1001)       ControlsD = 13'b00_00_0010_01100; // Multiply                    0x13
                              
-                else if (InstrD[22] & InstrD[20] & InstrD[7] & InstrD[4])   ControlsD = 13'b00_01_1110_00010;  // LDH I-type
-                else if (~InstrD[22] & InstrD[20] & InstrD[7] & InstrD[4])  ControlsD = 13'b00_01_0110_00010;  // LDH R-type
-                else if (InstrD[22] & ~InstrD[20] & InstrD[7] & InstrD[4])  ControlsD = 13'b10_01_1001_00010;  // STH I-type
-                else if (~InstrD[22] & ~InstrD[20] & InstrD[7] & InstrD[4]) ControlsD = 13'b10_01_0001_00010;  // STH R-type
+                else if (InstrD[22] & InstrD[20] & InstrD[7] & InstrD[4])   ControlsD = 13'b00_11_1110_00010;  // LDH I-type
+                else if (~InstrD[22] & InstrD[20] & InstrD[7] & InstrD[4])  ControlsD = 13'b00_11_0110_00010;  // LDH R-type
+                else if (InstrD[22] & ~InstrD[20] & InstrD[7] & InstrD[4])  ControlsD = 13'b10_11_1001_00010;  // STH I-type
+                else if (~InstrD[22] & ~InstrD[20] & InstrD[7] & InstrD[4]) ControlsD = 13'b10_11_0001_00010;  // STH R-type
 
                 else begin
                      if ((InstrD[24:21] == 4'b1001) & (InstrD[15:12] == 4'b1111))
@@ -88,7 +89,7 @@ module controller(input  logic         clk, reset,
   assign {RegSrcD, ImmSrcD,     // 2 bits each
           ALUSrcD, MemtoRegD, RegWriteD, MemWriteD, 
           BranchD, ALUOpD, MultSelectD, ldrstrALUopD, BXInstrD} = ControlsD; 
-
+  assign LdrStr_Halfword = (InstrD[27:25] == 3'b000 & InstrD[7] & InstrD[4] & InstrD[6:5] != 2'b00);
   
    always_comb
      if (ALUOpD) begin                     // which Data-processing Instr?
@@ -96,10 +97,10 @@ module controller(input  logic         clk, reset,
       FlagWriteD[1:0]   = {InstrD[20], InstrD[20]};       // update flags if S bit is set
 
     // LOAD STORE LOGIC
-    end else if ((InstrD[27:26] == 2'b01) & InstrD[23]) begin// Load Store (Rn + 12 bit offset)
+    end else if ((InstrD[27:26] == 2'b01 | LdrStr_Halfword) & InstrD[23]) begin// Load/Store (Rn + 12 bit offset)
       ALUControlD     = 4'b0100;  // "Add" operation
       FlagWriteD[1:0] = 2'b00;
-    end else if ((InstrD[27:26] == 2'b01) & ~InstrD[23]) begin // Load/Store (Rn - 12 bit offset)
+    end else if ((InstrD[27:26] == 2'b01 | LdrStr_Halfword) & ~InstrD[23]) begin // Load/Store (Rn - 12 bit offset)
       ALUControlD     = 4'b0010;  // "Subtract" operation
       FlagWriteD[1:0] = 2'b00;
     end else begin                    

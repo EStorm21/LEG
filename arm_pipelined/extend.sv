@@ -11,6 +11,7 @@ module extend(input  logic [23:0] Instr,
       2'b01:   if (SignExtend) ExtImm = {{20{Instr[11]}}, Instr[11:0]};
              else ExtImm = {20'b0, Instr[11:0]}; // 12-bit unsigned immediate for LDR and STR
       2'b10:   ExtImm = {{6{Instr[23]}}, Instr[23:0], 2'b00}; // Branch
+      2'b11:   ExtImm = {20'b0, 4'b0, Instr[11:8], Instr[3:0]};
       default: ExtImm = 32'bx; // undefined
     endcase             
 endmodule

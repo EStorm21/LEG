@@ -454,7 +454,7 @@ always_comb
 			  	uOpStallD = 0;
 			  	prevRSRstate = 0;
 			  	regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of RA2D and RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
 				LDMSTMforward = 0;
 				uOpInstrD = {defaultInstrD[31:28], 		// Cond: Never execute
 							3'b001,  		// Data processing Instr
@@ -469,7 +469,7 @@ always_comb
 			  	uOpStallD = 0;
 			  	prevRSRstate = 0;
 			  	regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of RA2D and RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
 				LDMSTMforward = 0;
 				uOpInstrD = {defaultInstrD[31:28], 		// Cond: Never execute
 							3'b001,  		// Data processing Instr
@@ -497,7 +497,7 @@ always_comb
 							1'b0,					// B-bit (choose word addressing, not byte addressing)
 							1'b1,					// W-bit (Base register should NOT be updated)
 							defaultInstrD[20], 		// Differentiate between Load and Store | L = 1 for loads
-							4'b1111,	// Still read from the same Rn
+							4'b1111,				// Still read from the same Rn
 							Rd,						// 4 bit calculated register file to which the Load will be written back to
 							8'b0, 4'b1111			// 0 shift, ignore last 4 bits since we are pulling "4" anyways.
 							};
