@@ -449,7 +449,7 @@ always_comb
 			if(~CondExD) // If it fails conditional execution, flush Execute stage
 			  begin
 			  	nextState = ready;
-			  	InstrMuxD = 0;
+			  	InstrMuxD = 1;
 			  	doNotUpdateFlagD = 1;
 			  	uOpStallD = 0;
 			  	prevRSRstate = 0;
@@ -464,7 +464,7 @@ always_comb
 							};
 			  end else if (ZeroRegsLeft) begin
 				nextState = ready;
-			  	InstrMuxD = 0;
+			  	InstrMuxD = 1;
 			  	doNotUpdateFlagD = 1;
 			  	uOpStallD = 0;
 			  	prevRSRstate = 0;
@@ -488,7 +488,7 @@ always_comb
 				uOpStallD = 1;
 				prevRSRstate = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of RA2D and RA1D
+								3'b000}; //5th bit of WA3, RA2D and RA1D
 				LDMSTMforward = 1;
 				uOpInstrD = {defaultInstrD[31:28],
 							3'b010, 			   // Store SINGLE as I-type
@@ -508,7 +508,7 @@ always_comb
 				uOpStallD = 0;
 				prevRSRstate = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of RA2D and RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
 				LDMSTMforward = 1;
 				uOpInstrD = {defaultInstrD[31:28],
 							3'b010, 			   // Store SINGLE as I-type
@@ -528,7 +528,7 @@ always_comb
 				uOpStallD = 1;
 				prevRSRstate = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of RA2D and RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
 				LDMSTMforward = 1;
 				uOpInstrD = {defaultInstrD[31:28],
 							3'b010, 			   // Store SINGLE as I-type
@@ -552,12 +552,12 @@ always_comb
 			if(~CondExD) // If it fails conditional execution, flush Execute stage
 			  begin
 			  	nextState = ready;
-			  	InstrMuxD = 0;
+			  	InstrMuxD = 1;
 			  	doNotUpdateFlagD = 1;
 			  	uOpStallD = 0;
 			  	prevRSRstate = 0;
 			  	regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of RA2D and RA1D
+								3'b000}; //5th bit of WA3, RA2D and RA1D
 				LDMSTMforward = 0;
 				uOpInstrD = {defaultInstrD[31:28], 		// Cond: Never execute
 							3'b001,  		// Data processing Instr
@@ -567,14 +567,14 @@ always_comb
 							};
 			end else if (ZeroRegsLeft) begin
 				nextState = ready;
-			  	InstrMuxD = 0;
+			  	InstrMuxD = 1;
 			  	doNotUpdateFlagD = 1;
 			  	uOpStallD = 0;
 			  	prevRSRstate = 0;
 			  	regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of RA2D and RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
 				LDMSTMforward = 0;
-				uOpInstrD = {defaultInstrD[31:28], 		// Cond: Never execute
+				uOpInstrD = {defaultInstrD[31:28], 		
 							3'b001,  		// Data processing Instr
 							4'b0100, 		// Add operation
 							1'b0,			// Do not set flags
@@ -591,7 +591,7 @@ always_comb
 				uOpStallD = 1;
 				prevRSRstate = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of RA2D and RA1D
+								3'b001}; // 5th bit of WA3, RA2D and RA1D
 				LDMSTMforward = 1;
 				uOpInstrD = {defaultInstrD[31:28],
 							3'b011, 			   // Load SINGLE as R-type
@@ -611,7 +611,7 @@ always_comb
 				uOpStallD = 0;
 				prevRSRstate = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of RA2D and RA1D
+								3'b001}; // 5th bit of WA3, RA2D and RA1D
 				LDMSTMforward = 1;
 				uOpInstrD = {defaultInstrD[31:28],
 							3'b011, 			   // Load SINGLE as R-type
@@ -631,7 +631,7 @@ always_comb
 				uOpStallD = 1;
 				prevRSRstate = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of RA2D and RA1D
+								3'b001}; //5th bit of WA3, RA2D and RA1D
 				LDMSTMforward = 1;
 				uOpInstrD = {defaultInstrD[31:28],
 							3'b011, 			   // Load SINGLE as R-type
