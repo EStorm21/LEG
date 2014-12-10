@@ -43,8 +43,8 @@
 #tst_rs
 #ldr_str_ri
 #memrewrite
-#rand0
-#random1
+rand0
+random1
 #mul
 #mla
 #smull
@@ -52,8 +52,8 @@
 #umlal
 #smlal
 random2
-#ldr_str_i
-#ldr_str_r
+ldr_str_i
+ldr_str_r
 #bx
 #ldm
 #stm

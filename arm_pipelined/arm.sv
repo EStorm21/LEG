@@ -15,7 +15,7 @@ module arm(input  logic        clk, reset,
   logic [3:0]  FlagsE;
   logic [6:4]  ShiftOpCode_E;
   logic [31:0] InstrD, InstrE, ALUResultE;
-  logic        RegWriteM, MemtoRegE, PCWrPendingF, WriteByteE;
+  logic        RegWriteM, MemtoRegE, PCWrPendingF, WriteByteE, WriteHalfwordE, WriteHalfwordW, HalfwordOffsetW;
   logic [1:0]  ForwardAE, ForwardBE;
   logic        StallF, StallD, FlushD, StallE, FlushE, StallM, FlushW, StallW;
   logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E;

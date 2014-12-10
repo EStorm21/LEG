@@ -19,7 +19,7 @@ statetype state, nextState;
 // Conditional Unit
 logic CondExD, readyState, Ubit_ADD, LastCycle, WriteBack, ZeroRegsLeft;
 assign readyState = (state == ready);
-assign WriteBack = 0; // REMOVE THIS LATER
+assign WriteBack = defaultInstrD[22]; 
 microps_conditional uOpCond(Flags, defaultInstrD[31:28], CondExD);
 // Count ones for LDM/STM
 logic [4:0] numones;
