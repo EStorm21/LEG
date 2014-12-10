@@ -49,15 +49,11 @@ next12: ldr R14, val14
 b next14
 val14: .word 3273968024
 next14:
-    b continue
-link:     add r3, r0, #5
-          add r2, r0, r0
-          b brexl
-continue: add r1, r0, #1
-          ldr r2, =link
-          bx r2
-          add r3, r0, #12
-brexl:    ldr r4, =end
-          blx r4
+		ldr r1, =thumb1
+#		mov r1, r1, lsr #1
+		add r1, r1, #1
+		bx r1
 
-end:	b end				@ stay at end
+.thumb
+thumb1: and r1, r2
+end: b end

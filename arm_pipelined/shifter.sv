@@ -6,7 +6,13 @@ module shifter(input  logic [31:0] a,
               input logic [6:4] shiftOpCode_E,
               output logic      shifterCarryOutE);
  
-
+ /***** Brief Description *******
+ *
+ * 32-BIT DATAPATH EXECUTE STAGE
+ * Shifter is used to execute all various types of shifts for R type,
+ * RSR type and load/store shift immediate types. 
+ *
+ ******************************/
 // [6:5] is the shift bit 
 reg[63:0] temp;
 

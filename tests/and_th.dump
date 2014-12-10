@@ -1,5 +1,5 @@
 
-bx_gcc.o:     file format elf32-littlearm
+and_th_gcc.o:     file format elf32-littlearm
 
 
 Disassembly of section .text:
@@ -104,24 +104,13 @@ Disassembly of section .text:
   a8:	c324c998 	.word	0xc324c998
 
 000000ac <next14>:
-  ac:	ea000002 	b	bc <continue>
+  ac:	e59f1008 	ldr	r1, [pc, #8]	; bc <end+0x2>
+  b0:	e2811001 	add	r1, r1, #1
+  b4:	e12fff11 	bx	r1
 
-000000b0 <link>:
-  b0:	e2803005 	add	r3, r0, #5
-  b4:	e0802000 	add	r2, r0, r0
-  b8:	ea000003 	b	cc <brexl>
+000000b8 <thumb1>:
+  b8:	4011      	ands	r1, r2
 
-000000bc <continue>:
-  bc:	e2801001 	add	r1, r0, #1
-  c0:	e59f2010 	ldr	r2, [pc, #16]	; d8 <end+0x4>
-  c4:	e12fff12 	bx	r2
-  c8:	e280300c 	add	r3, r0, #12
-
-000000cc <brexl>:
-  cc:	e59f4008 	ldr	r4, [pc, #8]	; dc <end+0x8>
-  d0:	e12fff34 	blx	r4
-
-000000d4 <end>:
-  d4:	eafffffe 	b	d4 <end>
-  d8:	000000b0 	.word	0x000000b0
-  dc:	000000d4 	.word	0x000000d4
+000000ba <end>:
+  ba:	e7fe      	b.n	ba <end>
+  bc:	000000b8 	.word	0x000000b8

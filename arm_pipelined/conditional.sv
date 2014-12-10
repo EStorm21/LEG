@@ -4,7 +4,14 @@ module conditional(input  logic [3:0] Cond,
                    input  logic [1:0] FlagsWrite,
                    output logic       CondEx,
                    output logic [3:0] FlagsNext);
-  
+
+/***** Brief Description *******
+ *
+ * CONTROLLER EXECUTE STAGE
+ * Conditional is to check for conditional execution for instructions and whether flags should
+ * be updated or not. 
+ *
+ ******************************/
   logic neg, zero, carry, overflow, ge;
   
   assign {neg, zero, carry, overflow} = Flags;

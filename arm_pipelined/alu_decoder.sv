@@ -5,6 +5,13 @@ module alu_decoder(input  logic       ALUOpE,
            output   logic [2:0] ALUOperation, CVUpdate,
            output   logic     InvertB, ReverseInputs, ALUCarry, DoNotWriteReg);
 
+ /***** Brief Description *******
+ *
+ * CONTROLLER EXECUTE STAGE
+ * ALU_Decoder is used to generate all necessary controls for the ALU to operate. 
+ * Which flags to update are also handled by ALU_Decoder
+ *
+ ******************************/
   assign ReverseInputs = (ALUOpE & (ALUControlE[24:21] == 4'b0011 | //RSB
                           ALUControlE[24:21] == 4'b0111)); //RSC
  

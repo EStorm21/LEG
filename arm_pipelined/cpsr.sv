@@ -7,6 +7,13 @@ module cpsr(input  logic        clk, reset,
               input logic       Enable, readSR, writeSR,
               output logic [11:0] SRdata);
 
+ /***** Brief Description *******
+ *
+ * CONTROLLER EXECUTE STAGE
+ * CPSR stores all the processor's current flags and processor mode. 
+ *
+ ******************************/
+
   // CPSR: 3'b000
   // SPSR: SVC(0), Abort(1), Undef(2), IRQ(3), FIQ(4) ; 
   logic FastInterrupt, Interrupt, Undefined, PrefetchAbort, DataAbort, SoftwareInterrupt;
