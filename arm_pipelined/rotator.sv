@@ -3,9 +3,13 @@ module rotator(input  logic [31:0] ExtImmD,
               output logic [31:0] RotImm,
               input logic		noRotateD);
  
-/* Here's a potential nicer rotator
- * This rotator is needed because it does the I-type data processing instructions
- */
+ /***** Brief Description *******
+ *
+ * 32-BIT DATAPATH DECODE STAGE
+ * Rotator is used for Data-processing I-type instructions which require an
+ * immediate rotated by another rotate_immediate. 
+ *
+ ******************************/
 reg[63:0] temp;
 logic [4:0] shiftamt;
 assign shiftamt = (InstrD[11:8] << 1);
