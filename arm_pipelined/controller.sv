@@ -152,11 +152,11 @@ module controller(input  logic         clk, reset,
    * These bits select which bit of memory to mask for Load/Store Byte, Word and Halfword operations
    *************/
   assign ByteOrWordE = (InstrE[27:26] == 2'b01 & InstrE[22]);
-  assign HalfwordE = (LdrStr_HalfwordE & InstrD[5]);
+  assign HalfwordE = (LdrStr_HalfwordE & InstrE[5]);
   assign ByteOffsetE = ALUResultE[1:0];
   assign HalfwordOffsetE = (LdrStr_HalfwordE & ALUResultE[1]);
   assign WriteByteE  = (InstrE[27:26] == 2'b01) & InstrE[22] & ~InstrE[20];
-  assign WriteHalfwordE = (LdrStr_HalfwordE & InstrE[20]);
+  assign WriteHalfwordE = (LdrStr_HalfwordE);
   memory_mask MemMask(ByteOrWordE, HalfwordE, HalfwordOffsetE, ALUResultE[1:0], ByteMaskE);
 
 

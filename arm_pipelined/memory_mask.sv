@@ -16,4 +16,4 @@ module memory_mask (input  logic       ByteOrWord, //byte or word
   mux2 #(4) BoWSelect(4'b1111, ByteMask, ByteOrWord, ByteorWordMask);					// Choose between byte or word mask
   mux2 #(4) halfSelect(4'b0011, 4'b1100, HalfwordOffset, HalfwordMask);					// Get halfword mask
   mux2 #(4) finalSelect(ByteorWordMask, HalfwordMask, Halfword, FinalByteMask);			// Get Final mask: Either Byte, Word or Halfword.
-endmodule
+endmodule	

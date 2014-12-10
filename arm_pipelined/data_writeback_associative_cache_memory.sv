@@ -2,15 +2,28 @@ module data_writeback_associative_cache_memory #(parameter lines = 65536, parame
                            parameter blocksize = 4)
                     (input logic clk, reset, W1WE, W2WE, DirtyIn,
                      input logic [31:0] CacheWD,
-                     input logic [31:0] ANew, // TODO: Make a capitalized
+                     input logic [31:0] ANew,
                      input logic [3:0]  ActiveByteMask,
                      input logic [1:0]  CacheRDSel,
-                     output logic W1V, W2V, W1D, W2D, W1Hit, W2Hit, Hit,
+                     output logic W1V, W2V, W1D, W2D, W1Hit, W2Hit, CurrLRU,
                      output logic [tagbits-1:0] W1Tag, W2Tag,
                      output logic [31:0] W1RD, W2RD);
 
+parameter setbits = $clog2(lines);
+
 logic [tagbits-1:0] Tag;
 logic [blocksize*32-1:0] W1BlockOut, W2BlockOut;
+logic [lines-1:0] LRU;     // LRU Table
+
+// Create LRU Table
+assign set = ANew[blocksize+setbits-1:blocksize];  // ANew only modifies the block offset
+always_ff @(posedge clk, posedge reset)
+    if(reset) begin
+        LRU <= 'b0;
+    end else if (W1WE | W2WE) begin
+        LRU[set] <= W2WE;
+    end
+assign CurrLRU = LRU[set]; // Send the current LRU bit to the output
 
 // Way 1
 data_writeback_associative_cache_way #(lines, tagbits, blocksize) way1(
