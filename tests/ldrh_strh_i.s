@@ -67,7 +67,7 @@ ldrh r4, [sp, #130]
 
 #r type
 sub r14, r14, r14
-add r14, r14, #6
+add r14, r14, #4
 str r6, [sp, r14]
 str r6, [sp, -r14]
 ldrh r12, [sp, -r14]
