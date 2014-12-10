@@ -27,7 +27,7 @@ module controller(input  logic         clk, reset,
                   output logic [3:0]   ByteMaskM,
                   output logic         LoadLengthW,
                   output logic [1:0]   ByteOffsetW,
-                  output logic         WriteByteE,
+                  output logic         WriteByteE, WriteHalfwordE, WriteHalfwordW,
                   // For BX instruction
                   output logic         BXInstrD, TFlagNextE,
                   input  logic         TFlagE);
@@ -39,7 +39,7 @@ module controller(input  logic         clk, reset,
   logic        ALUSrcD, MemtoRegD;
   logic        RegWriteD, RegWriteE, RegWriteGatedE;
   logic        MemWriteD, MemWriteE, MemWriteGatedE;
-  logic        BranchD, BranchE;
+  logic        BranchD, BranchE, HalfwordOffsetE;
   logic        TFlag;
   logic [1:0]  FlagWriteD, FlagWriteE;
   logic        PCSrcD, PCSrcE, PCSrcM;
@@ -48,7 +48,7 @@ module controller(input  logic         clk, reset,
   logic [1:0]  ResultSelectD;
   logic [6:4]  ShiftOpCode_D;
   logic [11:0] StateRegisterDataE;
-  logic        LoadLengthE, LoadLengthM, LdrStr_Halfword;
+  logic        ByteOrWordE, ByteOrWordM, LdrStr_Halfword, HalfwordE, WriteHalfwordM;
   logic [1:0]  ByteOffsetE, ByteOffsetM;
  
   assign ShiftOpCode_D = InstrD[6:4];
@@ -89,7 +89,7 @@ module controller(input  logic         clk, reset,
   assign {RegSrcD, ImmSrcD,     // 2 bits each
           ALUSrcD, MemtoRegD, RegWriteD, MemWriteD, 
           BranchD, ALUOpD, MultSelectD, ldrstrALUopD, BXInstrD} = ControlsD; 
-  assign LdrStr_Halfword = (InstrD[27:25] == 3'b000 & InstrD[7] & InstrD[4] & InstrD[6:5] != 2'b00);
+  assign LdrStr_Halfword = (InstrD[27:25] == 3'b000 & InstrD[7] & InstrD[4] & ~(InstrD[6:5] == 2'b00));
   
    always_comb
      if (ALUOpD) begin                     // which Data-processing Instr?
@@ -143,16 +143,18 @@ module controller(input  logic         clk, reset,
   assign  PreviousFlagsE = StateRegisterDataE[11:8];
   assign  PreviousTFlagE = StateRegisterDataE[5];
   flopenrc  #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, ShiftOpCode_D[6:4],ShiftOpCode_E[6:4]);
-  //flopenr  #(4) flagsregE(clk, reset, ~StallE, FlagsNextE, PreviousFlagsE);
-  // write and Branch controls are conditional
   conditional Cond(CondE, PreviousFlagsE, FlagsE, FlagWriteE, CondExE, FlagsNextE);
 
-  assign LoadLengthE = InstrE[22];
+  /*** BRIEF ***
+   * These bits select which bit of memory to mask for LDR, LDRB, LDRH (Word, Byte and Halfword)
+   *************/
+  assign ByteOrWordE = (InstrE[27:26] == 2'b01 & InstrE[22]);
+  assign HalfwordE = (LdrStr_Halfword & InstrD[5]);
   assign ByteOffsetE = ALUResultE[1:0];
+  assign HalfwordOffsetE = ALUResultE[1];
   assign WriteByteE  = (InstrE[27:26] == 2'b01) & InstrE[22] & ~InstrE[20];
-  memory_mask MemMask(LoadLengthE, ALUResultE[1:0], ByteMaskE);
-  // assign ByteMaskE = 4'b1111;
-
+  assign WriteHalfwordE = (LdrStr_Halfword & ~InstrE[20]);
+  memory_mask MemMask(ByteOrWordE, HalfwordE, HalfwordOffsetE, ALUResultE[1:0], ByteMaskE);
 
   assign BranchTakenE    = BranchE & CondExE;
   assign RegWritepreMuxE = RegWriteE & CondExE;
@@ -165,16 +167,16 @@ module controller(input  logic         clk, reset,
   // ====================================================================================
   // =============================== Memory Stage =======================================
   // ====================================================================================
-  flopenr #(11) regsM(clk, reset, ~StallM,
-                   {MemWriteGatedE, MemtoRegE, RegWriteGatedE, PCSrcGatedE, ByteMaskE, LoadLengthE, ByteOffsetE},
-                   {MemWriteM, MemtoRegM, RegWriteM, PCSrcM, ByteMaskM, LoadLengthM, ByteOffsetM});
+  flopenr #(12) regsM(clk, reset, ~StallM,
+                   {MemWriteGatedE, MemtoRegE, RegWriteGatedE, PCSrcGatedE, ByteMaskE, ByteOrWordE, ByteOffsetE, WriteHalfwordE},
+                   {MemWriteM, MemtoRegM, RegWriteM, PCSrcM, ByteMaskM, ByteOrWordM, ByteOffsetM, WriteHalfwordM});
   
   // ====================================================================================
   // =============================== Writeback Stage ====================================
   // ====================================================================================
-  flopenrc #(6) regsW(clk, reset, ~StallW, FlushW, 
-                   {MemtoRegM, RegWriteM, PCSrcM, LoadLengthM, ByteOffsetM},
-                   {MemtoRegW, RegWriteW, PCSrcW, LoadLengthW, ByteOffsetW});
+  flopenrc #(7) regsW(clk, reset, ~StallW, FlushW, 
+                   {MemtoRegM, RegWriteM, PCSrcM, ByteOrWordM, ByteOffsetM, WriteHalfwordM},
+                   {MemtoRegW, RegWriteW, PCSrcW, LoadLengthW, ByteOffsetW, WriteHalfwordW});
 
   // Hazard Prediction
   assign PCWrPendingF = PCSrcD | PCSrcE | PCSrcM;

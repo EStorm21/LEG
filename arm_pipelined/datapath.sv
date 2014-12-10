@@ -31,7 +31,7 @@ module datapath(input  logic        clk, reset,
                 output logic [31:0] ALUResultE,
                 input  logic        LoadLengthW,
                 input  logic [1:0]  ByteOffsetW,
-                input  logic        WriteByteE, IncrementE,
+                input  logic        WriteByteE, WriteHalfwordE, WriteHalfwordW, IncrementE, //HalfwordOffset, 
                 // added for thumb instructions
                 input  logic        TFlagNextE, 
                 output logic        TFlagE);
@@ -143,7 +143,7 @@ module datapath(input  logic        clk, reset,
   alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, ALUOutputE, ALUFlagsE, PreviousFlagsE[1:0], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, KeepVE); 
   multiplier  mult(clk, reset, MultEnable, StallE, WriteMultLoKeptE, SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, PreviousFlagsE[1:0]);
   mux3 #(32)  aluoutputmux(ALUOutputE, ShiftBE, MultOutputE, ResultSelectE, ALUResultE); 
-  data_replicator memReplicate(WriteByteE, WriteDataE, WriteDataReplE);
+  data_replicator memReplicate(WriteByteE, WriteHalfwordE, WriteDataE, WriteDataReplE);
   
   // ====================================================================================
   // =============================== Memory Stage =======================================
@@ -159,7 +159,10 @@ module datapath(input  logic        clk, reset,
   flopenrc #(32) rdreg(clk, reset, ~StallW, FlushW, ReadDataM, ReadDataRawW);
   flopenrc #(5)  wa3wreg(clk, reset, ~StallW, FlushW, WA3M, WA3W);
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, ResultW);
-  data_selector byteShift(LoadLengthW, ByteOffsetW, ReadDataRawW, ReadDataW);
+
+  logic HalfwordOffsetW;
+  assign HalfwordOffsetW = 0;
+  data_selector byteShift(LoadLengthW, WriteHalfwordW, HalfwordOffsetW, ByteOffsetW, ReadDataRawW, ReadDataW); 
   
   // hazard comparison
   eqcmp #(5) m0(WA3M, RA1E, Match_1E_M);

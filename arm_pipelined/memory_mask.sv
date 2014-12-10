@@ -1,8 +1,12 @@
-module memory_mask (input  logic       Size, //byte or word 
-                    input  logic [1:0] Offset, //LSBs of address
-              		output logic [3:0] ByteMask);
+module memory_mask (input  logic       ByteOrWord, //byte or word 
+					input  logic 	   Halfword,
+					input  logic 	   HalfwordOffset,
+                    input  logic [1:0] ByteOffset, //LSBs of address
+              		output logic [3:0] FinalByteMask);
 
-  logic [3:0] ByteOffset;
-  mux4 #(4) byteSelect(4'b0001, 4'b0010, 4'b0100, 4'b1000, Offset, ByteOffset);
-  mux2 #(4) sizeSelect(4'b1111, ByteOffset, Size, ByteMask);
+  logic [3:0] ByteMask, HalfwordMask, ByteorWordMask;
+  mux4 #(4) byteSelect(4'b0001, 4'b0010, 4'b0100, 4'b1000, ByteOffset, ByteMask); 		// Get byte mask
+  mux2 #(4) BoWSelect(4'b1111, ByteMask, ByteOrWord, ByteorWordMask);					// Choose between byte or word mask
+  mux2 #(4) halfSelect(4'b0011, 4'b1100, HalfwordOffset, HalfwordMask);					// Get halfword mask
+  mux2 #(4) finalSelect(ByteorWordMask, HalfwordMask, Halfword, FinalByteMask);			// Get Final mask: Either Byte, Word or Halfword.
 endmodule
