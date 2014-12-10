@@ -117,13 +117,6 @@ Disassembly of section .text:
   d4:	e1cd38b2 	strh	r3, [sp, #130]	; 0x82
   d8:	e51d3000 	ldr	r3, [sp, #-0]
   dc:	e1dd48b2 	ldrh	r4, [sp, #130]	; 0x82
-  e0:	e04ee00e 	sub	lr, lr, lr
-  e4:	e28ee006 	add	lr, lr, #6
-  e8:	e78d600e 	str	r6, [sp, lr]
-  ec:	e70d600e 	str	r6, [sp, -lr]
-  f0:	e11dc0be 	ldrh	ip, [sp, -lr]
-  f4:	e28ee002 	add	lr, lr, #2
-  f8:	e19db0be 	ldrh	fp, [sp, lr]
 
-000000fc <end>:
-  fc:	eafffffe 	b	fc <end>
+000000e0 <end>:
+  e0:	eafffffe 	b	e0 <end>
