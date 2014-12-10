@@ -145,6 +145,7 @@ always_comb
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of WA3, RA2D and RA1D
 					prevRSRstate = 0;
+					LDMSTMforward = 0;
 					nextState = bl;
 					keepV = 0;
 					uOpInstrD = {defaultInstrD[31:28], // Condition bits
@@ -160,6 +161,7 @@ always_comb
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of WA3, RA2D and RA1D
 					prevRSRstate = 0;
+					LDMSTMforward = 0;
 					nextState = blx;
 					keepV = 0;
 					uOpInstrD = {defaultInstrD[31:28], // Condition bits
@@ -654,6 +656,7 @@ always_comb
 					uOpStallD = 0;
 					prevRSRstate = 0;
 					keepV = 0;
+					LDMSTMforward = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of WA3, RA2D and RA1D
 					nextState = ready;
@@ -668,6 +671,7 @@ always_comb
 					uOpStallD = 0;
 					prevRSRstate = 0;
 					keepV = 0;
+					LDMSTMforward = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of WA3, RA2D and RA1D
 					nextState = ready;
@@ -735,6 +739,7 @@ always_comb
 			InstrMuxD = 0;
 			keepV = 0;
 			doNotUpdateFlagD = 0;
+			LDMSTMforward = 0;
 			prevRSRstate = 0;
 			uOpStallD = 0;
 			regFileRz = {1'b0, // Control inital mux for RA1D
