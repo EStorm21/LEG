@@ -73,9 +73,9 @@ str r6, [sp, -r14]
 ldrh r12, [sp, -r14]
 add r14, r14, #2
 ldrh r11, [sp, r14]
-#strh r0, [sp, r14]
-#strh r1, [sp, -r14]
-#ldrh r10, [sp, r14]
-#ldr r9, [sp, -r14]
+strh r0, [sp, r14]
+strh r1, [sp, -r14]
+ldrh r10, [sp, r14]
+ldr r9, [sp, -r14]
 
 end: b end

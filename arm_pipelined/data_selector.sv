@@ -15,6 +15,6 @@ module data_selector (input  logic       ByteOrWord, //byte or word
   logic [7:0] DataByte;
   logic [15:0] DataHalfword;
   mux4 #(8) byteSelect(DataIn[7:0], DataIn[15:8], DataIn[23:16], DataIn[31:24], ByteOffset, DataByte);          // Choose between 4 bytes
-  mux2 #(16) halfwordSelect(DataIn[15:0], DataIn[31:16], 1'b0, DataHalfword);                         // Choose between 2 half-words
+  mux2 #(16) halfwordSelect(DataIn[15:0], DataIn[31:16], HalfwordOffset, DataHalfword);                         // Choose between 2 half-words
   mux3 #(32) sizeSelect(DataIn, {24'b0, DataByte}, {16'b0, DataHalfword}, {Halfword, ByteOrWord}, DataOut);     // Select Final data to output
 endmodule
