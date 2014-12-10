@@ -1,6 +1,6 @@
 module data_writeback_associative_cache_controller 
   (input  logic clk, reset, W1V, W2V, CurrLRU, W1Hit, W2Hit, W1D, W2D,
-   input  logic Hit, IStall, MemWriteM, MemtoRegM, BusReady, 
+   input  logic IStall, MemWriteM, MemtoRegM, BusReady, 
    input  logic [1:0] WordOffset,
    output logic RDSel, CWE, Stall, HWriteM, HRequestM, BlockWE, ResetCounter,
    output logic W1WE, W2WE, W1EN,
@@ -18,6 +18,10 @@ module data_writeback_associative_cache_controller
             Counter <= Counter;
         end
     end
+
+  // Create Hit signal 
+  logic Hit;
+  assign Hit = W1Hit | W2Hit;
 
   // CacheIn Logic
   assign CacheRDSel = HWriteM ? Counter : WordOffset;

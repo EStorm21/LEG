@@ -24,9 +24,11 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     // W1EN: enable way 1, select way 1 for writeback
     // W1WE: way 1 write enable, W1WE = W1EN & CWE
     // ActiveByteMask: mask currently used on the cache
-    logic W1V, W2V, W1EN, W2EN, W1WE, W2WE, ResetCounter;
+    // CWE:  Cache Write Enable
+    logic W1V, W2V, W1EN, W2EN, W1WE, W2WE, ResetCounter, CWE;
     logic [tagbits-1:0] W1Tag, W2Tag, CachedTag;
-    logic CWE;                                        // Cache write enable
+
+    // TODO: Remove blockout wires (they are moved to the cache memory)
     logic [blocksize*32-1:0] W1BlockOut, W2BlockOut;  // Way output (4 words)
     logic [3:0] ActiveByteMask;
 
@@ -44,7 +46,6 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     logic BlockWE, W1D, W2D, RDSel, Hit;
     logic [setbits-1:0] set;   // Set bits
     logic W1Hit, W2Hit;        // Hit signal from each way
-    logic [lines-1:0] LRU;     // LRU Table
     logic [1:0] Counter, WordOffset, CacheRDSel;   // Counter for sequential buss access
 
     cacheIn #(blocksize) ci(.*);
@@ -52,31 +53,24 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     // Create New Address using the counter as the word offset
     assign ANew = ResetCounter ? A : {A[31:4], Counter, A[1:0]};
 
-    // Create Cache memory. This module contains both way memories
+    // Create Cache memory. This module contains both way memories and LRU table
+    logic CurrLRU;   
     logic DirtyIn;
     assign DirtyIn = MemWriteM;
     data_writeback_associative_cache_memory #(lines, tagbits, blocksize) dcmem(.*);
 
     // Cache Controller
-    assign WordOffset = A[3:2]; // Create word offset for cache controller
-    logic CurrLRU;              
-    assign CurrLRU = LRU[set];  // Created to pass LRU[set] into cache controller
+    assign WordOffset = A[3:2]; // Create word offset for cache controller           
     data_writeback_associative_cache_controller dcc(.*);
 
-    // Create LRU Table
-    assign set = A[blocksize+setbits-1:blocksize];
-    always_ff @(posedge clk, posedge reset)
-        if(reset) begin
-            LRU <= 'b0;
-        end else if (W1WE | W2WE) begin
-            LRU[set] <= W2WE;
-        end
+    
+    // HANDLE INPUT OUTPUT of LRU
 
     // HWData Mux
     mux2 #(32) HWDataMux(W2RD, W1RD, W1EN, HWData);
 
     // HAddr Mux's
-    assign CachedTag = W1EN ? W1Tag : W2Tag;
+    assign CachedTag = W1EN ? W1Tag : W2Tag;                // TODO: MUX This
     assign CachedAddr = {CachedTag, ANew[31-tagbits:0]};
     mux2 #(32) HAddrMux(ANew, CachedAddr, HWriteM, HAddr);
 
