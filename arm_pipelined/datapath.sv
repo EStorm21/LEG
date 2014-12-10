@@ -29,7 +29,7 @@ module datapath(input  logic        clk, reset,
                 output logic [3:0]  RegFileRzD,
                 output logic [1:0]  STR_cycleD,
                 output logic [31:0] ALUResultE,
-                input  logic        LoadLengthW,
+                input  logic        LoadLengthW, HalfwordOffsetW,
                 input  logic [1:0]  ByteOffsetW,
                 input  logic        WriteByteE, WriteHalfwordE, WriteHalfwordW, IncrementE, //HalfwordOffset, 
                 // added for thumb instructions
@@ -160,8 +160,6 @@ module datapath(input  logic        clk, reset,
   flopenrc #(5)  wa3wreg(clk, reset, ~StallW, FlushW, WA3M, WA3W);
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, ResultW);
 
-  logic HalfwordOffsetW;
-  assign HalfwordOffsetW = 0;
   data_selector byteShift(LoadLengthW, WriteHalfwordW, HalfwordOffsetW, ByteOffsetW, ReadDataRawW, ReadDataW); 
   
   // hazard comparison
