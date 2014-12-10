@@ -107,6 +107,10 @@ Disassembly of section .text:
   ac:	e50d0000 	str	r0, [sp, #-0]
   b0:	e15d10b0 	ldrh	r1, [sp, #-0]
   b4:	e1dd20b2 	ldrh	r2, [sp, #2]
+  b8:	e14d30b0 	strh	r3, [sp, #-0]
+  bc:	e14d40b1 	strh	r4, [sp, #-1]
+  c0:	e1cd50b1 	strh	r5, [sp, #1]
+  c4:	e51d3000 	ldr	r3, [sp, #-0]
 
-000000b8 <end>:
-  b8:	eafffffe 	b	b8 <end>
+000000c8 <end>:
+  c8:	eafffffe 	b	c8 <end>

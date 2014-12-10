@@ -55,4 +55,8 @@ str R0,  [sp, #-0]
 ldrh r1, [sp, #-0]
 ldrh r2, [sp, #2]
 
+strh r3, [sp, #-0]
+strh r4, [sp, #-1]
+strh r5, [sp, #1]
+ldr r3, [sp, #-0]
 end: b end
