@@ -25,7 +25,7 @@ module datapath(input  logic        clk, reset,
                 input  logic[1:0]   ResultSelectE, // Comes from {MultSelectD, RSRselectD}
                 input  logic [6:4]  ShiftOpCode_E,
                 input  logic        MultSelectD, MultEnable,
-                output logic        MultStallD, MultStallE, ldrstrRtypeD,
+                output logic        MultStallD, MultStallE, uOpRtypeLdrStrD,
                 output logic [3:0]  RegFileRzD,
                 output logic [1:0]  STR_cycleD,
                 output logic [31:0] ALUResultE,
@@ -68,7 +68,7 @@ module datapath(input  logic        clk, reset,
   assign PCPlus8D = PCPlus4F; // skip register *change to PCPlusXF for thumb
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, STR_cycleD,
-                            PrevRSRstateD, KeepVD, SignExtendD, noRotateD, ldrstrRtypeD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
+                            PrevRSRstateD, KeepVD, SignExtendD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   
   //  ====== Put these into RegFile ========

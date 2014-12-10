@@ -16,7 +16,7 @@ module controller(input  logic         clk, reset,
                   output logic          DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryE,
                   output logic  [3:0]   PreviousFlagsE,
                   // For micro-op decoding
-                  input logic          doNotUpdateFlagD, PrevRSRstateD, LDMSTMforwardD, ldrstrRtypeD,
+                  input logic          doNotUpdateFlagD, PrevRSRstateD, LDMSTMforwardD, uOpRtypeLdrStrD,
                   output logic         RselectE, PrevRSRstateE, LDRSTRshiftE, LDMSTMforwardE, 
                   output logic  [1:0]  ResultSelectE,
                   input  logic  [3:0]  RegFileRzD, 
@@ -44,7 +44,7 @@ module controller(input  logic         clk, reset,
   logic [1:0]  FlagWriteD, FlagWriteE;
   logic        PCSrcD, PCSrcE, PCSrcM;
   logic [3:0]  FlagsNextE, CondE;
-  logic        RegWritepreMuxE, RselectD, RSRselectD;
+  logic        RegWritepreMuxE, RselectD, RSRselectD, LdrStrRtypeD;
   logic [1:0]  ResultSelectD;
   logic [6:4]  ShiftOpCode_D;
   logic [11:0] StateRegisterDataE;
@@ -110,12 +110,13 @@ module controller(input  logic         clk, reset,
       FlagWriteD[1:0] = 2'b00;        // don't update Flags
     end 
  
+  assign LdrStrRtypeD  = uOpRtypeLdrStrD | (LdrStr_HalfwordD & ~InstrD[22] & InstrD[11:8] == 4'b0);
   assign MultControlD  = InstrD[23:21];
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~RegFileRzD[2]) | BranchD);
-  assign RselectD      = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 0) | (ldrstrRtypeD & ~LDMSTMforwardD) ;
+  assign RselectD      = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 0) | (LdrStrRtypeD & ~LDMSTMforwardD) ;
   assign RSRselectD    = (InstrD[27:25] == 3'b000 & ~InstrD[7] & ShiftOpCode_D[4] == 1) & ~(InstrD[27:4] == {8'b0001_0010, 12'hFFF, 4'b0001});
   assign ResultSelectD = {MultSelectD, RSRselectD};
-  assign LDRSTRshiftD  = ldrstrRtypeD;
+  assign LDRSTRshiftD  = LdrStrRtypeD;
 
 
   // ====================================================================================
@@ -155,7 +156,7 @@ module controller(input  logic         clk, reset,
   assign ByteOffsetE = ALUResultE[1:0];
   assign HalfwordOffsetE = (LdrStr_HalfwordE & ALUResultE[1]);
   assign WriteByteE  = (InstrE[27:26] == 2'b01) & InstrE[22] & ~InstrE[20];
-  assign WriteHalfwordE = (LdrStr_HalfwordE & ~InstrE[20]);
+  assign WriteHalfwordE = (LdrStr_HalfwordE & InstrE[20]);
   memory_mask MemMask(ByteOrWordE, HalfwordE, HalfwordOffsetE, ALUResultE[1:0], ByteMaskE);
 
 
