@@ -2,6 +2,14 @@ module microps_conditional(input logic [3:0] Flags,
                            input logic [3:0] Cond,
                            output logic CondEx);
 
+ /***** Brief Description *******
+ *
+ * 32-BIT DATAPATH DECODE STAGE
+ * MicroOps_Conditional is used for LDM and STM to get out of the Micro-Op. 
+ *
+ * ----->> Might not be needed.
+ *
+ ******************************/
 
 // MicroOpsFSM needs its own Conditional Unit 
 logic neg, zero, carry, overflow, ge;

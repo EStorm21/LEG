@@ -4,6 +4,14 @@ module regfile(input  logic        clk,
                input  logic [31:0] wd3, r15,
                output logic [31:0] rd1, rd2);
 
+ /***** Brief Description *******
+ *
+ * 32-BIT DATAPATH DECODE STAGE
+ * Register file stores all registers, including Rz (Hidden temp register) but excluding R15.
+ * Currently only user/system mode R0-R14 are accessible. 
+ *
+ ******************************/
+
   logic [31:0] rf[14:0]; // System/User mode registers including PC
   logic [31:0] rg[15:0]; // Other registers
 
