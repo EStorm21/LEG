@@ -127,7 +127,8 @@ Disassembly of section .text:
   fc:	e18d00be 	strh	r0, [sp, lr]
  100:	e10d10be 	strh	r1, [sp, -lr]
  104:	e19da0be 	ldrh	sl, [sp, lr]
- 108:	e71d900e 	ldr	r9, [sp, -lr]
+ 108:	e24ee002 	sub	lr, lr, #2
+ 10c:	e11d90be 	ldrh	r9, [sp, -lr]
 
-0000010c <end>:
- 10c:	eafffffe 	b	10c <end>
+00000110 <end>:
+ 110:	eafffffe 	b	110 <end>
