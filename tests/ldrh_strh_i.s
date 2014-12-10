@@ -54,9 +54,23 @@ next14:
 str R0,  [sp, #-0]
 ldrh r1, [sp, #-0]
 ldrh r2, [sp, #2]
-
+str r0, [sp, #128]
+str r0, [sp, #126]
+ldrh r4, [sp, #128]
+ldrh r5, [sp, #130]
 strh r3, [sp, #-0]
-strh r4, [sp, #-1]
-strh r5, [sp, #1]
+strh r4, [sp, #-2]
+strh r5, [sp, #2]
+strh r3, [sp, #130]
 ldr r3, [sp, #-0]
+ldrh r4, [sp, #130]
+
+#r type
+sub r14, r14, r14
+add r14, r14, #6
+str r6, [sp, r14]
+str r6, [sp, -r14]
+ldrh r12, [sp, -r14]
+add r14, r14, #2
+ldrh r11, [sp, r14]
 end: b end

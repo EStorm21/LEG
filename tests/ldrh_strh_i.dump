@@ -107,10 +107,23 @@ Disassembly of section .text:
   ac:	e50d0000 	str	r0, [sp, #-0]
   b0:	e15d10b0 	ldrh	r1, [sp, #-0]
   b4:	e1dd20b2 	ldrh	r2, [sp, #2]
-  b8:	e14d30b0 	strh	r3, [sp, #-0]
-  bc:	e14d40b1 	strh	r4, [sp, #-1]
-  c0:	e1cd50b1 	strh	r5, [sp, #1]
-  c4:	e51d3000 	ldr	r3, [sp, #-0]
+  b8:	e58d0080 	str	r0, [sp, #128]	; 0x80
+  bc:	e58d007e 	str	r0, [sp, #126]	; 0x7e
+  c0:	e1dd48b0 	ldrh	r4, [sp, #128]	; 0x80
+  c4:	e1dd58b2 	ldrh	r5, [sp, #130]	; 0x82
+  c8:	e14d30b0 	strh	r3, [sp, #-0]
+  cc:	e14d40b2 	strh	r4, [sp, #-2]
+  d0:	e1cd50b2 	strh	r5, [sp, #2]
+  d4:	e1cd38b2 	strh	r3, [sp, #130]	; 0x82
+  d8:	e51d3000 	ldr	r3, [sp, #-0]
+  dc:	e1dd48b2 	ldrh	r4, [sp, #130]	; 0x82
+  e0:	e04ee00e 	sub	lr, lr, lr
+  e4:	e28ee006 	add	lr, lr, #6
+  e8:	e78d600e 	str	r6, [sp, lr]
+  ec:	e70d600e 	str	r6, [sp, -lr]
+  f0:	e11dc0be 	ldrh	ip, [sp, -lr]
+  f4:	e28ee002 	add	lr, lr, #2
+  f8:	e19db0be 	ldrh	fp, [sp, lr]
 
-000000c8 <end>:
-  c8:	eafffffe 	b	c8 <end>
+000000fc <end>:
+  fc:	eafffffe 	b	fc <end>
