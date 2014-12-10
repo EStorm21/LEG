@@ -128,7 +128,7 @@ next32: str R1, [sp, #-68]
 # stm test
 	#all, increment after
 
-	stmia r13, {r0 - r14}
+	stmia r13!, {r0 - r12,r14}
 	add r1, r1, r1
 	add r1, r1, r2
 	sub r0, r0, r0
@@ -168,6 +168,7 @@ next32: str R1, [sp, #-68]
 	add r2, r0, #13
 	mul r14, r14, r2
 	add r1, r1, r14
+	add r1, r1, r13
 	ldr r13, val
 	ldmia r13, {r0 - r14}
 
@@ -313,8 +314,9 @@ next32: str R1, [sp, #-68]
 	add r1, r1, r14
 	ldr r13, val
 
-	stmda r13, {r1}
-	add r1, r1, r1
+	stmda r13!, {r1}
+	add r1, r1, r13
+	ldr r13, val
 	ldmda r13, {r1}
 
 
