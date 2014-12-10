@@ -124,6 +124,10 @@ Disassembly of section .text:
   f0:	e11dc0be 	ldrh	ip, [sp, -lr]
   f4:	e28ee002 	add	lr, lr, #2
   f8:	e19db0be 	ldrh	fp, [sp, lr]
+  fc:	e18d00be 	strh	r0, [sp, lr]
+ 100:	e10d10be 	strh	r1, [sp, -lr]
+ 104:	e19da0be 	ldrh	sl, [sp, lr]
+ 108:	e71d900e 	ldr	r9, [sp, -lr]
 
-000000fc <end>:
-  fc:	eafffffe 	b	fc <end>
+0000010c <end>:
+ 10c:	eafffffe 	b	10c <end>
