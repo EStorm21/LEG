@@ -12,7 +12,7 @@ module micropsfsm(input  logic        clk, reset,
 
 // define states READY and RSR 
 // TODO: add more states for each type of instruction
-typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, stmWriteback, ldr, str, str2, blx, strHalf} statetype;
+typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, ldr, str, str2, blx, strHalf} statetype;
 statetype state, nextState;
 
 // --------------------------- ADDED FOR LDM/STM -------------------------------
@@ -24,7 +24,7 @@ microps_conditional uOpCond(Flags, defaultInstrD[31:28], CondExD);
 // Count ones for LDM/STM
 logic [4:0] numones, defaultNumones;
 logic [3:0] Rd;
-logic [11:0] start_imm, writeback_imm;
+logic [11:0] start_imm;
 logic [15:0] RegistersListNow, RegistersListNext;
 
 /* Gives you the next register to Load/Store during LDM or STM, even handles first cycle
@@ -49,7 +49,7 @@ always_comb
   		numones = $countones(defaultInstrD[15:0]);
   	else 
   		numones = $countones(RegistersListNow);
-  	writeback_imm = ((numones) << 2); 	// Used to calculate the address for writeback
+  	defaultNumones = $countones(defaultInstrD[15:0]);
 	LastCycle = (numones == 1);			// Determines when there's one register left (and no writeback)
 	ZeroRegsLeft = (numones == 0);		// Determines if there's nothing left (for corner case only loading 1 register)
 	casex(defaultInstrD[24:23])
@@ -533,8 +533,7 @@ always_comb
 			/* If it's the last cycle and NO WRITEBACK
 			 */
 			else if(LastCycle & WriteBack) begin
-			  	//nextState = stmWriteback;
-			  	nextState = stm;
+			  	nextState = ldmstmWriteback;
 			  	InstrMuxD = 1;
 				doNotUpdateFlagD = 1;
 				uOpStallD = 1;
@@ -699,16 +698,20 @@ always_comb
 			end
 
 		ldmstmWriteback: begin
-			if(ZeroRegsLeft) begin
+			if(LastCycle) begin
 				nextState = ready;
 				InstrMuxD = 1;
 				doNotUpdateFlagD = 1;
 				uOpStallD = 0;
 				prevRSRstate = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b001}; // 5th bit of WA3, RA2D and RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
 				LDMSTMforward = 0;
-
+				uOpInstrD = {defaultInstrD[31:28], 3'b001, 						     // Data Processing I type
+							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // add or subtract, S = 0
+							defaultInstrD[19:16], defaultInstrD[19:16], 			 //Rn = Rn + shift(Rm)
+							4'b1111, 3'b0, defaultNumones								 // Rotate right by 30 (shift left by 2) 
+							};
 
 			end
 		end
