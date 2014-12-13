@@ -136,12 +136,18 @@ module datapath(input  logic        clk, reset,
   assign RdLoE = {0, InstrE[15:12]};
   // -----------------------------------------------------------
 
+  // TODO: implement as a barrel shift
   shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], LDRSTRshiftE, PreviousFlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
   // ------ TODO: Move to controller ---
   flopenr #(1) shftrCarryOut(clk, reset, ~StallE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
   // -----------------------------------
   alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, ALUOutputE, ALUFlagsE, PreviousFlagsE[1:0], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, KeepVE); 
+  
+  // TODO: Use a signle multiplier for both signed and unsigned
+  // - Turn this into structural block
+  // - Move relevant signals to controller
   multiplier  mult(clk, reset, MultEnable, StallE, WriteMultLoKeptE, SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, PreviousFlagsE[1:0]);
+  
   mux3 #(32)  aluoutputmux(ALUOutputE, ShiftBE, MultOutputE, ResultSelectE, ALUResultE); 
   data_replicator memReplicate(WriteByteE, WriteHalfwordE, WriteDataE, WriteDataReplE);
   
@@ -160,6 +166,7 @@ module datapath(input  logic        clk, reset,
   flopenrc #(5)  wa3wreg(clk, reset, ~StallW, FlushW, WA3M, WA3W);
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, ResultW);
 
+  //TODO: Think about how we want to implement this - should it be in the 32bit datapath?
   data_selector byteShift(LoadLengthW, WriteHalfwordW, HalfwordOffsetW, ByteOffsetW, ReadDataRawW, ReadDataW); 
   
   // hazard comparison
@@ -169,6 +176,8 @@ module datapath(input  logic        clk, reset,
   eqcmp #(5) m3(WA3W, RA2E, Match_2E_W);
   eqcmp #(5) m4a(WA3E, RA1D, Match_1D_E);
   eqcmp #(5) m4b(WA3E, RA2D, Match_2D_E);
+
+  // TODO: Move this to the Hazard Unit
   assign Match_12D_E = Match_1D_E | Match_2D_E;
   
 endmodule
