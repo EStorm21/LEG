@@ -12,17 +12,17 @@ module micropsfsm(input  logic        clk, reset,
 
 // define states READY and RSR 
 // TODO: add more states for each type of instruction
-typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmWriteback, ldr, str, str2, blx, strHalf} statetype;
+typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, ldr, str, str2, blx, strHalf} statetype;
 statetype state, nextState;
 
 // --------------------------- ADDED FOR LDM/STM -------------------------------
 // Conditional Unit
 logic CondExD, readyState, Ubit_ADD, LastCycle, WriteBack, ZeroRegsLeft;
 assign readyState = (state == ready);
-assign WriteBack = defaultInstrD[22]; 
+assign WriteBack = defaultInstrD[21]; 
 microps_conditional uOpCond(Flags, defaultInstrD[31:28], CondExD);
 // Count ones for LDM/STM
-logic [4:0] numones;
+logic [4:0] numones, defaultNumones;
 logic [3:0] Rd;
 logic [11:0] start_imm;
 logic [15:0] RegistersListNow, RegistersListNext;
@@ -45,13 +45,16 @@ always_ff @ (posedge clk)
 
 always_comb 
   begin
-  	if(state == ready) numones = $countones(defaultInstrD[15:0]);
-  	else numones = $countones(RegistersListNow);
-	LastCycle = (numones == 1);
-	ZeroRegsLeft = (numones == 0);
+  	if((state == ready) | (state == ldmstmWriteback))   
+  		numones = $countones(defaultInstrD[15:0]);
+  	else 
+  		numones = $countones(RegistersListNow);
+  	defaultNumones = $countones(defaultInstrD[15:0]);
+	LastCycle = (numones == 1);			// Determines when there's one register left (and no writeback)
+	ZeroRegsLeft = (numones == 0);		// Determines if there's nothing left (for corner case only loading 1 register)
 	casex(defaultInstrD[24:23])
 	  2'b00: begin 
-	  		 start_imm = ((numones-1)<<2); // <start_add> = Rn + 4 - (#set bits * 4) 
+	  		 start_imm = ((numones-1)<<2); // <start_add> = Rn + 4 - (#set bits * 4)
 	  	     Ubit_ADD = 0; 				   // Used in single LDR/STR bit[23] to choose SUBTRACT
 	  	  	 end
 	  2'b01: begin 
@@ -530,8 +533,7 @@ always_comb
 			/* If it's the last cycle and NO WRITEBACK
 			 */
 			else if(LastCycle & WriteBack) begin
-			  	//nextState = ldmWriteback;
-			  	nextState = stm;
+			  	nextState = ldmstmWriteback;
 			  	InstrMuxD = 1;
 				doNotUpdateFlagD = 1;
 				uOpStallD = 1;
@@ -633,8 +635,7 @@ always_comb
 			/* If it's the last cycle and NO WRITEBACK
 			 */
 			else if(LastCycle & WriteBack) begin
-			  	//nextState = ldmWriteback;
-			  	nextState = ldm;
+			  	nextState = ldmstmWriteback;
 			  	InstrMuxD = 1;
 				doNotUpdateFlagD = 1;
 				uOpStallD = 1;
@@ -647,7 +648,7 @@ always_comb
 							1'b1,  			   	 	// P-bit (preindex)
 							1'b1,			 		// U-bit (ADD)
 							1'b0,					// B-bit (choose word addressing, not byte addressing)
-							1'b1,					// W-bit (Base register should NOT be updated)
+							1'b0,					// W-bit (Base register should NOT be updated)
 							defaultInstrD[20], 		// Differentiate between Load and Store | L = 1 for loads
 							4'b1111,	// Still read from the same Rn
 							Rd,						// 4 bit calculated register file to which the Load will be written back to
@@ -696,6 +697,24 @@ always_comb
 				end
 			end
 
+		ldmstmWriteback: begin
+			if(LastCycle) begin
+				nextState = ready;
+				InstrMuxD = 1;
+				doNotUpdateFlagD = 1;
+				uOpStallD = 0;
+				prevRSRstate = 0;
+				regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+				LDMSTMforward = 0;
+				uOpInstrD = {defaultInstrD[31:28], 3'b001, 						     // Data Processing I type
+							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // add or subtract, S = 0
+							defaultInstrD[19:16], defaultInstrD[19:16], 			 //Rn = Rn + shift(Rm)
+							4'b1111, 3'b0, defaultNumones								 // Rotate right by 30 (shift left by 2) 
+							};
+
+			end
+		end
 		bl:begin
 				if(defaultInstrD[27:24]== 4'b1011) begin
 					InstrMuxD = 1;

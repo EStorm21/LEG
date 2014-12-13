@@ -10,6 +10,8 @@ module alu(input  logic [31:0] AIn, BIn,
   logic [31:0] Condinvb, A, B;
   logic [32:0] Sum;
 
+  // TODO: Move cycle2E and cycle1E to controller; let controller send single bit to ALU.
+  // Make this as structural as possible - Talk to David.
   always_comb 
   begin
     if(PrevRSRstateE)
@@ -38,6 +40,8 @@ module alu(input  logic [31:0] AIn, BIn,
   // Order is NZCV
   assign Neg      = Result[31];
   assign Zero     = (Result == 32'b0);
+
+  // TODO: Flags move to control/ext datapath
   // FLAG HANDLING
   always_comb
     casex (CVUpdate[2:0])
