@@ -79,6 +79,9 @@ module testbench();
 
   logic [31:0] WriteData, DataAdr;
   logic        MemWrite;
+  real D;
+  time simTime;
+  real DMIPS;
 
   // instantiate device to be tested
   top dut(clk, reset, WriteData, DataAdr, MemWrite);
@@ -86,7 +89,7 @@ module testbench();
   // initialize test
   initial
     begin
-      reset <= 1; # 22; reset <= 0;
+      reset <= 1; # 220; reset <= 0;
     end
 
   // generate clock to sequence tests
@@ -108,4 +111,18 @@ module testbench();
         end
       end
     end*/
+    always @(negedge clk)
+     begin
+      if(dut.arm.dp.rf.r15 == 32'hb6eac824) begin
+
+        $display("Finished");
+        D = 100.0;
+        simTime = $time;
+        // DMIPS = D/simTime*(10**12)/(10**5)/1757; //(Program Iterations)/(simulation time (ps))*(ps to s conv.)/(Clock Freq)/(Normalizing factor (DMIPS on a VAX 11/780))
+        DMIPS = D*(10**7)/simTime/1757; //(Program Iterations)*(picoS to S conv. / Clock Freq)/(simulation time (picoS))/(Normalizing factor (DMIPS on a VAX 11/780))
+        $display("D= %f, time= %f", D, simTime);
+        $display("DMIPS: %f", DMIPS);
+        $stop();
+      end
+     end
 endmodule

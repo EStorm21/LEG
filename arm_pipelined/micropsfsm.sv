@@ -152,9 +152,9 @@ always_comb
 					nextState = bl;
 					keepV = 0;
 					uOpInstrD = {defaultInstrD[31:28], // Condition bits
-								3'b000, 4'b1101, 1'b0, // MOV instruction, Do not update flags 
-								4'b0000, 4'b1110, // SBZ, link register destination
-								8'b00000000, 4'b1111}; // source is unshifted R15
+								3'b001, 4'b0010, 1'b0, // SUB instruction, Do not update flags 
+								4'b1111, 4'b1110, // R15, link register destination
+								4'b0000, 8'b00000100}; // We need PC - 4
 				end
 
 				else if(defaultInstrD[27:4]== {8'b00010010, 12'hfff, 4'b0011}) begin // blx
@@ -168,7 +168,7 @@ always_comb
 					nextState = blx;
 					keepV = 0;
 					uOpInstrD = {defaultInstrD[31:28], // Condition bits
-								3'b001, 4'b0010, 1'b0, // MOV instruction, Do not update flags 
+								3'b001, 4'b0010, 1'b0, // SUB instruction, Do not update flags 
 								4'b1111, 4'b1110, // R15, link register destination
 								4'b0000, 8'b00000100}; // We need PC - 4
 				end
