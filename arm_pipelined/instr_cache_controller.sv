@@ -33,28 +33,28 @@ module instr_cache_controller (input  logic clk, reset,
   assign HRequestF  = (state == MEMREAD);
   assign ResetCounter = ( state == READY ) | ( state == NEXTINSTR );
 
-    // Create Counter for sequential bus access
-    always_ff @(posedge clk, posedge reset)
-        if(reset | ResetCounter) begin
-            Counter <= 0;
-        end else begin
-            if (BusReady) begin
-                Counter <= Counter + 1;
-            end else begin
-                Counter <= Counter;
-            end
-        end
-
-    logic writeW1;
-    always_comb
-      begin
-        writeW1 = ( (~W1V & W2V) | CurrLRU ) & ~W2Hit;
-        W1EN = writeW1 | W1Hit;
-        W2EN = ~W1EN;
+  // Create Counter for sequential bus access
+  always_ff @(posedge clk, posedge reset)
+    if(reset | ResetCounter) begin
+        Counter <= 0;
+    end else begin
+      if (BusReady) begin
+          Counter <= Counter + 1;
+      end else begin
+          Counter <= Counter;
       end
+    end
 
-    // Write Enable And gates
-    assign W1WE = W1EN & CWE;
-    assign W2WE = W2EN & CWE;
+  logic writeW1;
+  always_comb
+    begin
+      writeW1 = ( (~W1V & W2V) | CurrLRU ) & ~W2Hit;
+      W1EN = writeW1 | W1Hit;
+      W2EN = ~W1EN;
+    end
+
+  // Write Enable And gates
+  assign W1WE = W1EN & CWE;
+  assign W2WE = W2EN & CWE;
 
 endmodule
