@@ -6,11 +6,6 @@ module top(input  logic        clk, reset,
   logic [31:0] PCF, InstrF, ReadDataM;
   logic [3:0] ByteMaskM;
   
-  // instantiate processor and memories
-  arm arm(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
-          // Added for memory (DStall, MemtoRegM)
-          WriteDataM, ReadDataM, DStall, IStall, MemtoRegM, ByteMaskM); 
-
   // data cache 
   logic Valid;
   logic HWriteM;
@@ -25,6 +20,11 @@ module top(input  logic        clk, reset,
   logic HWrite, HReady, HRequest;
   logic [31:0] HAddrM, HAddrF, HAddr;
   
+  // instantiate processor and memories
+  arm arm(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
+          // Added for memory (DStall, MemtoRegM)
+          WriteDataM, ReadDataM, DStall, IStall, MemtoRegM, ByteMaskM); 
+
   // instruction cache with a block size of 4 words and 16 lines
   instr_cache #(4, 128) 
     instr_cache(.clk(clk), .reset(reset), .BusReady(BusReadyF),
@@ -37,7 +37,7 @@ module top(input  logic        clk, reset,
   //                       .MemtoRegM(MemtoRegM), .Valid(Valid), .a(DataAdrM), .MemBlock(HRData),
   //                       .rd(ReadDataM), .Stall(DStall), .MemRE(MemRE), .HWriteM(HWriteM));
 
-  data_writeback_associative_cache #(4, 2) 
+  data_writeback_associative_cache #(4, 128) 
     data_cache(.clk(clk), .reset(reset), .MemWriteM(MemWriteM), .MemtoRegM(MemtoRegM), 
                .BusReady(BusReadyM), .IStall(IStall), .A(DataAdrM), .WD(WriteDataM),
                .HRData(HRData), .ByteMask(ByteMaskM), .HWData(HWData), .RD(ReadDataM), .HAddr(HAddrM),

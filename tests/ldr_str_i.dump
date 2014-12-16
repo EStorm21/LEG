@@ -121,7 +121,7 @@ Disassembly of section .text:
   e4:	e48d7001 	str	r7, [sp], #1
   e8:	e55d1000 	ldrb	r1, [sp, #-0]
   ec:	e5cd2002 	strb	r2, [sp, #2]
-  f0:	e53d3001 	ldr	r3, [sp, #-1]!
+  f0:	e5fd3001 	ldrb	r3, [sp, #1]!
 
 000000f4 <end>:
   f4:	eafffffe 	b	f4 <end>

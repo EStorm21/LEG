@@ -127,7 +127,7 @@ next32: str R1, [sp, #-68]
 
 # ldm test
 	#all, increment after
-	ldmda r13, {r0 - r14}
+	ldmda r13!, {r0 - r12,r14}
 	add r1, r1, r1
 	add r1, r1, r2
 	sub r0, r0, r0
@@ -167,6 +167,7 @@ next32: str R1, [sp, #-68]
 	add r2, r0, #13
 	mul r14, r14, r2
 	add r1, r1, r14
+	add r1, r1, r13
 
 	#conditional test
 	ldr sp, val
@@ -227,7 +228,7 @@ next32: str R1, [sp, #-68]
 	ldr sp, val
 	ldmia r13, {r0}
 	add r5, r5, r5
-	ldmib r13, {r2-r3}
+	ldmib r13!, {r2-r3}
 
 
 	end:    b end
