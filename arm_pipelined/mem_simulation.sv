@@ -1,5 +1,5 @@
 module mem_simulation
-            #(parameter waitCycles = 2, blocksize = 4)
+            #(parameter waitCycles = 1, blocksize = 4)
            (input  logic clk, we, re,
             input  logic [31:0] a,
             input  logic [31:0] wd,
@@ -22,7 +22,7 @@ module mem_simulation
   always_comb
     case (state)
       IDLE:      if (re | we) begin nextstate <= REQUESTED; end else nextstate <= IDLE;
-      REQUESTED: if (count < waitCycles) begin nextstate <= REQUESTED; end else nextstate <= RETRIEVED;
+      REQUESTED: if (count <= waitCycles) begin nextstate <= REQUESTED; end else nextstate <= RETRIEVED;
       RETRIEVED: nextstate <= IDLE;
       default: nextstate <= IDLE;
     endcase
