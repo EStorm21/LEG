@@ -65,9 +65,6 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     assign WordOffset = A[3:2]; // Create word offset for cache controller           
     data_writeback_associative_cache_controller dcc(.*);
 
-    
-    // HANDLE INPUT OUTPUT of LRU
-
     // HWData Mux
     mux2 #(32) HWDataMux(W2RD, W1RD, W1EN, HWData);
 
