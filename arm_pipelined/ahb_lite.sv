@@ -16,7 +16,10 @@ module ahb_lite(input  logic        HCLK,
   ahb_mux     mux(HSEL, HRDATA0, HRDATA);
   
   // Memory and peripherals
-  mem_simulation mem (.clk(HCLK), .we(HWRITE), .re(HREQUEST & ~HWRITE), 
+  // mem_simulation mem (.clk(HCLK), .we(HWRITE), .re(HREQUEST & ~HWRITE), 
+  //                     .a(HADDR), .wd(HWDATA), .rd(HRDATA0), .Valid(HREADY));
+
+dmem mem (.clk(HCLK), .we(HWRITE), .re(HREQUEST & ~HWRITE), 
                       .a(HADDR), .wd(HWDATA), .rd(HRDATA0), .Valid(HREADY));
   
 endmodule

@@ -1,0 +1,30 @@
+module dmem
+           (input  logic clk, we, re,
+            input  logic [31:0] a,
+            input  logic [31:0] wd,
+            output logic [31:0] rd,
+            output logic Valid);
+
+  logic [31:0] RAM[2097151:0];
+  assign Valid = re | we;
+
+  // ------------------ Actual Memory ----------------------
+  initial
+      // $readmemh("C:/Users/Max/Desktop/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
+      // $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
+       // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat",RAM); //teqrs
+      $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
+      // $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
+       // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat",RAM); //teqrs
+
+  assign rd = RAM[a[22:2]];
+
+  // Write a word
+  always_ff @(posedge clk) 
+  begin
+    if (we) begin 
+       RAM[a[22:2]] <= wd; 
+    end
+  end   
+
+ endmodule

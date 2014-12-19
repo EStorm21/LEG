@@ -51,6 +51,8 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     cacheIn #(blocksize) ci(.*);
 
     // Create New Address using the counter as the word offset
+    // TODO: Make this structural
+    // Move to controller
     assign ANew = ResetCounter ? A : {A[31:4], Counter, A[1:0]};
 
     // Create Cache memory. This module contains both way memories and LRU table
@@ -62,9 +64,6 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     // Cache Controller
     assign WordOffset = A[3:2]; // Create word offset for cache controller           
     data_writeback_associative_cache_controller dcc(.*);
-
-    
-    // HANDLE INPUT OUTPUT of LRU
 
     // HWData Mux
     mux2 #(32) HWDataMux(W2RD, W1RD, W1EN, HWData);

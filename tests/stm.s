@@ -170,7 +170,7 @@ next32: str R1, [sp, #-68]
 	add r1, r1, r14
 	add r1, r1, r13
 	ldr r13, val
-	ldmia r13, {r0 - r14}
+	ldmia r13, {r0 - r12, r14}
 
 	#conditional test
 	ldr sp, val
@@ -229,7 +229,7 @@ next32: str R1, [sp, #-68]
 	mul r14, r14, r2
 	add r1, r1, r14
 	ldr r13, val
-	stmib r13, {r0 - r14}
+	stmib r13, {r0 - r12, r14}
 
 	add r1, r1, r1
 	add r1, r1, r2
@@ -272,7 +272,7 @@ next32: str R1, [sp, #-68]
 	add r1, r1, r14
 	ldr r13, val
 
-	ldmib r13, {r0 - r14}
+	ldmib r13, {r0 - r12, r14}
 	add r1, r1, r1
 	add r1, r1, r2
 	sub r0, r0, r0

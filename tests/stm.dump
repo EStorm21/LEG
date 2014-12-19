@@ -290,7 +290,7 @@ Disassembly of section .text:
  268:	e081100e 	add	r1, r1, lr
  26c:	e081100d 	add	r1, r1, sp
  270:	e51fd26c 	ldr	sp, [pc, #-620]	; c <val>
- 274:	e89d7fff 	ldm	sp, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, sp, lr}
+ 274:	e89d5fff 	ldm	sp, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}
  278:	e51fd274 	ldr	sp, [pc, #-628]	; c <val>
  27c:	090d0710 	stmdbeq	sp, {r4, r8, r9, sl}
  280:	e280200e 	add	r2, r0, #14
@@ -346,7 +346,7 @@ Disassembly of section .text:
  348:	e00e029e 	mul	lr, lr, r2
  34c:	e081100e 	add	r1, r1, lr
  350:	e51fd34c 	ldr	sp, [pc, #-844]	; c <val>
- 354:	e98d7fff 	stmib	sp, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, sp, lr}
+ 354:	e98d5fff 	stmib	sp, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}
  358:	e0811001 	add	r1, r1, r1
  35c:	e0811002 	add	r1, r1, r2
  360:	e0400000 	sub	r0, r0, r0
@@ -387,7 +387,7 @@ Disassembly of section .text:
  3ec:	e00e029e 	mul	lr, lr, r2
  3f0:	e081100e 	add	r1, r1, lr
  3f4:	e51fd3f0 	ldr	sp, [pc, #-1008]	; c <val>
- 3f8:	e99d7fff 	ldmib	sp, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, sp, lr}
+ 3f8:	e99d5fff 	ldmib	sp, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr}
  3fc:	e0811001 	add	r1, r1, r1
  400:	e0811002 	add	r1, r1, r2
  404:	e0400000 	sub	r0, r0, r0

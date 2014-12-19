@@ -11,10 +11,9 @@ module instr_cache_memory #(parameter lines = 65536, parameter tagbits = 14,
   parameter blockoffset = $clog2(blocksize);
 
   logic [tagbits-1:0] tag[lines-1:0]; // n lines x tagbits
-  logic [lines-1:0] v;                // n lines x 1 bit
+  logic [lines-1:0] v, LRU;                // n lines x 1 bit
   logic [setbits-1:0]  set;           // n lines 16 bit address
   logic [31:0] rd3, rd2, rd1, rd0;    // Four words of instruction cache line
-  logic [lines-1:0] LRU;
   logic [tagbits-1:0] Tag;
   logic [blocksize*32-1:0] W1BlockOut, W2BlockOut;
 
