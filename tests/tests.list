@@ -57,5 +57,5 @@ ldr_str_r
 #bx
 ldm
 stm
-#ldrh_strh_i
-#dhry
+ldrh_strh_i
+dhry
