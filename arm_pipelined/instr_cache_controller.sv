@@ -28,10 +28,10 @@ module instr_cache_controller (input  logic clk, reset,
 
   // output logic
   assign IStall =  (state == MEMREAD) | ((state == READY) & ~Hit);
-  assign CWE    = ( (state == MEMREAD) & BusReady );
+  assign CWE    = ( (state == MEMREAD) & BusReady | ( (state == READY) & ~Hit & BusReady) );
   assign RDSel  = ( (state == NEXTINSTR) & (WordOffset == 2'b11) );
-  assign HRequestF  = (state == MEMREAD);
-  assign ResetCounter = ( state == READY ) | ( state == NEXTINSTR );
+  assign HRequestF  = (state == MEMREAD) | ((state == READY) & ~Hit);
+  assign ResetCounter = ( (state == READY) & Hit ) | ( state == NEXTINSTR );
 
   // Create Counter for sequential bus access
   always_ff @(posedge clk, posedge reset)

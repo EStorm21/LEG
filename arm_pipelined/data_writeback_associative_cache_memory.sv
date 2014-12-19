@@ -29,11 +29,17 @@ assign CurrLRU = LRU[set]; // Send the current LRU bit to the output
 data_writeback_associative_cache_way #(lines, tagbits, blocksize) way1(
   .clk(clk), .reset(reset), .WD(CacheWD), .A(ANew), .WE(W1WE), .DirtyIn(DirtyIn),
   .ByteMask(ActiveByteMask), .RV(W1V), .Dirty(W1D), .RTag(W1Tag), .RD(W1BlockOut));
+// cache_way #(lines, tagbits, blocksize, 1) way1(
+//   .clk(clk), .reset(reset), .WD(CacheWD), .A(ANew), .StatusInBits({W1WE, DirtyIn}), 
+//   .ByteMask(ActiveByteMask), .StatusOutBits({W1V, W1D}), .RTag(W1Tag), .RD(W1BlockOut));
 
 // Way 2
 data_writeback_associative_cache_way #(lines, tagbits, blocksize) way2(
    .clk(clk), .reset(reset), .WD(CacheWD), .A(ANew), .WE(W2WE), .DirtyIn(DirtyIn),
    .ByteMask(ActiveByteMask), .RV(W2V), .Dirty(W2D), .RTag(W2Tag), .RD(W2BlockOut));
+// cache_way #(lines, tagbits, blocksize) way2(
+//    .clk(clk), .reset(reset), .WD(CacheWD), .A(ANew), .StatusInBits({W2WE, DirtyIn}),
+//    .ByteMask(ActiveByteMask), .StatusOutBits({W2V, W2D}), .RTag(W2Tag), .RD(W2BlockOut));
 
 // Create the logic for a Hit.
     assign Tag = ANew[31:31-tagbits+1];
