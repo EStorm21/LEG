@@ -135,9 +135,6 @@ module datapath(/// ------ From TOP (Memory) ------
   mux2 #(32)  select4(ALUSrcB4E, 32'h4, IncrementE, ALUSrcBE);
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
 
-  //  ------- TODO Put in controller - flag unit ------
-  // mux2 #(4)   flagmux(ALUFlagsE, MultFlagsE, ResultSelectE[1], FlagsE); // ----------------------------------------------- Changing this line ----------
-  // ---------------------------------------------
 
   // Thumb
   assign TFlagE = ALUSrcBE[0];
