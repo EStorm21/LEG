@@ -35,6 +35,9 @@ module controller(/// ------ From TOP ------
                     output logic         KeepVD, SignExtendD, noRotateD, InstrMuxD, uOpStallD,
                     output logic [3:0]   RegFileRzD,
                     output logic [31:0]  uOpInstrD,
+                    // Handle Multiplication stalls
+                    output logic         MultStallD, MultStallE,
+                    output  logic        WriteMultLoE, WriteMultLoKeptE,
 
                   /// ------ From Hazard ------
                     input  logic         FlushE, StallE, StallM, FlushW, StallW, StalluOp,
@@ -136,7 +139,11 @@ module controller(/// ------ From TOP ------
   assign ResultSelectD = {MultSelectD, RSRselectD};
   assign LDRSTRshiftD  = LdrStrRtypeD;
 
-
+  // < Handling all Multiplication Stalls Decode>
+  assign MultStallD = (InstrD[27:24] == 4'b0) & InstrD[23] & (InstrD[7:4] == 4'b1001) & ~InstrD[25] & ~WriteMultLoE; //For Long Multiply
+  flopenr #(1)  MultOutputSrc(clk, reset, ~StallE, MultStallD, WriteMultLoE);
+  flopenr #(1)  MultOutputSrc1(clk, reset, ~StallE, WriteMultLoE, WriteMultLoKeptE); //write the low register on the second cycle
+  // -----
 
   // ====================================================================================
   // =============================== Execute Stage ======================================
@@ -187,6 +194,11 @@ module controller(/// ------ From TOP ------
   // disable write to register for flag-setting instructions
   assign RegWriteGatedE = DoNotWriteRegE ? 1'b0 : RegWritepreMuxE; 
   
+  // < Handling all Multiplication Stalls Execute>
+  assign MultStallE = (InstrD[27:24] == 4'b0) & InstrE[23] & (InstrE[7:4] == 4'b1001) & ~InstrD[25]; //For Long Multiply
+  // -----
+
+
   // ====================================================================================
   // =============================== Memory Stage =======================================
   // ====================================================================================

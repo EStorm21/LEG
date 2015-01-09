@@ -30,12 +30,12 @@ module datapath(/// ------ From TOP (Memory) ------
                   input  logic        KeepVD, SignExtendD, noRotateD, InstrMuxD,
                   input  logic [3:0]  RegFileRzD,
                   input  logic [31:0] uOpInstrD,
+                  input  logic        WriteMultLoE, WriteMultLoKeptE,
 
                 /// ------ To Controller ------
                   output logic [31:0] InstrD,
                   output logic [31:0] ALUOutM, WriteDataM,
                   output logic [3:0]  ALUFlagsE, MultFlagsE,
-                  output logic        MultStallD, MultStallE,
                   output logic [1:0]  STR_cycleD,
                   output logic [31:0] ALUResultE, DefaultInstrD,
 
@@ -59,7 +59,7 @@ module datapath(/// ------ From TOP (Memory) ------
   logic [31:0] ReadDataRawW, ReadDataW, ALUOutW, ResultW;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D;
   logic [4:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3E_1, WA3M, WA3W, RdLoD , RdLoE;
-  logic        Match_1D_E, Match_2D_E, WriteMultLoE, WriteMultLoD, WriteMultLoKeptE;
+  logic        Match_1D_E, Match_2D_E;
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
   logic [3:0]  DestRegD;
 
@@ -81,9 +81,6 @@ module datapath(/// ------ From TOP (Memory) ------
   assign PCPlus8D = PCPlus4F; // skip register *change to PCPlusXF for thumb
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
  
-  //micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, STR_cycleD,
-  //                          PrevRSRstateD, KeepVD, SignExtendD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
-
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   
   //  ====== Put these into RegFile ========
@@ -95,11 +92,11 @@ module datapath(/// ------ From TOP (Memory) ------
   mux2 #(4)  destregmux(InstrD[15:12], InstrD[19:16], MultSelectD, DestRegD);
   // --------------------
 
-  // ------- Move to Controller/Hazard Unit -----------
-  assign MultStallD = (InstrD[27:24] == 4'b0) & InstrD[23] & (InstrD[7:4] == 4'b1001) & ~InstrD[25] & ~WriteMultLoE; //For Long Multiply
-  assign MultStallE = (InstrD[27:24] == 4'b0) & InstrE[23] & (InstrE[7:4] == 4'b1001) & ~InstrD[25]; //For Long Multiply
-  flopenr #(1)  MultOutputSrc(clk, reset, ~StallE, MultStallD, WriteMultLoE);
-  flopenr #(1)  MultOutputSrc1(clk, reset, ~StallE, WriteMultLoE, WriteMultLoKeptE); //write the low register on the second cycle
+  // ------- Move to Controller/Hazard Unit ----------- //////////////////// BEING EDITED NOW
+  // assign MultStallD = (InstrD[27:24] == 4'b0) & InstrD[23] & (InstrD[7:4] == 4'b1001) & ~InstrD[25] & ~WriteMultLoE; //For Long Multiply
+  // assign MultStallE = (InstrD[27:24] == 4'b0) & InstrE[23] & (InstrE[7:4] == 4'b1001) & ~InstrD[25]; //For Long Multiply
+  // flopenr #(1)  MultOutputSrc(clk, reset, ~StallE, MultStallD, WriteMultLoE);
+  // flopenr #(1)  MultOutputSrc1(clk, reset, ~StallE, WriteMultLoE, WriteMultLoKeptE); //write the low register on the second cycle
   // --------------------------------------------------
   
   regfile     rf(clk, RegWriteW, RA1D, RA2D,

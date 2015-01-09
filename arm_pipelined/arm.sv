@@ -18,6 +18,7 @@ module arm(input  logic        clk, reset,
   logic [31:0] InstrD, DefaultInstrD;
   logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E;
   logic        MultStallD, MultStallE;
+  logic        WriteMultLoE, WriteMultLoKeptE;
 
   /// Output from Controller
   logic [1:0]  RegSrcD, ImmSrcD;
