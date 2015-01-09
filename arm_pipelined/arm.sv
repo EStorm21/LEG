@@ -12,7 +12,7 @@ module arm(input  logic        clk, reset,
   logic [1:0]  RegSrcD, ImmSrcD;
   logic [3:0]  ALUControlE;
   logic        ALUSrcE, BranchTakenE, MemtoRegW, PCSrcW, RegWriteW;
-  logic [3:0]  FlagsE;
+  logic [3:0]  ALUFlagsE, MultFlagsE;
   logic [6:4]  ShiftOpCode_E;
   logic [31:0] InstrD, InstrE, ALUResultE;
   logic        RegWriteM, MemtoRegE, PCWrPendingF, WriteByteE, WriteHalfwordE, WriteHalfwordW, HalfwordOffsetW;

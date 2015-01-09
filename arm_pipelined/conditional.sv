@@ -1,9 +1,10 @@
 module conditional(input  logic [3:0] Cond,
                    input  logic [3:0] Flags,    // Previous flags
-                   input  logic [3:0] ALUFlags, // Incoming ALU flags
+                   input  logic [3:0] ALUFlagsE, MultFlagsE, // Incoming ALU flags
                    input  logic [1:0] FlagsWrite,
                    output logic       CondEx,
-                   output logic [3:0] FlagsNext);
+                   output logic [3:0] FlagsNext,
+                   input logic        MultSelectE);
 
 /***** Brief Description *******
  *
@@ -13,7 +14,9 @@ module conditional(input  logic [3:0] Cond,
  *
  ******************************/
   logic neg, zero, carry, overflow, ge;
-  
+  logic [3:0] ALUFlags;
+
+  assign ALUFlags = MultSelectE ? MultFlagsE : ALUFlagsE;
   assign {neg, zero, carry, overflow} = Flags;
   assign ge = (neg == overflow);
                   

@@ -1,40 +1,53 @@
-module datapath(input  logic        clk, reset,
-                input  logic [1:0]  RegSrcD, ImmSrcD,
-                input  logic        ALUSrcE, BranchTakenE,
-                input  logic [3:0]  ALUControlE, 
-                input  logic [2:0]  MultControlE,
-                input  logic        MemtoRegW, PCSrcW, RegWriteW,
-                output logic [31:0] PCF,
-                input  logic [31:0] InstrF, InstrE, 
-                output logic [31:0] InstrD,
-                output logic [31:0] ALUOutM, WriteDataM,
-                input  logic [31:0] ReadDataM,
-                output logic [3:0]  FlagsE,
-                // hazard logic
-                output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
-                input  logic [1:0]  ForwardAE, ForwardBE,
-                // Added StallE, StallM, FlushW for memory
-                input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, StalluOp,
-                // Handling Data processing Instrs
-                input  logic [3:0]  PreviousFlagsE,
-                input  logic [2:0]  CVUpdateE, ALUOperationE,
-                input  logic         InvertBE, ReverseInputsE, ALUCarryE,
-                // To handle micro-op decoding
-                output logic        doNotUpdateFlagD, uOpStallD, PrevRSRstateD, LDMSTMforwardD,
-                input  logic        RselectE, PrevRSRstateE, LDRSTRshiftE, 
-                input  logic[1:0]   ResultSelectE, // Comes from {MultSelectD, RSRselectD}
-                input  logic [6:4]  ShiftOpCode_E,
-                input  logic        MultSelectD, MultEnable,
-                output logic        MultStallD, MultStallE, uOpRtypeLdrStrD,
-                output logic [3:0]  RegFileRzD,
-                output logic [1:0]  STR_cycleD,
-                output logic [31:0] ALUResultE,
-                input  logic        LoadLengthW, HalfwordOffsetW,
-                input  logic [1:0]  ByteOffsetW,
-                input  logic        WriteByteE, WriteHalfwordE, WriteHalfwordW, IncrementE, //HalfwordOffset, 
-                // added for thumb instructions
-                input  logic        TFlagNextE, 
-                output logic        TFlagE);
+module datapath(/// ------ From TOP (Memory) ------
+                  input  logic        clk, reset,
+                  input  logic [31:0] InstrF,  
+                  input  logic [31:0] ReadDataM,
+
+                /// ------ To TOP (Memory) ------
+                  output logic [31:0] PCF,
+
+                ///  ------- From Controller ------
+                  input  logic [1:0]  RegSrcD, ImmSrcD,
+                  input  logic        ALUSrcE, BranchTakenE,
+                  input  logic [3:0]  ALUControlE, 
+                  input  logic [2:0]  MultControlE,
+                  input  logic        MemtoRegW, PCSrcW, RegWriteW,
+                  input  logic [31:0] InstrE,
+                  // Handling data-processing Instrs (ALU)
+                  input  logic [3:0]  PreviousFlagsE,
+                  input  logic [2:0]  CVUpdateE, ALUOperationE,
+                  input  logic        InvertBE, ReverseInputsE, ALUCarryE,
+                  // To handle micro-op decoding
+                  input  logic        RselectE, PrevRSRstateE, LDRSTRshiftE, 
+                  input  logic [1:0]  ResultSelectE, // 2 bits Comes from {MultSelectE, RSRselectE}
+                  input  logic [6:4]  ShiftOpCode_E,
+                  input  logic        MultSelectD, MultEnable,
+                  // To handle load-store half-words and bytes
+                  input  logic        LoadLengthW, HalfwordOffsetW,
+                  input  logic [1:0]  ByteOffsetW,
+                  input  logic        WriteByteE, WriteHalfwordE, WriteHalfwordW, IncrementE, //HalfwordOffset, 
+
+                /// ------ To Controller ------
+                  output logic [31:0] InstrD,
+                  output logic [31:0] ALUOutM, WriteDataM,
+                  output logic [3:0]  ALUFlagsE, MultFlagsE,
+                  // To handle micro-op decoding
+                  output logic        doNotUpdateFlagD, uOpStallD, PrevRSRstateD, LDMSTMforwardD,
+                  output logic        MultStallD, MultStallE, uOpRtypeLdrStrD,
+                  output logic [3:0]  RegFileRzD,
+                  output logic [1:0]  STR_cycleD,
+                  output logic [31:0] ALUResultE,
+
+                /// ------ From Hazard ------
+                  input  logic [1:0]  ForwardAE, ForwardBE,
+                  input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, StalluOp, // Added StallE, StallM, FlushW for memory
+
+                /// ------ To Hazard ------
+                  output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
+
+                /// ------ added for thumb instructions ------
+                  input  logic        TFlagNextE, 
+                  output logic        TFlagE);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
@@ -48,7 +61,7 @@ module datapath(input  logic        clk, reset,
   logic [4:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3E_1, WA3M, WA3W, RdLoD , RdLoE;
   logic        Match_1D_E, Match_2D_E, WriteMultLoE, WriteMultLoD, WriteMultLoKeptE;
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
-  logic [3:0]  ALUFlagsE, MultFlagsE, DestRegD;
+  logic [3:0]  DestRegD;
 
   // ====================================================================================
   // ================================ Fetch Stage =======================================
@@ -123,8 +136,9 @@ module datapath(input  logic        clk, reset,
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
 
   //  ------- TODO Put in controller - flag unit ------
-  mux2 #(4)   flagmux(ALUFlagsE, MultFlagsE, ResultSelectE[1], FlagsE);
+  // mux2 #(4)   flagmux(ALUFlagsE, MultFlagsE, ResultSelectE[1], FlagsE); // ----------------------------------------------- Changing this line ----------
   // ---------------------------------------------
+
   // Thumb
   assign TFlagE = ALUSrcBE[0];
 

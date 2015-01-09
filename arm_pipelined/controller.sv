@@ -1,36 +1,49 @@
-module controller(input  logic         clk, reset,
-                  input  logic [31:0]  InstrD,
-                  input  logic [3:0]   FlagsE,
-                  input  logic [1:0]   STR_cycleD,
-                  output logic [1:0]   RegSrcD, ImmSrcD, 
-                  output logic         ALUSrcE, BranchTakenE,
-                  output logic [3:0]   ALUControlE,
-                  output logic [2:0]   MultControlE,
-                  output logic         MemWriteM,
-                  output logic         MemtoRegW, PCSrcW, RegWriteW,
-                  // hazard interface
-                  output logic         RegWriteM, MemtoRegE, PCWrPendingF,
-                  input  logic         FlushE, StallE, StallM, FlushW, StallW,
-                  output logic         MemtoRegM,
-                  output logic  [2:0]   ALUOperationE, CVUpdateE,
-                  output logic          DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryE,
-                  output logic  [3:0]   PreviousFlagsE,
-                  // For micro-op decoding
-                  input logic          doNotUpdateFlagD, PrevRSRstateD, LDMSTMforwardD, uOpRtypeLdrStrD,
-                  output logic         RselectE, PrevRSRstateE, LDRSTRshiftE, LDMSTMforwardE, 
-                  output logic  [1:0]  ResultSelectE,
-                  input  logic  [3:0]  RegFileRzD, 
-                  output logic  [6:4]  ShiftOpCode_E,
-                  output logic         MultSelectD, MultEnable,
-                  output logic [31:0]  InstrE,
-                  input  logic [31:0]  ALUResultE,
-                  output logic [3:0]   ByteMaskM,
-                  output logic         LoadLengthW, HalfwordOffsetW,
-                  output logic [1:0]   ByteOffsetW,
-                  output logic         WriteByteE, WriteHalfwordE, WriteHalfwordW,
-                  // For BX instruction
-                  output logic         BXInstrD, TFlagNextE,
-                  input  logic         TFlagE);
+module controller(/// ------ From TOP ------
+                    input  logic         clk, reset,
+
+                  /// ------ To   TOP ------
+                    output logic         MemtoRegM,
+
+                  /// ------ From Datapath ------
+                    input  logic [31:0]  InstrD,
+                    input  logic [3:0]   ALUFlagsE, MultFlagsE,
+                    // For micro-op decoding
+                    input  logic         doNotUpdateFlagD, PrevRSRstateD, LDMSTMforwardD, uOpRtypeLdrStrD,
+                    input  logic  [3:0]  RegFileRzD,
+                    input  logic [31:0]  ALUResultE,
+
+                  /// ------ To   Datapath ------
+                    output logic [1:0]   RegSrcD, ImmSrcD, 
+                    output logic         ALUSrcE, BranchTakenE,
+                    output logic [3:0]   ALUControlE,
+                    output logic [2:0]   MultControlE,
+                    output logic         MemWriteM,
+                    output logic         MemtoRegW, PCSrcW, RegWriteW,
+                    // For ALU logic unit
+                    output logic  [2:0]  ALUOperationE, CVUpdateE,
+                    output logic         DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryE,
+                    output logic  [3:0]  PreviousFlagsE,
+                    // For micro-op decoding
+                    output logic         RselectE, PrevRSRstateE, LDRSTRshiftE, LDMSTMforwardE, 
+                    output logic  [1:0]  ResultSelectE,
+                    output logic  [6:4]  ShiftOpCode_E,
+                    output logic         MultSelectD, MultEnable,
+                    output logic [31:0]  InstrE,
+                    // To handle memory load/store byte and halfword
+                    output logic [3:0]   ByteMaskM,
+                    output logic         LoadLengthW, HalfwordOffsetW,
+                    output logic [1:0]   ByteOffsetW,
+                    output logic         WriteByteE, WriteHalfwordE, WriteHalfwordW,
+
+                  /// ------ From Hazard ------
+                    input  logic         FlushE, StallE, StallM, FlushW, StallW,
+
+                  /// ------ To   Hazard ------
+                    output logic         RegWriteM, MemtoRegE, PCWrPendingF,
+
+                  /// For BX instruction
+                    output logic         BXInstrD, TFlagNextE,
+                    input  logic         TFlagE);
 
   logic [12:0] ControlsD;
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
@@ -46,12 +59,10 @@ module controller(input  logic         clk, reset,
   logic [3:0]  FlagsNextE, CondE;
   logic        RegWritepreMuxE, RselectD, RSRselectD, LdrStrRtypeD;
   logic [1:0]  ResultSelectD;
-  logic [6:4]  ShiftOpCode_D;
   logic [11:0] StateRegisterDataE;
   logic        ByteOrWordE, ByteOrWordM, LdrStr_HalfwordD, LdrStr_HalfwordE, HalfwordE, WriteHalfwordM;
   logic [1:0]  ByteOffsetE, ByteOffsetM;
  
-  assign ShiftOpCode_D = InstrD[6:4];
 
 
   // ====================================================================================
@@ -113,8 +124,8 @@ module controller(input  logic         clk, reset,
   assign LdrStrRtypeD  = uOpRtypeLdrStrD | (LdrStr_HalfwordD & ~InstrD[20] & ~InstrD[22] & InstrD[11:8] == 4'b0);
   assign MultControlD  = InstrD[23:21];
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~RegFileRzD[2]) | BranchD);
-  assign RselectD      = (InstrD[27:25] == 3'b000 & ShiftOpCode_D[4] == 0) | (LdrStrRtypeD & ~LDMSTMforwardD) ;
-  assign RSRselectD    = (InstrD[27:25] == 3'b000 & ~InstrD[7] & ShiftOpCode_D[4] == 1) & ~(InstrD[27:4] == {8'b0001_0010, 12'hFFF, 4'b0001});
+  assign RselectD      = (InstrD[27:25] == 3'b000 & InstrD[4] == 0) | (LdrStrRtypeD & ~LDMSTMforwardD) ;
+  assign RSRselectD    = (InstrD[27:25] == 3'b000 & ~InstrD[7] & InstrD[4] == 1) & ~(InstrD[27:4] == {8'b0001_0010, 12'hFFF, 4'b0001});
   assign ResultSelectD = {MultSelectD, RSRselectD};
   assign LDRSTRshiftD  = LdrStrRtypeD;
 
@@ -145,8 +156,8 @@ module controller(input  logic         clk, reset,
   cpsr          cpsrE(clk, reset, FlagsNextE, 6'b0, 5'b0, 2'b0, TFlagNextE, ~StallE, 1'b0, 1'b0, StateRegisterDataE);
   assign  PreviousFlagsE = StateRegisterDataE[11:8];
   assign  PreviousTFlagE = StateRegisterDataE[5];
-  flopenrc  #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, ShiftOpCode_D[6:4],ShiftOpCode_E[6:4]);
-  conditional Cond(CondE, PreviousFlagsE, FlagsE, FlagWriteE, CondExE, FlagsNextE);
+  flopenrc  #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);
+  conditional Cond(CondE, PreviousFlagsE, ALUFlagsE, MultFlagsE, FlagWriteE, CondExE, FlagsNextE, ResultSelectE[1]);
 
   /*** BRIEF ***
    * These bits select which bit of memory to mask for Load/Store Byte, Word and Halfword operations

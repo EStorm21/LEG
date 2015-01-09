@@ -12,13 +12,8 @@ module alu(input  logic [31:0] AIn, BIn,
 
   // TODO: Move cycle2E and cycle1E to controller; let controller send single bit to ALU.
   // Make this as structural as possible - Talk to David.
-  always_comb 
-  begin
-    if(PrevRSRstateE)
-      ShifterCarryOutE = ShifterCarryOut_cycle2E;
-    else
-      ShifterCarryOutE = ShifterCarryOut_cycle1E;
-  end
+
+  assign ShifterCarryOutE = PrevRSRstateE ? ShifterCarryOut_cycle2E : ShifterCarryOut_cycle1E;
 
   mux2 #(32)  alu_inA(AIn, BIn, ReverseInputs, A); 
   mux2 #(32)  alu_inB(BIn, AIn, ReverseInputs, B); 
