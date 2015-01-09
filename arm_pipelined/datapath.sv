@@ -26,21 +26,22 @@ module datapath(/// ------ From TOP (Memory) ------
                   input  logic        LoadLengthW, HalfwordOffsetW,
                   input  logic [1:0]  ByteOffsetW,
                   input  logic        WriteByteE, WriteHalfwordE, WriteHalfwordW, IncrementE, //HalfwordOffset, 
+                  // Added for moving MicroOpFSM to Controller decode
+                  input  logic        KeepVD, SignExtendD, noRotateD, InstrMuxD,
+                  input  logic [3:0]  RegFileRzD,
+                  input  logic [31:0] uOpInstrD,
 
                 /// ------ To Controller ------
                   output logic [31:0] InstrD,
                   output logic [31:0] ALUOutM, WriteDataM,
                   output logic [3:0]  ALUFlagsE, MultFlagsE,
-                  // To handle micro-op decoding
-                  output logic        doNotUpdateFlagD, uOpStallD, PrevRSRstateD, LDMSTMforwardD,
                   output logic        MultStallD, MultStallE, uOpRtypeLdrStrD,
-                  output logic [3:0]  RegFileRzD,
                   output logic [1:0]  STR_cycleD,
-                  output logic [31:0] ALUResultE,
+                  output logic [31:0] ALUResultE, DefaultInstrD,
 
                 /// ------ From Hazard ------
                   input  logic [1:0]  ForwardAE, ForwardBE,
-                  input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, StalluOp, // Added StallE, StallM, FlushW for memory
+                  input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, // Added StallE, StallM, FlushW for memory
 
                 /// ------ To Hazard ------
                   output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
@@ -51,8 +52,7 @@ module datapath(/// ------ From TOP (Memory) ------
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnextF;
-  logic [31:0] ExtImmD, Rd1D, Rd2D, PCPlus8D, RotImmD, DefaultInstrD, uOpInstrD;
-  logic        InstrMuxD, SignExtendD, noRotateD;
+  logic [31:0] ExtImmD, Rd1D, Rd2D, PCPlus8D, RotImmD;
   logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ALUSrcB4E, ShiftBE;
   logic [31:0] MultOutputBE, MultOutputAE;
   logic        ShifterCarryOutE;
@@ -80,8 +80,10 @@ module datapath(/// ------ From TOP (Memory) ------
 
   assign PCPlus8D = PCPlus4F; // skip register *change to PCPlusXF for thumb
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
-  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, STR_cycleD,
-                            PrevRSRstateD, KeepVD, SignExtendD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
+ 
+  //micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, STR_cycleD,
+  //                          PrevRSRstateD, KeepVD, SignExtendD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
+
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   
   //  ====== Put these into RegFile ========

@@ -9,12 +9,20 @@ module arm(input  logic        clk, reset,
            output logic        MemtoRegM,
            output logic [3:0]  ByteMaskM);
 
+  /// Output from Hazard Unit
+
+
+  /// Output from Datapath
+
+
+  /// Output from Controller
+
   logic [1:0]  RegSrcD, ImmSrcD;
   logic [3:0]  ALUControlE;
   logic        ALUSrcE, BranchTakenE, MemtoRegW, PCSrcW, RegWriteW;
   logic [3:0]  ALUFlagsE, MultFlagsE;
   logic [6:4]  ShiftOpCode_E;
-  logic [31:0] InstrD, InstrE, ALUResultE;
+  logic [31:0] InstrD, InstrE, ALUResultE, DefaultInstrD;
   logic        RegWriteM, MemtoRegE, PCWrPendingF, WriteByteE, WriteHalfwordE, WriteHalfwordW, HalfwordOffsetW;
   logic [1:0]  ForwardAE, ForwardBE;
   logic        StallF, StallD, FlushD, StallE, FlushE, StallM, FlushW, StallW;
@@ -31,6 +39,9 @@ module arm(input  logic        clk, reset,
   logic [3:0]  RegFileRzD;
   // Thumb 
   logic        BXInstrD, BXInstrE, TFlagNextE, TFlagE, IncrementE;
+
+  logic        KeepVD, SignExtendD, noRotateD, InstrMuxD;
+  logic [31:0] uOpInstrD;
 
   controller c(.*);
   datapath dp(.*); 

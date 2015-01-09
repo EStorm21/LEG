@@ -7,10 +7,7 @@ module controller(/// ------ From TOP ------
                   /// ------ From Datapath ------
                     input  logic [31:0]  InstrD,
                     input  logic [3:0]   ALUFlagsE, MultFlagsE,
-                    // For micro-op decoding
-                    input  logic         doNotUpdateFlagD, PrevRSRstateD, LDMSTMforwardD, uOpRtypeLdrStrD,
-                    input  logic  [3:0]  RegFileRzD,
-                    input  logic [31:0]  ALUResultE,
+                    input  logic [31:0]  ALUResultE, DefaultInstrD,
 
                   /// ------ To   Datapath ------
                     output logic [1:0]   RegSrcD, ImmSrcD, 
@@ -34,9 +31,13 @@ module controller(/// ------ From TOP ------
                     output logic         LoadLengthW, HalfwordOffsetW,
                     output logic [1:0]   ByteOffsetW,
                     output logic         WriteByteE, WriteHalfwordE, WriteHalfwordW,
+                    // For micro-op decoding
+                    output logic         KeepVD, SignExtendD, noRotateD, InstrMuxD, uOpStallD,
+                    output logic [3:0]   RegFileRzD,
+                    output logic [31:0]  uOpInstrD,
 
                   /// ------ From Hazard ------
-                    input  logic         FlushE, StallE, StallM, FlushW, StallW,
+                    input  logic         FlushE, StallE, StallM, FlushW, StallW, StalluOp,
 
                   /// ------ To   Hazard ------
                     output logic         RegWriteM, MemtoRegE, PCWrPendingF,
@@ -62,12 +63,18 @@ module controller(/// ------ From TOP ------
   logic [11:0] StateRegisterDataE;
   logic        ByteOrWordE, ByteOrWordM, LdrStr_HalfwordD, LdrStr_HalfwordE, HalfwordE, WriteHalfwordM;
   logic [1:0]  ByteOffsetE, ByteOffsetM;
- 
+  logic [1:0]  STR_cycleD;
+  logic        doNotUpdateFlagD, LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD;
 
 
   // ====================================================================================
   // =============================== Decode Stage =======================================
   // ====================================================================================
+
+  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, STR_cycleD,
+                            PrevRSRstateD, KeepVD, SignExtendD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
+
+
   assign LdrStr_HalfwordD = (InstrD[27:25] == 3'b000 & InstrD[7] & InstrD[4] & ~(InstrD[6:5] == 2'b00));
 
   always_comb
@@ -128,6 +135,7 @@ module controller(/// ------ From TOP ------
   assign RSRselectD    = (InstrD[27:25] == 3'b000 & ~InstrD[7] & InstrD[4] == 1) & ~(InstrD[27:4] == {8'b0001_0010, 12'hFFF, 4'b0001});
   assign ResultSelectD = {MultSelectD, RSRselectD};
   assign LDRSTRshiftD  = LdrStrRtypeD;
+
 
 
   // ====================================================================================
