@@ -32,7 +32,7 @@ module arm(input  logic        clk, reset,
   logic [3:0]  PreviousFlagsE; // [1] is C, [0] is V
   logic [1:0]  ResultSelectE, STR_cycleD, ByteOffsetW;
   logic [2:0]  MultControlE;
-  logic        KeepVD, SignExtendD, noRotateD, InstrMuxD;
+  logic        KeepVE, SignExtendD, noRotateD, InstrMuxD;
   logic [31:0] uOpInstrD;
   logic [2:0]  ALUOperationE, CVUpdateE;
   logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnable, LoadLengthW;

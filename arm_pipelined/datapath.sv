@@ -27,7 +27,7 @@ module datapath(/// ------ From TOP (Memory) ------
                   input  logic [1:0]  ByteOffsetW,
                   input  logic        WriteByteE, WriteHalfwordE, WriteHalfwordW, IncrementE, //HalfwordOffset, 
                   // Added for moving MicroOpFSM to Controller decode
-                  input  logic        KeepVD, SignExtendD, noRotateD, InstrMuxD,
+                  input  logic        KeepVE, SignExtendD, noRotateD, InstrMuxD,
                   input  logic [3:0]  RegFileRzD,
                   input  logic [31:0] uOpInstrD,
                   input  logic        WriteMultLoE, WriteMultLoKeptE,
@@ -92,12 +92,6 @@ module datapath(/// ------ From TOP (Memory) ------
   mux2 #(4)  destregmux(InstrD[15:12], InstrD[19:16], MultSelectD, DestRegD);
   // --------------------
 
-  // ------- Move to Controller/Hazard Unit ----------- //////////////////// BEING EDITED NOW
-  // assign MultStallD = (InstrD[27:24] == 4'b0) & InstrD[23] & (InstrD[7:4] == 4'b1001) & ~InstrD[25] & ~WriteMultLoE; //For Long Multiply
-  // assign MultStallE = (InstrD[27:24] == 4'b0) & InstrE[23] & (InstrE[7:4] == 4'b1001) & ~InstrD[25]; //For Long Multiply
-  // flopenr #(1)  MultOutputSrc(clk, reset, ~StallE, MultStallD, WriteMultLoE);
-  // flopenr #(1)  MultOutputSrc1(clk, reset, ~StallE, WriteMultLoE, WriteMultLoKeptE); //write the low register on the second cycle
-  // --------------------------------------------------
   
   regfile     rf(clk, RegWriteW, RA1D, RA2D,
                  WA3W, ResultW, PCPlus8D, 
@@ -124,7 +118,7 @@ module datapath(/// ------ From TOP (Memory) ------
   // ------------------------------------------
 
   //  ------------- Put in controller ---------
-  flopenr #(1)  keepV(clk, reset, ~StallE, KeepVD, KeepVE);
+  // flopenr #(1)  keepV(clk, reset, ~StallE, KeepVD, KeepVE);
   // ---------------------------------------------
 
   mux3 #(32)  byp1mux(Rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);

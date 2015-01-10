@@ -32,7 +32,7 @@ module controller(/// ------ From TOP ------
                     output logic [1:0]   ByteOffsetW,
                     output logic         WriteByteE, WriteHalfwordE, WriteHalfwordW,
                     // For micro-op decoding
-                    output logic         KeepVD, SignExtendD, noRotateD, InstrMuxD, uOpStallD,
+                    output logic         KeepVE, SignExtendD, noRotateD, InstrMuxD, uOpStallD,
                     output logic [3:0]   RegFileRzD,
                     output logic [31:0]  uOpInstrD,
                     // Handle Multiplication stalls
@@ -166,6 +166,7 @@ module controller(/// ------ From TOP ------
   alu_decoder alu_dec(ALUOpE, ALUControlE, PreviousFlagsE[1:0], BXInstrE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
                     
   flopenrc  #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
+  flopenr #(1)  keepV(clk, reset, ~StallE, KeepVD, KeepVE);
   
   mux2 #(1) updatetflag(PreviousTFlagE, TFlagE, BXInstrE, TFlagNextE);
   cpsr          cpsrE(clk, reset, FlagsNextE, 6'b0, 5'b0, 2'b0, TFlagNextE, ~StallE, 1'b0, 1'b0, StateRegisterDataE);

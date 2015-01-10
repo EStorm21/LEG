@@ -44,7 +44,7 @@
 #ldr_str_ri
 #memrewrite
 #rand0
-#random1
+random1
 #mul
 #mla
 #smull
