@@ -16,9 +16,10 @@ module arm(input  logic        clk, reset,
   /// Output from Datapath
   logic [3:0]  ALUFlagsE, MultFlagsE;
   logic [31:0] InstrD, DefaultInstrD;
-  logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E;
+  logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_1D_E, Match_2D_E;
   logic        MultStallD, MultStallE;
   logic        WriteMultLoE, WriteMultLoKeptE;
+  logic        ShifterCarryOutE;
 
   /// Output from Controller
   logic [1:0]  RegSrcD, ImmSrcD;
@@ -37,6 +38,8 @@ module arm(input  logic        clk, reset,
   logic [2:0]  ALUOperationE, CVUpdateE;
   logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnable, LoadLengthW;
   logic [3:0]  RegFileRzD;
+  logic        ShifterCarryOut_cycle2E;
+
   
   // Thumb 
   logic        BXInstrD, BXInstrE, TFlagNextE, TFlagE, IncrementE;

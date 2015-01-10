@@ -1,5 +1,5 @@
 module hazard(input  logic       clk, reset,
-              input  logic       Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
+              input  logic       Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_1D_E, Match_2D_E,
               input  logic       RegWriteM, RegWriteW,
               input  logic       BranchTakenE, MemtoRegE,
               input  logic       PCWrPendingF, PCSrcW,
@@ -48,7 +48,8 @@ module hazard(input  logic       clk, reset,
 
   // flopr #(1)  MultOutputSrc(clk, reset, MultStallE, WriteMultLoE);
   // assign WriteMultLoD = MultStallD;
-  
+  assign Match_12D_E = Match_1D_E | Match_2D_E;
+
   assign ldrStallD = Match_12D_E & MemtoRegE;
   
   assign StallD = ldrStallD | DStall | uOpStallD | IStall | MultStallD;

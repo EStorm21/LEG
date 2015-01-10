@@ -31,6 +31,7 @@ module datapath(/// ------ From TOP (Memory) ------
                   input  logic [3:0]  RegFileRzD,
                   input  logic [31:0] uOpInstrD,
                   input  logic        WriteMultLoE, WriteMultLoKeptE,
+                  input  logic        ShifterCarryOut_cycle2E,
 
                 /// ------ To Controller ------
                   output logic [31:0] InstrD,
@@ -38,13 +39,15 @@ module datapath(/// ------ From TOP (Memory) ------
                   output logic [3:0]  ALUFlagsE, MultFlagsE,
                   output logic [1:0]  STR_cycleD,
                   output logic [31:0] ALUResultE, DefaultInstrD,
+                  output logic        ShifterCarryOutE,
 
                 /// ------ From Hazard ------
                   input  logic [1:0]  ForwardAE, ForwardBE,
                   input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, // Added StallE, StallM, FlushW for memory
 
                 /// ------ To Hazard ------
-                  output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_12D_E,
+                  output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, 
+                  output logic        Match_1D_E, Match_2D_E,
 
                 /// ------ added for thumb instructions ------
                   input  logic        TFlagNextE, 
@@ -55,11 +58,10 @@ module datapath(/// ------ From TOP (Memory) ------
   logic [31:0] ExtImmD, Rd1D, Rd2D, PCPlus8D, RotImmD;
   logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ALUSrcB4E, ShiftBE;
   logic [31:0] MultOutputBE, MultOutputAE;
-  logic        ShifterCarryOutE;
+
   logic [31:0] ReadDataRawW, ReadDataW, ALUOutW, ResultW;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D;
   logic [4:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3E_1, WA3M, WA3W, RdLoD , RdLoE;
-  logic        Match_1D_E, Match_2D_E;
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
   logic [3:0]  DestRegD;
 
@@ -117,9 +119,6 @@ module datapath(/// ------ From TOP (Memory) ------
   flopenr #(5)  ra2reg(clk, reset, ~StallE, RA2D, RA2E);
   // ------------------------------------------
 
-  //  ------------- Put in controller ---------
-  // flopenr #(1)  keepV(clk, reset, ~StallE, KeepVD, KeepVE);
-  // ---------------------------------------------
 
   mux3 #(32)  byp1mux(Rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(Rd2E, ResultW, ALUOutM, ForwardBE, WriteDataE);
@@ -142,9 +141,7 @@ module datapath(/// ------ From TOP (Memory) ------
 
   // TODO: implement as a barrel shift
   shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], LDRSTRshiftE, PreviousFlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
-  // ------ TODO: Move to controller ---
-  flopenr #(1) shftrCarryOut(clk, reset, ~StallE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
-  // -----------------------------------
+  
   alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, ALUOutputE, ALUFlagsE, PreviousFlagsE[1:0], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, KeepVE); 
   
   // TODO: Use a signle multiplier for both signed and unsigned
@@ -180,8 +177,5 @@ module datapath(/// ------ From TOP (Memory) ------
   eqcmp #(5) m3(WA3W, RA2E, Match_2E_W);
   eqcmp #(5) m4a(WA3E, RA1D, Match_1D_E);
   eqcmp #(5) m4b(WA3E, RA2D, Match_2D_E);
-
-  // TODO: Move this to the Hazard Unit
-  assign Match_12D_E = Match_1D_E | Match_2D_E;
   
 endmodule

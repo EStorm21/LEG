@@ -8,6 +8,7 @@ module controller(/// ------ From TOP ------
                     input  logic [31:0]  InstrD,
                     input  logic [3:0]   ALUFlagsE, MultFlagsE,
                     input  logic [31:0]  ALUResultE, DefaultInstrD,
+                    input  logic         ShifterCarryOutE,
 
                   /// ------ To   Datapath ------
                     output logic [1:0]   RegSrcD, ImmSrcD, 
@@ -38,6 +39,8 @@ module controller(/// ------ From TOP ------
                     // Handle Multiplication stalls
                     output logic         MultStallD, MultStallE,
                     output  logic        WriteMultLoE, WriteMultLoKeptE,
+                    // Shifter carry out to ALU
+                    output  logic        ShifterCarryOut_cycle2E,
 
                   /// ------ From Hazard ------
                     input  logic         FlushE, StallE, StallM, FlushW, StallW, StalluOp,
@@ -167,6 +170,7 @@ module controller(/// ------ From TOP ------
                     
   flopenrc  #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
   flopenr #(1)  keepV(clk, reset, ~StallE, KeepVD, KeepVE);
+  flopenr #(1) shftrCarryOut(clk, reset, ~StallE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
   
   mux2 #(1) updatetflag(PreviousTFlagE, TFlagE, BXInstrE, TFlagNextE);
   cpsr          cpsrE(clk, reset, FlagsNextE, 6'b0, 5'b0, 2'b0, TFlagNextE, ~StallE, 1'b0, 1'b0, StateRegisterDataE);
