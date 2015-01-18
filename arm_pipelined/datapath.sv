@@ -50,7 +50,10 @@ module datapath(/// ------ From TOP (Memory) ------
                   // output logic        Match_1D_E, Match_2D_E,
 
                 /// ------ To Address Path ------
-                  output logic [4:0]   WA3M, WA3W, WA3E, RA1E, RA2E, RA1D, RA2D,
+                  output logic [4:0]   WA3E, RA1E, RA2E, RA1D, RA2D,
+
+                /// ------ From Address Path ------
+                  input  logic [4:0]   WA3W,
 
                 /// ------ added for thumb instructions ------
                   input  logic        TFlagNextE, 
@@ -161,14 +164,14 @@ module datapath(/// ------ From TOP (Memory) ------
   // ====================================================================================
   flopenr #(32) aluresreg(clk, reset, ~StallM, ALUResultE, ALUOutM);
   flopenr #(32) wdreg(clk, reset, ~StallM, WriteDataReplE, WriteDataM);
-  flopenr #(5)  wa3mreg(clk, reset, ~StallM, WA3E, WA3M);
+  // flopenr #(5)  wa3mreg(clk, reset, ~StallM, WA3E, WA3M);
   
   // ====================================================================================
   // =============================== Writeback Stage ====================================
   // ====================================================================================
   flopenrc #(32) aluoutreg(clk, reset, ~StallW, FlushW, ALUOutM, ALUOutW);
   flopenrc #(32) rdreg(clk, reset, ~StallW, FlushW, ReadDataM, ReadDataRawW);
-  flopenrc #(5)  wa3wreg(clk, reset, ~StallW, FlushW, WA3M, WA3W); 
+  // flopenrc #(5)  wa3wreg(clk, reset, ~StallW, FlushW, WA3M, WA3W); 
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, ResultW);
 
   //TODO: Think about how we want to implement this - should it be in the 32bit datapath?
