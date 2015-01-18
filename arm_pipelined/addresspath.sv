@@ -2,15 +2,18 @@ module addresspath( /// ------ From TOP ------
                     input  logic        clk, reset,
                     /// From Controller
                     input  logic [31:0] InstrE,					  
-                    input  logic        WriteMultLoE,
+                    input  logic        WriteMultLoE, MultSelectD, 
                     input  logic [3:0]  RegFileRzD,
+                    input  logic [1:0]  RegSrcD, 
+
           					/// To Controller 
 
           					/// From Datapath
-                    input logic [4:0]   RA1D, RA2D,
-                    input logic [3:0]   DestRegD,
+                    input logic [31:0]  InstrD,
+
           					/// To Datapath
-                    output logic [4:0]  WA3W, 
+                    output logic [4:0]  WA3W, RA1D, RA2D,
+
           					/// From Hazard
                     input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, 
 
@@ -20,6 +23,8 @@ module addresspath( /// ------ From TOP ------
           					);
 
   logic [4:0]  WA3M, WA3E, RA1E, RA2E, RdLoE, WA3E_1;
+  logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D, DestRegD;
+
   // ====================================================================================
   // ================================ Fetch Stage =======================================
   // ====================================================================================
@@ -27,7 +32,14 @@ module addresspath( /// ------ From TOP ------
   // ====================================================================================
   // ================================ Decode Stage ======================================
   // ====================================================================================
-  // To move reg-file selector here
+  // Selecting appropriate register for Regfile RA1, RA2 and WA3
+  mux3 #(4)   ra1mux(InstrD[19:16], 4'b1111, InstrD[3:0], {MultSelectD, RegSrcD[0]}, RA1_RnD);
+  mux3 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], RA1_RnD, {MultSelectD, (RegFileRzD[2] & RegFileRzD[3])}, RA1_4b_D);
+  mux3 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], InstrD[11:8], {MultSelectD, RegSrcD[1]}, RA2_4b_D);
+  mux2 #(4)   destregmux(InstrD[15:12], InstrD[19:16], MultSelectD, DestRegD);
+
+  assign RA1D = {RegFileRzD[0], RA1_4b_D};
+  assign RA2D = {RegFileRzD[1], RA2_4b_D};
 
   // ====================================================================================
   // ================================ Execute Stage =====================================

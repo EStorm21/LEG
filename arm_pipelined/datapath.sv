@@ -7,7 +7,7 @@ module datapath(/// ------ From TOP (Memory) ------
                   output logic [31:0] PCF,
 
                 ///  ------- From Controller ------
-                  input  logic [1:0]  RegSrcD, ImmSrcD,
+                  input  logic [1:0]  ImmSrcD,
                   input  logic        ALUSrcE, BranchTakenE,
                   input  logic [3:0]  ALUControlE, 
                   input  logic [2:0]  MultControlE,
@@ -21,7 +21,7 @@ module datapath(/// ------ From TOP (Memory) ------
                   input  logic        RselectE, PrevRSRstateE, LDRSTRshiftE, 
                   input  logic [1:0]  ResultSelectE, // 2 bits Comes from {MultSelectE, RSRselectE}
                   input  logic [6:4]  ShiftOpCode_E,
-                  input  logic        MultSelectD, MultEnable,
+                  input  logic        MultEnable,
                   // To handle load-store half-words and bytes
                   input  logic        LoadLengthW, HalfwordOffsetW,
                   input  logic [1:0]  ByteOffsetW,
@@ -46,15 +46,11 @@ module datapath(/// ------ From TOP (Memory) ------
                   input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, // Added StallE, StallM, FlushW for memory
 
                 /// ------ To Hazard ------
-                  // output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, 
-                  // output logic        Match_1D_E, Match_2D_E,
 
                 /// ------ To Address Path ------
-                  output logic [4:0]   RA1D, RA2D,
-                  output logic [3:0]   DestRegD,
 
                 /// ------ From Address Path ------
-                  input  logic [4:0]   WA3W,
+                  input  logic [4:0]   WA3W, RA1D, RA2D,
 
                 /// ------ added for thumb instructions ------
                   input  logic        TFlagNextE, 
@@ -67,7 +63,6 @@ module datapath(/// ------ From TOP (Memory) ------
   logic [31:0] MultOutputBE, MultOutputAE;
 
   logic [31:0] ReadDataRawW, ReadDataW, ALUOutW, ResultW;
-  logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D;
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
   
 
@@ -88,18 +83,7 @@ module datapath(/// ------ From TOP (Memory) ------
 
   assign PCPlus8D = PCPlus4F; // skip register *change to PCPlusXF for thumb
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
- 
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
-  
-  //  ====== Put these into RegFile ========
-  mux3 #(4)   ra1mux(InstrD[19:16], 4'b1111, InstrD[3:0], {MultSelectD, RegSrcD[0]}, RA1_RnD);
-  mux3 #(4)   ra1RSRmux(RA1_RnD, InstrD[11:8], RA1_RnD, {MultSelectD, (RegFileRzD[2] & RegFileRzD[3])}, RA1_4b_D);
-  assign RA1D = {RegFileRzD[0], RA1_4b_D};
-  mux3 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], InstrD[11:8], {MultSelectD, RegSrcD[1]}, RA2_4b_D);
-  assign RA2D = {RegFileRzD[1], RA2_4b_D};
-  mux2 #(4)  destregmux(InstrD[15:12], InstrD[19:16], MultSelectD, DestRegD);
-  // --------------------
-
   
   regfile     rf(clk, RegWriteW, RA1D, RA2D,
                  WA3W, ResultW, PCPlus8D, 
