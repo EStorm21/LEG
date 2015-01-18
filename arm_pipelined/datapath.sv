@@ -30,7 +30,7 @@ module datapath(/// ------ From TOP (Memory) ------
                   input  logic        KeepVE, SignExtendD, noRotateD, InstrMuxD,
                   input  logic [3:0]  RegFileRzD,
                   input  logic [31:0] uOpInstrD,
-                  input  logic        WriteMultLoE, WriteMultLoKeptE,
+                  input  logic        WriteMultLoKeptE,
                   input  logic        ShifterCarryOut_cycle2E,
 
                 /// ------ To Controller ------
@@ -50,7 +50,8 @@ module datapath(/// ------ From TOP (Memory) ------
                   // output logic        Match_1D_E, Match_2D_E,
 
                 /// ------ To Address Path ------
-                  output logic [4:0]   WA3E, RA1E, RA2E, RA1D, RA2D,
+                  output logic [4:0]   RA1D, RA2D,
+                  output logic [3:0]   DestRegD,
 
                 /// ------ From Address Path ------
                   input  logic [4:0]   WA3W,
@@ -68,9 +69,9 @@ module datapath(/// ------ From TOP (Memory) ------
   logic [31:0] ReadDataRawW, ReadDataW, ALUOutW, ResultW;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D;
   // logic [4:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3E_1, WA3M, WA3W, RdLoD , RdLoE; - editing
-  logic [4:0]  WA3E_1, RdLoD , RdLoE;
+  logic [4:0]  RdLoD;
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
-  logic [3:0]  DestRegD;
+  
 
   // ====================================================================================
   // ================================ Fetch Stage =======================================
@@ -121,9 +122,9 @@ module datapath(/// ------ From TOP (Memory) ------
   flopenr #(32) immreg(clk, reset, ~StallE, RotImmD, ExtImmE); // Modified by Ivan
 
   // --------Let's create a 5 bit "Address Path"-------
-  flopenr #(5)  wa3ereg(clk, reset, ~StallE, {RegFileRzD[2], DestRegD}, WA3E_1); 
-  flopenr #(5)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
-  flopenr #(5)  ra2reg(clk, reset, ~StallE, RA2D, RA2E); 
+  // flopenr #(5)  wa3ereg(clk, reset, ~StallE, {RegFileRzD[2], DestRegD}, WA3E_1); 
+  // flopenr #(5)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
+  // flopenr #(5)  ra2reg(clk, reset, ~StallE, RA2D, RA2E); 
   // ------------------------------------------
 
 
@@ -139,11 +140,11 @@ module datapath(/// ------ From TOP (Memory) ------
   assign TFlagE = ALUSrcBE[0];
 
   // -------- TODO put in address path ------------------
-  assign WA3E = WriteMultLoE ? RdLoE: WA3E_1;
+  // assign WA3E = WriteMultLoE ? RdLoE: WA3E_1;
   // ----------------------------------------------------
 
   // --- TODO put into address path, Long Multiply RdLo register
-  assign RdLoE = {0, InstrE[15:12]};
+  // assign RdLoE = {0, InstrE[15:12]};
   // -----------------------------------------------------------
 
   // TODO: implement as a barrel shift
