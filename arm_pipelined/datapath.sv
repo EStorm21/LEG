@@ -68,8 +68,6 @@ module datapath(/// ------ From TOP (Memory) ------
 
   logic [31:0] ReadDataRawW, ReadDataW, ALUOutW, ResultW;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D;
-  // logic [4:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3E_1, WA3M, WA3W, RdLoD , RdLoE; - editing
-  logic [4:0]  RdLoD;
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
   
 
@@ -121,13 +119,6 @@ module datapath(/// ------ From TOP (Memory) ------
   flopenr #(32) rd2reg(clk, reset, ~StallE, Rd2D, Rd2E);
   flopenr #(32) immreg(clk, reset, ~StallE, RotImmD, ExtImmE); // Modified by Ivan
 
-  // --------Let's create a 5 bit "Address Path"-------
-  // flopenr #(5)  wa3ereg(clk, reset, ~StallE, {RegFileRzD[2], DestRegD}, WA3E_1); 
-  // flopenr #(5)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
-  // flopenr #(5)  ra2reg(clk, reset, ~StallE, RA2D, RA2E); 
-  // ------------------------------------------
-
-
   mux3 #(32)  byp1mux(Rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(Rd2E, ResultW, ALUOutM, ForwardBE, WriteDataE);
   mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcB4E);
@@ -135,17 +126,8 @@ module datapath(/// ------ From TOP (Memory) ------
   mux2 #(32)  select4(ALUSrcB4E, 32'h4, IncrementE, ALUSrcBE);
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
 
-
   // Thumb
   assign TFlagE = ALUSrcBE[0];
-
-  // -------- TODO put in address path ------------------
-  // assign WA3E = WriteMultLoE ? RdLoE: WA3E_1;
-  // ----------------------------------------------------
-
-  // --- TODO put into address path, Long Multiply RdLo register
-  // assign RdLoE = {0, InstrE[15:12]};
-  // -----------------------------------------------------------
 
   // TODO: implement as a barrel shift
   shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], LDRSTRshiftE, PreviousFlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
@@ -165,25 +147,15 @@ module datapath(/// ------ From TOP (Memory) ------
   // ====================================================================================
   flopenr #(32) aluresreg(clk, reset, ~StallM, ALUResultE, ALUOutM);
   flopenr #(32) wdreg(clk, reset, ~StallM, WriteDataReplE, WriteDataM);
-  // flopenr #(5)  wa3mreg(clk, reset, ~StallM, WA3E, WA3M);
   
   // ====================================================================================
   // =============================== Writeback Stage ====================================
   // ====================================================================================
   flopenrc #(32) aluoutreg(clk, reset, ~StallW, FlushW, ALUOutM, ALUOutW);
   flopenrc #(32) rdreg(clk, reset, ~StallW, FlushW, ReadDataM, ReadDataRawW);
-  // flopenrc #(5)  wa3wreg(clk, reset, ~StallW, FlushW, WA3M, WA3W); 
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, ResultW);
 
   //TODO: Think about how we want to implement this - should it be in the 32bit datapath?
   data_selector byteShift(LoadLengthW, WriteHalfwordW, HalfwordOffsetW, ByteOffsetW, ReadDataRawW, ReadDataW); 
-  
-  // hazard comparison - EDITING NOW - 
-  // eqcmp #(5) m0(WA3M, RA1E, Match_1E_M);
-  // eqcmp #(5) m1(WA3W, RA1E, Match_1E_W);
-  // eqcmp #(5) m2(WA3M, RA2E, Match_2E_M);
-  // eqcmp #(5) m3(WA3W, RA2E, Match_2E_W);
-  // eqcmp #(5) m4a(WA3E, RA1D, Match_1D_E);
-  // eqcmp #(5) m4b(WA3E, RA2D, Match_2D_E);
   
 endmodule
