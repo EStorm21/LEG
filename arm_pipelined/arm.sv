@@ -16,10 +16,10 @@ module arm(input  logic        clk, reset,
   /// Output from Datapath
   logic [3:0]  ALUFlagsE, MultFlagsE;
   logic [31:0] InstrD, DefaultInstrD;
-  logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_1D_E, Match_2D_E;
   logic        MultStallD, MultStallE;
   logic        WriteMultLoE, WriteMultLoKeptE;
   logic        ShifterCarryOutE;
+  logic [4:0]  WA3M, WA3W, WA3E, RA1E, RA2E, RA1D, RA2D;
 
   /// Output from Controller
   logic [1:0]  RegSrcD, ImmSrcD;
@@ -40,7 +40,9 @@ module arm(input  logic        clk, reset,
   logic [3:0]  RegFileRzD;
   logic        ShifterCarryOut_cycle2E;
 
-  
+  /// Output from AddressPath
+  logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_1D_E, Match_2D_E;
+
   // Thumb 
   logic        BXInstrD, BXInstrE, TFlagNextE, TFlagE, IncrementE;
 
@@ -49,4 +51,6 @@ module arm(input  logic        clk, reset,
   controller c(.*);
   datapath dp(.*); 
   hazard h(.*);
+  addresspath ap(.*);
+
 endmodule

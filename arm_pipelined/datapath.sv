@@ -46,8 +46,11 @@ module datapath(/// ------ From TOP (Memory) ------
                   input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, // Added StallE, StallM, FlushW for memory
 
                 /// ------ To Hazard ------
-                  output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, 
-                  output logic        Match_1D_E, Match_2D_E,
+                  // output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, 
+                  // output logic        Match_1D_E, Match_2D_E,
+
+                /// ------ To Address Path ------
+                  output logic [4:0]   WA3M, WA3W, WA3E, RA1E, RA2E, RA1D, RA2D,
 
                 /// ------ added for thumb instructions ------
                   input  logic        TFlagNextE, 
@@ -61,7 +64,8 @@ module datapath(/// ------ From TOP (Memory) ------
 
   logic [31:0] ReadDataRawW, ReadDataW, ALUOutW, ResultW;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D;
-  logic [4:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3E_1, WA3M, WA3W, RdLoD , RdLoE;
+  // logic [4:0]  RA1D, RA2D, RA1E, RA2E, WA3E, WA3E_1, WA3M, WA3W, RdLoD , RdLoE; - editing
+  logic [4:0]  WA3E_1, RdLoD , RdLoE;
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
   logic [3:0]  DestRegD;
 
@@ -114,9 +118,9 @@ module datapath(/// ------ From TOP (Memory) ------
   flopenr #(32) immreg(clk, reset, ~StallE, RotImmD, ExtImmE); // Modified by Ivan
 
   // --------Let's create a 5 bit "Address Path"-------
-  flopenr #(5)  wa3ereg(clk, reset, ~StallE, {RegFileRzD[2], DestRegD}, WA3E_1);
+  flopenr #(5)  wa3ereg(clk, reset, ~StallE, {RegFileRzD[2], DestRegD}, WA3E_1); 
   flopenr #(5)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
-  flopenr #(5)  ra2reg(clk, reset, ~StallE, RA2D, RA2E);
+  flopenr #(5)  ra2reg(clk, reset, ~StallE, RA2D, RA2E); 
   // ------------------------------------------
 
 
@@ -164,18 +168,18 @@ module datapath(/// ------ From TOP (Memory) ------
   // ====================================================================================
   flopenrc #(32) aluoutreg(clk, reset, ~StallW, FlushW, ALUOutM, ALUOutW);
   flopenrc #(32) rdreg(clk, reset, ~StallW, FlushW, ReadDataM, ReadDataRawW);
-  flopenrc #(5)  wa3wreg(clk, reset, ~StallW, FlushW, WA3M, WA3W);
+  flopenrc #(5)  wa3wreg(clk, reset, ~StallW, FlushW, WA3M, WA3W); 
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, ResultW);
 
   //TODO: Think about how we want to implement this - should it be in the 32bit datapath?
   data_selector byteShift(LoadLengthW, WriteHalfwordW, HalfwordOffsetW, ByteOffsetW, ReadDataRawW, ReadDataW); 
   
-  // hazard comparison
-  eqcmp #(5) m0(WA3M, RA1E, Match_1E_M);
-  eqcmp #(5) m1(WA3W, RA1E, Match_1E_W);
-  eqcmp #(5) m2(WA3M, RA2E, Match_2E_M);
-  eqcmp #(5) m3(WA3W, RA2E, Match_2E_W);
-  eqcmp #(5) m4a(WA3E, RA1D, Match_1D_E);
-  eqcmp #(5) m4b(WA3E, RA2D, Match_2D_E);
+  // hazard comparison - EDITING NOW - 
+  // eqcmp #(5) m0(WA3M, RA1E, Match_1E_M);
+  // eqcmp #(5) m1(WA3W, RA1E, Match_1E_W);
+  // eqcmp #(5) m2(WA3M, RA2E, Match_2E_M);
+  // eqcmp #(5) m3(WA3W, RA2E, Match_2E_W);
+  // eqcmp #(5) m4a(WA3E, RA1D, Match_1D_E);
+  // eqcmp #(5) m4b(WA3E, RA2D, Match_2D_E);
   
 endmodule
