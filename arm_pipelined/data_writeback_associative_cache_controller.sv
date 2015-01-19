@@ -3,7 +3,7 @@ module data_writeback_associative_cache_controller #(parameter tagbits = 14)
    input  logic IStall, MemWriteM, MemtoRegM, BusReady, 
    input  logic [1:0] WordOffset,
    input  logic [3:0] ByteMask,
-   input  logic [tagbits-1:0] W1Tag, W2Tag, Tag,
+   input  logic [tagbits-1:0] W1Tag, W2Tag, Tag, CachedTag,
    output logic RDSel, CWE, Stall, HWriteM, HRequestM, BlockWE, ResetCounter,
    output logic W1WE, W2WE, W1EN, UseWD, W1Hit,
    output logic [1:0] Counter, CacheRDSel,
@@ -46,14 +46,15 @@ module data_writeback_associative_cache_controller #(parameter tagbits = 14)
   assign W1WE = W1EN & CWE;
   assign W2WE = W2EN & CWE;
 
+  // Create Cached Tag
+  mux2 #(tagbits) CachedTagMux(W2Tag, W1Tag, W1EN, CachedTag);
+
   // Dirty Mux
   logic Dirty;
   assign Dirty = W1EN ? W1D : W2D;
 
-  // Select Data source for the data cache
+  // Select Data source and Byte Mask for the data cache
   assign UseWD = ~BlockWE | ( BlockWE & MemWriteM & (Counter == WordOffset) );
-
-  // Select the activebytemask
   mux2 #(4)  MaskMux(4'b1111, ByteMask, UseWD, ActiveByteMask);
 
   typedef enum logic [2:0] {READY, MEMREAD, WRITEBACK, NEXTINSTR, WAIT} statetype;

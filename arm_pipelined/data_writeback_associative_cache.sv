@@ -73,7 +73,6 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     mux2 #(32) HWDataMux(W2RD, W1RD, W1EN, HWData);
 
     // HAddr Mux's
-    assign CachedTag = W1EN ? W1Tag : W2Tag;                // TODO: MUX This
     assign CachedAddr = {CachedTag, ANew[31-tagbits:0]};
     mux2 #(32) HAddrMux(ANew, CachedAddr, HWriteM, HAddr);
 
