@@ -1,4 +1,4 @@
-module data_writeback_associative_cache_controller #(parameter tagbits = 14)
+module data_writeback_associative_cache_controller #(parameter blocksize, parameter tagbits = 14)
   (input  logic clk, reset, W1V, W2V, CurrLRU, W1D, W2D,
    input  logic IStall, MemWriteM, MemtoRegM, BusReady, 
    input  logic [1:0] WordOffset,
@@ -7,7 +7,8 @@ module data_writeback_associative_cache_controller #(parameter tagbits = 14)
    output logic RDSel, CWE, Stall, HWriteM, HRequestM, BlockWE, ResetCounter,
    output logic W1WE, W2WE, W1EN, UseWD, W1Hit,
    output logic [1:0] Counter, CacheRDSel,
-   output logic [3:0] ActiveByteMask);
+   output logic [3:0] ActiveByteMask,
+   output logic [$clog2(blocksize)-1:0] NewWordOffset);
 
   // Control Signals
   // Create Counter for sequential bus access
@@ -100,5 +101,9 @@ module data_writeback_associative_cache_controller #(parameter tagbits = 14)
                    (~MemWriteM || MemWriteM & ~Dirty) ) |
                    ( (state == READY) & ~Hit & ~Dirty );
   assign ResetCounter = ((state == READY) & Hit) | (state == NEXTINSTR) ;
+
+  // Create the block offset for the cache
+  mux2 #($clog2(blocksize)) WordOffsetMux(Counter, WordOffset, ResetCounter, NewWordOffset);
+
 
 endmodule
