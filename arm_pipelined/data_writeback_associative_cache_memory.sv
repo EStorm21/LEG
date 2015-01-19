@@ -5,7 +5,7 @@ module data_writeback_associative_cache_memory #(parameter lines = 65536, parame
                      input logic [31:0] ANew,
                      input logic [3:0]  ActiveByteMask,
                      input logic [1:0]  CacheRDSel,
-                     output logic W1V, W2V, W1D, W2D, W1Hit, W2Hit, CurrLRU,
+                     output logic W1V, W2V, W1D, W2D, CurrLRU,
                      output logic [tagbits-1:0] W1Tag, W2Tag,
                      output logic [31:0] W1RD, W2RD);
 
@@ -41,11 +41,11 @@ data_writeback_associative_cache_way #(lines, tagbits, blocksize) way2(
 //    .clk(clk), .reset(reset), .WD(CacheWD), .A(ANew), .StatusInBits({W2WE, DirtyIn}),
 //    .ByteMask(ActiveByteMask), .StatusOutBits({W2V, W2D}), .RTag(W2Tag), .RD(W2BlockOut));
 
-// Create the logic for a Hit.
-    assign Tag = ANew[31:31-tagbits+1];
-    assign W1Hit = (W1V & (Tag == W1Tag));
-    assign W2Hit = (W2V & (Tag == W2Tag));
-    assign Hit = W1Hit | W2Hit;
+// // Create the logic for a Hit.
+//     assign Tag = ANew[31:31-tagbits+1];
+//     assign W1Hit = (W1V & (Tag == W1Tag));
+//     assign W2Hit = (W2V & (Tag == W2Tag));
+//     assign Hit = W1Hit | W2Hit;
 
 // Word selection mux's
     // Way1 Word select mux

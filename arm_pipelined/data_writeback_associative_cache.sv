@@ -45,13 +45,13 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     // Hit:        Hit in the cache
     logic BlockWE, W1D, W2D, RDSel, Hit;
     logic [setbits-1:0] set;   // Set bits
-    logic W1Hit, W2Hit;        // Hit signal from each way
     logic [1:0] Counter, WordOffset, CacheRDSel;   // Counter for sequential buss access
+    logic [tagbits-1:0] Tag;   // Current tag
+
 
     // CacheIn Selection
     logic UseWD;
     mux2 #(32) CacheWDMux(HRData, WD, UseWD, CacheWD);
-    mux2 #(4)  MaskMux(4'b1111, ByteMask, UseWD, ActiveByteMask);
 
     // Create New Address using the counter as the word offset
     // TODO: Make this structural
@@ -65,8 +65,9 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     data_writeback_associative_cache_memory #(lines, tagbits, blocksize) dcmem(.*);
 
     // Cache Controller
-    assign WordOffset = A[3:2]; // Create word offset for cache controller           
-    data_writeback_associative_cache_controller dcc(.*);
+    assign WordOffset = A[3:2]; // Create word offset for cache controller
+    assign Tag = ANew[31:31-tagbits+1];           
+    data_writeback_associative_cache_controller #(tagbits) dcc(.*);
 
     // HWData Mux
     mux2 #(32) HWDataMux(W2RD, W1RD, W1EN, HWData);

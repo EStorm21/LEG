@@ -1,10 +1,13 @@
-module data_writeback_associative_cache_controller 
-  (input  logic clk, reset, W1V, W2V, CurrLRU, W1Hit, W2Hit, W1D, W2D,
+module data_writeback_associative_cache_controller #(parameter tagbits = 14)
+  (input  logic clk, reset, W1V, W2V, CurrLRU, W1D, W2D,
    input  logic IStall, MemWriteM, MemtoRegM, BusReady, 
    input  logic [1:0] WordOffset,
+   input  logic [3:0] ByteMask,
+   input  logic [tagbits-1:0] W1Tag, W2Tag, Tag,
    output logic RDSel, CWE, Stall, HWriteM, HRequestM, BlockWE, ResetCounter,
-   output logic W1WE, W2WE, W1EN, UseWD,
-   output logic [1:0] Counter, CacheRDSel);
+   output logic W1WE, W2WE, W1EN, UseWD, W1Hit,
+   output logic [1:0] Counter, CacheRDSel,
+   output logic [3:0] ActiveByteMask);
 
   // Control Signals
   // Create Counter for sequential bus access
@@ -21,6 +24,8 @@ module data_writeback_associative_cache_controller
 
   // Create Hit signal 
   logic Hit;
+  assign W1Hit = (W1V & (Tag == W1Tag));
+  assign W2Hit = (W2V & (Tag == W2Tag));
   assign Hit = W1Hit | W2Hit;
 
   // CacheIn Logic
@@ -37,7 +42,7 @@ module data_writeback_associative_cache_controller
       W2EN = ~W1EN;
     end
 
-  // Write Enable And gates
+  // Set way write enable if the way is selected and writing to the cache
   assign W1WE = W1EN & CWE;
   assign W2WE = W2EN & CWE;
 
@@ -47,6 +52,9 @@ module data_writeback_associative_cache_controller
 
   // Select Data source for the data cache
   assign UseWD = ~BlockWE | ( BlockWE & MemWriteM & (Counter == WordOffset) );
+
+  // Select the activebytemask
+  mux2 #(4)  MaskMux(4'b1111, ByteMask, UseWD, ActiveByteMask);
 
   typedef enum logic [2:0] {READY, MEMREAD, WRITEBACK, NEXTINSTR, WAIT} statetype;
   statetype state, nextstate;
