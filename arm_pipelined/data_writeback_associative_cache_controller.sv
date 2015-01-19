@@ -3,7 +3,7 @@ module data_writeback_associative_cache_controller
    input  logic IStall, MemWriteM, MemtoRegM, BusReady, 
    input  logic [1:0] WordOffset,
    output logic RDSel, CWE, Stall, HWriteM, HRequestM, BlockWE, ResetCounter,
-   output logic W1WE, W2WE, W1EN,
+   output logic W1WE, W2WE, W1EN, UseWD,
    output logic [1:0] Counter, CacheRDSel);
 
   // Control Signals
@@ -44,6 +44,9 @@ module data_writeback_associative_cache_controller
   // Dirty Mux
   logic Dirty;
   assign Dirty = W1EN ? W1D : W2D;
+
+  // Select Data source for the data cache
+  assign UseWD = ~BlockWE | ( BlockWE & MemWriteM & (Counter == WordOffset) );
 
   typedef enum logic [2:0] {READY, MEMREAD, WRITEBACK, NEXTINSTR, WAIT} statetype;
   statetype state, nextstate;

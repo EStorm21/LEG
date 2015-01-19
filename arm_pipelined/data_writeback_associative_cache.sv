@@ -48,7 +48,10 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     logic W1Hit, W2Hit;        // Hit signal from each way
     logic [1:0] Counter, WordOffset, CacheRDSel;   // Counter for sequential buss access
 
-    cacheIn #(blocksize) ci(.*);
+    // CacheIn Selection
+    logic UseWD;
+    mux2 #(32) CacheWDMux(HRData, WD, UseWD, CacheWD);
+    mux2 #(4)  MaskMux(4'b1111, ByteMask, UseWD, ActiveByteMask);
 
     // Create New Address using the counter as the word offset
     // TODO: Make this structural
