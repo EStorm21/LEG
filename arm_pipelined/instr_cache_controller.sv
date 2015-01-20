@@ -1,12 +1,18 @@
 // Cache controller works according to schematic
-module instr_cache_controller (input  logic clk, reset,
-                         input  logic W1Hit, W2Hit, W1V, W2V, CurrLRU,
-                         input  logic BusReady,
-                         input  logic [1:0] WordOffset,
-                         output logic [1:0] Counter,
-                         output logic W1WE, W2WE,
-                         output logic IStall, RDSel, ResetCounter, HRequestF);
-  logic W1EN, W2EN, Hit;
+module instr_cache_controller #(parameter tagbits = 14)
+  (input  logic clk, reset,
+   input  logic W1V, W2V, CurrLRU,
+   input  logic BusReady,
+   input  logic [1:0] WordOffset,
+   input  logic [tagbits-1:0] W1Tag, W2Tag, Tag,
+   output logic [1:0] Counter,
+   output logic W1WE, W2WE,
+   output logic IStall, RDSel, ResetCounter, HRequestF);
+
+  logic W1EN, W2EN, Hit, W1Hit, W2Hit;
+  // Create Hit signal 
+  assign W1Hit = (W1V & (Tag == W1Tag));
+  assign W2Hit = (W2V & (Tag == W2Tag));
   assign Hit = W1Hit | W2Hit;
 
   typedef enum logic [1:0] {READY, MEMREAD, NEXTINSTR} statetype;

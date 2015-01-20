@@ -24,7 +24,7 @@ module data_writeback_associative_cache_controller #(parameter blocksize, parame
     end
 
   // Create Hit signal 
-  logic Hit;
+  logic Hit, W2Hit;
   assign W1Hit = (W1V & (Tag == W1Tag));
   assign W2Hit = (W2V & (Tag == W2Tag));
   assign Hit = W1Hit | W2Hit;

@@ -28,6 +28,8 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
     // CacheOut:   Word chosen from way 1 or 2
     logic [31:0] W1RD, W2RD, CacheOut, ANew;
     logic [1:0] Counter, WordOffset;
+    logic [tagbits-1:0] Tag;   // Current tag
+
 
     // Create New Address using the counter as the word offset
     assign WordOffset = A[blockbits+1:2];
@@ -38,7 +40,8 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
     instr_cache_memory #(lines, tagbits, blocksize) icm(.*);
 
     // Cache Controller
-    instr_cache_controller icc(.*);
+    assign Tag = ANew[31:31-tagbits+1];  
+    instr_cache_controller #(tagbits) icc(.*);
 
     // Select from the ways
     assign CacheOut = W1Hit ? W1RD : W2RD;
