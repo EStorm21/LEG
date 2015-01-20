@@ -38,7 +38,16 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
     assign HAddrF = ANew;
 
     // Cache Memory
-    instr_cache_memory #(lines, tagbits, blocksize) icm(.*);
+    // instr_cache_memory #(lines, tagbits, blocksize) icm(.*);
+    logic [3:0] ActiveByteMask;
+    logic [31:0] CacheWD;
+    logic [1:0] CacheRDSel;
+    logic DirtyIn, W1D, W2D;
+    assign ActiveByteMask = 4'b1111;
+    assign CacheWD = HRData;
+    assign CacheRDSel = WordOffset;
+    assign DirtyIn = 1'b0;
+    data_writeback_associative_cache_memory #(lines, tagbits, blocksize) icm(.*);
 
     // Cache Controller
     assign Tag = ANew[31:31-tagbits+1];  
@@ -48,6 +57,6 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
     mux2 #(32) CacheOutMux(W2RD, W1RD, W1Hit, CacheOut);
 
     // Select from cache or memory
-    mux2 #(32) RDSelMux(CacheOut, HRData, RDSel, RD);
+    mux2 #(32) RDMux(CacheOut, HRData, RDSel, RD);
 
 endmodule

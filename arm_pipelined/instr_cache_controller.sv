@@ -6,11 +6,11 @@ module instr_cache_controller #(parameter tagbits = 14)
    input  logic [1:0] WordOffset,
    input  logic [tagbits-1:0] W1Tag, W2Tag, Tag,
    output logic [1:0] Counter,
-   output logic W1WE, W2WE,
+   output logic W1WE, W2WE, W1Hit,
    output logic IStall, RDSel, ResetCounter, HRequestF,
    output logic [1:0] NewWordOffset);
 
-  logic W1EN, W2EN, Hit, W1Hit, W2Hit;
+  logic W1EN, W2EN, Hit, W2Hit;
   // Create Hit signal 
   assign W1Hit = (W1V & (Tag == W1Tag));
   assign W2Hit = (W2V & (Tag == W2Tag));
