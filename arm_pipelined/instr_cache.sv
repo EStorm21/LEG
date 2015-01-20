@@ -29,11 +29,12 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
     logic [31:0] W1RD, W2RD, CacheOut, ANew;
     logic [1:0] Counter, WordOffset;
     logic [tagbits-1:0] Tag;   // Current tag
+    logic [blockbits-1:0] NewWordOffset;
 
 
     // Create New Address using the counter as the word offset
     assign WordOffset = A[blockbits+1:2];
-    assign ANew = ResetCounter ? A : {A[31:4], Counter, A[1:0]};
+    assign ANew = {A[31:4], NewWordOffset, A[1:0]};
     assign HAddrF = ANew;
 
     // Cache Memory
@@ -44,9 +45,9 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
     instr_cache_controller #(tagbits) icc(.*);
 
     // Select from the ways
-    assign CacheOut = W1Hit ? W1RD : W2RD;
+    mux2 #(32) CacheOutMux(W2RD, W1RD, W1Hit, CacheOut);
 
     // Select from cache or memory
-    assign RD = RDSel ? HRData : CacheOut;
+    mux2 #(32) RDSelMux(CacheOut, HRData, RDSel, RD);
 
 endmodule

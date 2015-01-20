@@ -7,7 +7,8 @@ module instr_cache_controller #(parameter tagbits = 14)
    input  logic [tagbits-1:0] W1Tag, W2Tag, Tag,
    output logic [1:0] Counter,
    output logic W1WE, W2WE,
-   output logic IStall, RDSel, ResetCounter, HRequestF);
+   output logic IStall, RDSel, ResetCounter, HRequestF,
+   output logic [1:0] NewWordOffset);
 
   logic W1EN, W2EN, Hit, W1Hit, W2Hit;
   // Create Hit signal 
@@ -62,5 +63,8 @@ module instr_cache_controller #(parameter tagbits = 14)
   // Write Enable And gates
   assign W1WE = W1EN & CWE;
   assign W2WE = W2EN & CWE;
+
+   // Create the block offset for the cache
+  mux2 #(2) WordOffsetMux(Counter, WordOffset, ResetCounter, NewWordOffset);
 
 endmodule
