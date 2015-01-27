@@ -79,12 +79,24 @@ module testbench();
 
   logic [31:0] WriteData, DataAdr;
   logic        MemWrite;
+
   real D;
   time simTime;
   real DMIPS;
+  
+  // profiling variables
+  real totalCycles = 0;
+  int stalledCycles = 0;
+  int totalInstr = 0;
+  logic [31:0] OldInstrE;
+  real CPI;
+  logic stall;
+  logic wasStalled;
+  int numStalls = 0;
+  int branches = 0;
 
-  // instantiate device to be tested
-  top dut(clk, reset, WriteData, DataAdr, MemWrite);
+  // instantiate device to be tested (profiler also instantiates dut)
+  top dut(clk, reset, WriteData, DataAdr, MemWrite); 
   
   // initialize test
   initial
@@ -111,18 +123,60 @@ module testbench();
         end
       end
     end*/
+  
+	// check results at the end of each clock cycle
     always @(negedge clk)
-     begin
-      if(dut.arm.dp.rf.r15 == 32'hb6eac824) begin
+		begin
+			// gather statistics from each cycle
+      stall = dut.arm.h.StallD + dut.arm.h.StallE + dut.arm.h.StallF + dut.arm.h.StallM + dut.arm.h.StallW;
 
-        $display("Finished");
-        D = 100.0;
-        simTime = $time;
-        // DMIPS = D/simTime*(10**12)/(10**5)/1757; //(Program Iterations)/(simulation time (ps))*(ps to s conv.)/(Clock Freq)/(Normalizing factor (DMIPS on a VAX 11/780))
-        DMIPS = D*(10**7)/simTime/1757; //(Program Iterations)*(picoS to S conv. / Clock Freq)/(simulation time (picoS))/(Normalizing factor (DMIPS on a VAX 11/780))
-        $display("D= %f, time= %f", D, simTime);
-        $display("DMIPS: %f", DMIPS);
-        $stop();
+			// get the total number of cycles
+      totalCycles = totalCycles + 1;
+			if(stall) begin
+        stalledCycles = stalledCycles + 1;
       end
-     end
+      else begin
+        wasStalled = 1'b0;
+      end
+
+      // count the number of stalls
+      if(stall && !wasStalled) begin
+        numStalls = numStalls + 1;
+        wasStalled = 1'b1;
+      end
+
+      // Check to see if the instruction has changed
+			if(OldInstrE !== dut.arm.InstrE) begin
+        totalInstr = totalInstr + 1;
+        if(dut.arm.c.BranchE) begin
+          branches = branches + 1;
+        end
+      end
+      else if(dut.arm.h.ForwardAE | dut.arm.h.ForwardBE) begin
+        totalInstr = totalInstr + 1;
+      end
+      OldInstrE = dut.arm.InstrE;
+
+
+			// check if dhrystone is done running
+			if(dut.arm.dp.rf.r15 == 32'hb6eac824) begin
+				$display("Finished");
+				D = 100.0;
+				simTime = $time;
+				// DMIPS = D/simTime*(10**12)/(10**5)/1757; //(Program Iterations)/(simulation time (ps))*(ps to s conv.)/(Clock Freq)/(Normalizing factor (DMIPS on a VAX 11/780))
+				DMIPS = D*(10**7)/simTime/1757; //(Program Iterations)*(picoS to S conv. / Clock Freq)/(simulation time (picoS))/(Normalizing factor (DMIPS on a VAX 11/780))
+				$display("D= %f, time= %f", D, simTime);
+				$display("DMIPS: %f", DMIPS);
+				
+				// additional profiler data
+				$display("Total Cycles: %f", totalCycles);
+        $display("Num Stalls: %d", numStalls);
+        $display("Cycles Stalled: %d", stalledCycles);
+        $display("Instructions (approx.): %d", totalInstr);
+        $display("Num Branches: %d", branches);
+        CPI = totalCycles/totalInstr;
+        $display("CPI (approx.): %f", CPI);
+				$stop();
+			end
+		end
 endmodule
