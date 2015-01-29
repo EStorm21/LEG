@@ -92,8 +92,16 @@ module testbench();
   real CPI;
   logic stall;
   logic wasStalled;
+  logic flush;
+  logic wasFlushed;
+  logic wasFlushedE;
+  logic wasFlushedD;
+  logic flushD;
+  logic flushE;
   int numStalls = 0;
   int branches = 0;
+  int numFlush = 0;
+  int wastedCycles = 0;
 
   // instantiate device to be tested (profiler also instantiates dut)
   top dut(clk, reset, WriteData, DataAdr, MemWrite); 
@@ -128,38 +136,75 @@ module testbench();
     always @(negedge clk)
 		begin
 			// gather statistics from each cycle
-      stall = dut.arm.h.StallD + dut.arm.h.StallE + dut.arm.h.StallF + dut.arm.h.StallM + dut.arm.h.StallW;
+      stall = dut.arm.h.StallE | dut.arm.h.StalluOp | dut.arm.h.StallF; // | dut.arm.h.StallD | dut.arm.h.StallF | dut.arm.h.StallM | dut.arm.h.StallW;
+      flush = dut.arm.h.FlushD | dut.arm.h.FlushE;
+      flushD = dut.arm.h.FlushD; 
+      flushE = dut.arm.h.FlushE;
+
+
 
 			// get the total number of cycles
       totalCycles = totalCycles + 1;
-			if(stall) begin
-        stalledCycles = stalledCycles + 1;
-      end
-      else begin
-        wasStalled = 1'b0;
-      end
+			
+      // // check for cycles stalled
+      // if(stall) begin
+      //   stalledCycles = stalledCycles + 1;
+      //   wastedCycles = wastedCycles + 1;
+      // end
+      // else begin
+      //   wasStalled = 1'b0;
+      // end
 
-      // count the number of stalls
-      if(stall && !wasStalled) begin
-        numStalls = numStalls + 1;
-        wasStalled = 1'b1;
-      end
+      // // count the number of stalls
+      // if(stall && ~wasStalled) begin
+      //   numStalls = numStalls + 1;
+      //   wasStalled = 1'b1;
+      // end
 
+      // // if D or E is flushed, we waste a cycle
+      // if(flushD && ~dut.arm.h.StallD) begin
+      //   wastedCycles = wastedCycles + 1;
+      // end
+      // else begin
+      //   wasFlushedD = 1'b0;
+      // end
+      
+      // if(flushE && ~dut.arm.h.StallE) begin
+      //   wastedCycles = wastedCycles + 1;
+      // end
+      // else begin
+      //   wasFlushedE = 1'b0;
+      // end
+      
+      // // count the number of flushes
+      // if(flushE && ~wasFlushedE) begin
+      //   numFlush = numFlush + 1;
+      //   wasFlushedE = 1'b1;
+      // end
+      // if(flushD && ~wasFlushedD) begin
+      //   numFlush = numFlush + 1;
+      //   wasFlushedD = 1'b1;
+      // end
+
+      if(dut.arm.InstrE == 0 || dut.arm.h.StallE) begin
+        wastedCycles = wastedCycles + 1;
+      end
+      
       // Check to see if the instruction has changed
-			if(OldInstrE !== dut.arm.InstrE) begin
+			if((OldInstrE !== dut.arm.InstrE) && (dut.arm.InstrE !== 32'b0)) begin
         totalInstr = totalInstr + 1;
-        if(dut.arm.c.BranchE) begin
-          branches = branches + 1;
-        end
+        // if(dut.arm.c.BranchE) begin
+        //   branches = branches + 1;
+        // end
       end
-      else if(dut.arm.h.ForwardAE | dut.arm.h.ForwardBE) begin
-        totalInstr = totalInstr + 1;
-      end
+      // else if(dut.arm.h.ForwardAE | dut.arm.h.ForwardBE) begin
+      //   totalInstr = totalInstr + 1;
+      // end
       OldInstrE = dut.arm.InstrE;
 
 
 			// check if dhrystone is done running
-			if(dut.arm.dp.rf.r15 == 32'hb6eac824) begin
+			if(dut.arm.dp.rf.r15 == 32'hb6eac824 | dut.arm.InstrE == 32'heafffffe) begin
 				$display("Finished");
 				D = 100.0;
 				simTime = $time;
@@ -169,13 +214,18 @@ module testbench();
 				$display("DMIPS: %f", DMIPS);
 				
 				// additional profiler data
-				$display("Total Cycles: %f", totalCycles);
-        $display("Num Stalls: %d", numStalls);
-        $display("Cycles Stalled: %d", stalledCycles);
-        $display("Instructions (approx.): %d", totalInstr);
-        $display("Num Branches: %d", branches);
+        $display("----- Overall Stats -----");
         CPI = totalCycles/totalInstr;
         $display("CPI (approx.): %f", CPI);
+				$display("Total Cycles: %f", totalCycles);
+        $display("Cycles Wasted: %d", wastedCycles);
+        $display("Instructions Executed: %d", totalInstr);
+        $display("Mystery Cycles: %d", totalInstr + wastedCycles - totalCycles);
+        $display("----- Branch Stats ----- ");
+        $display("Num Branches: %d", branches);
+        $display("Num Flushes:", numFlush);
+        $display("Num Stalls: %d", numStalls);
+        $display("Cycles Stalled: %d", stalledCycles);
 				$stop();
 			end
 		end
