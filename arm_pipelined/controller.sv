@@ -4,6 +4,9 @@ module controller(/// ------ From TOP ------
                   /// ------ To   TOP ------
                     output logic         MemtoRegM,
 
+                  /// ------ To   Addresspath ------
+                    output logic [11:0]  PreviousStatusD,
+
                   /// ------ From Datapath ------
                     input  logic [31:0]  InstrD,
                     input  logic [3:0]   ALUFlagsE, MultFlagsE,
@@ -66,11 +69,13 @@ module controller(/// ------ From TOP ------
   logic [3:0]  FlagsNextE, CondE;
   logic        RegWritepreMuxE, RselectD, RSRselectD, LdrStrRtypeD;
   logic [1:0]  ResultSelectD;
-  logic [11:0] StateRegisterDataE;
+  logic [11:0] StatusRegisterDataE;
   logic        ByteOrWordE, ByteOrWordM, LdrStr_HalfwordD, LdrStr_HalfwordE, HalfwordE, WriteHalfwordM;
   logic [1:0]  ByteOffsetE, ByteOffsetM;
   logic [1:0]  STR_cycleD;
   logic        doNotUpdateFlagD, LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD, undefInstrD;
+  logic  [3:0] PreviousFlagsD;
+
 
 
   // ====================================================================================
@@ -78,7 +83,7 @@ module controller(/// ------ From TOP ------
   // ====================================================================================
 
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, STR_cycleD,
-                            PrevRSRstateD, KeepVD, SignExtendD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsE);
+                            PrevRSRstateD, KeepVD, SignExtendD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsD);
 
 
   assign LdrStr_HalfwordD = (InstrD[27:25] == 3'b000 & InstrD[7] & InstrD[4] & ~(InstrD[6:5] == 2'b00));
@@ -180,10 +185,13 @@ module controller(/// ------ From TOP ------
   
   mux2 #(1) updatetflag(PreviousTFlagE, TFlagE, BXInstrE, TFlagNextE);
 
-  cpsr          cpsrE(clk, reset, FlagsNextE, 6'b0, 5'b0, 2'b0, TFlagNextE, ~StallE, 1'b0, 1'b0, StateRegisterDataE);
+  cpsr          cpsrE(clk, reset, FlagsNextE, 6'b0, 5'b0, 2'b0, TFlagNextE, ~StallE, 1'b0, 1'b0, StatusRegisterDataE);
 
-  assign  PreviousFlagsE = StateRegisterDataE[11:8];
-  assign  PreviousTFlagE = StateRegisterDataE[5];
+  flopenrc #(4) prevFlags(clk, reset, ~StallE, FlushE, PreviousFlagsE, PreviousFlagsD);
+  flopenrc #(12) prevState(clk, reset, ~StallE, FlushE, StatusRegisterDataE, PreviousStatusD);
+
+  assign  PreviousFlagsE = StatusRegisterDataE[11:8];
+  assign  PreviousTFlagE = StatusRegisterDataE[5];
   flopenrc  #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);
   conditional Cond(CondE, PreviousFlagsE, ALUFlagsE, MultFlagsE, FlagWriteE, CondExE, FlagsNextE, ResultSelectE[1]);
 
