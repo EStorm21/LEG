@@ -25,6 +25,7 @@ module addresspath( /// ------ From TOP ------
 
   logic [4:0]  WA3M, WA3E, RA1E, RA2E, RdLoE, WA3E_1;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D, DestRegD;
+  logic [11:0] PreviousStatusE;
 
   // ====================================================================================
   // ================================ Fetch Stage =======================================
@@ -48,6 +49,7 @@ module addresspath( /// ------ From TOP ------
   // ====================================================================================
   // ================================ Execute Stage =====================================
   // ====================================================================================
+  flopenr #(12) prevStatus(clk,reset, ~StallE, PreviousStatusD, PreviousStatusE);
   flopenr #(5)  wa3ereg(clk, reset, ~StallE, {RegFileRzD[2], DestRegD}, WA3E_1); 
   flopenr #(5)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
   flopenr #(5)  ra2reg(clk, reset, ~StallE, RA2D, RA2E); 
