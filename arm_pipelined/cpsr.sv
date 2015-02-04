@@ -20,7 +20,7 @@ module cpsr(input  logic        clk, reset,
 
 
   // CPSR and SPSR of different modes
-  logic [11:0] sr[4:0]; 
+  logic [11:0] spsr[4:0]; 
   logic [11:0] cpsr;
   logic [7:0]  CPSR_update;
 
@@ -66,31 +66,31 @@ module cpsr(input  logic        clk, reset,
   always_ff @(posedge clk, posedge reset)
     begin
       if (reset) begin
-        sr[0] <= cpsr;
+        spsr[0] <= cpsr;
         cpsr <= {cpsr[11:8], CPSR_update};
       end
       else if (DataAbort) begin // data abort 
-        sr[1] <= cpsr;
+        spsr[1] <= cpsr;
         cpsr <= {cpsr[11:8], CPSR_update};
       end
       else if (FastInterrupt) begin // FIQ
-        sr[4] <= cpsr;
+        spsr[4] <= cpsr;
         cpsr <= {cpsr[11:8], CPSR_update};
       end
       else if (Interrupt) begin // IRQ
-        sr[3] <= cpsr;
+        spsr[3] <= cpsr;
         cpsr <= {cpsr[11:8], CPSR_update};
       end
       else if (PrefetchAbort) begin // prefetch abort
-        sr[1] <= cpsr;
+        spsr[1] <= cpsr;
         cpsr <= {cpsr[11:8], CPSR_update};
       end
       else if (Undefined) begin // undef
-        sr[2] <= cpsr;
+        spsr[2] <= cpsr;
         cpsr <= {cpsr[11:8], CPSR_update};
       end
       else if (SoftwareInterrupt) begin // Software interrupt
-        sr[0] <= cpsr;
+        spsr[0] <= cpsr;
         cpsr <= {cpsr[11:8], CPSR_update};
       end
       else if (Enable) begin

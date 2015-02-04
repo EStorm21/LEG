@@ -70,7 +70,7 @@ module controller(/// ------ From TOP ------
   logic        ByteOrWordE, ByteOrWordM, LdrStr_HalfwordD, LdrStr_HalfwordE, HalfwordE, WriteHalfwordM;
   logic [1:0]  ByteOffsetE, ByteOffsetM;
   logic [1:0]  STR_cycleD;
-  logic        doNotUpdateFlagD, LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD;
+  logic        doNotUpdateFlagD, LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD, undefInstrD;
 
 
   // ====================================================================================
@@ -88,25 +88,31 @@ module controller(/// ------ From TOP ------
       // If 2'b00, then this is data processing instruction
   	  2'b00: if (InstrD[25]) ControlsD = 13'b00_00_1010_01000; // Data processing immediate   0x52
   	         else begin   // (~InstrD[25])      
-                if (InstrD[7:4] == 4'b1001)       ControlsD = 13'b00_00_0010_01100; // Multiply                    0x13
-                             
+                if (InstrD[7:4] == 4'b1001 & ~InstrD[24])       ControlsD = 13'b00_00_0010_01100; // Multiply                    0x13             
                 else if (InstrD[22] & InstrD[20] & LdrStr_HalfwordD)   ControlsD = 13'b00_11_1110_00010;  // LDH I-type
                 else if (~InstrD[22] & InstrD[20] & LdrStr_HalfwordD)  ControlsD = 13'b00_11_0110_00010;  // LDH R-type
                 else if (InstrD[22] & ~InstrD[20] & LdrStr_HalfwordD)  ControlsD = 13'b10_11_1101_00010;  // STH I-type
                 else if (~InstrD[22] & ~InstrD[20] & LdrStr_HalfwordD) ControlsD = 13'b10_11_0101_00010;  // STH R-type
-
-                else begin
+                // "Move from status register" not implemented
+                // "Move register to status register" not implemented
+                // 
+                else if ((InstrD[24:21] == 4'b1001) & (InstrD[19:4] == 16'hFFF1))
+                              ControlsD = 13'b01_00_0000_10001; // BX
+                else  ControlsD = 13'b00_00_0010_01000; // Data processing register
+              end
+/*          
+                  begin
                      if ((InstrD[24:21] == 4'b1001) & (InstrD[15:12] == 4'b1111))
                               ControlsD = 13'b01_00_0000_10001; // BX
                      else     ControlsD = 13'b00_00_0010_01000; // Data processing register
                      end
-                  end
+                  end*/
   	  2'b01: if (InstrD[20] & ~InstrD[25])       ControlsD = 13'b00_01_1110_00010; // LDR, "I-type" 0xf0
              else if (InstrD[20] & InstrD[25])   ControlsD = 13'b00_01_0110_00010; // LDR, "R-Type" 0xb0
              else if (~InstrD[20] & ~InstrD[25])   ControlsD = 13'b10_01_1101_00010; // STR, "I-type"
              else if (~InstrD[20] & InstrD[25])    ControlsD = 13'b10_01_0101_00010; // STR, "R-type"
   	  2'b10:                 ControlsD = 13'b01_10_1000_10000; // B                           0x344
-  	  default:               ControlsD = 13'bx;          // unimplemented
+  	  default:               begin undefInstrD = 1; ControlsD = 13'bx; end         // unimplemented
   	endcase
 
   /*
@@ -173,7 +179,9 @@ module controller(/// ------ From TOP ------
   flopenr #(1) shftrCarryOut(clk, reset, ~StallE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
   
   mux2 #(1) updatetflag(PreviousTFlagE, TFlagE, BXInstrE, TFlagNextE);
+
   cpsr          cpsrE(clk, reset, FlagsNextE, 6'b0, 5'b0, 2'b0, TFlagNextE, ~StallE, 1'b0, 1'b0, StateRegisterDataE);
+
   assign  PreviousFlagsE = StateRegisterDataE[11:8];
   assign  PreviousTFlagE = StateRegisterDataE[5];
   flopenrc  #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);

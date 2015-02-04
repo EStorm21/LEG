@@ -46,9 +46,7 @@ module datapath(/// ------ From TOP (Memory) ------
                   input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, // Added StallE, StallM, FlushW for memory
 
                 /// ------ To Hazard ------
-
                 /// ------ To Address Path ------
-
                 /// ------ From Address Path ------
                   input  logic [4:0]   WA3W, RA1D, RA2D,
 
