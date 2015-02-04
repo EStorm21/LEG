@@ -12,7 +12,7 @@ module regfile(input  logic        clk,
  *
  ******************************/
 
-  logic [31:0] rf[14:0]; // System/User mode registers including PC
+  logic [31:0] rf[31:0]; // System/User mode registers including PC
   logic [31:0] rg[15:0]; // Other registers
 
   //logic [31:0] rz; // Special register for microps
@@ -24,14 +24,19 @@ module regfile(input  logic        clk,
 
   always_ff @(negedge clk)
     begin
-    if (we3 & wa3[4]) 
-      rg[wa3[3:0]] <= wd3;
-    else if(we3)
-      rf[wa3[3:0]] <= wd3;	
+    // if (we3 & wa3[4]) 
+    //   rg[wa3[3:0]] <= wd3;
+    // else 
+    if(we3)
+      rf[wa3[4:0]] <= wd3;	
     end
 
+  // Version 1
   //assign rd1 = (ra1[4]) ? rg[ra1[3:0]] : rf[ra1[3:0]];
   //assign rd2 = (ra2[4]) ? rg[ra2[3:0]] : rf[ra2[3:0]];
+  // Version 2
   assign rd1 = (ra1[4]) ? rg[ra1[3:0]] : ((ra1 == 5'b01111) ? r15 : rf[ra1[3:0]]);
   assign rd2 = (ra2[4]) ? rg[ra2[3:0]] : ((ra2 == 5'b01111) ? r15 : rf[ra2[3:0]]);
+  // Version 3
+  
 endmodule
