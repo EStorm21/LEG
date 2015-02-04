@@ -39,9 +39,9 @@ module addresspath( /// ------ From TOP ------
   mux3 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], InstrD[11:8], {MultSelectD, RegSrcD[1]}, RA2_4b_D);
   mux2 #(4)   destregmux(InstrD[15:12], InstrD[19:16], MultSelectD, DestRegD);
 
-  addressdecode address_decoder(RA1_4b_D, RA2_4b_D, DestRegD, RegFileRzD[2:0], PreviousStatusD,
+  /*addressdecode address_decoder(RA1_4b_D, RA2_4b_D, DestRegD, RegFileRzD[2:0], PreviousStatusD,
                                 RA1D, RA2D, WA3D);
- 
+ */
   assign RA1D = {RegFileRzD[0], RA1_4b_D};
   assign RA2D = {RegFileRzD[1], RA2_4b_D};
 

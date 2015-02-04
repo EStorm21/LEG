@@ -70,6 +70,7 @@ module addressdecode(input  logic [3:0]  RA1_4b_D, RA2_4b_D, DestRegD,
 
       // Shadow Register Rz (R31) used for Micro-Ops
       11'b1_??????_1111: RA1D = 32'h80000000;
+      default: RA1D = 32'h0;
     endcase 
 
 /* READ PORT RA2 */
@@ -120,6 +121,7 @@ module addressdecode(input  logic [3:0]  RA1_4b_D, RA2_4b_D, DestRegD,
 
       // Shadow Register Rz (R31) used for Micro-Ops
       11'b1_??????_1111: RA2D = 32'h80000000;
+      default: RA2D = 32'h0;
     endcase 
 
   always_comb 
@@ -169,6 +171,7 @@ module addressdecode(input  logic [3:0]  RA1_4b_D, RA2_4b_D, DestRegD,
 
       // Shadow Register Rz (R31) used for Micro-Ops
       11'b1_??????_1111: WA3D = 32'h80000000;
+      default: WA3D = 32'h0;
     endcase 
 
 endmodule 
