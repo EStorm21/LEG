@@ -48,7 +48,7 @@ module datapath(/// ------ From TOP (Memory) ------
                 /// ------ To Hazard ------
                 /// ------ To Address Path ------
                 /// ------ From Address Path ------
-                  input  logic [4:0]   WA3W, RA1D, RA2D,
+                  input  logic [31:0]   WA3W, RA1D, RA2D,
 
                 /// ------ added for thumb instructions ------
                   input  logic        TFlagNextE, 

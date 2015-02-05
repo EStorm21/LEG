@@ -19,7 +19,7 @@ module arm(input  logic        clk, reset,
   logic        MultStallD, MultStallE;
   logic        WriteMultLoE, WriteMultLoKeptE;
   logic        ShifterCarryOutE;
-  logic [4:0]  WA3W, WA3E, RA1D, RA2D;
+  logic [31:0]  WA3W, WA3E, RA1D, RA2D;
   logic [3:0]  DestRegD;
 
   /// Output from Controller
