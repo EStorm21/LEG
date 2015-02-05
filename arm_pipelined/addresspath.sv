@@ -55,6 +55,7 @@ module addresspath( /// ------ From TOP ------
   flopenr #(5)  ra2reg(clk, reset, ~StallE, RA2D, RA2E); 
 
   // longmult_addressdecode multAddr(InstrE[15:12], PreviousStatusE, RdLoE);
+  
   // Long Multiply RdLo register
   assign RdLoE = {0, InstrE[15:12]};
   assign WA3E = WriteMultLoE ? RdLoE: WA3E_1;
