@@ -45,6 +45,9 @@ foreach {test} $tests {
 
 	#convert string to list
 	set regList [regexp -all -inline {\S+} $r]; list
+	
+	#remove other mode registers
+	set regList [lrange $regList 17 end]
 
 	#open validation results
 	set fp [open $simTest.val r]; list
@@ -52,6 +55,7 @@ foreach {test} $tests {
 	close $fp
 
 	set piRegisters [split $file_data "\n"]; list
+	
 
 	#check the results of each register
 	for {set i 0} {$i < [llength $regList]} {incr i} {
