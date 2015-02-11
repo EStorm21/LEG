@@ -5,7 +5,7 @@ module addresspath( /// ------ From TOP ------
                     input  logic        WriteMultLoE, MultSelectD, 
                     input  logic [3:0]  RegFileRzD,
                     input  logic [1:0]  RegSrcD,
-                    input  logic [11:0] PreviousStatusD, 
+                    input  logic [11:0] StatusRegisterE, 
 
           					/// To Controller 
 
@@ -25,7 +25,7 @@ module addresspath( /// ------ From TOP ------
 
   logic [31:0]  WA3M, WA3E, RA1E, RA2E, RdLoE, WA3E_1, WA3D;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D, DestRegD;
-  logic [11:0] PreviousStatusE;
+  logic [11:0] StatusRegisterM, StatusRegisterW;
 
   // ====================================================================================
   // ================================ Fetch Stage =======================================
@@ -40,17 +40,17 @@ module addresspath( /// ------ From TOP ------
   mux3 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], InstrD[11:8], {MultSelectD, RegSrcD[1]}, RA2_4b_D);
   mux2 #(4)   destregmux(InstrD[15:12], InstrD[19:16], MultSelectD, DestRegD);
 
-  addressdecode address_decoder(RA1_4b_D, RA2_4b_D, DestRegD, RegFileRzD[2:0], PreviousStatusD, RA1D, RA2D, WA3D);
+  addressdecode address_decoder(RA1_4b_D, RA2_4b_D, DestRegD, RegFileRzD[2:0], StatusRegisterW, RA1D, RA2D, WA3D);
 
   // ====================================================================================
   // ================================ Execute Stage =====================================
   // ====================================================================================
-  flopenr #(12) prevStatus(clk,reset, ~StallE, PreviousStatusD, PreviousStatusE);
+  
   flopenr #(32)  wa3ereg(clk, reset, ~StallE, WA3D, WA3E_1); 
   flopenr #(32)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
   flopenr #(32)  ra2reg(clk, reset, ~StallE, RA2D, RA2E); 
-
-  longmult_addressdecode multAddr(InstrE[15:12], PreviousStatusE, RdLoE);
+  
+  longmult_addressdecode multAddr(InstrE[15:12], StatusRegisterE, RdLoE);
   
   // Long Multiply RdLo register
   assign WA3E = WriteMultLoE ? RdLoE: WA3E_1;
@@ -59,12 +59,13 @@ module addresspath( /// ------ From TOP ------
   // ================================ Memory Stage ======================================
   // ====================================================================================
   flopenr #(32)  wa3mreg(clk, reset, ~StallM, WA3E, WA3M);
+  flopenr #(12) statusM(clk,reset, ~StallE, StatusRegisterE, StatusRegisterM);
 
   // ====================================================================================
   // ================================ Writeback Stage ===================================
   // ====================================================================================
   flopenrc #(32)  wa3wreg(clk, reset, ~StallW, FlushW, WA3M, WA3W);
-
+  flopenr #(12) statusW(clk,reset, ~StallE, StatusRegisterM, StatusRegisterW);
   eqcmp #(32) m0(WA3M, RA1E, Match_1E_M);
   eqcmp #(32) m1(WA3W, RA1E, Match_1E_W);
   eqcmp #(32) m2(WA3M, RA2E, Match_2E_M);

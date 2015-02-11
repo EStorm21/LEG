@@ -5,7 +5,7 @@ module controller(/// ------ From TOP ------
                     output logic         MemtoRegM,
 
                   /// ------ To   Addresspath ------
-                    output logic [11:0]  PreviousStatusD,
+                    output logic [11:0]  StatusRegisterE,
 
                   /// ------ From Datapath ------
                     input  logic [31:0]  InstrD,
@@ -23,7 +23,7 @@ module controller(/// ------ From TOP ------
                     // For ALU logic unit
                     output logic  [2:0]  ALUOperationE, CVUpdateE,
                     output logic         DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryE,
-                    output logic  [3:0]  PreviousFlagsE,
+                    output logic  [3:0]  FlagsE,
                     // For micro-op decoding
                     output logic         RselectE, PrevRSRstateE, LDRSTRshiftE, LDMSTMforwardE, 
                     output logic  [1:0]  ResultSelectE,
@@ -69,12 +69,11 @@ module controller(/// ------ From TOP ------
   logic [3:0]  FlagsNextE, CondE;
   logic        RegWritepreMuxE, RselectD, RSRselectD, LdrStrRtypeD;
   logic [1:0]  ResultSelectD;
-  logic [11:0] StatusRegisterDataE;
   logic        ByteOrWordE, ByteOrWordM, LdrStr_HalfwordD, LdrStr_HalfwordE, HalfwordE, WriteHalfwordM;
   logic [1:0]  ByteOffsetE, ByteOffsetM;
   logic [1:0]  STR_cycleD;
   logic        doNotUpdateFlagD, LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD, undefInstrD;
-  logic  [3:0] PreviousFlagsD;
+  logic  [3:0] FlagsM;
 
 
 
@@ -83,7 +82,7 @@ module controller(/// ------ From TOP ------
   // ====================================================================================
 
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, STR_cycleD,
-                            PrevRSRstateD, KeepVD, SignExtendD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, PreviousFlagsD);
+                            PrevRSRstateD, KeepVD, SignExtendD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp);
 
 
   assign LdrStr_HalfwordD = (InstrD[27:25] == 3'b000 & InstrD[7] & InstrD[4] & ~(InstrD[6:5] == 2'b00));
@@ -169,7 +168,7 @@ module controller(/// ------ From TOP ------
   // ALU Decoding
   flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE,
                            {(ALUOpD|ldrstrALUopD), InstrD}, {ALUOpE, InstrE});
-  alu_decoder alu_dec(ALUOpE, ALUControlE, PreviousFlagsE[1:0], BXInstrE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
+  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
                     
   flopenrc  #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
   flopenr #(1)  keepV(clk, reset, ~StallE, KeepVD, KeepVE);
@@ -178,15 +177,12 @@ module controller(/// ------ From TOP ------
   
   mux2 #(1) updatetflag(PreviousTFlagE, TFlagE, BXInstrE, TFlagNextE);
 
-  cpsr          cpsrE(clk, reset, restoreCPSR_E, FlagsNextE, 6'b0, 5'b0, 2'b0, TFlagNextE, ~StallE, 1'b0, 1'b0, StatusRegisterDataE);
+  cpsr          cpsrE(clk, reset, restoreCPSR_E, FlagsNextE, 6'b0, 5'b0, 2'b0, TFlagNextE, ~StallE, 1'b0, 1'b0, StatusRegisterE);
 
-  flopenrc #(4) prevFlags(clk, reset, ~StallE, FlushE, PreviousFlagsE, PreviousFlagsD);
-  flopenrc #(12) prevState(clk, reset, ~StallE, FlushE, StatusRegisterDataE, PreviousStatusD);
-
-  assign  PreviousFlagsE = StatusRegisterDataE[11:8];
-  assign  PreviousTFlagE = StatusRegisterDataE[5];
+  assign  FlagsE = StatusRegisterE[11:8];
+  assign  PreviousTFlagE = StatusRegisterE[5];
   flopenrc  #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);
-  conditional Cond(CondE, PreviousFlagsE, ALUFlagsE, MultFlagsE, FlagWriteE, CondExE, FlagsNextE, ResultSelectE[1]);
+  conditional Cond(CondE, FlagsE, ALUFlagsE, MultFlagsE, FlagWriteE, CondExE, FlagsNextE, ResultSelectE[1]);
 
   /*** BRIEF ***
    * These bits select which bit of memory to mask for Load/Store Byte, Word and Halfword operations

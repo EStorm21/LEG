@@ -7,8 +7,7 @@ module micropsfsm(input  logic        clk, reset,
                output logic 	   prevRSRstate, keepV, SignExtend, noRotate, ldrstrRtype,
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
-			   input  logic		   StalluOp,
-			   input  logic [3:0]  Flags);
+			   input  logic		   StalluOp);
 
 // define states READY and RSR 
 // TODO: add more states for each type of instruction
@@ -17,10 +16,9 @@ statetype state, nextState;
 
 // --------------------------- ADDED FOR LDM/STM -------------------------------
 // Conditional Unit
-logic CondExD, readyState, Ubit_ADD, LastCycle, WriteBack, ZeroRegsLeft;
+logic readyState, Ubit_ADD, LastCycle, WriteBack, ZeroRegsLeft;
 assign readyState = (state == ready);
 assign WriteBack = defaultInstrD[21]; 
-microps_conditional uOpCond(Flags, defaultInstrD[31:28], CondExD);
 // Count ones for LDM/STM
 logic [4:0] numones, defaultNumones;
 logic [3:0] Rd;
@@ -76,7 +74,7 @@ always_comb
 // Determine First "register to load"  - DONE
 // Choose start immediate to get <start_address> = Rn + stuff - DONE
 // On first cycle, load single LDR instruction with offset 
-// On second cycle consider previous CondExD
+// Keep ldr/str executing until done (stay in state)
 
 
 // --------------------------------------------------------------------------------
@@ -500,23 +498,7 @@ always_comb
 		 * STORE MULTIPLE
 		 */
 		stm: begin 
-			if(~CondExD) // If it fails conditional execution, flush Execute stage
-			  begin
-			  	nextState = ready;
-			  	InstrMuxD = 1;
-			  	doNotUpdateFlagD = 1;
-			  	uOpStallD = 0;
-			  	prevRSRstate = 0;
-			  	regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of WA3, RA2D and RA1D
-				LDMSTMforward = 0;
-				uOpInstrD = {defaultInstrD[31:28], 		// Cond: Never execute
-							3'b001,  		// Data processing Instr
-							4'b0100, 		// Add operation
-							1'b0,			// Do not set flags
-							20'b0 			// Add R0 = R0 + 0 (never execute)
-							};
-			  end else if (ZeroRegsLeft) begin
+			if (ZeroRegsLeft) begin
 				nextState = ready;
 			  	InstrMuxD = 1;
 			  	doNotUpdateFlagD = 1;
@@ -602,23 +584,7 @@ always_comb
 		 * LOAD MULTIPLE
 		 */
 		ldm:begin
-			if(~CondExD) // If it fails conditional execution, flush Execute stage
-			  begin
-			  	nextState = ready;
-			  	InstrMuxD = 1;
-			  	doNotUpdateFlagD = 1;
-			  	uOpStallD = 0;
-			  	prevRSRstate = 0;
-			  	regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; //5th bit of WA3, RA2D and RA1D
-				LDMSTMforward = 0;
-				uOpInstrD = {defaultInstrD[31:28], 		// Cond: Never execute
-							3'b001,  		// Data processing Instr
-							4'b0100, 		// Add operation
-							1'b0,			// Do not set flags
-							20'b0 			// Add R0 = R0 + 0 (never execute)
-							};
-			end else if (ZeroRegsLeft) begin
+			if (ZeroRegsLeft) begin
 				nextState = ready;
 			  	InstrMuxD = 1;
 			  	doNotUpdateFlagD = 1;
