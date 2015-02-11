@@ -102,6 +102,8 @@ always_ff @ (posedge clk)
  Signals that you'll need to consider:
  (1) InstrMuxD, (2) doNotUpdateFlagD, (3) uOpStallD, (4) regFileRz, (5) prevRSRstate, (6) nextState, (7) keepV
  (8) uOpInstrD, (9) LDMSTMforward, (10) noRotate,
+
+ ** noRotate might now be deprecated after modifications to datapath and controller
 */
 
 always_comb

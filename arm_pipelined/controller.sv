@@ -63,7 +63,7 @@ module controller(/// ------ From TOP ------
   logic        RegWriteD, RegWriteE, RegWriteGatedE;
   logic        MemWriteD, MemWriteE, MemWriteGatedE;
   logic        BranchD, BranchE, HalfwordOffsetE, HalfwordOffsetM;
-  logic        TFlag;
+  logic        TFlag, restoreCPSR_D, restoreCPSR_E;
   logic [1:0]  FlagWriteD, FlagWriteE;
   logic        PCSrcD, PCSrcE, PCSrcM;
   logic [3:0]  FlagsNextE, CondE;
@@ -93,47 +93,37 @@ module controller(/// ------ From TOP ------
       // If 2'b00, then this is data processing instruction
   	  2'b00: if (InstrD[25]) ControlsD = 13'b00_00_1010_01000; // Data processing immediate   0x52
   	         else begin   // (~InstrD[25])      
-                if (InstrD[7:4] == 4'b1001 & ~InstrD[24])       ControlsD = 13'b00_00_0010_01100; // Multiply                    0x13             
+                if (InstrD[7:4] == 4'b1001 & ~InstrD[24])       ControlsD = 13'b00_00_0010_01100; // Multiply                             
                 else if (InstrD[22] & InstrD[20] & LdrStr_HalfwordD)   ControlsD = 13'b00_11_1110_00010;  // LDH I-type
                 else if (~InstrD[22] & InstrD[20] & LdrStr_HalfwordD)  ControlsD = 13'b00_11_0110_00010;  // LDH R-type
                 else if (InstrD[22] & ~InstrD[20] & LdrStr_HalfwordD)  ControlsD = 13'b10_11_1101_00010;  // STH I-type
                 else if (~InstrD[22] & ~InstrD[20] & LdrStr_HalfwordD) ControlsD = 13'b10_11_0101_00010;  // STH R-type
                 // "Move from status register" not implemented
                 // "Move register to status register" not implemented
-                // 
                 else if ((InstrD[24:21] == 4'b1001) & (InstrD[19:4] == 16'hFFF1))
                               ControlsD = 13'b01_00_0000_10001; // BX
                 else  ControlsD = 13'b00_00_0010_01000; // Data processing register
               end
-/*          
-                  begin
-                     if ((InstrD[24:21] == 4'b1001) & (InstrD[15:12] == 4'b1111))
-                              ControlsD = 13'b01_00_0000_10001; // BX
-                     else     ControlsD = 13'b00_00_0010_01000; // Data processing register
-                     end
-                  end*/
-  	  2'b01: if (InstrD[20] & ~InstrD[25])       ControlsD = 13'b00_01_1110_00010; // LDR, "I-type" 0xf0
-             else if (InstrD[20] & InstrD[25])   ControlsD = 13'b00_01_0110_00010; // LDR, "R-Type" 0xb0
+  	  2'b01: if (InstrD[25] & InstrD[4])           undefInstrD = 1;
+             else if (InstrD[20] & ~InstrD[25])    ControlsD = 13'b00_01_1110_00010; // LDR, "I-type" 0xf0
+             else if (InstrD[20] & InstrD[25])     ControlsD = 13'b00_01_0110_00010; // LDR, "R-Type" 0xb0
              else if (~InstrD[20] & ~InstrD[25])   ControlsD = 13'b10_01_1101_00010; // STR, "I-type"
              else if (~InstrD[20] & InstrD[25])    ControlsD = 13'b10_01_0101_00010; // STR, "R-type"
   	  2'b10:                 ControlsD = 13'b01_10_1000_10000; // B                           0x344
   	  default:               begin undefInstrD = 1; ControlsD = 13'bx; end         // unimplemented
   	endcase
 
-  /*
-   * Notes: ldrstrALUopD gives Loads and Stores the ability to choose alu function add or subtract.
-   */
+  // Notes: ldrstrALUopD gives Loads and Stores the ability to choose alu function add or subtract.
   assign {RegSrcD, ImmSrcD,     // 2 bits each
           ALUSrcD, MemtoRegD, RegWriteD, MemWriteD, 
           BranchD, ALUOpD, MultSelectD, ldrstrALUopD, BXInstrD} = ControlsD; 
 
   
    always_comb
-     if (ALUOpD) begin                     // which Data-processing Instr?
+    if (ALUOpD) begin                     // which Data-processing Instr?
       ALUControlD = InstrD[24:21];  // Always passes Instruction codes to ALUControlD
       FlagWriteD[1:0]   = {InstrD[20], InstrD[20]};       // update flags if S bit is set
-
-    // LOAD STORE LOGIC
+    // The following is all: LOAD STORE LOGIC
     end else if ((InstrD[27:26] == 2'b01 | LdrStr_HalfwordD) & InstrD[23]) begin// Load/Store (Rn + 12 bit offset)
       ALUControlD     = 4'b0100;  // "Add" operation
       FlagWriteD[1:0] = 2'b00;
@@ -145,13 +135,14 @@ module controller(/// ------ From TOP ------
       FlagWriteD[1:0] = 2'b00;        // don't update Flags
     end 
  
-  assign LdrStrRtypeD  = uOpRtypeLdrStrD | (LdrStr_HalfwordD & ~InstrD[20] & ~InstrD[22] & InstrD[11:8] == 4'b0);
-  assign MultControlD  = InstrD[23:21];
-  assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~RegFileRzD[2]) | BranchD);
-  assign RselectD      = (InstrD[27:25] == 3'b000 & InstrD[4] == 0) | (LdrStrRtypeD & ~LDMSTMforwardD) ;
+  assign LdrStrRtypeD  = uOpRtypeLdrStrD | (LdrStr_HalfwordD & ~InstrD[20] & ~InstrD[22] & InstrD[11:8] == 4'b0); // Am I doing a R-type LDR/STR that may require reg access?
+  assign MultControlD  = InstrD[23:21];   // Control for the Multiplier Block
+  assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~RegFileRzD[2]) | BranchD); // Chooses program counter either from DMEM or from ALU calculation
+  assign RselectD      = (InstrD[27:25] == 3'b000 & InstrD[4] == 0) | (LdrStrRtypeD & ~LDMSTMforwardD); // Is a R-type instruction or R-type load store
   assign RSRselectD    = (InstrD[27:25] == 3'b000 & ~InstrD[7] & InstrD[4] == 1) & ~(InstrD[27:4] == {8'b0001_0010, 12'hFFF, 4'b0001});
-  assign ResultSelectD = {MultSelectD, RSRselectD};
-  assign LDRSTRshiftD  = LdrStrRtypeD;
+  assign ResultSelectD = {MultSelectD, RSRselectD}; 
+  assign LDRSTRshiftD  = LdrStrRtypeD;    // Tells the shifter (located in E-stage) whether its a LDR/STR type
+  assign restoreCPSR_D = ALUOpD & (ALUControlD == 4'b1101) & InstrD[20] & (InstrD[15:12] == 4'b1111); // Instruction for restoring CPSR (MOV/SUB)
 
   // < Handling all Multiplication Stalls Decode>
   assign MultStallD = (InstrD[27:24] == 4'b0) & InstrD[23] & (InstrD[7:4] == 4'b1001) & ~InstrD[25] & ~WriteMultLoE; //For Long Multiply
@@ -174,6 +165,7 @@ module controller(/// ------ From TOP ------
                     {ALUSrcE, ALUControlE, MultControlE});
 
   assign MultEnable = InstrE[7:4] == 4'b1001;
+
   // ALU Decoding
   flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE,
                            {(ALUOpD|ldrstrALUopD), InstrD}, {ALUOpE, InstrE});
@@ -182,10 +174,11 @@ module controller(/// ------ From TOP ------
   flopenrc  #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
   flopenr #(1)  keepV(clk, reset, ~StallE, KeepVD, KeepVE);
   flopenr #(1) shftrCarryOut(clk, reset, ~StallE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
+  flopenrc #(1) restoreCPSR(clk, reset, ~StallE, FlushE, restoreCPSR_D, restoreCPSR_E);
   
   mux2 #(1) updatetflag(PreviousTFlagE, TFlagE, BXInstrE, TFlagNextE);
 
-  cpsr          cpsrE(clk, reset, FlagsNextE, 6'b0, 5'b0, 2'b0, TFlagNextE, ~StallE, 1'b0, 1'b0, StatusRegisterDataE);
+  cpsr          cpsrE(clk, reset, restoreCPSR_E, FlagsNextE, 6'b0, 5'b0, 2'b0, TFlagNextE, ~StallE, 1'b0, 1'b0, StatusRegisterDataE);
 
   flopenrc #(4) prevFlags(clk, reset, ~StallE, FlushE, PreviousFlagsE, PreviousFlagsD);
   flopenrc #(12) prevState(clk, reset, ~StallE, FlushE, StatusRegisterDataE, PreviousStatusD);
