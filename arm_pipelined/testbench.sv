@@ -83,6 +83,11 @@ module testbench();
   real D;
   time simTime;
   real DMIPS;
+
+
+
+  // This line is used to turn on or off profiling
+  //`define PROFILE
   
   // profiling variables
   real totalCycles = 0;
@@ -131,6 +136,8 @@ module testbench();
         end
       end
     end*/
+    
+    `ifdef PROFILE
   
 	// check results at the end of each clock cycle
     always @(negedge clk)
@@ -229,4 +236,5 @@ module testbench();
 				$stop();
 			end
 		end
+    `endif
 endmodule
