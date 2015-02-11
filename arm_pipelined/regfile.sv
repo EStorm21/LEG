@@ -15,35 +15,36 @@ module regfile(input  logic        clk,
  ******************************/
 
   logic [31:0] rf[31:0]; // System/User mode registers including PC
-  logic [4:0]  ra1_5b, ra2_5b, wa3_5b;  
-  
+  logic [31:0] rd1_select, rd2_select;
+  integer i, j;
   // three ported register file
   // read two ports combinationally
   // write third port on falling edge of clock (midcycle)
   //   so that writes can be read on same cycle
   // register 15 reads PC+8 instead
 
-  always_ff @(negedge clk)
-    begin
-    if(we3)
-      rf[wa3_5b] <= wd3;	
-    end
-  
-  /** DECODE MODULE TEMPORARILY NEEDED
-   * when real transistor layout comes around, use 32 bit wordlines and bitlines.
-   **/
-  integer i;
-  always_comb begin
-    for(i = 0; i < 32; i = i+1) begin
-      if(ra1[i]) ra1_5b = i;
-      if(ra2[i]) ra2_5b = i;
-      if(wa3[i]) wa3_5b = i;
+  always_ff @(negedge clk) begin
+    for (j = 0; j < 32; j = j+1) begin
+      if(we3 & wa3[j]) rf[j] <= wd3;	
     end
   end
+  
+
+  // Version 4
+  always_comb begin
+    for(i = 0; i < 32; i = i+1) begin
+      if(ra1[i]) rd1_select = rf[i];
+      if(ra2[i]) rd2_select = rf[i];
+    end
+  end
+
+  assign rd1 = ra1[15] ? r15 : rd1_select;
+  assign rd2 = ra2[15] ? r15 : rd2_select;
+
   // -----------------------------
 
   // Version 3
-  assign rd1 = (ra1_5b == 5'b01111) ? r15 : rf[ra1_5b];
-  assign rd2 = (ra2_5b == 5'b01111) ? r15 : rf[ra2_5b];
+  // assign rd1 = (ra1_5b == 5'b01111) ? r15 : rf[ra1_5b];
+  // assign rd2 = (ra2_5b == 5'b01111) ? r15 : rf[ra2_5b];
   
 endmodule
