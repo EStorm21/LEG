@@ -40,11 +40,5 @@ module regfile(input  logic        clk,
 
   assign rd1 = ra1[15] ? r15 : rd1_select;
   assign rd2 = ra2[15] ? r15 : rd2_select;
-
-  // -----------------------------
-
-  // Version 3
-  // assign rd1 = (ra1_5b == 5'b01111) ? r15 : rf[ra1_5b];
-  // assign rd2 = (ra2_5b == 5'b01111) ? r15 : rf[ra2_5b];
   
 endmodule

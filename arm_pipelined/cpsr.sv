@@ -13,26 +13,58 @@ module cpsr(input  logic        clk, reset, restoreCPSR,
  * CPSR stores all the processor's current flags and processor mode. 
  *
  ******************************/
-
-  // CPSR: 3'b000
-  // SPSR: SVC(0), Abort(1), Undef(2), IRQ(3), FIQ(4) ; 
-  logic FastInterrupt, Interrupt, Undefined, PrefetchAbort, DataAbort, SoftwareInterrupt;
-
-
+  // define states READY and RSR 
+  typedef enum {usr_sys, svc, abt, undef, irq, fiq} statetype;
+  statetype state, nextState;
   // CPSR and SPSR of different modes
   logic [11:0] spsr[4:0]; 
   logic [11:0] cpsr;
   logic [7:0]  CPSR_update;
 
-  // defining names so we don't need to deal with magic numbers
-  //typedef enum logic [2:0] {SVC, ABORT, UNDEF, IRQ, FIQ} exc; // SVC = 3'b000, ... FIQ = 3'b100;
+  always_ff @ (posedge clk)
+    begin
+      if (Enable)
+        cpsr <= {FlagsNext, CPSR_update};
+      if (reset) begin
+        state <= usr_sys;
+        cpsr <= {FlagsNext, CPSR_update}; end
+      else 
+        state <= nextState;end
+    
+  assign nextState = usr_sys;
+  assign SRdata = cpsr;
+
+
+  // CPSR: 3'b000
+  // SPSR: SVC(0), Abort(1), Undef(2), IRQ(3), FIQ(4) ; 
+  logic FastInterrupt, Interrupt, Undefined, PrefetchAbort, DataAbort, SoftwareInterrupt;
   assign {FastInterrupt, Interrupt, Undefined, PrefetchAbort, DataAbort, SoftwareInterrupt} = Exceptions;
 
-  /*
-  EXCEPTION BITS:
-  {6'b000_000}
-  {FIQ, IRQ, UNDEF _ PrefetchAbort, DataAbort, SWI}
-  */
+
+/*
+  always_comb
+    case(state)
+      usr_sys: begin
+      end
+      svc: begin
+      end
+      abt: begin
+      end
+      undef: begin
+      end
+      irq: begin
+      end
+      fiq: begin
+      end
+    endcase*/
+
+
+
+
+  // EXCEPTION BITS:
+  // {6'b000_000}
+  // {FIQ, IRQ, UNDEF _ PrefetchAbort, DataAbort, SWI}
+
 
   always_comb
     begin
@@ -61,19 +93,19 @@ module cpsr(input  logic        clk, reset, restoreCPSR,
         CPSR_update = {cpsr[7:0]};
       end
     end
+/*
+  //  The goal here is to see if a signal high triggers any one of these mode changes. However, if the signal is kept high,
+  //  one can see the chance of the CPSR continuously changing the values inside the SPSR. Would we need to make a state machine
+  //  such that we can restore the correct value of the SPSR back to the CPSR upon the MOVS PC R14 or SUBS PC R14 #4 instruction?
 
-/* The goal here is to see if a signal high triggers any one of these mode changes. However, if the signal is kept high,
-   one can see the chance of the CPSR continuously changing the values inside the SPSR. Would we need to make a state machine
-   such that we can restore the correct value of the SPSR back to the CPSR upon the MOVS PC R14 or SUBS PC R14 #4 instruction?
+  //  In Summary, here's what we will want to do:
+  // 1) On interrupt trigger, save SPSR_mode <= CPSR
+  // 2) Save R14_mode <== Address of next/aborted/undef instruction
+  // 3) Change Mode type in current CPSR (I assume this is done after the SPSR_mode is saved)
+  // 4) Change PC to some value 0x4,8,c,10,18,1c
 
-   In Summary, here's what we will want to do:
-  1) On interrupt trigger, save SPSR_mode <= CPSR
-  2) Save R14_mode <== Address of next/aborted/undef instruction
-  3) Change Mode type in current CPSR (I assume this is done after the SPSR_mode is saved)
-  4) Change PC to some value 0x4,8,c,10,18,1c
+  // To return (SPSR moved to CPSR and R14 moved to PC), we either (1) want to do SUBS or MOVS or (2) use Load multiple and restore PSR
 
-  To return (SPSR moved to CPSR and R14 moved to PC), we either (1) want to do SUBS or MOVS or (2) use Load multiple and restore PSR
-*/
   always_ff @(posedge clk, posedge reset)
     begin
       if (reset) begin
@@ -111,5 +143,5 @@ module cpsr(input  logic        clk, reset, restoreCPSR,
 
   assign SRdata = cpsr;
 
-
+*/
 endmodule

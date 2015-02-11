@@ -1,5 +1,3 @@
-// FSM for microOps
-
 module micropsfsm(input  logic        clk, reset,
                input  logic [31:0] defaultInstrD,
                output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforward, 
@@ -10,7 +8,6 @@ module micropsfsm(input  logic        clk, reset,
 			   input  logic		   StalluOp);
 
 // define states READY and RSR 
-// TODO: add more states for each type of instruction
 typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, ldr, str, str2, blx, strHalf} statetype;
 statetype state, nextState;
 
