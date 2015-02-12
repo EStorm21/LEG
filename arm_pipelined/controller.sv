@@ -59,7 +59,7 @@ module controller(/// ------ From TOP ------
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
   logic [3:0]  ALUControlD, ByteMaskE;
   logic [2:0]  MultControlD;
-  logic        ALUSrcD, MemtoRegD;
+  logic        ALUSrcD, MemtoRegD, CondExE2;
   logic        RegWriteD, RegWriteE, RegWriteGatedE;
   logic        MemWriteD, MemWriteE, MemWriteGatedE;
   logic        BranchD, BranchE, HalfwordOffsetE, HalfwordOffsetM;
@@ -73,7 +73,8 @@ module controller(/// ------ From TOP ------
   logic [1:0]  ByteOffsetE, ByteOffsetM;
   logic [1:0]  STR_cycleD;
   logic        doNotUpdateFlagD, LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD, undefInstrD;
-  logic  [3:0] FlagsM;
+  logic [3:0]  FlagsM;
+  logic [6:0]  PCVectorAddressE, PCVectorAddressM, PCVectorAddressW;
 
 
 
@@ -145,8 +146,8 @@ module controller(/// ------ From TOP ------
 
   // < Handling all Multiplication Stalls Decode>
   assign MultStallD = (InstrD[27:24] == 4'b0) & InstrD[23] & (InstrD[7:4] == 4'b1001) & ~InstrD[25] & ~WriteMultLoE; //For Long Multiply
-  flopenr #(1)  MultOutputSrc(clk, reset, ~StallE, MultStallD, WriteMultLoE);
-  flopenr #(1)  MultOutputSrc1(clk, reset, ~StallE, WriteMultLoE, WriteMultLoKeptE); //write the low register on the second cycle
+  flopenrc #(1)  MultOutputSrc(clk, reset, ~StallE, FlushE, MultStallD, WriteMultLoE);
+  flopenrc #(1)  MultOutputSrc1(clk, reset, ~StallE, FlushE, WriteMultLoE, WriteMultLoKeptE); //write the low register on the second cycle
   // -----
 
   // ====================================================================================
@@ -171,13 +172,13 @@ module controller(/// ------ From TOP ------
   alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
                     
   flopenrc  #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
-  flopenr #(1)  keepV(clk, reset, ~StallE, KeepVD, KeepVE);
-  flopenr #(1) shftrCarryOut(clk, reset, ~StallE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
+  flopenrc #(1)  keepV(clk, reset, ~StallE, FlushE, KeepVD, KeepVE);
+  flopenrc #(1) shftrCarryOut(clk, reset, ~StallE, FlushE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
   flopenrc #(1) restoreCPSR(clk, reset, ~StallE, FlushE, restoreCPSR_D, restoreCPSR_E);
   
-  mux2 #(1) updatetflag(PreviousTFlagE, TFlagE, BXInstrE, TFlagNextE);
+  mux2 #(1) updatetflag(PreviousTFlagE, TFlagE, BXInstrE, TFlagNextE); // THUMB FLAG (TFlagNextE) is no longer being used since we haven't implemented thumb mode!
 
-  cpsr          cpsrE(clk, reset, restoreCPSR_E, FlagsNextE, 6'b0, 5'b0, 2'b0, TFlagNextE, ~StallE, 1'b0, 1'b0, StatusRegisterE);
+  cpsr          cpsrE(clk, reset, restoreCPSR_E, FlagsNextE, 6'b0, 5'b0, ~StallE, 1'b0, 1'b0, StatusRegisterE, PCVectorAddressE);
 
   assign  FlagsE = StatusRegisterE[11:8];
   assign  PreviousTFlagE = StatusRegisterE[5];
@@ -197,7 +198,7 @@ module controller(/// ------ From TOP ------
 
 
   assign BranchTakenE    = BranchE & CondExE;
-  assign RegWritepreMuxE = RegWriteE & CondExE;
+  assign RegWritepreMuxE = (RegWriteE & CondExE) | (RegWriteE & CondExE2 & WriteMultLoKeptE & MultStallE);
   assign MemWriteGatedE  = MemWriteE & CondExE;
   assign PCSrcGatedE     = PCSrcE & CondExE;
   
@@ -206,6 +207,7 @@ module controller(/// ------ From TOP ------
   
   // < Handling all Multiplication Stalls Execute>
   assign MultStallE = (InstrD[27:24] == 4'b0) & InstrE[23] & (InstrE[7:4] == 4'b1001) & ~InstrD[25]; //For Long Multiply
+  flopenrc #(1) longMultRegWritePt2(clk, reset, ~StallE, FlushE, CondExE, CondExE2);
   // -----
 
 
@@ -217,6 +219,7 @@ module controller(/// ------ From TOP ------
                                         ByteOrWordE, ByteOffsetE, WriteHalfwordE, HalfwordOffsetE},
                    {MemWriteM, MemtoRegM, RegWriteM, PCSrcM, ByteMaskM, 
                                         ByteOrWordM, ByteOffsetM, WriteHalfwordM, HalfwordOffsetM});
+  flopenr #(7) PCVectorEM(clk, reset, ~StallM, PCVectorAddressE, PCVectorAddressM);
   
   // ====================================================================================
   // =============================== Writeback Stage ====================================
@@ -224,6 +227,7 @@ module controller(/// ------ From TOP ------
   flopenrc #(8) regsW(clk, reset, ~StallW, FlushW, 
                    {MemtoRegM, RegWriteM, PCSrcM, ByteOrWordM, ByteOffsetM, WriteHalfwordM, HalfwordOffsetM},
                    {MemtoRegW, RegWriteW, PCSrcW, LoadLengthW, ByteOffsetW, WriteHalfwordW, HalfwordOffsetW});
+  flopenrc #(7) PCVectorMW(clk, reset, ~StallM, FlushW, PCVectorAddressM, PCVectorAddressW);
 
   // Hazard Prediction
   assign PCWrPendingF = PCSrcD | PCSrcE | PCSrcM;

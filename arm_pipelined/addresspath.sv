@@ -59,13 +59,13 @@ module addresspath( /// ------ From TOP ------
   // ================================ Memory Stage ======================================
   // ====================================================================================
   flopenr #(32)  wa3mreg(clk, reset, ~StallM, WA3E, WA3M);
-  flopenr #(12) statusM(clk,reset, ~StallE, StatusRegisterE, StatusRegisterM);
+  flopenr #(12) statusM(clk,reset, ~StallM, StatusRegisterE, StatusRegisterM);
 
   // ====================================================================================
   // ================================ Writeback Stage ===================================
   // ====================================================================================
   flopenrc #(32)  wa3wreg(clk, reset, ~StallW, FlushW, WA3M, WA3W);
-  flopenr #(12) statusW(clk,reset, ~StallE, StatusRegisterM, StatusRegisterW);
+  flopenrc #(12) statusW(clk,reset, ~StallW, FlushW, StatusRegisterM, StatusRegisterW);
   eqcmp #(32) m0(WA3M, RA1E, Match_1E_M);
   eqcmp #(32) m1(WA3W, RA1E, Match_1E_W);
   eqcmp #(32) m2(WA3M, RA2E, Match_2E_M);
