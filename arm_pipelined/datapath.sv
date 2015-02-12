@@ -14,7 +14,7 @@ module datapath(/// ------ From TOP (Memory) ------
                   input  logic        MemtoRegW, PCSrcW, RegWriteW,
                   input  logic [31:0] InstrE,
                   // Handling data-processing Instrs (ALU)
-                  input  logic [3:0]  PreviousFlagsE,
+                  input  logic [3:0]  FlagsE,
                   input  logic [2:0]  CVUpdateE, ALUOperationE,
                   input  logic        InvertBE, ReverseInputsE, ALUCarryE,
                   // To handle micro-op decoding
@@ -46,11 +46,9 @@ module datapath(/// ------ From TOP (Memory) ------
                   input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, // Added StallE, StallM, FlushW for memory
 
                 /// ------ To Hazard ------
-
                 /// ------ To Address Path ------
-
                 /// ------ From Address Path ------
-                  input  logic [4:0]   WA3W, RA1D, RA2D,
+                  input  logic [31:0]   WA3W, RA1D, RA2D,
 
                 /// ------ added for thumb instructions ------
                   input  logic        TFlagNextE, 
@@ -114,14 +112,14 @@ module datapath(/// ------ From TOP (Memory) ------
   assign TFlagE = ALUSrcBE[0];
 
   // TODO: implement as a barrel shift
-  shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], LDRSTRshiftE, PreviousFlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
+  shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], LDRSTRshiftE, FlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
   
-  alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, ALUOutputE, ALUFlagsE, PreviousFlagsE[1:0], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, KeepVE); 
+  alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, ALUOutputE, ALUFlagsE, FlagsE[1:0], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, KeepVE); 
   
   // TODO: Use a signle multiplier for both signed and unsigned
   // - Turn this into structural block
   // - Move relevant signals to controller
-  multiplier  mult(clk, reset, MultEnable, StallE, WriteMultLoKeptE, SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, PreviousFlagsE[1:0]);
+  multiplier  mult(clk, reset, MultEnable, StallE, WriteMultLoKeptE, SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, FlagsE[1:0]);
   
   mux3 #(32)  aluoutputmux(ALUOutputE, ShiftBE, MultOutputE, ResultSelectE, ALUResultE); 
   data_replicator memReplicate(WriteByteE, WriteHalfwordE, WriteDataE, WriteDataReplE);

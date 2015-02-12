@@ -19,7 +19,7 @@ module arm(input  logic        clk, reset,
   logic        MultStallD, MultStallE;
   logic        WriteMultLoE, WriteMultLoKeptE;
   logic        ShifterCarryOutE;
-  logic [4:0]  WA3W, WA3E, RA1D, RA2D;
+  logic [31:0]  WA3W, WA3E, RA1D, RA2D;
   logic [3:0]  DestRegD;
 
   /// Output from Controller
@@ -31,7 +31,7 @@ module arm(input  logic        clk, reset,
   logic        RegWriteM, MemtoRegE, PCWrPendingF, WriteByteE, WriteHalfwordE, WriteHalfwordW, HalfwordOffsetW;
   logic        DoNotWriteRegE, doNotUpdateFlagD,uOpStallD, PrevRSRstateD, PrevRSRstateE;
   logic        LDMSTMforwardD, LDMSTMforwardE, LDRSTRshiftE, MultSelectD, RselectE;
-  logic [3:0]  PreviousFlagsE; // [1] is C, [0] is V
+  logic [3:0]  FlagsE; // [1] is C, [0] is V
   logic [1:0]  ResultSelectE, STR_cycleD, ByteOffsetW;
   logic [2:0]  MultControlE;
   logic        KeepVE, SignExtendD, noRotateD, InstrMuxD;
@@ -40,6 +40,7 @@ module arm(input  logic        clk, reset,
   logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnable, LoadLengthW;
   logic [3:0]  RegFileRzD;
   logic        ShifterCarryOut_cycle2E;
+  logic [11:0] StatusRegisterE;
 
   /// Output from AddressPath
   logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_1D_E, Match_2D_E;

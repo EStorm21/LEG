@@ -4,7 +4,8 @@ module addresspath( /// ------ From TOP ------
                     input  logic [31:0] InstrE,					  
                     input  logic        WriteMultLoE, MultSelectD, 
                     input  logic [3:0]  RegFileRzD,
-                    input  logic [1:0]  RegSrcD, 
+                    input  logic [1:0]  RegSrcD,
+                    input  logic [11:0] StatusRegisterE, 
 
           					/// To Controller 
 
@@ -12,7 +13,7 @@ module addresspath( /// ------ From TOP ------
                     input logic [31:0]  InstrD,
 
           					/// To Datapath
-                    output logic [4:0]  WA3W, RA1D, RA2D,
+                    output logic [31:0]  WA3W, RA1D, RA2D,
 
           					/// From Hazard
                     input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, 
@@ -22,8 +23,9 @@ module addresspath( /// ------ From TOP ------
                     output logic        Match_1D_E, Match_2D_E
           					);
 
-  logic [4:0]  WA3M, WA3E, RA1E, RA2E, RdLoE, WA3E_1;
+  logic [31:0]  WA3M, WA3E, RA1E, RA2E, RdLoE, WA3E_1, WA3D;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D, DestRegD;
+  logic [11:0] StatusRegisterM, StatusRegisterW;
 
   // ====================================================================================
   // ================================ Fetch Stage =======================================
@@ -38,35 +40,37 @@ module addresspath( /// ------ From TOP ------
   mux3 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], InstrD[11:8], {MultSelectD, RegSrcD[1]}, RA2_4b_D);
   mux2 #(4)   destregmux(InstrD[15:12], InstrD[19:16], MultSelectD, DestRegD);
 
-  assign RA1D = {RegFileRzD[0], RA1_4b_D};
-  assign RA2D = {RegFileRzD[1], RA2_4b_D};
+  addressdecode address_decoder(RA1_4b_D, RA2_4b_D, DestRegD, RegFileRzD[2:0], StatusRegisterW, RA1D, RA2D, WA3D);
 
   // ====================================================================================
   // ================================ Execute Stage =====================================
   // ====================================================================================
-  flopenr #(5)  wa3ereg(clk, reset, ~StallE, {RegFileRzD[2], DestRegD}, WA3E_1); 
-  flopenr #(5)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
-  flopenr #(5)  ra2reg(clk, reset, ~StallE, RA2D, RA2E); 
-
+  
+  flopenr #(32)  wa3ereg(clk, reset, ~StallE, WA3D, WA3E_1); 
+  flopenr #(32)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
+  flopenr #(32)  ra2reg(clk, reset, ~StallE, RA2D, RA2E); 
+  
+  longmult_addressdecode multAddr(InstrE[15:12], StatusRegisterE, RdLoE);
+  
   // Long Multiply RdLo register
-  assign RdLoE = {0, InstrE[15:12]};
   assign WA3E = WriteMultLoE ? RdLoE: WA3E_1;
 
   // ====================================================================================
   // ================================ Memory Stage ======================================
   // ====================================================================================
-  flopenr #(5)  wa3mreg(clk, reset, ~StallM, WA3E, WA3M);
+  flopenr #(32)  wa3mreg(clk, reset, ~StallM, WA3E, WA3M);
+  flopenr #(12) statusM(clk,reset, ~StallE, StatusRegisterE, StatusRegisterM);
 
   // ====================================================================================
   // ================================ Writeback Stage ===================================
   // ====================================================================================
-  flopenrc #(5)  wa3wreg(clk, reset, ~StallW, FlushW, WA3M, WA3W);
-
-  eqcmp #(5) m0(WA3M, RA1E, Match_1E_M);
-  eqcmp #(5) m1(WA3W, RA1E, Match_1E_W);
-  eqcmp #(5) m2(WA3M, RA2E, Match_2E_M);
-  eqcmp #(5) m3(WA3W, RA2E, Match_2E_W);
-  eqcmp #(5) m4a(WA3E, RA1D, Match_1D_E);
-  eqcmp #(5) m4b(WA3E, RA2D, Match_2D_E);
+  flopenrc #(32)  wa3wreg(clk, reset, ~StallW, FlushW, WA3M, WA3W);
+  flopenr #(12) statusW(clk,reset, ~StallE, StatusRegisterM, StatusRegisterW);
+  eqcmp #(32) m0(WA3M, RA1E, Match_1E_M);
+  eqcmp #(32) m1(WA3W, RA1E, Match_1E_W);
+  eqcmp #(32) m2(WA3M, RA2E, Match_2E_M);
+  eqcmp #(32) m3(WA3W, RA2E, Match_2E_W);
+  eqcmp #(32) m4a(WA3E, RA1D, Match_1D_E);
+  eqcmp #(32) m4b(WA3E, RA2D, Match_2D_E);
 
 endmodule 

@@ -14,7 +14,7 @@ reg[63:0] temp;
 logic [4:0] shiftamt;
 assign shiftamt = (InstrD[11:8] << 1);
 always_comb
-	if (InstrD[27:25] == 3'b001 & ~noRotateD)
+	if (InstrD[27:25] == 3'b001 & ~noRotateD) // Note: The noRotateD might now be deprecated after some new updates to the rest of datapath & controller. 
 	  begin
 	    temp = ({ExtImmD,ExtImmD}) >> shiftamt;
 	    RotImm = temp[31:0];

@@ -1,4 +1,4 @@
-module cpsr(input  logic        clk, reset, 
+module cpsr(input  logic        clk, reset, restoreCPSR,
               input logic [3:0] FlagsNext,
               input logic [5:0] Exceptions, 
               input logic [4:0] Mode,
@@ -13,26 +13,58 @@ module cpsr(input  logic        clk, reset,
  * CPSR stores all the processor's current flags and processor mode. 
  *
  ******************************/
+  // define states READY and RSR 
+  typedef enum {usr_sys, svc, abt, undef, irq, fiq} statetype;
+  statetype state, nextState;
+  // CPSR and SPSR of different modes
+  logic [11:0] spsr[4:0]; 
+  logic [11:0] cpsr;
+  logic [7:0]  CPSR_update;
+
+  always_ff @ (posedge clk)
+    begin
+      if (Enable)
+        cpsr <= {FlagsNext, CPSR_update};
+      if (reset) begin
+        state <= usr_sys;
+        cpsr <= {FlagsNext, CPSR_update}; end
+      else 
+        state <= nextState;end
+    
+  assign nextState = usr_sys;
+  assign SRdata = cpsr;
+
 
   // CPSR: 3'b000
   // SPSR: SVC(0), Abort(1), Undef(2), IRQ(3), FIQ(4) ; 
   logic FastInterrupt, Interrupt, Undefined, PrefetchAbort, DataAbort, SoftwareInterrupt;
-
-
-  // CPSR and SPSR of different modes
-  logic [11:0] sr[4:0]; 
-  logic [11:0] cpsr;
-  logic [7:0]  CPSR_update;
-
-  // defining names so we don't need to deal with magic numbers
-  //typedef enum logic [2:0] {SVC, ABORT, UNDEF, IRQ, FIQ} exc; // SVC = 3'b000, ... FIQ = 3'b100;
   assign {FastInterrupt, Interrupt, Undefined, PrefetchAbort, DataAbort, SoftwareInterrupt} = Exceptions;
 
-  /*
-  EXCEPTION BITS:
-  {6'b000_000}
-  {FIQ, IRQ, UNDEF _ PrefetchAbort, DataAbort, SWI}
-  */
+
+/*
+  always_comb
+    case(state)
+      usr_sys: begin
+      end
+      svc: begin
+      end
+      abt: begin
+      end
+      undef: begin
+      end
+      irq: begin
+      end
+      fiq: begin
+      end
+    endcase*/
+
+
+
+
+  // EXCEPTION BITS:
+  // {6'b000_000}
+  // {FIQ, IRQ, UNDEF _ PrefetchAbort, DataAbort, SWI}
+
 
   always_comb
     begin
@@ -61,36 +93,47 @@ module cpsr(input  logic        clk, reset,
         CPSR_update = {cpsr[7:0]};
       end
     end
+/*
+  //  The goal here is to see if a signal high triggers any one of these mode changes. However, if the signal is kept high,
+  //  one can see the chance of the CPSR continuously changing the values inside the SPSR. Would we need to make a state machine
+  //  such that we can restore the correct value of the SPSR back to the CPSR upon the MOVS PC R14 or SUBS PC R14 #4 instruction?
 
+  //  In Summary, here's what we will want to do:
+  // 1) On interrupt trigger, save SPSR_mode <= CPSR
+  // 2) Save R14_mode <== Address of next/aborted/undef instruction
+  // 3) Change Mode type in current CPSR (I assume this is done after the SPSR_mode is saved)
+  // 4) Change PC to some value 0x4,8,c,10,18,1c
+
+  // To return (SPSR moved to CPSR and R14 moved to PC), we either (1) want to do SUBS or MOVS or (2) use Load multiple and restore PSR
 
   always_ff @(posedge clk, posedge reset)
     begin
       if (reset) begin
-        sr[0] <= cpsr;
+        spsr[0] <= cpsr;
         cpsr <= {cpsr[11:8], CPSR_update};
       end
       else if (DataAbort) begin // data abort 
-        sr[1] <= cpsr;
+        spsr[1] <= cpsr;
         cpsr <= {cpsr[11:8], CPSR_update};
       end
       else if (FastInterrupt) begin // FIQ
-        sr[4] <= cpsr;
+        spsr[4] <= cpsr;
         cpsr <= {cpsr[11:8], CPSR_update};
       end
       else if (Interrupt) begin // IRQ
-        sr[3] <= cpsr;
+        spsr[3] <= cpsr;
         cpsr <= {cpsr[11:8], CPSR_update};
       end
       else if (PrefetchAbort) begin // prefetch abort
-        sr[1] <= cpsr;
+        spsr[1] <= cpsr;
         cpsr <= {cpsr[11:8], CPSR_update};
       end
       else if (Undefined) begin // undef
-        sr[2] <= cpsr;
+        spsr[2] <= cpsr;
         cpsr <= {cpsr[11:8], CPSR_update};
       end
       else if (SoftwareInterrupt) begin // Software interrupt
-        sr[0] <= cpsr;
+        spsr[0] <= cpsr;
         cpsr <= {cpsr[11:8], CPSR_update};
       end
       else if (Enable) begin
@@ -100,44 +143,5 @@ module cpsr(input  logic        clk, reset,
 
   assign SRdata = cpsr;
 
-/*
-
-      casex({reset, Exceptions})
-        7'b0_xxxxxx: 
-        7'b0_000000: CPSR_update = {cpsr[7:0]};
-        7'b0_000001: CPSR_update = {1'b1, cpsr[6], 6'b01_0011}; // Supervisor Mode
-        7'b0_000010: CPSR_update = {1'b1, cpsr[6], 6'b01_0111}; // Data Abort Mode
-        7'b0_000100: CPSR_update = {1'b1, cpsr[6], 6'b01_0111}; // Prefetch Abort Mode
-        7'b0_001000: CPSR_update = {1'b1, cpsr[6], 6'b01_1011}; // Undefined Mode
-        7'b0_010000: CPSR_update = {1'b1, cpsr[6], 6'b01_0010}; // IRQ mode
-        7'b0_100000: CPSR_update = {1'b1, cpsr[6], 6'b01_0001}; // output fast interrupt (FIQ) mode
-        default: CPSR_update = {cpsr[7:0]};
-      endcase
-
-
-
-
-      casex(Exceptions)
-        5'b00000: cpsr[31:28] <= FlagsNext;
-        5'b00001: begin // supervisor mode from software interrupt
-                  sr[1] <= cpsr;
-                  cpsr[7:0] <= CPSR_update; //FIQ, IRQ disabled, Supervisor mode
-                  end
-        5'b00010: begin // abort mode (prefetch and data-access abort)
-                  sr[2] <= cpsr;
-                  cpsr[7:0] <= CPSR_update;
-                  end
-        5'b00100: begin // undefined mode
-                  sr[3] <= cpsr;
-                  cpsr[7:0] <= CPSR_update;
-                  end
-        5'b01000: begin // interrupt (IRQ) mode
-                  sr[4] <= cpsr;
-                  cpsr[7:0] <= CPSR_update;
-                  end
-        5'b10000: begin // fast interrupt (FIQ) mode
-                  sr[5] <= cpsr;
-                  cpsr[7:0] <= CPSR_update;
-                  end
-      endcase*/
+*/
 endmodule
