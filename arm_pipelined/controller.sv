@@ -72,7 +72,7 @@ module controller(/// ------ From TOP ------
   logic        ByteOrWordE, ByteOrWordM, LdrStr_HalfwordD, LdrStr_HalfwordE, HalfwordE, WriteHalfwordM;
   logic [1:0]  ByteOffsetE, ByteOffsetM;
   logic [1:0]  STR_cycleD;
-  logic        doNotUpdateFlagD, LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD, undefInstrD;
+  logic        doNotUpdateFlagD, LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD, undefInstrD, undefInstrE;
   logic [3:0]  FlagsM;
   logic [6:0]  PCVectorAddressE, PCVectorAddressM, PCVectorAddressW;
 
@@ -177,8 +177,8 @@ module controller(/// ------ From TOP ------
   flopenrc #(1) restoreCPSR(clk, reset, ~StallE, FlushE, restoreCPSR_D, restoreCPSR_E);
   
   mux2 #(1) updatetflag(PreviousTFlagE, TFlagE, BXInstrE, TFlagNextE); // THUMB FLAG (TFlagNextE) is no longer being used since we haven't implemented thumb mode!
-
-  cpsr          cpsrE(clk, reset, restoreCPSR_E, FlagsNextE, 6'b0, 5'b0, ~StallE, 1'b0, 1'b0, StatusRegisterE, PCVectorAddressE);
+  flopenrc #(1) undef_exception(clk, reset, ~StallE, FlushE, undefInstrD, undefInstrE);
+  cpsr          cpsrE(clk, reset, restoreCPSR_E, FlagsNextE, {undefInstrE, 5'b0}, 5'b0, ~StallE, 1'b0, 1'b0, StatusRegisterE, PCVectorAddressE);
 
   assign  FlagsE = StatusRegisterE[11:8];
   assign  PreviousTFlagE = StatusRegisterE[5];

@@ -1,6 +1,6 @@
 module cpsr(input  logic        clk, reset, restoreCPSR,
               input logic [3:0] FlagsNext,
-              input logic [5:0] Exceptions, 
+              input logic [5:0] Exceptions, // Exceptions[5:0] are: [5]undef, swi, prefetch_abt, data_abt, irq, fiq[0] 
               input logic [4:0] Mode,
               input logic       Enable, readSR, writeSR,
               output logic [11:0] SRdata, 
@@ -12,8 +12,8 @@ module cpsr(input  logic        clk, reset, restoreCPSR,
  * CPSR stores all the processor's current flags and processor mode. 
  *
  ******************************/
-  typedef enum {usr_sys, svc, abt, undef, irq, fiq} statetype;
-  statetype state, nextState;
+  // typedef enum {usr_sys, svc, abt, undef, irq, fiq} statetype;
+  // statetype state, nextState;
   // CPSR and SPSR of different modes
   logic [11:0] spsr[4:0]; 
   logic [11:0] cpsr;
@@ -36,27 +36,27 @@ module cpsr(input  logic        clk, reset, restoreCPSR,
         CPSR_update = {1'b1, 1'b1, 6'b01_0011}; // Supervisor Mode
         PCVectorAddress = 7'b000_0001;
       end
-      else if (DataAbort) begin // data abort 
+      else if (DataAbort & ~(cpsr[4:0]==5'b10111)) begin // data abort 
         CPSR_update = {1'b1, cpsr[6], 6'b01_0111}; // Data Abort Mode
         PCVectorAddress = 7'b001_0000;
       end
-      else if (FastInterrupt) begin // FIQ
+      else if (FastInterrupt & ~(cpsr[4:0]==5'b10001)) begin // FIQ
         CPSR_update = {1'b1, cpsr[6], 6'b01_0001}; // output fast interrupt (FIQ) mode
         PCVectorAddress = 7'b100_0000;
       end
-      else if (Interrupt) begin // IRQ
+      else if (Interrupt & ~(cpsr[4:0]==5'b10010))begin // IRQ
         CPSR_update = {1'b1, cpsr[6], 6'b01_0010}; // IRQ mode
         PCVectorAddress = 7'b010_0000;
       end
-      else if (PrefetchAbort) begin // prefetch abort
+      else if (PrefetchAbort & ~(cpsr[4:0]==5'b10111)) begin // prefetch abort
         CPSR_update = {1'b1, cpsr[6], 6'b01_0111}; // Prefetch Abort Mode
         PCVectorAddress = 7'b000_1000;
       end
-      else if (Undefined) begin // undef
+      else if (Undefined & ~(cpsr[4:0]==5'b11011)) begin // undef
         CPSR_update = {1'b1, cpsr[6], 6'b01_1011}; // Undefined Mode
         PCVectorAddress = 7'b000_0010;
       end
-      else if (SoftwareInterrupt) begin // Software interrupt
+      else if (SoftwareInterrupt & ~(cpsr[4:0]==5'b10011)) begin // Software interrupt
         CPSR_update = {1'b1, cpsr[6], 6'b01_0011}; // Supervisor Mode
         PCVectorAddress = 7'b000_0100;
       end
@@ -114,45 +114,5 @@ module cpsr(input  logic        clk, reset, restoreCPSR,
     end
 
   assign SRdata = cpsr;
-
-
-/*
-
-  // CPSR: 3'b000
-  // SPSR: SVC(0), Abort(1), Undef(2), IRQ(3), FIQ(4) ; 
-  logic FastInterrupt, Interrupt, Undefined, PrefetchAbort, DataAbort, SoftwareInterrupt;
-  assign {FastInterrupt, Interrupt, Undefined, PrefetchAbort, DataAbort, SoftwareInterrupt} = Exceptions;
-
-
-
-  always_comb
-    case(state)
-      usr_sys: begin
-      end
-      svc: begin
-      end
-      abt: begin
-      end
-      undef: begin
-      end
-      irq: begin
-      end
-      fiq: begin
-      end
-    endcase*/
-/*
-  always_ff @ (posedge clk)
-    begin
-      if (Enable)
-        cpsr <= {FlagsNext, CPSR_update};
-      if (reset) begin
-        state <= svc;
-        cpsr <= {FlagsNext, CPSR_update}; end
-      else 
-        state <= nextState; end
-    
-  assign nextState = svc;
-  assign SRdata = cpsr;*/
-
 
 endmodule

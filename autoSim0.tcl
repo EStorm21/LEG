@@ -37,7 +37,7 @@ foreach {test} $tests {
 			run 120000; list
 		}
 	
-	set r [examine -time 110000 -radix hex sim:/testbench/dut/arm/dp/rf/rf]; list
+	set r [examine -time 3000000 -radix hex sim:/testbench/dut/arm/dp/rf/rf]; list
 
 	#remove braces from string
 	set r [string map {\{ {}} $r]; list
