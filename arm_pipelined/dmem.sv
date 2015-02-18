@@ -17,8 +17,8 @@ module dmem
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
        // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat",RAM); //teqrs
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/mmu/sectionTest.dat",RAM);
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/mmu/python/pagetable.dat",RAM);
-      $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/mmu/python/pagetable.dat",RAM);
+      $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/mmu/python/pagetable.dat",RAM);
+      // $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/mmu/python/pagetable.dat",RAM);
       // $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/mmu/sectionTest.dat",RAM);
 
 
