@@ -6,6 +6,7 @@ module addresspath( /// ------ From TOP ------
                     input  logic [3:0]  RegFileRzD,
                     input  logic [1:0]  RegSrcD,
                     input  logic [11:0] StatusRegisterE, 
+                    input  logic [6:0]  PCVectorAddressW, 
 
           					/// To Controller 
 
@@ -13,7 +14,8 @@ module addresspath( /// ------ From TOP ------
                     input logic [31:0]  InstrD,
 
           					/// To Datapath
-                    output logic [31:0]  WA3W, RA1D, RA2D,
+                    output logic [31:0]  WA3W, RA1D, RA2D, VectorPCnextF,
+                    output logic         ExceptionVectorSelectW,
 
           					/// From Hazard
                     input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, 
@@ -30,6 +32,7 @@ module addresspath( /// ------ From TOP ------
   // ====================================================================================
   // ================================ Fetch Stage =======================================
   // ====================================================================================
+
 
   // ====================================================================================
   // ================================ Decode Stage ======================================
@@ -72,5 +75,7 @@ module addresspath( /// ------ From TOP ------
   eqcmp #(32) m3(WA3W, RA2E, Match_2E_W);
   eqcmp #(32) m4a(WA3E, RA1D, Match_1D_E);
   eqcmp #(32) m4b(WA3E, RA2D, Match_2D_E);
+
+  exception_vector_address exception_vector(PCVectorAddressW, VectorPCnextF, ExceptionVectorSelectW); // near the fetch stage
 
 endmodule 

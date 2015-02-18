@@ -6,6 +6,7 @@ module controller(/// ------ From TOP ------
 
                   /// ------ To   Addresspath ------
                     output logic [11:0]  StatusRegisterE,
+                    output logic [6:0]   PCVectorAddressW,
 
                   /// ------ From Datapath ------
                     input  logic [31:0]  InstrD,
@@ -74,7 +75,7 @@ module controller(/// ------ From TOP ------
   logic [1:0]  STR_cycleD;
   logic        doNotUpdateFlagD, LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD, undefInstrD, undefInstrE;
   logic [3:0]  FlagsM;
-  logic [6:0]  PCVectorAddressE, PCVectorAddressM, PCVectorAddressW;
+  logic [6:0]  PCVectorAddressE, PCVectorAddressM;
 
 
 
@@ -227,7 +228,7 @@ module controller(/// ------ From TOP ------
   flopenrc #(8) regsW(clk, reset, ~StallW, FlushW, 
                    {MemtoRegM, RegWriteM, PCSrcM, ByteOrWordM, ByteOffsetM, WriteHalfwordM, HalfwordOffsetM},
                    {MemtoRegW, RegWriteW, PCSrcW, LoadLengthW, ByteOffsetW, WriteHalfwordW, HalfwordOffsetW});
-  flopenrc #(7) PCVectorMW(clk, reset, ~StallM, FlushW, PCVectorAddressM, PCVectorAddressW);
+  flopenrc #(7) PCVectorMW(clk, reset, ~StallW, FlushW, PCVectorAddressM, PCVectorAddressW);
 
   // Hazard Prediction
   assign PCWrPendingF = PCSrcD | PCSrcE | PCSrcM;

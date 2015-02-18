@@ -48,14 +48,15 @@ module datapath(/// ------ From TOP (Memory) ------
                 /// ------ To Hazard ------
                 /// ------ To Address Path ------
                 /// ------ From Address Path ------
-                  input  logic [31:0]   WA3W, RA1D, RA2D,
+                  input  logic [31:0] WA3W, RA1D, RA2D, VectorPCnextF,
+                  input  logic        ExceptionVectorSelectW,
 
                 /// ------ added for thumb instructions ------
                   input  logic        TFlagNextE, 
                   output logic        TFlagE);
 
                           
-  logic [31:0] PCPlus4F, PCnext1F, PCnextF;
+  logic [31:0] PCPlus4F, PCnext1F, PCnext2F, PCnextF;
   logic [31:0] ExtImmD, Rd1D, Rd2D, PCPlus8D, RotImmD;
   logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ALUSrcB4E, ShiftBE;
   logic [31:0] MultOutputBE, MultOutputAE;
@@ -68,7 +69,8 @@ module datapath(/// ------ From TOP (Memory) ------
   // ================================ Fetch Stage =======================================
   // ====================================================================================
   mux2 #(32) pcnextmux(PCPlus4F, ResultW, PCSrcW, PCnext1F);
-  mux2 #(32) branchmux(PCnext1F, ALUResultE, BranchTakenE, PCnextF);
+  mux2 #(32) branchmux(PCnext1F, ALUResultE, BranchTakenE, PCnext2F);
+  mux2 #(32) exceptionmux(PCnext2F, VectorPCnextF, ExceptionVectorSelectW, PCnextF);
   flopenr #(32) pcreg(clk, reset, ~StallF, PCnextF, PCF);
   adder #(32) pcaddfour(PCF, 32'h4, PCPlus4F);
   // For thumb mode

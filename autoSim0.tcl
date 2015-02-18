@@ -33,10 +33,11 @@ foreach {test} $tests {
 	add wave -position insertpoint  sim:/testbench/dut/arm/dp/rf/rf; list
 	if {$test == "dhry"} {
 			run 30000000; list
+		} elseif {$test == "random3"} {
+			run 3000000; list
 		} else {
 			run 120000; list
 		}
-	
 	set r [examine -time 3000000 -radix hex sim:/testbench/dut/arm/dp/rf/rf]; list
 
 	#remove braces from string
