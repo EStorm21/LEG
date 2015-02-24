@@ -39,7 +39,7 @@ module arm(input  logic        clk, reset,
   logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnable, LoadLengthW;
   logic [3:0]  RegFileRzD;
   logic        ShifterCarryOut_cycle2E;
-  logic [11:0] StatusRegisterE;
+  logic [11:0] StatusRegisterW;
   logic [6:0]  PCVectorAddressW;
 
   /// Output from AddressPath

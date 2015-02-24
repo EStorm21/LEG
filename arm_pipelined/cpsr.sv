@@ -1,8 +1,7 @@
-module cpsr(input  logic        clk, reset, restoreCPSR,
+module cpsr(input  logic        clk, reset,
               input logic [3:0] FlagsNext,
               input logic [5:0] Exceptions, // Exceptions[5:0] are: [5]undef, swi, prefetch_abt, data_abt, irq, fiq[0] 
-              input logic [4:0] Mode,
-              input logic       Enable, readSR, writeSR,
+              input logic       Enable, 
               output logic [11:0] SRdata, 
               output logic [6:0] PCVectorAddressE);
 
@@ -23,7 +22,7 @@ module cpsr(input  logic        clk, reset, restoreCPSR,
   // CPSR: 3'b000
   // SPSR: SVC(0), Abort(1), Undef(2), IRQ(3), FIQ(4) ; 
   logic FastInterrupt, Interrupt, Undefined, PrefetchAbort, DataAbort, SoftwareInterrupt;
-  assign {FastInterrupt, Interrupt, Undefined, PrefetchAbort, DataAbort, SoftwareInterrupt} = Exceptions;
+  assign {Undefined, SoftwareInterrupt, PrefetchAbort, DataAbort, Interrupt, FastInterrupt} = Exceptions;
 
 
   // EXCEPTION BITS:

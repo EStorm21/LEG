@@ -38,8 +38,8 @@ module addressdecode(input  logic [3:0]  RA1_4b_D, RA2_4b_D, DestRegD,
       11'b0_?0????_1010: RA1D = 32'h00000400;
       11'b0_?0????_1011: RA1D = 32'h00000800;
       11'b0_?0????_1100: RA1D = 32'h00001000; // R12
-      11'b0_??????_1101: RA1D = 32'h00002000; // Mode bits should be ?00000 i think!
-      11'b0_??????_1110: RA1D = 32'h00004000;
+      11'b0_100000_1101: RA1D = 32'h00002000; // Mode bits should be ?00000 i think!
+      11'b0_100000_1110: RA1D = 32'h00004000;
       11'b0_??????_1111: RA1D = 32'h00008000; // R15 or PC
 
       // Banked Registers for Supervisor Mode (R13_SVC --> R16 and R14_SVC --> R17)
@@ -89,8 +89,8 @@ module addressdecode(input  logic [3:0]  RA1_4b_D, RA2_4b_D, DestRegD,
       11'b0_?0????_1010: RA2D = 32'h00000400;
       11'b0_?0????_1011: RA2D = 32'h00000800;
       11'b0_?0????_1100: RA2D = 32'h00001000; // R12
-      11'b0_??????_1101: RA2D = 32'h00002000;
-      11'b0_??????_1110: RA2D = 32'h00004000;
+      11'b0_100000_1101: RA2D = 32'h00002000; // Mode bits should be ?00000 i think!
+      11'b0_100000_1110: RA2D = 32'h00004000;
       11'b0_??????_1111: RA2D = 32'h00008000; // R15 or PC
 
       // Banked Registers for Supervisor Mode (R13_SVC --> R16 and R14_SVC --> R17)
@@ -139,8 +139,8 @@ module addressdecode(input  logic [3:0]  RA1_4b_D, RA2_4b_D, DestRegD,
       11'b0_?0????_1010: WA3D = 32'h00000400;
       11'b0_?0????_1011: WA3D = 32'h00000800;
       11'b0_?0????_1100: WA3D = 32'h00001000; // R12
-      11'b0_??????_1101: WA3D = 32'h00002000;
-      11'b0_??????_1110: WA3D = 32'h00004000;
+      11'b0_100000_1101: WA3D = 32'h00002000; // Mode bits should be ?00000 i think!
+      11'b0_100000_1110: WA3D = 32'h00004000;
       11'b0_??????_1111: WA3D = 32'h00008000; // R15 or PC
 
       // Banked Registers for Supervisor Mode (R13_SVC --> R16 and R14_SVC --> R17)

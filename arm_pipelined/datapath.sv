@@ -56,13 +56,13 @@ module datapath(/// ------ From TOP (Memory) ------
                   output logic        TFlagE);
 
                           
-  logic [31:0] PCPlus4F, PCnext1F, PCnext2F, PCnextF;
+  logic [31:0] PCPlus4F, PCnext1F, PCnext2F, PCnextF, PCPlus4D, PCPlus0D, PC_in, Instr_1D;
   logic [31:0] ExtImmD, Rd1D, Rd2D, PCPlus8D, RotImmD;
   logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ALUSrcB4E, ShiftBE;
   logic [31:0] MultOutputBE, MultOutputAE;
 
   logic [31:0] ReadDataRawW, ReadDataW, ALUOutW, ResultW;
-  logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
+  logic [31:0] ALUSrcA, ALUSrcB, MultOutputE, MoveR14PC_D;
   
 
   // ====================================================================================
@@ -82,11 +82,17 @@ module datapath(/// ------ From TOP (Memory) ------
   // ====================================================================================
 
   assign PCPlus8D = PCPlus4F; // skip register *change to PCPlusXF for thumb
+  flopenrc #(32) pcplus4(clk, reset, ~StallD, FlushD, PCPlus4F, PCPlus4D);
+  flopenrc #(32) pcplus0(clk, reset, ~StallD, FlushD, PCPlus4D, PCPlus0D);
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
-  mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
+  mux3 #(32)  exceptionPC(PCPlus8D, PCPlus4D, PCPlus0D, 2'b0, PC_in);
+  exception_pchandling exc_pc(MoveR14PC_D);
+
+  mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, Instr_1D);
+  mux2 #(32)  instrDmux2(Instr_1D, MoveR14PC_D, 1'b0, InstrD);
   
   regfile     rf(clk, RegWriteW, RA1D, RA2D,
-                 WA3W, ResultW, PCPlus8D, 
+                 WA3W, ResultW, PC_in, 
                  Rd1D, Rd2D); 
   extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25], SignExtendD);
 

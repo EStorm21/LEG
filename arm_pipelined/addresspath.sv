@@ -5,7 +5,7 @@ module addresspath( /// ------ From TOP ------
                     input  logic        WriteMultLoE, MultSelectD, 
                     input  logic [3:0]  RegFileRzD,
                     input  logic [1:0]  RegSrcD,
-                    input  logic [11:0] StatusRegisterE, 
+                    input  logic [11:0] StatusRegisterW, 
                     input  logic [6:0]  PCVectorAddressW, 
 
           					/// To Controller 
@@ -27,7 +27,6 @@ module addresspath( /// ------ From TOP ------
 
   logic [31:0]  WA3M, WA3E, RA1E, RA2E, RdLoE, WA3E_1, WA3D;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D, DestRegD;
-  logic [11:0] StatusRegisterM, StatusRegisterW;
 
   // ====================================================================================
   // ================================ Fetch Stage =======================================
@@ -53,7 +52,7 @@ module addresspath( /// ------ From TOP ------
   flopenr #(32)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
   flopenr #(32)  ra2reg(clk, reset, ~StallE, RA2D, RA2E); 
   
-  longmult_addressdecode multAddr(InstrE[15:12], StatusRegisterE, RdLoE);
+  longmult_addressdecode multAddr(InstrE[15:12], StatusRegisterW, RdLoE);
   
   // Long Multiply RdLo register
   assign WA3E = WriteMultLoE ? RdLoE: WA3E_1;
@@ -62,13 +61,11 @@ module addresspath( /// ------ From TOP ------
   // ================================ Memory Stage ======================================
   // ====================================================================================
   flopenr #(32)  wa3mreg(clk, reset, ~StallM, WA3E, WA3M);
-  flopenr #(12) statusM(clk,reset, ~StallM, StatusRegisterE, StatusRegisterM);
 
   // ====================================================================================
   // ================================ Writeback Stage ===================================
   // ====================================================================================
   flopenrc #(32)  wa3wreg(clk, reset, ~StallW, FlushW, WA3M, WA3W);
-  flopenrc #(12) statusW(clk,reset, ~StallW, FlushW, StatusRegisterM, StatusRegisterW);
   eqcmp #(32) m0(WA3M, RA1E, Match_1E_M);
   eqcmp #(32) m1(WA3W, RA1E, Match_1E_W);
   eqcmp #(32) m2(WA3M, RA2E, Match_2E_M);
