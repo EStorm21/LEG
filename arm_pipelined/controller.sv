@@ -105,6 +105,7 @@ module controller(/// ------ From TOP ------
                 // "Move register to status register" not implemented
                 else if ((InstrD[24:21] == 4'b1001) & (InstrD[19:4] == 16'hFFF1))
                               ControlsD = 13'b01_00_0000_10001; // BX
+                // else if (InstrD)
                 else  ControlsD = 13'b00_00_0010_01000; // Data processing register
               end
   	  2'b01: if (InstrD[25] & InstrD[4])           undefInstrD = 1;

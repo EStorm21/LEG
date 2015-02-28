@@ -24,7 +24,7 @@ module cpsr(input  logic        clk, reset,
   logic FastInterrupt, Interrupt, Undefined, PrefetchAbort, DataAbort, SoftwareInterrupt;
   assign {Undefined, SoftwareInterrupt, PrefetchAbort, DataAbort, Interrupt, FastInterrupt} = Exceptions;
 
-
+  
   // EXCEPTION BITS:
   // {6'b000_000}
   // {FIQ, IRQ, UNDEF _ PrefetchAbort, DataAbort, SWI}
