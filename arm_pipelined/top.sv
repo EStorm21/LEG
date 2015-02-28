@@ -17,8 +17,8 @@ module top(input  logic        clk, reset,
   logic BusReadyF, HRequestF;
 
   // Wires between arbiter and ahb_lite
-  logic HWrite, HReady, HRequest;
-  logic [31:0] HAddrM, HAddrF, HAddr;
+  logic HWrite, CPUHWrite, HReady, CPUHReady, HRequest, CPUHRequest;
+  logic [31:0] HAddrM, HAddrF, HAddr, CPUHAddr;
   
   // instantiate processor and memories
   arm arm(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
@@ -37,21 +37,47 @@ module top(input  logic        clk, reset,
   //                       .MemtoRegM(MemtoRegM), .Valid(Valid), .a(DataAdrM), .MemBlock(HRData),
   //                       .rd(ReadDataM), .Stall(DStall), .MemRE(MemRE), .HWriteM(HWriteM));
 
-  data_writeback_associative_cache #(4, 128) 
+  data_writeback_associative_cache #(4, 128)
     data_cache(.clk(clk), .reset(reset), .MemWriteM(MemWriteM), .MemtoRegM(MemtoRegM), 
                .BusReady(BusReadyM), .IStall(IStall), .A(DataAdrM), .WD(WriteDataM),
                .HRData(HRData), .ByteMask(ByteMaskM), .HWData(HWData), .RD(ReadDataM), .HAddr(HAddrM),
                .Stall(DStall), .HRequestM(HRequestM), .HWriteM(HWriteM));
 
   // Create ahb arbiter
-  ahb_arbiter ahb_arb(.HWriteM(HWriteM), .IStall(IStall), .DStall(DStall), .HReady(HReady),
+  ahb_arbiter ahb_arb(.HWriteM(HWriteM), .IStall(IStall), .DStall(DStall), .HReady(CPUHReady),
               .HAddrM(HAddrM), .HAddrF(HAddrF), .HRequestF(HRequestF), .HRequestM(HRequestM),
               .HReadyF(BusReadyF), .HReadyM(BusReadyM),
-              .HAddr(HAddr), .HWrite(HWrite), .HRequest(HRequest));
+              .HAddr(CPUHAddr), .HWrite(CPUHWrite), .HRequest(CPUHRequest));
 
   // Create an ahb memory
   ahb_lite ahb(.HCLK(clk), .HRESETn(reset), .HADDR(HAddr), .HWRITE(HWrite), .HREQUEST(HRequest),
                .HWDATA(HWData), .HRDATA(HRData), .HREADY(HReady));
+
+  // Create the mmu
+  mmu dut(.*);
+
+  // False Signals for the mmu
+  // TODO: Hook these wires up to the 
+  logic MMUExtInt;
+  logic [31:0] Dom;
+  logic [6:0] TLBCont, Cont;
+  logic [17:0] TBase;
+  logic [31:0] FAR, FullTBase;
+  logic [7:0] FSR;
+  logic DataAccess, CPSR4, Fault;
+  logic SBit, RBit, SupMode, WordAccess;
+
+  assign Dom = 32'hffff_ffff; // Full permissions to all domains
+  assign WordAccess = 1'b1;   // Assuming not byte or halfword accesses
+  assign SupMode = 1'b1;      // in supervisor mode
+  assign SBit = 1'b0;         // Give the most permissions with S and R
+  assign RBit = 1'b1;
+  assign DataAccess = 1'b1;   // Trying to access data memory, not instruction memory
+  assign CPSR4 = 1'b1;
+  assign FullTBase = 32'h0010_0000; // Translation Base at 0x0010_0000
+  assign TBase = FullTBase[31:14];
+  assign Cont  = 7'b000_0000;     // Enable the MMU
+  assign MMUExtInt = 1'b0;        // No External Interrupt
 
   // Create memory with a 2 cycle delay and 4 word block size (Parameterized block size not functional)
   // mem_simulation #(2, 4) ms(.clk(clk), .we(HWriteM), .re(MemRE),
