@@ -1,14 +1,14 @@
 #simulate and retrieve register values
 
-project open C:/altera/13.0sp1/pipelined_processor; list
+project open "F:/Academics/Research Clay Wolkin - ARM v4/NewGithubversions - Cassie/NewARMTest.mpf"; list
 #compile project
 #vlog C:/Users/estor_000/Documents/ARM/arm_pipelined/testbench.sv ; list
-vlog C:/Users/estor_000/Documents/ARM/arm_pipelined/*.sv ; list
+vlog "F:/Academics/Research Clay Wolkin - ARM v4/ARM/arm_pipelined/*.sv" ; list
 
-set testPath "C:/Users/estor_000/Documents/ARM/tests/"; list
+set testPath "F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/"; list
 
 #contains the tests to be run
-set testList "C:/Users/estor_000/Documents/ARM/tests/tests.list"; list
+set testList "F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/tests.list"; list
 
 set fp [open $testList r]; list
 set file_data [read $fp]; list
@@ -28,27 +28,35 @@ set failed {}
 foreach {test} $tests {
 	#puts $simTest.dat
 	set simTest $testPath$test
-	file copy -force $simTest.dat C:/Users/estor_000/Downloads/simTest.dat; list
+	file copy -force $simTest.dat "F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat"; list
 	vsim -quiet -wlf test.wlf work.testbench; list
 	add wave -position insertpoint  sim:/testbench/dut/arm/dp/rf/rf; list
-	if {$test == "dhry"} {
+		if {$test == "dhry"} {
 			run 30000000; list
+			set r [examine -time 30000000 -radix hex sim:/testbench/dut/arm/dp/rf/rf]; list
 		} elseif {$test == "random3"} {
 			run 3000000; list
+			set r [examine -time 3000000 -radix hex sim:/testbench/dut/arm/dp/rf/rf]; list
 		} else {
 			run 120000; list
+			set r [examine -time 120000 -radix hex sim:/testbench/dut/arm/dp/rf/rf]; list
 		}
-	set r [examine -time 3000000 -radix hex sim:/testbench/dut/arm/dp/rf/rf]; list
+	
 
 	#remove braces from string
 	set r [string map {\{ {}} $r]; list
 	set r [string map {\} {}} $r]; list
 
+
 	#convert string to list
 	set regList [regexp -all -inline {\S+} $r]; list
-	
+	set tempList [regexp -all -inline {\S+} $r]; list
+
 	#remove other mode registers
-	set regList [lrange $regList 17 end]
+	set regList2 [lrange $regList 19 end]; list
+	set tempList [lrange $regList 14 15]; list
+	set regList [concat $tempList $regList2]; list
+
 
 	#open validation results
 	set fp [open $simTest.val r]; list
@@ -57,9 +65,22 @@ foreach {test} $tests {
 
 	set piRegisters [split $file_data "\n"]; list
 	
+	# Debugging to print both piRegisters and regList
+	#puts "length of pi Registers is:"
+	#puts [llength $regList]
+	#puts "Pi registers are: "
+	#puts $piRegisters
+	#puts " "
+	#puts "length of reglist is:"
+	#puts [llength $regList]
+	#puts "elements of reglist are: "
+	#puts $regList
+	#puts " "
 
 	#check the results of each register
 	for {set i 0} {$i < [llength $regList]} {incr i} {
+		#puts "i is: "
+		#puts $i;
 		#puts [lindex $regList $i]
 		#puts [lindex $piRegisters $i]
 		if {[lindex $regList $i] != [lindex $piRegisters $i]} {
