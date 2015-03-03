@@ -1,4 +1,4 @@
-module regfile(input  logic        clk, 
+module regfile(input  logic        clk, reset,
                input  logic        we3, 
                input  logic [31:0]  ra1, ra2, wa3, 
                input  logic [31:0] wd3, r15,
@@ -24,8 +24,12 @@ module regfile(input  logic        clk,
   // register 15 reads PC+8 instead
 
   always_ff @(negedge clk) begin
-    for (j = 0; j < 32; j = j+1) begin
-      if(we3 & wa3[j]) rf[j] <= wd3;	
+    if (reset)
+      rf <= '{32{32'b0}};
+    else begin
+      for (j = 0; j < 32; j = j+1) begin
+        if(we3 & wa3[j]) rf[j] <= wd3;	
+      end
     end
   end
   
