@@ -2,7 +2,8 @@ module cpsr(input  logic        clk, reset,
               input logic [3:0] FlagsNext,
               input logic [5:0] Exceptions, // Exceptions[5:0] are: [5]undef, swi, prefetch_abt, data_abt, irq, fiq[0] 
               input logic       Enable, 
-              output logic [11:0] SRdata, 
+              output logic [11:0] CPSRdata, 
+              output logic [11:0] SPSRdata,
               output logic [6:0] PCVectorAddressE);
 
  /***** Brief Description *******
@@ -112,6 +113,17 @@ module cpsr(input  logic        clk, reset,
       end
     end
 
-  assign SRdata = cpsr;
+  assign CPSRdata = cpsr;
+  always_comb
+    case(cpsr[4:0])
+      5'b10000: SPSRdata = cpsr;      // User mode
+      5'b10001: SPSRdata = spsr[4];   // FIQ mode
+      5'b10010: SPSRdata = spsr[3];   // IRQ mode
+      5'b10011: SPSRdata = spsr[0];   // Supervisor mode
+      5'b10111: SPSRdata = spsr[1];   // Abort mode
+      5'b11011: SPSRdata = spsr[2];   // Undef mode
+      5'b11111: SPSRdata = cpsr;      // System mode
+      default: SPSRdata = cpsr;
+    endcase
 
 endmodule

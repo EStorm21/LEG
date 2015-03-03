@@ -66,16 +66,16 @@ foreach {test} $tests {
 	set piRegisters [split $file_data "\n"]; list
 	
 	# Debugging to print both piRegisters and regList
-	#puts "length of pi Registers is:"
-	#puts [llength $regList]
-	#puts "Pi registers are: "
-	#puts $piRegisters
-	#puts " "
-	#puts "length of reglist is:"
-	#puts [llength $regList]
-	#puts "elements of reglist are: "
-	#puts $regList
-	#puts " "
+	puts "length of pi Registers is:"
+	puts [llength $regList]
+	puts "Pi registers are: "
+	puts $piRegisters
+	puts " "
+	puts "length of reglist is:"
+	puts [llength $regList]
+	puts "elements of reglist are: "
+	puts $regList
+	puts " "
 
 	#check the results of each register
 	for {set i 0} {$i < [llength $regList]} {incr i} {

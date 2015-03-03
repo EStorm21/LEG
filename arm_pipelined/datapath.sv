@@ -11,8 +11,8 @@ module datapath(/// ------ From TOP (Memory) ------
                   input  logic        ALUSrcE, BranchTakenE,
                   input  logic [3:0]  ALUControlE, 
                   input  logic [2:0]  MultControlE,
-                  input  logic        MemtoRegW, PCSrcW, RegWriteW,
-                  input  logic [31:0] InstrE,
+                  input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW,
+                  input  logic [31:0] InstrE, PSR32_W,
                   // Handling data-processing Instrs (ALU)
                   input  logic [3:0]  FlagsE,
                   input  logic [2:0]  CVUpdateE, ALUOperationE,
@@ -21,7 +21,7 @@ module datapath(/// ------ From TOP (Memory) ------
                   input  logic        RselectE, PrevRSRstateE, LDRSTRshiftE, 
                   input  logic [1:0]  ResultSelectE, // 2 bits Comes from {MultSelectE, RSRselectE}
                   input  logic [6:4]  ShiftOpCode_E,
-                  input  logic        MultEnable,
+                  input  logic        MultEnable, 
                   // To handle load-store half-words and bytes
                   input  logic        LoadLengthW, HalfwordOffsetW,
                   input  logic [1:0]  ByteOffsetW,
@@ -61,7 +61,7 @@ module datapath(/// ------ From TOP (Memory) ------
   logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ALUSrcB4E, ShiftBE;
   logic [31:0] MultOutputBE, MultOutputAE;
 
-  logic [31:0] ReadDataRawW, ReadDataW, ALUOutW, ResultW;
+  logic [31:0] ReadDataRawW, ReadDataW, ALUOutW, Result1_W, ResultW;
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE, MoveR14PC_D;
   
 
@@ -143,8 +143,8 @@ module datapath(/// ------ From TOP (Memory) ------
   // ====================================================================================
   flopenrc #(32) aluoutreg(clk, reset, ~StallW, FlushW, ALUOutM, ALUOutW);
   flopenrc #(32) rdreg(clk, reset, ~StallW, FlushW, ReadDataM, ReadDataRawW);
-  mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, ResultW);
-
+  mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, Result1_W);
+  mux2 #(32)  msr_mrs_mux(Result1_W, PSR32_W, CPSRtoRegW, ResultW);
   //TODO: Think about how we want to implement this - should it be in the 32bit datapath?
   data_selector byteShift(LoadLengthW, WriteHalfwordW, HalfwordOffsetW, ByteOffsetW, ReadDataRawW, ReadDataW); 
   
