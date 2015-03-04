@@ -9,7 +9,7 @@ module controller(/// ------ From TOP ------
                     output logic [6:0]   PCVectorAddressW,
 
                   /// ------ From Datapath ------
-                    input  logic [31:0]  InstrD,
+                    input  logic [31:0]  InstrD, ALUOutW,
                     input  logic [3:0]   ALUFlagsE, MultFlagsE,
                     input  logic [31:0]  ALUResultE, DefaultInstrD,
                     input  logic         ShifterCarryOutE,
@@ -58,7 +58,8 @@ module controller(/// ------ From TOP ------
 
   logic [12:0] ControlsD;
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
-  logic [3:0]  ALUControlD, ByteMaskE, MSRmaskD, MSRmaskE, MSRmaskM, MSRmaskW;
+  logic [3:0]  ALUControlD, ByteMaskE;
+  logic [4:0]  MSRmaskD, MSRmaskE, MSRmaskM, MSRmaskW;
   logic [2:0]  MultControlD;
   logic        ALUSrcD, MemtoRegD, CondExE2;
   logic        RegWriteD, RegWriteE, RegWriteGatedE;
@@ -68,7 +69,7 @@ module controller(/// ------ From TOP ------
   logic        TFlag, restoreCPSR_D, restoreCPSR_E;
   logic        CPSRtoRegD, CPSRtoRegE, CPSRtoRegM;
   logic        C_S_PSR_selectD, C_S_PSR_selectE, C_S_PSR_selectM;
-  logic        C_S_PSR_selectW, RegtoCPSRr_D, RegtoCPSRi_D;
+  logic        C_S_PSR_selectW, RegtoCPSRr_D, RegtoCPSRi_D, RegtoCPSR_D, RegtoCPSR_E;
   logic [1:0]  FlagWriteD, FlagWriteE;
   logic        PCSrcD, PCSrcE, PCSrcM;
   logic [3:0]  FlagsNextE, FlagsNextM, FlagsNextW, CondE;
@@ -97,6 +98,7 @@ module controller(/// ------ From TOP ------
   assign LdrStr_HalfwordD = (InstrD[27:25] == 3'b000 & InstrD[7] & InstrD[4] & ~(InstrD[6:5] == 2'b00));
   assign RegtoCPSRr_D  = (InstrD[27:23] == 5'b00010 & InstrD[21:20] == 2'b10 & InstrD[15:4] == 12'hF00); // Move register to CPSR/SPSR (MSR instruction I type)
   assign RegtoCPSRi_D  = (InstrD[27:23] == 5'b00110 & InstrD[21:20] == 2'b10 & InstrD[15:12] == 4'hF); // Move immediate to CPSR/SPSR (MSR instruction I type)
+  assign RegtoCPSR_D   = RegtoCPSRr_D | RegtoCPSRi_D;
 
   always_comb
   	casex(InstrD[27:26]) 
@@ -139,7 +141,7 @@ module controller(/// ------ From TOP ------
       FlagWriteD[1:0] = 2'b00;
 
     // Checking for MSR instruction (move register/imm to CPSR/SPSR)
-    end else if (RegtoCPSRi_D | RegtoCPSRr_D) begin
+    end else if (RegtoCPSR_D) begin
       ALUControlD     = 4'b1101;      // perform MOV instruction so that it takes only input B
       FlagWriteD      = 2'b00;        // Ignore flags for now
 
@@ -160,7 +162,7 @@ module controller(/// ------ From TOP ------
   assign C_S_PSR_selectD = (CPSRtoRegD & InstrD[22]);
   assign ResultSelectD = {MultSelectD, RSRselectD}; 
   assign LDRSTRshiftD  = LdrStrRtypeD;    // Tells the shifter (located in E-stage) whether its a LDR/STR type
-  assign MSRmaskD      = (RegtoCPSRr_D | RegtoCPSRi_D) ? InstrD[19:16] : 4'b0;
+  assign MSRmaskD      = (RegtoCPSR_D) ? {InstrD[22], InstrD[19:16]} : 5'b0; // 5 bits are {R, field_mask}
   // assign restoreCPSR_D = ALUOpD & (ALUControlD == 4'b1101) & InstrD[20] & (InstrD[15:12] == 4'b1111); // Instruction for restoring CPSR (MOV/SUB)
 
   // < Handling all Multiplication Stalls Decode>
@@ -175,11 +177,11 @@ module controller(/// ------ From TOP ------
   // Added enables to E, M, and flush to W. Added for memory
   flopenrc  #(7) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD, LDRSTRshiftD, LdrStr_HalfwordD}, 
                                                             {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE, LDRSTRshiftE, LdrStr_HalfwordE});
-  flopenrc #(10) flushedregsE(clk, reset, ~StallE, FlushE, 
-                           {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD, ldrstrALUopD, BXInstrD, CPSRtoRegD},
-                           {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE, ldrstrALUopE, BXInstrE, CPSRtoRegE});
+  flopenrc #(11) flushedregsE(clk, reset, ~StallE, FlushE, 
+                           {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD, ldrstrALUopD, BXInstrD, CPSRtoRegD, RegtoCPSR_D},
+                           {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE, ldrstrALUopE, BXInstrE, CPSRtoRegE, RegtoCPSR_E});
 
-  flopenrc #(13)  regsE(clk, reset, ~StallE, FlushE,
+  flopenrc #(14)  regsE(clk, reset, ~StallE, FlushE,
                     {ALUSrcD, ALUControlD, MultControlD, C_S_PSR_selectD, MSRmaskD},
                     {ALUSrcE, ALUControlE, MultControlE, C_S_PSR_selectE, MSRmaskE});
 
@@ -188,7 +190,7 @@ module controller(/// ------ From TOP ------
   // ALU Decoding
   flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE,
                            {(ALUOpD|ldrstrALUopD), InstrD}, {ALUOpE, InstrE});
-  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
+  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
                     
   flopenrc  #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
   flopenrc #(1)  keepV(clk, reset, ~StallE, FlushE, KeepVD, KeepVE);
@@ -242,7 +244,7 @@ module controller(/// ------ From TOP ------
                                         ByteOrWordM, ByteOffsetM, WriteHalfwordM, HalfwordOffsetM, CPSRtoRegM});
   // flopenr #(7) PCVectorEM(clk, reset, ~StallM, PCVectorAddressE, PCVectorAddressM);
   flopenr #(1) undef_exceptionEM(clk, reset, ~StallM, undefInstrE, undefInstrM);
-  flopenr #(10) flagM(clk, reset, ~StallM, {FlagsNextE, SetNextFlagsE, C_S_PSR_selectE, MSRmaskE}, 
+  flopenr #(11) flagM(clk, reset, ~StallM, {FlagsNextE, SetNextFlagsE, C_S_PSR_selectE, MSRmaskE}, 
                                           {FlagsNextM, SetNextFlagsM, C_S_PSR_selectM, MSRmaskM});
   
   // ====================================================================================
@@ -253,9 +255,9 @@ module controller(/// ------ From TOP ------
                    {MemtoRegW, RegWriteW, PCSrcW, LoadLengthW, ByteOffsetW, WriteHalfwordW, HalfwordOffsetW, CPSRtoRegW});
   // flopenrc #(7) PCVectorMW(clk, reset, ~StallW, FlushW, PCVectorAddressM, PCVectorAddressW);
   flopenrc #(1) undef_exceptionMW(clk, reset, ~StallW, FlushW, undefInstrM, undefInstrW);
-  flopenrc #(10) flagW(clk, reset, ~StallW, FlushW, {FlagsNextM, SetNextFlagsM, C_S_PSR_selectM, MSRmaskM}, 
+  flopenrc #(11) flagW(clk, reset, ~StallW, FlushW, {FlagsNextM, SetNextFlagsM, C_S_PSR_selectM, MSRmaskM}, 
                                                    {FlagsNextW, SetNextFlagsW, C_S_PSR_selectW, MSRmaskW});
-  cpsr          cpsr_W(clk, reset, FlagsNextW, {undefInstrW, 5'b0}, ~StallW, CPSRW, SPSRW, PCVectorAddressW); // TO CHANGE
+  cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefInstrW, 5'b0}, ~StallW, CPSRW, SPSRW, PCVectorAddressW); // TO CHANGE
   // Hazard Prediction
   assign CPSR12_W = {CPSRW[31:28], CPSRW[7:0]};
 
