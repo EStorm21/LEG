@@ -79,7 +79,8 @@ module controller(/// ------ From TOP ------
   logic [1:0]  ByteOffsetE, ByteOffsetM;
   logic [1:0]  STR_cycleD;
   logic        doNotUpdateFlagD, LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD;
-  logic        undefInstrM, undefInstrW, undefInstrD, undefInstrE;
+  logic        undefM, undefW, undefD, undefE;
+  logic        SWI_D, SWI_E, SWI_M, SWI_W;
   logic        RegWriteControlE;
   logic [3:0]  FlagsM;
   logic [6:0]  PCVectorAddressE, PCVectorAddressM;
@@ -116,12 +117,13 @@ module controller(/// ------ From TOP ------
                 // else if (InstrD[24:23] == 2'b10 & (&InstrD[21:16]) & ~(|InstrD[11:0]))  ControlsD = 13'b00_00_0  // MRS
                 else  ControlsD = 13'b00_00_0010_01000; // Data processing register
               end
-  	  2'b01: if (InstrD[25] & InstrD[4])           undefInstrD = 1;
+  	  2'b01: if (InstrD[25] & InstrD[4])           undefD = 1; // Exception: UNDEFINED INSTRUCTION
              else if (InstrD[20] & ~InstrD[25])    ControlsD = 13'b00_01_1110_00010; // LDR, "I-type" 0xf0
              else if (InstrD[20] & InstrD[25])     ControlsD = 13'b00_01_0110_00010; // LDR, "R-Type" 0xb0
              else if (~InstrD[20] & ~InstrD[25])   ControlsD = 13'b10_01_1101_00010; // STR, "I-type"
              else if (~InstrD[20] & InstrD[25])    ControlsD = 13'b10_01_0101_00010; // STR, "R-type"
   	  2'b10:                 ControlsD = 13'b01_10_1000_10000; // B                           0x344
+      2'b11:  if(InstrD[25:24] == 2'b11)           SWI_D = 1;        // Exception: SWI;  Unimplemented Coprocessor stuff 
   	  default:               ControlsD = 13'bx;         // unimplemented
   	endcase
 
@@ -198,7 +200,7 @@ module controller(/// ------ From TOP ------
   // flopenrc #(1) restoreCPSR(clk, reset, ~StallE, FlushE, restoreCPSR_D, restoreCPSR_E);
   
   mux2 #(1) updatetflag(PreviousTFlagE, TFlagE, BXInstrE, TFlagNextE); // THUMB FLAG (TFlagNextE) is no longer being used since we haven't implemented thumb mode!
-  flopenrc #(1) undef_exception(clk, reset, ~StallE, FlushE, undefInstrD, undefInstrE);
+  flopenrc #(2) undef_exception(clk, reset, ~StallE, FlushE, {undefD, SWI_D}, {undefE, SWI_E});
 
 
   assign  FlagsE = SetNextFlagsM ? FlagsNextM : FlagsNextW;
@@ -243,7 +245,7 @@ module controller(/// ------ From TOP ------
                    {MemWriteM, MemtoRegM, RegWriteM, PCSrcM, ByteMaskM, 
                                         ByteOrWordM, ByteOffsetM, WriteHalfwordM, HalfwordOffsetM, CPSRtoRegM});
   // flopenr #(7) PCVectorEM(clk, reset, ~StallM, PCVectorAddressE, PCVectorAddressM);
-  flopenr #(1) undef_exceptionEM(clk, reset, ~StallM, undefInstrE, undefInstrM);
+  flopenr #(2) undef_exceptionEM(clk, reset, ~StallM, {undefE, SWI_E}, {undefM, SWI_M});
   flopenr #(11) flagM(clk, reset, ~StallM, {FlagsNextE, SetNextFlagsE, C_S_PSR_selectE, MSRmaskE}, 
                                           {FlagsNextM, SetNextFlagsM, C_S_PSR_selectM, MSRmaskM});
   
@@ -254,10 +256,10 @@ module controller(/// ------ From TOP ------
                    {MemtoRegM, RegWriteM, PCSrcM, ByteOrWordM, ByteOffsetM, WriteHalfwordM, HalfwordOffsetM, CPSRtoRegM},
                    {MemtoRegW, RegWriteW, PCSrcW, LoadLengthW, ByteOffsetW, WriteHalfwordW, HalfwordOffsetW, CPSRtoRegW});
   // flopenrc #(7) PCVectorMW(clk, reset, ~StallW, FlushW, PCVectorAddressM, PCVectorAddressW);
-  flopenrc #(1) undef_exceptionMW(clk, reset, ~StallW, FlushW, undefInstrM, undefInstrW);
+  flopenrc #(2) undef_exceptionMW(clk, reset, ~StallW, FlushW, {undefM, SWI_M}, {undefW, SWI_W});
   flopenrc #(11) flagW(clk, reset, ~StallW, FlushW, {FlagsNextM, SetNextFlagsM, C_S_PSR_selectM, MSRmaskM}, 
                                                    {FlagsNextW, SetNextFlagsW, C_S_PSR_selectW, MSRmaskW});
-  cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefInstrW, 5'b0}, ~StallW, CPSRW, SPSRW, PCVectorAddressW); // TO CHANGE
+  cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefW, SWI_W, 4'b0}, ~StallW, CPSRW, SPSRW, PCVectorAddressW); // TO CHANGE
   // Hazard Prediction
   assign CPSR12_W = {CPSRW[31:28], CPSRW[7:0]};
 
