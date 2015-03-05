@@ -17,7 +17,7 @@ module arm(input  logic        clk, reset,
 
   /// Output from Datapath
   logic [3:0]  ALUFlagsE, MultFlagsE;
-  logic [31:0] InstrD, DefaultInstrD;
+  logic [31:0] InstrD, DefaultInstrD, ALUOutW;
   logic        MultStallD, MultStallE;
   logic        WriteMultLoE, WriteMultLoKeptE;
   logic        ShifterCarryOutE;
@@ -30,7 +30,7 @@ module arm(input  logic        clk, reset,
   logic [6:4]  ShiftOpCode_E;
   logic [31:0] InstrE, ALUResultE;
   logic        RegWriteM, MemtoRegE, PCWrPendingF, WriteByteE, WriteHalfwordE, WriteHalfwordW, HalfwordOffsetW;
-  logic        DoNotWriteRegE, doNotUpdateFlagD,uOpStallD, PrevRSRstateD, PrevRSRstateE;
+  logic        DoNotWriteRegE, doNotUpdateFlagD,uOpStallD, PrevRSRstateD, PrevRSRstateE, CPSRtoRegW;
   logic        LDMSTMforwardD, LDMSTMforwardE, LDRSTRshiftE, MultSelectD, RselectE;
   logic [3:0]  FlagsE; // [1] is C, [0] is V
   logic [1:0]  ResultSelectE, STR_cycleD, ByteOffsetW;
@@ -41,7 +41,8 @@ module arm(input  logic        clk, reset,
   logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnable, LoadLengthW;
   logic [3:0]  RegFileRzD;
   logic        ShifterCarryOut_cycle2E;
-  logic [11:0] StatusRegisterW;
+  logic [11:0] CPSR12_W;
+  logic [31:0] PSR_W;
   logic [6:0]  PCVectorAddressW;
 
   /// Output from AddressPath
