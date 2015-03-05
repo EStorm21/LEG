@@ -176,8 +176,8 @@ module controller(/// ------ From TOP ------
   // -----
 
   // ----- Exception handling -----
-  assign UndefinedInstr = undefInstrD;
-  assign SWI = 1'b0; // TODO: Create logic to determine SWI instr
+  assign UndefinedInstr = undefD;
+  assign SWI = SWI_D; // TODO: Create logic to determine SWI instr
 
   // ====================================================================================
   // =============================== Execute Stage ======================================
