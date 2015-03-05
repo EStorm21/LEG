@@ -44,6 +44,7 @@ module datapath(/// ------ From TOP (Memory) ------
                 /// ------ From Hazard ------
                   input  logic [1:0]  ForwardAE, ForwardBE,
                   input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, // Added StallE, StallM, FlushW for memory
+                  input  logic [1:0]  PCInSelect, // for exception handling
 
                 /// ------ To Hazard ------
                 /// ------ To Address Path ------
@@ -85,7 +86,7 @@ module datapath(/// ------ From TOP (Memory) ------
   flopenrc #(32) pcplus4(clk, reset, ~StallD, FlushD, PCPlus4F, PCPlus4D);
   flopenrc #(32) pcplus0(clk, reset, ~StallD, FlushD, PCPlus4D, PCPlus0D);
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
-  mux3 #(32)  exceptionPC(PCPlus8D, PCPlus4D, PCPlus0D, 2'b0, PC_in);
+  mux3 #(32)  exceptionPC(PCPlus8D, PCPlus4D, PCPlus0D, PCInSelect, PC_in);
   exception_pchandling exc_pc(MoveR14PC_D);
 
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, Instr_1D);

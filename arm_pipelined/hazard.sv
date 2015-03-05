@@ -12,7 +12,10 @@ module hazard(input  logic       clk, reset,
               output logic       StallE, StallM, FlushW, StallW,
               // For Micro-ops
               input logic        uOpStallD, LDMSTMforwardE,
-              output logic       StalluOp);
+              output logic       StalluOp,
+              // For exceptions
+              input logic        PrefetchAbort, DataAbort, IRQ, FIQ, UndefinedInstr, SWI,
+              output logic [1:0] PCInSelect);
                 
   // forwarding logic
   always_comb 
@@ -61,5 +64,16 @@ module hazard(input  logic       clk, reset,
   assign StallM = DStall | IStall;
   assign FlushE = ldrStallD | BranchTakenE; 
   assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall;
+
+  // exception handling
+  always_comb begin
+    if (PrefetchAbort) PCInSelect = 2'b00;
+    else if (DataAbort) PCInSelect = 2'b10;
+    else if (IRQ) PCInSelect = 2'b00;
+    else if (FIQ) PCInSelect = 2'b00;
+    else if (UndefinedInstr) PCInSelect = 2'b01;
+    else if (SWI) PCInSelect = 2'b01;
+    else PCInSelect = 2'b00;
+  end
   
 endmodule

@@ -20,10 +20,16 @@ module top(input  logic        clk, reset,
   logic HWrite, CPUHWrite, HReady, CPUHReady, HRequest, CPUHRequest;
   logic [31:0] HAddrM, HAddrF, HAddr, CPUHAddr;
   
+  // ----- Exception signals -----
+  logic DataAbort, PrefetchAbort; // TODO: signals come from MMU
+  logic IRQ, FIQ; // TODO: change to external input pins
+
   // instantiate processor and memories
   arm arm(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
           // Added for memory (DStall, MemtoRegM)
-          WriteDataM, ReadDataM, DStall, IStall, MemtoRegM, ByteMaskM); 
+          WriteDataM, ReadDataM, DStall, IStall, MemtoRegM, ByteMaskM,
+          // Added for exceptions
+          PrefetchAbort, DataAbort, IRQ, FIQ); 
 
   // instruction cache with a block size of 4 words and 16 lines
   instr_cache #(4, 128) 
@@ -95,4 +101,6 @@ module top(input  logic        clk, reset,
   // dmem dmem(.clk(clk), .we(MemWriteM), .a(DataAdrM), 
   //           .wd(WriteDataM), .rd(ReadDataM));
   //---------------------- Added for memory ----------------
+
+
 endmodule
