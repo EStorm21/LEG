@@ -5,16 +5,23 @@ mrs.o:     file format elf32-littlearm
 Disassembly of section .text:
 
 00000000 <start>:
-   0:	e3a00005 	mov	r0, #5
-   4:	e3a01004 	mov	r1, #4
-   8:	e0812000 	add	r2, r1, r0
-   c:	e10f3000 	mrs	r3, CPSR
-  10:	010f4000 	mrseq	r4, CPSR
-  14:	110f5000 	mrsne	r5, CPSR
-  18:	e0516000 	subs	r6, r1, r0
-  1c:	410f7000 	mrsmi	r7, CPSR
-  20:	e123f001 	msr	CPSR_xc, r1
-  24:	e10f8000 	mrs	r8, CPSR
+   0:	e0500000 	subs	r0, r0, r0
+   4:	e3a00005 	mov	r0, #5
+   8:	e3a01004 	mov	r1, #4
+   c:	e0812000 	add	r2, r1, r0
+  10:	e10f3000 	mrs	r3, CPSR
+  14:	010f4000 	mrseq	r4, CPSR
+  18:	110f5000 	mrsne	r5, CPSR
+  1c:	e0516000 	subs	r6, r1, r0
+  20:	410f7000 	mrsmi	r7, CPSR
+  24:	e123f001 	msr	CPSR_xc, r1
+  28:	e10f8000 	mrs	r8, CPSR
+  2c:	e12ff003 	msr	CPSR_fsxc, r3
+  30:	e10f9000 	mrs	r9, CPSR
+  34:	e328f007 	msr	CPSR_f, #7
+  38:	e10fa000 	mrs	sl, CPSR
+  3c:	e329fb01 	msr	CPSR_fc, #1024	; 0x400
+  40:	e10fb000 	mrs	fp, CPSR
 
-00000028 <stop>:
-  28:	eafffffe 	b	28 <stop>
+00000044 <stop>:
+  44:	eafffffe 	b	44 <stop>
