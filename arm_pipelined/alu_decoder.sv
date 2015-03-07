@@ -1,7 +1,7 @@
 module alu_decoder(input  logic       ALUOpE,
            input  logic [24:21] ALUControlE,
            input  logic [1:0] PreviousCVFlag,
-           input  logic BXInstrE,
+           input  logic BXInstrE, RegtoCPSR,
            output   logic [2:0] ALUOperation, CVUpdate,
            output   logic     InvertB, ReverseInputs, ALUCarry, DoNotWriteReg);
 
@@ -55,7 +55,7 @@ module alu_decoder(input  logic       ALUOpE,
       default: ALUOperation = 3'b010; // Add by default
     endcase
 
-  assign DoNotWriteReg = (ALUOpE & (ALUControlE[24:23] == 2'b10)); // TST, TEQ, CMP, CMN
+  assign DoNotWriteReg = (ALUOpE & (ALUControlE[24:23] == 2'b10)) | RegtoCPSR; // TST, TEQ, CMP, CMN or RegtoCPSR(MOV instr)
 
   always_comb
     casex ({ALUOpE, ALUControlE[24:21]}) 

@@ -18,8 +18,9 @@ module dmem
        // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat",RAM); //teqrs
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/mmu/sectionTest.dat",RAM);
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/mmu/python/pagetable.dat",RAM);
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/mmu/python/pagetable.dat",RAM);
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/mmu/sectionTest.dat",RAM);
+      // $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/mmu/python/pagetable.dat",RAM);
+      // $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/mmu/sectionTest.dat",RAM);
+      // $readmemh("/home/zakinator/LEG/simTest.dat",RAM);
 
   assign rd = RAM[a[22:2]];
 
@@ -31,4 +32,8 @@ module dmem
     end
   end   
 
+<<<<<<< HEAD
 endmodule
+=======
+ endmodule
+>>>>>>> 3dbb7714358a0decad2a7a2f6e001122f2594b08

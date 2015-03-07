@@ -1,8 +1,11 @@
 module cpsr(input  logic        clk, reset,
               input logic [3:0] FlagsNext,
+              input logic [31:0] ALUout,
+              input logic [4:0] MSRmask,
               input logic [5:0] Exceptions, // Exceptions[5:0] are: [5]undef, swi, prefetch_abt, data_abt, irq, fiq[0] 
-              input logic       Enable, 
-              output logic [11:0] SRdata, 
+              input logic       NotStallW, 
+              output logic [31:0] CPSRdata, 
+              output logic [31:0] SPSRdata,
               output logic [6:0] PCVectorAddressE);
 
  /***** Brief Description *******
@@ -14,9 +17,9 @@ module cpsr(input  logic        clk, reset,
   // typedef enum {usr_sys, svc, abt, undef, irq, fiq} statetype;
   // statetype state, nextState;
   // CPSR and SPSR of different modes
-  logic [11:0] spsr[4:0]; 
-  logic [11:0] cpsr;
-  logic [7:0]  CPSR_update;
+  logic [31:0] spsr[4:0]; 
+  logic [31:0] cpsr;
+  logic [7:0]  CPSR_update, MSR_update;
 
 
   // CPSR: 3'b000
@@ -24,6 +27,11 @@ module cpsr(input  logic        clk, reset,
   logic FastInterrupt, Interrupt, Undefined, PrefetchAbort, DataAbort, SoftwareInterrupt;
   assign {Undefined, SoftwareInterrupt, PrefetchAbort, DataAbort, Interrupt, FastInterrupt} = Exceptions;
 
+  // Dealing with MSR instruction to write to CPSR/SPSR
+  logic InAPrivilegedMode, CurrentModeHasSPSR;
+  integer regnumber; 
+  assign InAPrivilegedMode = ~(cpsr[4:0] == 5'b10000); // Not in User mode
+  assign CurrentModeHasSPSR = ~(cpsr[4:0] == 5'b10000 | cpsr[4:0] == 5'b11111); // Not in either User mode or System mode
   
   // EXCEPTION BITS:
   // {6'b000_000}
@@ -31,6 +39,7 @@ module cpsr(input  logic        clk, reset,
 
   always_comb
     begin
+      // ========== Exceptions ===========
       if (reset) begin
         CPSR_update = {1'b1, 1'b1, 6'b01_0011}; // Supervisor Mode
         PCVectorAddressE = 7'b000_0001;
@@ -59,6 +68,12 @@ module cpsr(input  logic        clk, reset,
         CPSR_update = {1'b1, cpsr[6], 6'b01_0011}; // Supervisor Mode
         PCVectorAddressE = 7'b000_0100;
       end
+      // ========= MSR instructions =========
+      else if (MSRmask[0])  MSR_update = ALUout[7:0];
+      else if (MSRmask[1])  MSR_update = ALUout[15:8];
+      else if (MSRmask[2])  MSR_update = ALUout[23:16];
+      else if (MSRmask[3])  MSR_update = ALUout[31:24];
+      // ========= Just update CPSR =========
       else begin
         CPSR_update = {cpsr[7:0]};
         PCVectorAddressE = 7'b0;
@@ -79,39 +94,74 @@ module cpsr(input  logic        clk, reset,
 
   always_ff @(posedge clk, posedge reset)
     begin
+      // ========== Exceptions ===========
       if (reset) begin
         spsr[0] <= cpsr;
-        cpsr <= {cpsr[11:8], CPSR_update}; // go to supervisor mode
+        cpsr <= {cpsr[11:8], 20'b0, CPSR_update}; // go to supervisor mode
       end
       else if (DataAbort & ~(cpsr[4:0]==5'b10111)) begin // data abort 
         spsr[1] <= cpsr;
-        cpsr <= {cpsr[11:8], CPSR_update}; // go to abort mode
+        cpsr <= {cpsr[11:8], 20'b0, CPSR_update}; // go to abort mode
       end
       else if (FastInterrupt & ~(cpsr[4:0]==5'b10001)) begin // FIQ
         spsr[4] <= cpsr;
-        cpsr <= {cpsr[11:8], CPSR_update}; // go to FIQ mode
+        cpsr <= {cpsr[11:8], 20'b0, CPSR_update}; // go to FIQ mode
       end
       else if (Interrupt & ~(cpsr[4:0]==5'b10010)) begin // IRQ
         spsr[3] <= cpsr;
-        cpsr <= {cpsr[11:8], CPSR_update}; // go to irq mode
+        cpsr <= {cpsr[11:8], 20'b0, CPSR_update}; // go to irq mode
       end
       else if (PrefetchAbort & ~(cpsr[4:0]==5'b10111)) begin // prefetch abort
         spsr[1] <= cpsr;
-        cpsr <= {cpsr[11:8], CPSR_update}; // go to abort mode
+        cpsr <= {cpsr[11:8], 20'b0, CPSR_update}; // go to abort mode
       end
       else if (Undefined & ~(cpsr[4:0]==5'b11011)) begin // undef
         spsr[2] <= cpsr;
-        cpsr <= {cpsr[11:8], CPSR_update}; // go to undef mode 
+        cpsr <= {cpsr[11:8], 20'b0, CPSR_update}; // go to undef mode 
       end
       else if (SoftwareInterrupt & ~(cpsr[4:0]==5'b10011)) begin // Software interrupt
         spsr[0] <= cpsr;
-        cpsr <= {cpsr[11:8], CPSR_update}; // go to supervisor mode
+        cpsr <= {cpsr[11:8], 20'b0, CPSR_update}; // go to supervisor mode
       end
-      else if (Enable) begin
-        cpsr <= {FlagsNext, cpsr[7:0]};
+      // ========= MSR instructions =========
+      // IF R == 0 and InAPrivilegedMode
+      else if (MSRmask[0] & ~MSRmask[4] & InAPrivilegedMode) 
+        cpsr <= {cpsr[31:8], MSR_update};
+      else if (MSRmask[1] & ~MSRmask[4] & InAPrivilegedMode)  
+        cpsr <= {cpsr[31:16], MSR_update, cpsr[7:0]};
+      else if (MSRmask[2] & ~MSRmask[4] & InAPrivilegedMode)  
+        cpsr <= {cpsr[31:24], MSR_update, cpsr[15:0]};
+      else if (MSRmask[3] & ~MSRmask[4])  
+        cpsr <= {MSR_update, cpsr[23:0]};
+      // IF R == 1 and CurrentModehasSPSR
+      else if (MSRmask[0] & CurrentModeHasSPSR)
+        spsr[regnumber] <= {spsr[regnumber][31:8], MSR_update};
+      else if (MSRmask[1] & CurrentModeHasSPSR)
+        spsr[regnumber] <= {spsr[regnumber][31:16], MSR_update, spsr[regnumber][7:0]};
+      else if (MSRmask[2] & CurrentModeHasSPSR)
+        spsr[regnumber] <= {spsr[regnumber][31:24], MSR_update, spsr[regnumber][15:0]};
+      else if (MSRmask[3] & CurrentModeHasSPSR) 
+        spsr[regnumber] <= {MSR_update, spsr[regnumber][23:0]};
+
+      // ========= Just update CPSR =========
+      else if (NotStallW) begin
+        cpsr <= {FlagsNext, 20'b0, cpsr[7:0]};
       end
     end
 
-  assign SRdata = cpsr;
+  // OUTPUT CPSR DATA
+  assign CPSRdata = cpsr;
+  // OUTPUT SPSR DATA
+  always_comb
+    case(cpsr[4:0])
+      5'b10000: SPSRdata = cpsr;      // User mode
+      5'b10001: begin SPSRdata = spsr[4]; regnumber = 4; end   // FIQ mode
+      5'b10010: begin SPSRdata = spsr[3]; regnumber = 3; end  // IRQ mode
+      5'b10011: begin SPSRdata = spsr[0]; regnumber = 0; end  // Supervisor mode
+      5'b10111: begin SPSRdata = spsr[1]; regnumber = 1; end  // Abort mode
+      5'b11011: begin SPSRdata = spsr[2]; regnumber = 2; end // Undef mode
+      5'b11111: SPSRdata = cpsr;      // System mode
+      default: SPSRdata = cpsr;
+    endcase
 
 endmodule
