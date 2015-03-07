@@ -22,6 +22,8 @@ Disassembly of section .text:
   38:	e10fa000 	mrs	sl, CPSR
   3c:	e329fb01 	msr	CPSR_fc, #1024	; 0x400
   40:	e10fb000 	mrs	fp, CPSR
+  44:	e361f0db 	msr	SPSR_c, #219	; 0xdb
+  48:	e14fc000 	mrs	ip, SPSR
 
-00000044 <stop>:
-  44:	eafffffe 	b	44 <stop>
+0000004c <stop>:
+  4c:	eafffffe 	b	4c <stop>
