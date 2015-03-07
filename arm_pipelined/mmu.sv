@@ -1,6 +1,6 @@
 module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest, 
            input  logic CPUHWrite, HReady, DataAccess, CPSR4,
-           input  logic SBit, RBit, SupMode, WordAccess,
+           input  logic SBit, RBit, SupMode, WordAccess, DStall, IStall,
            input  logic [31:0] CPUHAddr, HRData, Dom,
            input  logic [6:0] TLBCont, Cont, // Cont[0] is the enable bit
            input  logic [17:0] TBase,
@@ -27,8 +27,8 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
                             } faulttype;
   faulttype FaultCode, FaultCodeMid;
   logic Enable, SubAPFault, APFault, DomainFault, TerminalException;
-  logic VectorException, APMidFault, FaultMid;
-  logic [31:0] HAddrMid, PHRData;
+  logic VectorException, APMidFault, FaultMid, SelPrevAddr, PStall;
+  logic [31:0] HAddrMid, PHRData, PHAddr, HAdderOut;
   logic HRequestMid, CPUHReadyMid, HWriteMid; // Output signals from MMU
   logic [3:0] Domain, StoredDomain;
   logic [1:0] CurrAP, dPerm;
@@ -38,14 +38,22 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   
   // Bypass translation
   mux2 #(35) enableMux({CPUHAddr, CPUHRequest, CPUHWrite, HReady},
-                       {HAddrMid, HRequestMid, HWriteMid, CPUHReadyMid}, Cont[0], 
+                       {HAdderOut, HRequestMid, HWriteMid, CPUHReadyMid}, Cont[0], 
                        {HAddr, HRequest, HWrite, CPUHReady});
   
   // PHRData flop: Hold onto the previous bus value for current translation
   flopenr #(32) HRDataFlop(clk, reset, HReady, HRData, PHRData);
 
+  // Save last translated address
+  //    The caches expect the value on the bus to remain constant for 
+  //    one cycle after the stall.
+  // TODO: Can this register and mux be removed?
+  flopr #(32) HAddrFlop(clk, reset, HAddr, PHAddr);
+  mux2 #(32) HAddrMidMux(HAddrMid, PHAddr, SelPrevAddr, HAdderOut);
+  flopr #(1) StallFlop(clk, reset, (DStall | IStall), PStall);
+
   typedef enum logic [3:0] {READY, SECTIONTRANS, SECONDFETCH, 
-                            SMALLTRANS, LARGETRANS, DONE} statetype;
+                            SMALLTRANS, LARGETRANS} statetype;
   statetype state, nextstate;
 
   // state register
@@ -56,14 +64,14 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   // next state logic
   always_comb
     case (state)
-      READY:        if (~(HReady & CPUHRequest & Enable) & Fault) begin 
+      READY:        if (~HReady | ~CPUHRequest | ~Enable | Fault) begin 
                       nextstate <= READY;
                     end else if(HRData[1:0] == 2'b01) begin
                       nextstate <= SECONDFETCH;
                     end else begin
                       nextstate <= SECTIONTRANS;
                     end
-      SECTIONTRANS: nextstate <= HReady ? DONE : SECTIONTRANS;
+      SECTIONTRANS: nextstate <= HReady ?  READY : SECTIONTRANS;
       SECONDFETCH:   if (~HReady) begin
                       nextstate <= SECONDFETCH;
                     end else if(HRData[1:0] == 2'b01) begin 
@@ -71,9 +79,8 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
                     end else begin
                       nextstate <= SMALLTRANS;
                     end
-      SMALLTRANS:   nextstate <= HReady ? DONE : SMALLTRANS;
-      LARGETRANS:   nextstate <= HReady ? DONE : LARGETRANS;
-      DONE:         nextstate <= READY;
+      SMALLTRANS:   nextstate <= HReady ? READY : SMALLTRANS;
+      LARGETRANS:   nextstate <= HReady ? READY : LARGETRANS;
     default:        nextstate <= READY;
     endcase
 
@@ -89,7 +96,6 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
     case (state)
       READY:        HAddrMid <= {TBase,  CPUHAddr[31:20], 2'b00};
       SECTIONTRANS: HAddrMid <= {PHRData[31:20], CPUHAddr[19:0]}; 
-      DONE:         HAddrMid <= {TBase,  CPUHAddr[31:20]};
       SECONDFETCH:  HAddrMid <= {PHRData[31:10], CPUHAddr[19:12], 2'b0};
       SMALLTRANS:   HAddrMid <= {PHRData[31:12], CPUHAddr[11:0]};
       LARGETRANS:   HAddrMid <= {PHRData[31:16], CPUHAddr[15:0]};
@@ -270,14 +276,19 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
       FSR[3:0] <= FaultCode;
     end
 
+  assign SelPrevAddr = (state == READY) & (PStall & ~IStall & ~DStall);
+
   // HRequestMid Logic
   assign HRequestMid = (state == SECONDFETCH) |
                     (state == SMALLTRANS)  |
                     (state == LARGETRANS)  |
                     (state == SECTIONTRANS) | 
                     ( (state == READY) & CPUHRequest );
+
   // CPUHReady Logic  
-  assign CPUHReadyMid = (state == DONE);
+  assign CPUHReadyMid = (state == SECTIONTRANS) & HReady | 
+                        (state == LARGETRANS) & HReady |
+                        (state == SMALLTRANS) & HReady;
   // HWriteMid Logic
   assign HWriteMid = ( (state == SECTIONTRANS) |
                     (state == LARGETRANS)   |

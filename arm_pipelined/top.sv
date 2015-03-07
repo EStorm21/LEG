@@ -54,7 +54,7 @@ module top(input  logic        clk, reset,
                .HWDATA(HWData), .HRDATA(HRData), .HREADY(HReady));
 
   // Create the mmu
-  mmu dut(.*);
+  mmu mmuInst(.*);
 
   // False Signals for the mmu
   // TODO: Hook these wires up to the 
@@ -74,7 +74,7 @@ module top(input  logic        clk, reset,
   assign RBit = 1'b1;
   assign DataAccess = 1'b1;   // Trying to access data memory, not instruction memory
   assign CPSR4 = 1'b1;
-  assign FullTBase = 32'h0010_0000; // Translation Base at 0x0010_0000
+  assign FullTBase = 32'h0030_0000; // Translation Base at 0x0010_0000
   assign TBase = FullTBase[31:14];
   assign Cont  = 7'b000_0000;     // Enable the MMU
   assign MMUExtInt = 1'b0;        // No External Interrupt
