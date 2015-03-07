@@ -1,6 +1,6 @@
 module micropsfsm(input  logic        clk, reset,
                input  logic [31:0] defaultInstrD,
-               output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforward, 
+               output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforward, Reg_usr_D, MicroOpCPSRrestoreD,
                output logic [1:0]  STR_cycle,
                output logic 	   prevRSRstate, keepV, SignExtend, noRotate, ldrstrRtype,
                output logic [3:0]  regFileRz,
@@ -370,6 +370,8 @@ always_comb
 					noRotate = 0;
 					STR_cycle = 2'b0;
 					ldrstrRtype = 0;
+					Reg_usr_D = 0;
+
 				end
 			end
 
@@ -581,6 +583,9 @@ always_comb
 		 * LOAD MULTIPLE
 		 */
 		ldm:begin
+			if(defaultInstrD[22] & ~defaultInstrD[15])
+				Reg_usr_D = 1;
+
 			if (ZeroRegsLeft) begin
 				nextState = ready;
 			  	InstrMuxD = 1;

@@ -24,7 +24,7 @@ module arm(input  logic        clk, reset,
   /// Output from Controller
   logic [1:0]  RegSrcD, ImmSrcD;
   logic [3:0]  ALUControlE;
-  logic        ALUSrcE, BranchTakenE, MemtoRegW, PCSrcW, RegWriteW;
+  logic        ALUSrcE, BranchTakenE, MemtoRegW, PCSrcW, RegWriteW, Reg_usr_D;
   logic [6:4]  ShiftOpCode_E;
   logic [31:0] InstrE, ALUResultE;
   logic        RegWriteM, MemtoRegE, PCWrPendingF, WriteByteE, WriteHalfwordE, WriteHalfwordW, HalfwordOffsetW;

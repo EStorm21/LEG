@@ -3,6 +3,7 @@ module cpsr(input  logic        clk, reset,
               input logic [31:0] ALUout,
               input logic [4:0] MSRmask,
               input logic [5:0] Exceptions, // Exceptions[5:0] are: [5]undef, swi, prefetch_abt, data_abt, irq, fiq[0] 
+              input logic       RestoreCPSR,
               input logic       NotStallW, 
               output logic [31:0] CPSRdata, 
               output logic [31:0] SPSRdata,
@@ -73,7 +74,7 @@ module cpsr(input  logic        clk, reset,
       else if (MSRmask[1])  MSR_update = ALUout[15:8];
       else if (MSRmask[2])  MSR_update = ALUout[23:16];
       else if (MSRmask[3])  MSR_update = ALUout[31:24];
-      // ========= Just update CPSR =========
+      // ========= Just update flags =========
       else begin
         CPSR_update = {cpsr[7:0]};
         PCVectorAddressE = 7'b0;
@@ -142,8 +143,10 @@ module cpsr(input  logic        clk, reset,
         spsr[regnumber] <= {spsr[regnumber][31:24], MSR_update, spsr[regnumber][15:0]};
       else if (MSRmask[3] & CurrentModeHasSPSR) 
         spsr[regnumber] <= {MSR_update, spsr[regnumber][23:0]};
-
-      // ========= Just update CPSR =========
+      // ========= Instructions that cpsr <= spsr ==========
+      else if (RestoreCPSR)
+        cpsr <= spsr[regnumber];
+      // ========= Just update flags =========
       else if (NotStallW) begin
         cpsr <= {FlagsNext, 20'b0, cpsr[7:0]};
       end
