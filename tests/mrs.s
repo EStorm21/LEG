@@ -1,3 +1,4 @@
+
 .text
 start:
 	subs r0, r0, r0
@@ -17,5 +18,7 @@ start:
 	mrs r10, CPSR
 	msr CPSR, #1024
 	mrs r11, CPSR
+	msr SPSR_c, #219
+	mrs r12, SPSR
 
 stop:	 b stop
