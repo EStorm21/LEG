@@ -95,7 +95,7 @@ module data_writeback_associative_cache_controller #(parameter blocksize, parame
   assign CWE    = ( (state == READY) & ( (MemWriteM & Hit) |  (BusReady & ~Hit & ~Dirty) )) |
                   ( (state == MEMREAD) & BusReady );
   assign HWriteM = (state == WRITEBACK) | ((state == READY) & ~Hit & Dirty);
-  assign HRequestM  = (state == MEMREAD) | (state == WRITEBACK) | ((state == READY) & ~Hit);
+  assign HRequestM  = Stall;
   assign RDSel  = ( (state == NEXTINSTR) & (WordOffset == 2'b11) );
   assign BlockWE = (state == MEMREAD) | ( (state == NEXTINSTR)  & 
                    (~MemWriteM || MemWriteM & ~Dirty) ) |

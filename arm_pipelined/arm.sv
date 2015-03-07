@@ -7,7 +7,9 @@ module arm(input  logic        clk, reset,
            // Added for memory
            input logic         DStall, IStall,
            output logic        MemtoRegM,
-           output logic [3:0]  ByteMaskM);
+           output logic [3:0]  ByteMaskM,
+           // Added for exceptions
+           input logic PrefetchAbort, DataAbort, IRQ, FIQ);
 
   /// Output from Hazard Unit
   logic [1:0]  ForwardAE, ForwardBE;
@@ -50,6 +52,10 @@ module arm(input  logic        clk, reset,
 
   // Thumb 
   logic        BXInstrD, BXInstrE, TFlagNextE, TFlagE, IncrementE;
+
+  // Exceptions
+  logic       UndefinedInstr, SWI;
+  logic [1:0] PCInSelect;
 
   
 

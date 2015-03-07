@@ -20,10 +20,16 @@ module top(input  logic        clk, reset,
   logic HWrite, CPUHWrite, HReady, CPUHReady, HRequest, CPUHRequest;
   logic [31:0] HAddrM, HAddrF, HAddr, CPUHAddr;
   
+  // ----- Exception signals -----
+  logic DataAbort, PrefetchAbort; // TODO: signals come from MMU
+  logic IRQ, FIQ; // TODO: change to external input pins
+
   // instantiate processor and memories
   arm arm(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
           // Added for memory (DStall, MemtoRegM)
-          WriteDataM, ReadDataM, DStall, IStall, MemtoRegM, ByteMaskM); 
+          WriteDataM, ReadDataM, DStall, IStall, MemtoRegM, ByteMaskM,
+          // Added for exceptions
+          PrefetchAbort, DataAbort, IRQ, FIQ); 
 
   // instruction cache with a block size of 4 words and 16 lines
   instr_cache #(4, 128) 
@@ -54,7 +60,7 @@ module top(input  logic        clk, reset,
                .HWDATA(HWData), .HRDATA(HRData), .HREADY(HReady));
 
   // Create the mmu
-  mmu dut(.*);
+  mmu mmuInst(.*);
 
   // False Signals for the mmu
   // TODO: Hook these wires up to the 
@@ -74,7 +80,7 @@ module top(input  logic        clk, reset,
   assign RBit = 1'b1;
   assign DataAccess = 1'b1;   // Trying to access data memory, not instruction memory
   assign CPSR4 = 1'b1;
-  assign FullTBase = 32'h0010_0000; // Translation Base at 0x0010_0000
+  assign FullTBase = 32'h0030_0000; // Translation Base at 0x0010_0000
   assign TBase = FullTBase[31:14];
   assign Cont  = 7'b000_0000;     // Enable the MMU
   assign MMUExtInt = 1'b0;        // No External Interrupt
@@ -95,4 +101,6 @@ module top(input  logic        clk, reset,
   // dmem dmem(.clk(clk), .we(MemWriteM), .a(DataAdrM), 
   //           .wd(WriteDataM), .rd(ReadDataM));
   //---------------------- Added for memory ----------------
+
+
 endmodule

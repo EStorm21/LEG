@@ -55,7 +55,9 @@ module controller(/// ------ From TOP ------
 
                   /// For BX instruction
                     output logic         BXInstrD, TFlagNextE,
-                    input  logic         TFlagE);
+                    input  logic         TFlagE,
+                    // For exceptions
+                    output logic         UndefinedInstr, SWI);
 
   logic [12:0] ControlsD;
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
@@ -174,6 +176,10 @@ module controller(/// ------ From TOP ------
   flopenrc #(1)  MultOutputSrc(clk, reset, ~StallE, FlushE, MultStallD, WriteMultLoE);
   flopenrc #(1)  MultOutputSrc1(clk, reset, ~StallE, FlushE, WriteMultLoE, WriteMultLoKeptE); //write the low register on the second cycle
   // -----
+
+  // ----- Exception handling -----
+  assign UndefinedInstr = undefD;
+  assign SWI = SWI_D; // TODO: Create logic to determine SWI instr
 
   // ====================================================================================
   // =============================== Execute Stage ======================================
