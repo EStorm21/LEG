@@ -32,8 +32,5 @@ module dmem
     end
   end   
 
-<<<<<<< HEAD
-endmodule
-=======
+
  endmodule
->>>>>>> 3dbb7714358a0decad2a7a2f6e001122f2594b08
