@@ -14,14 +14,14 @@ Disassembly of section .text:
   18:	110f5000 	mrsne	r5, CPSR
   1c:	e0516000 	subs	r6, r1, r0
   20:	410f7000 	mrsmi	r7, CPSR
-  24:	e123f001 	msr	CPSR_xc, r1
-  28:	e10f8000 	mrs	r8, CPSR
-  2c:	e12ff003 	msr	CPSR_fsxc, r3
-  30:	e10f9000 	mrs	r9, CPSR
-  34:	e328f007 	msr	CPSR_f, #7
-  38:	e10fa000 	mrs	sl, CPSR
-  3c:	e329fb01 	msr	CPSR_fc, #1024	; 0x400
-  40:	e10fb000 	mrs	fp, CPSR
+  24:	e123f001 	msr	CPSR_xc, r1      ; CPSR gets mode 4
+  28:	e10f8000 	mrs	r8, CPSR         ; Load flags + mode 4 in to R8
+  2c:	e12ff003 	msr	CPSR_fsxc, r3    ; CPSR should simply be 600001d3
+  30:	e10f9000 	mrs	r9, CPSR         ; load that into r9
+  34:	e328f007 	msr	CPSR_f, #7       ; sets flags to 0
+  38:	e10fa000 	mrs	sl, CPSR         ; loads same value of r9 into r10
+  3c:	e329fb01 	msr	CPSR_fc, #1024	 ; 0x400 (means nothing happens)
+  40:	e10fb000 	mrs	fp, CPSR         ; put   
   44:	e361f0db 	msr	SPSR_c, #219	; 0xdb
   48:	e14fc000 	mrs	ip, SPSR
 

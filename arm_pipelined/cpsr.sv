@@ -30,11 +30,22 @@ module cpsr(input  logic        clk, reset,
   assign {Undefined, SoftwareInterrupt, PrefetchAbort, DataAbort, Interrupt, FastInterrupt} = Exceptions;
 
   // Dealing with MSR instruction to write to CPSR/SPSR
-  logic InAPrivilegedMode, CurrentModeHasSPSR;
+  logic InAPrivilegedMode, CurrentModeHasSPSR, LegalModeChange;
   integer regnumber; 
   assign InAPrivilegedMode = ~(cpsr[4:0] == 5'b10000); // Not in User mode
   assign CurrentModeHasSPSR = ~(cpsr[4:0] == 5'b10000 | cpsr[4:0] == 5'b11111); // Not in either User mode or System mode
-  
+
+  always_comb
+    case(ALUout[4:0])
+      5'b10000: LegalModeChange = 1;
+      5'b10001: LegalModeChange = 1;
+      5'b10010: LegalModeChange = 1;
+      5'b10011: LegalModeChange = 1;
+      5'b10111: LegalModeChange = 1;
+      5'b11011: LegalModeChange = 1;
+      5'b11111: LegalModeChange = 1;
+      default: LegalModeChange = 0;
+    endcase  
   // EXCEPTION BITS:
   // {6'b000_000}
   // {FIQ, IRQ, UNDEF _ PrefetchAbort, DataAbort, SWI}
@@ -75,14 +86,27 @@ module cpsr(input  logic        clk, reset,
         PCVectorAddressE = 7'b0;
       end
       // ========= MSR instructions =========
-      if (MSRmask[0] & (InAPrivilegedMode | CurrentModeHasSPSR))  MSR_update[7:0] = ALUout[7:0];
-      if (MSRmask[1] & (InAPrivilegedMode | CurrentModeHasSPSR))  MSR_update[15:8] = ALUout[15:8];
-      if (MSRmask[2] & (InAPrivilegedMode | CurrentModeHasSPSR))  MSR_update[23:16] = ALUout[23:16];
-      if (MSRmask[3])  MSR_update[31:24] = ALUout[31:24];
-      if (MSRmask[3:0] == 4'b0)  MSR_update = 32'b0;
+      if (MSRmask[0] & (InAPrivilegedMode | CurrentModeHasSPSR) & LegalModeChange)  MSR_update[7:0] = ALUout[7:0];
+      else if ((MSRmask[0] & (InAPrivilegedMode | CurrentModeHasSPSR) & ~LegalModeChange & MSRmask[4]))   
+                                                                                    MSR_update[7:0] = {ALUout[7:5], spsr[regnumber][4:0]};
+      else if ((MSRmask[0] & (InAPrivilegedMode | CurrentModeHasSPSR) & ~LegalModeChange & ~MSRmask[4]))
+                                                                                    MSR_update[7:0] = {ALUout[7:5], cpsr[4:0]};
+      else if (MSRmask[4])                                                          MSR_update[7:0] = spsr[regnumber][7:0];
+      else                                                                          MSR_update[7:0] = cpsr[7:0];
+      if (MSRmask[1] & (InAPrivilegedMode | CurrentModeHasSPSR))                    MSR_update[15:8] = ALUout[15:8];
+      else if (MSRmask[4])                                                          MSR_update[15:8] = spsr[regnumber][15:8];
+      else                                                                          MSR_update[15:8] = cpsr[15:8];
+      if (MSRmask[2] & (InAPrivilegedMode | CurrentModeHasSPSR))                    MSR_update[23:16] = ALUout[23:16];
+      else if (MSRmask[4])                                                          MSR_update[23:16] = spsr[regnumber][23:16];
+      else                                                                          MSR_update[23:16] = cpsr[23:16];
+      if (MSRmask[3])                                                               MSR_update[31:24] = ALUout[31:24];
+      else if (MSRmask[4])                                                          MSR_update[31:24] = spsr[regnumber][31:24];
+      else                                                                          MSR_update[31:24] = cpsr[31:24];
+      if (MSRmask[3:0] == 4'b0)                                                     MSR_update = 32'b0;
       // ========= Just update flags =========
       
     end
+
 
   //  The goal here is to see if a signal high triggers any one of these mode changes. However, if the signal is kept high,
   //  one can see the chance of the CPSR continuously changing the values inside the SPSR. Would we need to make a state machine
@@ -100,8 +124,8 @@ module cpsr(input  logic        clk, reset,
     begin
       // ========== Exceptions ===========
       if (reset) begin
-        spsr[0] <= cpsr;
-        cpsr <= {cpsr[11:8], 20'b0, CPSR_update}; // go to supervisor mode
+        spsr <= '{5{32'b0}};
+        cpsr <= {cpsr[11:8], 19'b0, 1'b1, CPSR_update}; // go to supervisor mode (On Reset, set Endianness to Big - ARMv7)
       end
       else if (DataAbort & ~(cpsr[4:0]==5'b10111)) begin // data abort 
         spsr[1] <= cpsr;
@@ -140,7 +164,7 @@ module cpsr(input  logic        clk, reset,
         cpsr <= spsr[regnumber];
       // ========= Just update flags =========
       else if (NotStallW) begin
-        cpsr <= {FlagsNext, 20'b0, cpsr[7:0]};
+        cpsr <= {FlagsNext, cpsr[27:0]};
       end
     end
 
