@@ -23,26 +23,26 @@ Disassembly of section .text:
   34:	010f4000 	mrseq	r4, CPSR
   38:	110f5000 	mrsne	r5, CPSR
   3c:	e0516000 	subs	r6, r1, r0
-  40:	410f7000 	mrsmi	r7, CPSR
+  40:	410f7000 	mrsmi	r7, CPSR   ; debug
   44:	e323f004 	msr	CPSR_xc, #4
-  48:	e10f8000 	mrs	r8, CPSR
+  48:	e10f8000 	mrs	r8, CPSR     ; debug
   4c:	e12ff003 	msr	CPSR_fsxc, r3
   50:	e10f9000 	mrs	r9, CPSR
   54:	e328f007 	msr	CPSR_f, #7
   58:	e10fa000 	mrs	sl, CPSR
-  5c:	e329f16e 	msr	CPSR_fc, #-2147483621	; 0x8000001b
+  5c:	e329f16e 	msr	CPSR_fc, #-2147483621	; 0x8000001b undef mode
   60:	e10fb000 	mrs	fp, CPSR
   64:	e361f0db 	msr	SPSR_c, #219	; 0xdb
   68:	e14fc000 	mrs	ip, SPSR
-  6c:	e321f010 	msr	CPSR_c, #16
-  70:	e10f0000 	mrs	r0, CPSR
-  74:	e321f01f 	msr	CPSR_c, #31
-  78:	e10f2000 	mrs	r2, CPSR
-  7c:	e2844001 	add	r4, r4, #1
+  6c:	e321f010 	msr	CPSR_c, #16   ; go into user mode
+  70:	e10f0000 	mrs	r0, CPSR      ; move CPSR to r0 
+  74:	e321f01f 	msr	CPSR_c, #31   ; try to go back to svc
+  78:	e10f2000 	mrs	r2, CPSR     ; debug cpsr = usrmode
+  7c:	e2844001 	add	r4, r4, #1   ; debug 
   80:	ef000001 	svc	0x00000001
-  84:	e2844002 	add	r4, r4, #2
-  88:	e10f1000 	mrs	r1, CPSR
-  8c:	e0822000 	add	r2, r2, r0
+  84:	e2844002 	add	r4, r4, #2   ; debug
+  88:	e10f1000 	mrs	r1, CPSR     ; debug
+  8c:	e0822000 	add	r2, r2, r0   ; debug
   90:	e14f0000 	mrs	r0, SPSR
   94:	e0800001 	add	r0, r0, r1
 

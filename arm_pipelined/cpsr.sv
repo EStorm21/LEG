@@ -120,7 +120,7 @@ module cpsr(input  logic        clk, reset,
 
   // To return (SPSR moved to CPSR and R14 moved to PC), we either (1) want to do SUBS or MOVS or (2) use Load multiple and restore PSR
 
-  always_ff @(posedge clk, posedge reset)
+  always_ff @(negedge clk, posedge reset)
     begin
       // ========== Exceptions ===========
       if (reset) begin
@@ -170,16 +170,17 @@ module cpsr(input  logic        clk, reset,
 
   // OUTPUT CPSR DATA
   assign CPSRdata = cpsr;
+  string DEBUG_STATE;
   // OUTPUT SPSR DATA
   always_comb
     case(cpsr[4:0])
-      5'b10000: SPSRdata = cpsr;      // User mode
-      5'b10001: begin SPSRdata = spsr[4]; regnumber = 4; end   // FIQ mode
-      5'b10010: begin SPSRdata = spsr[3]; regnumber = 3; end  // IRQ mode
-      5'b10011: begin SPSRdata = spsr[0]; regnumber = 0; end  // Supervisor mode
-      5'b10111: begin SPSRdata = spsr[1]; regnumber = 1; end  // Abort mode
-      5'b11011: begin SPSRdata = spsr[2]; regnumber = 2; end // Undef mode
-      5'b11111: SPSRdata = cpsr;      // System mode
+      5'b10000: begin SPSRdata = cpsr; DEBUG_STATE = "USR"; end     // User mode
+      5'b10001: begin SPSRdata = spsr[4]; regnumber = 4; DEBUG_STATE = "FIQ"; end   // FIQ mode
+      5'b10010: begin SPSRdata = spsr[3]; regnumber = 3; DEBUG_STATE = "IRQ"; end  // IRQ mode
+      5'b10011: begin SPSRdata = spsr[0]; regnumber = 0; DEBUG_STATE = "SVC"; end  // Supervisor mode
+      5'b10111: begin SPSRdata = spsr[1]; regnumber = 1; DEBUG_STATE = "ABT"; end  // Abort mode
+      5'b11011: begin SPSRdata = spsr[2]; regnumber = 2; DEBUG_STATE = "UNDEF"; end // Undef mode
+      5'b11111: begin SPSRdata = cpsr; DEBUG_STATE = "SYS"; end     // System mode
       default: SPSRdata = cpsr;
     endcase
 

@@ -5,10 +5,10 @@ module micropsfsm(input  logic        clk, reset,
                output logic 	   prevRSRstate, keepV, SignExtend, noRotate, ldrstrRtype,
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
-			   input  logic		   StalluOp);
+			   input  logic		   StalluOp, ExceptionSavePC);
 
 // define states READY and RSR 
-typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, ldr, str, str2, blx, strHalf} statetype;
+typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, ldr, str, str2, blx, strHalf, exception} statetype;
 statetype state, nextState;
 
 // --------------------------- ADDED FOR LDM/STM -------------------------------
@@ -107,8 +107,15 @@ always_comb
 		 * READY STATE 
 		 */
 		ready: begin
+				// Exception handling (sufficiently handles SWI so far... still in progress)
+				if (ExceptionSavePC) begin
+					InstrMuxD = 1;
+					uOpStallD = 0; 
+					nextState = ready;
+					uOpInstrD = 32'b1110_000_1101_0_0000_1110_00000000_1111; // mov r14, pc
+				end
 				//start RSR type instructions
-				if (defaultInstrD[27:25] == 3'b0 & defaultInstrD[7] == 0 & defaultInstrD[4] == 1 
+				else if (defaultInstrD[27:25] == 3'b0 & defaultInstrD[7] == 0 & defaultInstrD[4] == 1 
 				  & ~(defaultInstrD[27:6] == {8'b0001_0010, 12'hFFF, 2'b00}) & defaultInstrD[4]) begin 
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 1;
