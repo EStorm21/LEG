@@ -195,9 +195,9 @@ module testbench();
         DStallCycles = DStallCycles + 1;
         DStallCounter = DStallCounter + 1;
 
-        if(DStallCounter > 4) begin
-          $display("***** Long DStall ***** at cycle %d", totalCycles);
-        end
+        // if(DStallCounter > 4) begin
+        //   $display("***** Long DStall ***** at cycle %d", totalCycles);
+        // end
       end
       else begin
         DStallCounter = 0;

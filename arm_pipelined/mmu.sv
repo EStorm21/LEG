@@ -52,8 +52,8 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   mux2 #(32) HAddrMidMux(HAddrMid, PHAddr, SelPrevAddr, HAdderOut);
   flopr #(1) StallFlop(clk, reset, (DStall | IStall), PStall);
 
-  typedef enum logic [3:0] {READY, SECTIONTRANS, SECONDFETCH, 
-                            SMALLTRANS, LARGETRANS} statetype;
+  typedef enum logic [3:0] {READY, SECTIONTRANS, COARSEFETCH, FINEFETCH, 
+                            SMALLTRANS, LARGETRANS, TINYTRANS} statetype;
   statetype state, nextstate;
 
   // state register
@@ -64,23 +64,33 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   // next state logic
   always_comb
     case (state)
-      READY:        if (~HReady | ~CPUHRequest | ~Enable | Fault) begin 
+      READY:        if (~HReady | ~CPUHRequest | ~Enable | Fault | reset) begin 
                       nextstate <= READY;
                     end else if(HRData[1:0] == 2'b01) begin
-                      nextstate <= SECONDFETCH;
+                      nextstate <= COARSEFETCH;
+                    end else if(HRData[1:0] == 2'b11) begin
+                      nextstate <= FINEFETCH;
                     end else begin
                       nextstate <= SECTIONTRANS;
                     end
       SECTIONTRANS: nextstate <= HReady ?  READY : SECTIONTRANS;
-      SECONDFETCH:   if (~HReady) begin
-                      nextstate <= SECONDFETCH;
+      COARSEFETCH:  if (~HReady) begin
+                      nextstate <= COARSEFETCH;
                     end else if(HRData[1:0] == 2'b01) begin 
                       nextstate <= LARGETRANS;
                     end else begin
                       nextstate <= SMALLTRANS;
                     end
+      FINEFETCH:   if (~HReady) begin
+                      nextstate <= FINEFETCH;
+                    end else if(HRData[1:0] == 2'b11) begin 
+                      nextstate <= TINYTRANS;
+                    end else begin
+                      nextstate <= SMALLTRANS;
+                    end
       SMALLTRANS:   nextstate <= HReady ? READY : SMALLTRANS;
       LARGETRANS:   nextstate <= HReady ? READY : LARGETRANS;
+      TINYTRANS:   nextstate <= HReady ? READY : TINYTRANS;
     default:        nextstate <= READY;
     endcase
 
@@ -96,8 +106,10 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
     case (state)
       READY:        HAddrMid <= {TBase,  CPUHAddr[31:20], 2'b00};
       SECTIONTRANS: HAddrMid <= {PHRData[31:20], CPUHAddr[19:0]}; 
-      SECONDFETCH:  HAddrMid <= {PHRData[31:10], CPUHAddr[19:12], 2'b0};
+      COARSEFETCH:  HAddrMid <= {PHRData[31:10], CPUHAddr[19:12], 2'b0};
+      FINEFETCH:    HAddrMid <= {PHRData[31:12], CPUHAddr[19:10], 2'b0};
       SMALLTRANS:   HAddrMid <= {PHRData[31:12], CPUHAddr[11:0]};
+      TINYTRANS:    HAddrMid <= {PHRData[31:10], CPUHAddr[9:0]};
       LARGETRANS:   HAddrMid <= {PHRData[31:16], CPUHAddr[15:0]};
       default: HAddrMid <= 32'h9999_9999;
     endcase
@@ -132,22 +144,39 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
         end else if(PHRData[1:0] == 2'b0) begin
           FaultCodeMid <= TSFAULT;         // Section translation fault
           FaultMid     <= 1'b1;
-        end else if(PHRData[8:5]) begin // Section Domain Fault
+        end else if(DomainFault) begin     // Section Domain Fault
           FaultCodeMid <= DSFAULT;
           FaultMid     <= 1'b1;
-        end else if(APFault) begin      // Section Access Permissions Fault
+        end else if(APFault) begin         // Section Access Permissions Fault
           FaultCodeMid <= PSFAULT;
           FaultMid     <= PPFAULT;
         end else begin
           FaultCodeMid <= ALIGNFAULT;      // No Fault (FaultCode = 4'bxxxx)
           FaultMid     <= 1'b0;
         end
-      SECONDFETCH: 
+      FINEFETCH: 
         if (MMUExtInt) begin
           FaultCodeMid <= ESLINEFAULT;     // External abort on linefetch
           FaultMid     <= 1'b1;            // TODO: Sould this be linefetch or translation fault?
         end else if(PHRData[1:0] == 2'b0) begin
           FaultCodeMid <= TPFAULT;         // Page translation fault
+          FaultMid     <= 1'b1;
+        end else if(DomainFault) begin
+          FaultCodeMid <= DPFAULT;         // Page domain fault
+          FaultMid     <= 1'b1;
+        end else begin
+          FaultCodeMid <= ALIGNFAULT;      // No Fault (FaultCode = 4'bxxxx)
+          FaultMid     <= 1'b0;
+        end
+      COARSEFETCH: 
+        if (MMUExtInt) begin
+          FaultCodeMid <= ESLINEFAULT;     // External abort on linefetch
+          FaultMid     <= 1'b1;            // TODO: Sould this be linefetch or translation fault?
+        end else if(PHRData[1:0] == 2'b0) begin
+          FaultCodeMid <= TPFAULT;         // Page translation fault
+          FaultMid     <= 1'b1;
+        end else if(DomainFault) begin
+          FaultCodeMid <= DPFAULT;         // Page domain fault
           FaultMid     <= 1'b1;
         end else begin
           FaultCodeMid <= ALIGNFAULT;      // No Fault (FaultCode = 4'bxxxx)
@@ -157,9 +186,17 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
         if (MMUExtInt) begin
           FaultCodeMid <= ETSECONDTFAULT;  // Second Level external translation abort
           FaultMid     <= 1'b1;            // TODO: Should this be linefetch?
-        end else if(DomainFault) begin
-          FaultCodeMid <= DPFAULT;         // Page domain fault
+        end else if(APFault) begin
+          FaultCodeMid <= PPFAULT;         // Page SubPermissions Fault
           FaultMid     <= 1'b1;
+        end else begin
+          FaultCodeMid <= ALIGNFAULT;      // No Fault
+          FaultMid     <= 1'b0;
+        end
+      TINYTRANS:   
+        if (MMUExtInt) begin
+          FaultCodeMid <= ETSECONDTFAULT;  // Second Level external translation abort
+          FaultMid     <= 1'b1;            // TODO: Should this be linefetch?
         end else if(APFault) begin
           FaultCodeMid <= PPFAULT;         // Page SubPermissions Fault
           FaultMid     <= 1'b1;
@@ -171,9 +208,6 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
         if (MMUExtInt) begin
           FaultCodeMid <= ETSECONDTFAULT;  // Second Level external translation abort
           FaultMid     <= 1'b1;            // TODO: Should this be linefetch?
-        end else if(DomainFault) begin
-          FaultCodeMid <= DPFAULT;         // Page domain fault
-          FaultMid     <= 1'b1;
         end else if(APFault) begin
           FaultCodeMid <= PPFAULT;         // Page SubPermissions fault
           FaultMid     <= 1'b1;
@@ -242,6 +276,7 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
                       2'b10: CurrAP <= PHRData[9:8];
                       2'b11: CurrAP <= PHRData[11:10];
                     endcase
+      TINYTRANS:    CurrAP <= PHRData[5:4];
       LARGETRANS:   case(CPUHAddr[15:14])
                       2'b00: CurrAP <= PHRData[5:4];
                       2'b01: CurrAP <= PHRData[7:6];
@@ -267,6 +302,7 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   assign APFault = APMidFault & (dPerm == 2'b01);
 
   // FSR[3:0] output Logic
+  // TODO: Make writes to FSR and FAR Sequential
   always_comb
     if(TerminalException) begin
       FSR[3:0] <= 4'b0010;
@@ -279,8 +315,10 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   assign SelPrevAddr = (state == READY) & (PStall & ~IStall & ~DStall);
 
   // HRequestMid Logic
-  assign HRequestMid = (state == SECONDFETCH) |
+  assign HRequestMid = (state == COARSEFETCH) |
+                    (state == FINEFETCH)  |
                     (state == SMALLTRANS)  |
+                    (state == TINYTRANS)  |
                     (state == LARGETRANS)  |
                     (state == SECTIONTRANS) | 
                     ( (state == READY) & CPUHRequest );
@@ -288,10 +326,12 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   // CPUHReady Logic  
   assign CPUHReadyMid = (state == SECTIONTRANS) & HReady | 
                         (state == LARGETRANS) & HReady |
+                        (state == TINYTRANS) & HReady |
                         (state == SMALLTRANS) & HReady;
   // HWriteMid Logic
   assign HWriteMid = ( (state == SECTIONTRANS) |
                     (state == LARGETRANS)   |
-                    (state == SMALLTRANS) ) & CPUHWrite;
+                    (state == SMALLTRANS) |
+                    (state == TINYTRANS) ) & CPUHWrite;
 
 endmodule
