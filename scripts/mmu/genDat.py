@@ -1,7 +1,6 @@
 from transFuncts import *
 
-def genDat(translist, tbase, t2base):
-	filename = 'pagetable.dat'
+def genDat(translist, tbase, t2base, filename):
 	# Open file for writing
 	f = open(filename, 'w')
 
