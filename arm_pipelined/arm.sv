@@ -14,6 +14,7 @@ module arm(input  logic        clk, reset,
   /// Output from Hazard Unit
   logic [1:0]  ForwardAE, ForwardBE;
   logic        StallF, StallD, FlushD, StallE, FlushE, StallM, FlushW, StallW, StalluOp;
+  logic        ExceptionSavePC;
 
   /// Output from Datapath
   logic [3:0]  ALUFlagsE, MultFlagsE;
@@ -26,7 +27,7 @@ module arm(input  logic        clk, reset,
   /// Output from Controller
   logic [1:0]  RegSrcD, ImmSrcD;
   logic [3:0]  ALUControlE;
-  logic        ALUSrcE, BranchTakenE, MemtoRegW, PCSrcW, RegWriteW;
+  logic        ALUSrcE, BranchTakenE, MemtoRegW, PCSrcW, RegWriteW, Reg_usr_D;
   logic [6:4]  ShiftOpCode_E;
   logic [31:0] InstrE, ALUResultE;
   logic        RegWriteM, MemtoRegE, PCWrPendingF, WriteByteE, WriteHalfwordE, WriteHalfwordW, HalfwordOffsetW;
@@ -54,7 +55,7 @@ module arm(input  logic        clk, reset,
   logic        BXInstrD, BXInstrE, TFlagNextE, TFlagE, IncrementE;
 
   // Exceptions
-  logic       UndefinedInstr, SWI;
+  logic       UndefinedInstr, SWI, SWI_E, SWI_D, SWI_M, SWI_W;
   logic [1:0] PCInSelect;
 
   

@@ -5,16 +5,69 @@ mrs.o:     file format elf32-littlearm
 Disassembly of section .text:
 
 00000000 <start>:
-   0:	e3a00005 	mov	r0, #5
-   4:	e3a01004 	mov	r1, #4
-   8:	e0812000 	add	r2, r1, r0
-   c:	e10f3000 	mrs	r3, CPSR
-  10:	010f4000 	mrseq	r4, CPSR
-  14:	110f5000 	mrsne	r5, CPSR
-  18:	e0516000 	subs	r6, r1, r0
-  1c:	410f7000 	mrsmi	r7, CPSR
-  20:	e123f001 	msr	CPSR_xc, r1
-  24:	e10f8000 	mrs	r8, CPSR
+   0:	ea000025 	b	9c <reset>
+   4:	ea000028 	b	ac <undef>
+   8:	ea000024 	b	a0 <swi>
+   c:	ea000027 	b	b0 <pfa>
+  10:	ea000027 	b	b4 <da>
+  14:	e1a00000 	nop			; (mov r0, r0)
+  18:	ea000026 	b	b8 <irq>
+  1c:	ea000026 	b	bc <fiq>
 
-00000028 <stop>:
-  28:	eafffffe 	b	28 <stop>
+00000020 <prog>:
+  20:	e0500000 	subs	r0, r0, r0
+  24:	e3a00005 	mov	r0, #5
+  28:	e3a01004 	mov	r1, #4
+  2c:	e0812000 	add	r2, r1, r0
+  30:	e10f3000 	mrs	r3, CPSR
+  34:	010f4000 	mrseq	r4, CPSR
+  38:	110f5000 	mrsne	r5, CPSR
+  3c:	e0516000 	subs	r6, r1, r0
+  40:	410f7000 	mrsmi	r7, CPSR   ; debug
+  44:	e323f004 	msr	CPSR_xc, #4
+  48:	e10f8000 	mrs	r8, CPSR     ; debug
+  4c:	e12ff003 	msr	CPSR_fsxc, r3
+  50:	e10f9000 	mrs	r9, CPSR
+  54:	e328f007 	msr	CPSR_f, #7
+  58:	e10fa000 	mrs	sl, CPSR
+  5c:	e329f16e 	msr	CPSR_fc, #-2147483621	; 0x8000001b undef mode
+  60:	e10fb000 	mrs	fp, CPSR
+  64:	e361f0db 	msr	SPSR_c, #219	; 0xdb
+  68:	e14fc000 	mrs	ip, SPSR
+  6c:	e321f010 	msr	CPSR_c, #16   ; go into user mode
+  70:	e10f0000 	mrs	r0, CPSR      ; move CPSR to r0 
+  74:	e321f01f 	msr	CPSR_c, #31   ; try to go back to svc
+  78:	e10f2000 	mrs	r2, CPSR     ; debug cpsr = usrmode
+  7c:	e2844001 	add	r4, r4, #1   ; debug 
+  80:	ef000001 	svc	0x00000001
+  84:	e2844002 	add	r4, r4, #2   ; debug
+  88:	e10f1000 	mrs	r1, CPSR     ; debug
+  8c:	e0822000 	add	r2, r2, r0   ; debug
+  90:	e14f0000 	mrs	r0, SPSR
+  94:	e0800001 	add	r0, r0, r1
+
+00000098 <stop>:
+  98:	eafffffe 	b	98 <stop>
+
+0000009c <reset>:
+  9c:	eaffffdf 	b	20 <prog>
+
+000000a0 <swi>:
+  a0:	e0812002 	add	r2, r1, r2
+  a4:	e1a01002 	mov	r1, r2
+  a8:	e1b0f00e 	movs	pc, lr
+
+000000ac <undef>:
+  ac:	eaffffdb 	b	20 <prog>
+
+000000b0 <pfa>:
+  b0:	eaffffda 	b	20 <prog>
+
+000000b4 <da>:
+  b4:	eaffffd9 	b	20 <prog>
+
+000000b8 <irq>:
+  b8:	eaffffd8 	b	20 <prog>
+
+000000bc <fiq>:
+  bc:	eaffffd7 	b	20 <prog>
