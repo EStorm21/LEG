@@ -57,7 +57,8 @@ module controller(/// ------ From TOP ------
                     output logic         BXInstrD, TFlagNextE,
                     input  logic         TFlagE,
                     // For exceptions
-                    output logic         UndefinedInstr, SWI);
+                    output logic         UndefinedInstr, SWI, 
+                    input  logic         PrefetchAbort, DataAbort, IRQ, FIQ);
 
   logic [12:0] ControlsD;
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
