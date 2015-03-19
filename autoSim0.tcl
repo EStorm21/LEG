@@ -1,14 +1,14 @@
 #simulate and retrieve register values
 
-project open "F:/Academics/Research Clay Wolkin - ARM v4/NewGithubversions - Cassie/NewARMTest.mpf"; list
+project open "F:/Academics/Research Clay Wolkin - LEG v4/NewGithubversions - Cassie/NewLEGTest.mpf"; list
 #compile project
-#vlog C:/Users/estor_000/Documents/ARM/arm_pipelined/testbench.sv ; list
-vlog "F:/Academics/Research Clay Wolkin - ARM v4/ARM/arm_pipelined/*.sv" ; list
+#vlog C:/Users/estor_000/Documents/LEG/leg_pipelined/testbench.sv ; list
+vlog "F:/Academics/Research Clay Wolkin - LEG v4/LEG/leg_pipelined/*.sv" ; list
 
-set testPath "F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/"; list
+set testPath "F:/Academics/Research Clay Wolkin - LEG v4/LEG/tests/"; list
 
 #contains the tests to be run
-set testList "F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/tests.list"; list
+set testList "F:/Academics/Research Clay Wolkin - LEG v4/LEG/tests/tests.list"; list
 
 set fp [open $testList r]; list
 set file_data [read $fp]; list
@@ -28,18 +28,18 @@ set failed {}
 foreach {test} $tests {
 	#puts $simTest.dat
 	set simTest $testPath$test
-	file copy -force $simTest.dat "F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat"; list
+	file copy -force $simTest.dat "F:/Academics/Research Clay Wolkin - LEG v4/LEG/tests/simTest.dat"; list
 	vsim -quiet -wlf test.wlf work.testbench; list
-	add wave -position insertpoint  sim:/testbench/dut/arm/dp/rf/rf; list
+	add wave -position insertpoint  sim:/testbench/dut/leg_pipelined/dp/rf/rf; list
 		if {$test == "dhry"} {
 			run 30000000; list
-			set r [examine -time 30000000 -radix hex sim:/testbench/dut/arm/dp/rf/rf]; list
+			set r [examine -time 30000000 -radix hex sim:/testbench/dut/leg/dp/rf/rf]; list
 		} elseif {$test == "random3"} {
 			run 3000000; list
-			set r [examine -time 3000000 -radix hex sim:/testbench/dut/arm/dp/rf/rf]; list
+			set r [examine -time 3000000 -radix hex sim:/testbench/dut/leg/dp/rf/rf]; list
 		} else {
 			run 120000; list
-			set r [examine -time 120000 -radix hex sim:/testbench/dut/arm/dp/rf/rf]; list
+			set r [examine -time 120000 -radix hex sim:/testbench/dut/leg/dp/rf/rf]; list
 		}
 	
 
