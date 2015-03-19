@@ -1,4 +1,4 @@
-module arm(input  logic        clk, reset,
+module leg(input  logic        clk, reset,
            output logic [31:0] PCF,
            input  logic [31:0] InstrF, 
            output logic        MemWriteM,

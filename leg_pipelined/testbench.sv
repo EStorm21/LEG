@@ -1,6 +1,6 @@
-// arm_pipelined.v
+// leg_pipelined.v
 // David_Harris@hmc.edu 4 January 2014
-// Pipelined implementation of a subset of ARMv7
+// Pipelined implementation of a subset of LEGv7
 
 // Last updated 23 Sept 2014 2am
 
@@ -49,7 +49,7 @@
 //                  [25]: 1 (Branch)
 //                  [24]: 0 (link)
 //   Instr[23:0]  = offset (sign extend, shift left 2)
-//   Note: no Branch delay slot on ARM
+//   Note: no Branch delay slot on LEG
 //
 // Other:
 //   R15 reads as PC+8
@@ -144,7 +144,7 @@ module testbench();
     
     `ifdef PROFILE
   
-    always @(posedge dut.arm.h.PCWrPendingF)
+    always @(posedge dut.leg.h.PCWrPendingF)
     begin
       numPCWrPendingF = numPCWrPendingF + 1;
     end
@@ -156,24 +156,24 @@ module testbench();
       totalCycles = totalCycles + 1;
 
       // count PCSrcW rising edges
-      if(dut.arm.h.PCSrcW && ~OldPCSrcW) begin
+      if(dut.leg.h.PCSrcW && ~OldPCSrcW) begin
         numPCSrcW = numPCSrcW + 1;
       end
-      OldPCSrcW = dut.arm.h.PCSrcW;
+      OldPCSrcW = dut.leg.h.PCSrcW;
 
 			// count ldrStallD rising edges
-      if(dut.arm.h.ldrStallD && ~OldldrStallD) begin
+      if(dut.leg.h.ldrStallD && ~OldldrStallD) begin
         numldrStallD = numldrStallD + 1;
       end
-      OldldrStallD = dut.arm.h.ldrStallD;
+      OldldrStallD = dut.leg.h.ldrStallD;
 
       // count cycles spend on flushes
-      if(dut.arm.h.FlushE) begin
+      if(dut.leg.h.FlushE) begin
         flushECycles = flushECycles + 1;
       end
       
       // count cycles spend on flushes
-      if(dut.arm.h.FlushD) begin
+      if(dut.leg.h.FlushD) begin
         flushDCycles = flushDCycles + 1;
       end
 
@@ -195,40 +195,40 @@ module testbench();
         DStallCycles = DStallCycles + 1;
         DStallCounter = DStallCounter + 1;
 
-        if(DStallCounter > 4) begin
-          $display("***** Long DStall ***** at cycle %d", totalCycles);
-        end
+        // if(DStallCounter > 4) begin
+        //   $display("***** Long DStall ***** at cycle %d", totalCycles);
+        // end
       end
       else begin
         DStallCounter = 0;
       end
 
       // wasted cycles are when Execute is stalled or no instruction is present
-      if(dut.arm.InstrE == 0 || dut.arm.h.StallE) begin
+      if(dut.leg.InstrE == 0 || dut.leg.h.StallE) begin
         wastedCycles = wastedCycles + 1;
       end
 
       // count the number of micro ops
-      if(dut.arm.h.StallD && ~dut.arm.h.StalluOp) begin
+      if(dut.leg.h.StallD && ~dut.leg.h.StalluOp) begin
         uOpCycles = uOpCycles + 1;
       end
 
       // check to see if the instruction has changed
-			if((OldInstrE !== dut.arm.InstrE) && (dut.arm.InstrE !== 32'b0)) begin
+			if((OldInstrE !== dut.leg.InstrE) && (dut.leg.InstrE !== 32'b0)) begin
         totalInstr = totalInstr + 1;
         
         // collect branch stats
-        if(dut.arm.c.BranchE) begin
+        if(dut.leg.c.BranchE) begin
           branches = branches + 1;
         end
-        if(dut.arm.c.BranchTakenE) begin
+        if(dut.leg.c.BranchTakenE) begin
           branchesTaken = branchesTaken + 1;
         end
       end
-      OldInstrE = dut.arm.InstrE;
+      OldInstrE = dut.leg.InstrE;
 
 			// check if dhrystone is done running
-			if(dut.arm.dp.rf.r15 == 32'hb6eac824) begin
+			if(dut.leg.dp.rf.r15 == 32'hb6eac824) begin
 				$display("Finished");
 				D = 100.0;
 				simTime = $time;
