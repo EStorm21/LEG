@@ -10,14 +10,14 @@ module dmem
 
   // ------------------ Actual Memory ----------------------
   initial
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
+      //$readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
+       $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
+      // $readmemh("F:/Academics/Research Clay Wolkin - LEG v4/LEG/tests/simTest.dat",RAM); //teqrs
       // $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
-      $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat",RAM); //teqrs
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/1000_test/test_1000_7.dat",RAM);
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
-       // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/ARM/tests/simTest.dat",RAM); //teqrs
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/mmu/sectionTest.dat",RAM);
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/mmu/python/pagetable.dat",RAM);
+      // $readmemh("F:/Academics/Research Clay Wolkin - LEG v4/LEG/tests/simTest.dat",RAM); //teqrs
+       // $readmemh("F:/Academics/Research Clay Wolkin - LEG v4/LEG/tests/simTest.dat",RAM); //teqrs
+      // $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/mmu/sectionTest.dat",RAM);
+      // $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/mmu/python/pagetable.dat",RAM);
       // $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/mmu/python/pagetable.dat",RAM);
       // $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/mmu/sectionTest.dat",RAM);
       // $readmemh("/home/zakinator/LEG/simTest.dat",RAM);

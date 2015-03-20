@@ -25,7 +25,7 @@ module top(input  logic        clk, reset,
   logic IRQ, FIQ; // TODO: change to external input pins
 
   // instantiate processor and memories
-  arm arm(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
+  leg leg(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
           // Added for memory (DStall, MemtoRegM)
           WriteDataM, ReadDataM, DStall, IStall, MemtoRegM, ByteMaskM,
           // Added for exceptions
@@ -82,7 +82,7 @@ module top(input  logic        clk, reset,
   assign CPSR4 = 1'b1;
   assign FullTBase = 32'h0030_0000; // Translation Base at 0x0010_0000
   assign TBase = FullTBase[31:14];
-  assign Cont  = 7'b000_0000;     // Enable the MMU
+  assign Cont  = 7'b000_0000;     // Enable the MMU with Cont[0]
   assign MMUExtInt = 1'b0;        // No External Interrupt
 
   // Create memory with a 2 cycle delay and 4 word block size (Parameterized block size not functional)

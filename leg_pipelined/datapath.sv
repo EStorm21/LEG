@@ -43,7 +43,7 @@ module datapath(/// ------ From TOP (Memory) ------
 
                 /// ------ From Hazard ------
                   input  logic [1:0]  ForwardAE, ForwardBE,
-                  input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, // Added StallE, StallM, FlushW for memory
+                  input  logic        StallF, StallD, FlushD, FlushE, StallE, StallM, FlushW, StallW, // Added StallE, StallM, FlushW for memory
                   input  logic [1:0]  PCInSelect, // for exception handling
 
                 /// ------ To Hazard ------
@@ -88,8 +88,8 @@ module datapath(/// ------ From TOP (Memory) ------
   mux3 #(32)  exceptionPC(PCPlus8D, PCPlus4D, PCPlus0D, PCInSelect, PC_in);
   exception_pchandling exc_pc(MoveR14PC_D);
 
-  mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, Instr_1D);
-  mux2 #(32)  instrDmux2(Instr_1D, MoveR14PC_D, 1'b0, InstrD);
+  mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
+  // mux2 #(32)  instrDmux2(Instr_1D, MoveR14PC_D, 1'b0, InstrD);
   
   regfile     rf(clk, reset, RegWriteW, RA1D, RA2D,
                  WA3W, ResultW, PC_in, 
@@ -105,9 +105,9 @@ module datapath(/// ------ From TOP (Memory) ------
   // ============================== Execute Stage =======================================
   // ====================================================================================
   // Added enable to StallE, StallM, and Added FlushW. (Added for memory)
-  flopenr #(32) rd1reg(clk, reset, ~StallE, Rd1D, Rd1E);
-  flopenr #(32) rd2reg(clk, reset, ~StallE, Rd2D, Rd2E);
-  flopenr #(32) immreg(clk, reset, ~StallE, RotImmD, ExtImmE); // Modified by Ivan
+  flopenrc #(32) rd1reg(clk, reset, ~StallE, FlushE, Rd1D, Rd1E);
+  flopenrc #(32) rd2reg(clk, reset, ~StallE, FlushE, Rd2D, Rd2E);
+  flopenrc #(32) immreg(clk, reset, ~StallE, FlushE, RotImmD, ExtImmE); // Modified by Ivan
 
   mux3 #(32)  byp1mux(Rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(Rd2E, ResultW, ALUOutM, ForwardBE, WriteDataE);

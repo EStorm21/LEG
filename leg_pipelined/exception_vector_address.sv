@@ -15,7 +15,7 @@ VectorAddressW[5] = IRQ
 VectorAddressW[6] = FIQ
 */
 
-// Find these HARD VECTORS on section 2-6 of the ARM v4 Architecture Reference Manual DDI 0100B
+// Find these HARD VECTORS on section 2-6 of the LEG v4 Architecture Reference Manual DDI 0100B
 	always_comb begin
 		if(VectorAddressW[0]) VectorPCnextF = 32'h0; 
 		else if (VectorAddressW[1]) VectorPCnextF = 32'h4;

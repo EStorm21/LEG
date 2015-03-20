@@ -1,4 +1,4 @@
-module arm(input  logic        clk, reset,
+module leg(input  logic        clk, reset,
            output logic [31:0] PCF,
            input  logic [31:0] InstrF, 
            output logic        MemWriteM,
@@ -14,6 +14,7 @@ module arm(input  logic        clk, reset,
   /// Output from Hazard Unit
   logic [1:0]  ForwardAE, ForwardBE;
   logic        StallF, StallD, FlushD, StallE, FlushE, StallM, FlushW, StallW, StalluOp;
+  logic        ExceptionSavePC;
 
   /// Output from Datapath
   logic [3:0]  ALUFlagsE, MultFlagsE;
@@ -54,7 +55,7 @@ module arm(input  logic        clk, reset,
   logic        BXInstrD, BXInstrE, TFlagNextE, TFlagE, IncrementE;
 
   // Exceptions
-  logic       UndefinedInstr, SWI;
+  logic       UndefinedInstr, SWI, SWI_E, SWI_D, SWI_M, SWI_W;
   logic [1:0] PCInSelect;
 
   

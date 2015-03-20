@@ -1,6 +1,6 @@
-// arm_cache.v
+// leg_cache.v
 // mwaugaman@hmc.edu 22 September 2014
-// Data and Instruction Cache for ARM v4
+// Data and Instruction Cache for LEG v4
 
 //--------------------CACHE-----------------------------
 module instr_cache #(parameter blocksize = 4, parameter lines = 2)
