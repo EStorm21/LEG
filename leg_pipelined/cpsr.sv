@@ -54,7 +54,7 @@ module cpsr(input  logic        clk, reset,
     begin
       // ========== Exceptions ===========
       if (reset) begin
-        CPSR_update = {1'b1, 1'b1, 6'b01_0011}; // Supervisor Mode
+        CPSR_update = {1'b1, 1'b1, 6'b01_0011}; // Supervisor Mode (Fast Interrupt disabled - why?)
         PCVectorAddressE = 7'b000_0001;
       end
       else if (DataAbort & ~(cpsr[4:0]==5'b10111)) begin // data abort 
