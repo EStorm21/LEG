@@ -38,7 +38,6 @@ prog:
 	add r4, r4, #2
 	mrs r1, CPSR
 	add r2, r2, r0
-	mrs r0, SPSR
 	add r0, r0, r1
 	
 
