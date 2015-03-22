@@ -1,6 +1,6 @@
 module data_writeback_associative_cache_way #(parameter lines = 65536, parameter tagbits = 14, 
                            parameter blocksize = 4)
-                    (input logic clk, reset, WE, DirtyIn,
+                    (input logic clk, reset, WE, DirtyIn, vin,
                      input logic [31:0] WD, 
                      input logic [31:0] A, // TODO: Make a capitalized
                      input logic [3:0]  ByteMask,
@@ -44,7 +44,7 @@ module data_writeback_associative_cache_way #(parameter lines = 65536, parameter
       DirtyBits <= 'b0;
     end else if (WE) begin
       tag[set]      <= A[31:31-tagbits+1]; // Write the tag
-      v[set]        <= 1'b1;               // write the valid bit
+      v[set]        <= vin;               // write the valid bit
       
       // Clean the block if writing an entire block
       DirtyBits[set]<= DirtyIn ? 1'b1 : 1'b0;            

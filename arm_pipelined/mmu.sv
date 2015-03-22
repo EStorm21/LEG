@@ -7,7 +7,7 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
            output logic [31:0] HAddr, FAR,
            output logic [7:0] FSR,
            output logic HRequest, HWrite, CPUHReady, Fault);
-// TODO: Assertions
+  // TODO: Assertions
   // Note that the faults are listed in priority order.
   typedef enum logic [3:0] {TERMFAULT = 4'b0010, 
                             VECTORFAULT = 4'b0000, 

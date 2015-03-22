@@ -31,9 +31,16 @@ module top(input  logic        clk, reset,
           // Added for exceptions
           PrefetchAbort, DataAbort, IRQ, FIQ); 
 
+  // False signal for the Caches
+  // TODO: Hook these up to the coprocessor
+  logic IEN; // Instruction cache enable
+  logic DEN; // Data cache enable
+  assign IEN = 1'b1;
+  assign DEN = 1'b1;
+
   // instruction cache with a block size of 4 words and 16 lines
   instr_cache #(4, 128) 
-    instr_cache(.clk(clk), .reset(reset), .BusReady(BusReadyF),
+    instr_cache(.clk(clk), .reset(reset), .enable(IEN), .BusReady(BusReadyF),
                 .A(PCF), .HRData(HRData), .RD(InstrF), 
                 .IStall(IStall), .HAddrF(HAddrF), .HRequestF(HRequestF) );
 
@@ -44,10 +51,12 @@ module top(input  logic        clk, reset,
   //                       .rd(ReadDataM), .Stall(DStall), .MemRE(MemRE), .HWriteM(HWriteM));
 
   data_writeback_associative_cache #(4, 128)
-    data_cache(.clk(clk), .reset(reset), .MemWriteM(MemWriteM), .MemtoRegM(MemtoRegM), 
-               .BusReady(BusReadyM), .IStall(IStall), .A(DataAdrM), .WD(WriteDataM),
-               .HRData(HRData), .ByteMask(ByteMaskM), .HWData(HWData), .RD(ReadDataM), .HAddr(HAddrM),
-               .Stall(DStall), .HRequestM(HRequestM), .HWriteM(HWriteM));
+    data_cache(.clk(clk), .reset(reset), .enable(DEN), .MemWriteM(MemWriteM), 
+               .MemtoRegM(MemtoRegM), .BusReady(BusReadyM), .IStall(IStall), 
+               .A(DataAdrM), .WD(WriteDataM), .HRData(HRData), 
+               .ByteMask(ByteMaskM), .HWData(HWData), .RD(ReadDataM), 
+               .HAddr(HAddrM), .Stall(DStall), .HRequestM(HRequestM), 
+               .HWriteM(HWriteM));
 
   // Create ahb arbiter
   ahb_arbiter ahb_arb(.HWriteM(HWriteM), .IStall(IStall), .DStall(DStall), .HReady(CPUHReady),
@@ -63,7 +72,7 @@ module top(input  logic        clk, reset,
   mmu mmuInst(.*);
 
   // False Signals for the mmu
-  // TODO: Hook these wires up to the 
+  // TODO: Hook these wires up to the coprocessor
   logic MMUExtInt;
   logic [31:0] Dom;
   logic [6:0] TLBCont, Cont;

@@ -7,7 +7,8 @@
 //------------------------------------------------------
 //------------------------------------------------------
 module data_writeback_associative_cache #(parameter blocksize = 4, parameter lines = 2)
-                  (input  logic clk, reset, MemWriteM, MemtoRegM, BusReady, IStall,
+                  (input  logic clk, reset, enable, MemWriteM, MemtoRegM, 
+                                BusReady, IStall,
                    input  logic [31:0] A, WD,
                    input  logic [31:0] HRData,
                    input  logic [3:0]  ByteMask, 
@@ -25,7 +26,8 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     // W1WE: way 1 write enable, W1WE = W1EN & CWE
     // ActiveByteMask: mask currently used on the cache
     // CWE:  Cache Write Enable
-    logic W1V, W2V, W1EN, W2EN, W1WE, W2WE, ResetCounter, CWE;
+    // vin:  Valid bit in
+    logic W1V, W2V, W1EN, W2EN, W1WE, W2WE, ResetCounter, CWE, vin;
     logic [tagbits-1:0] W1Tag, W2Tag, CachedTag;
 
     // TODO: Remove blockout wires (they are moved to the cache memory)
@@ -54,17 +56,15 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     mux2 #(32) CacheWDMux(HRData, WD, UseWD, CacheWD);
 
     // Create New Address using the counter as the word offset
-    // TODO: Make this structural
-    // Move to controller
-    // assign ANew = ResetCounter ? A : {A[31:4], Counter, A[1:0]};
     logic [blockbits-1:0] NewWordOffset;
     assign ANew = {A[31:4], NewWordOffset, A[1:0]};
 
-
-    // Create Cache memory. This module contains both way memories and LRU table
+    // Create Cache memory. 
+    // This module contains both way memories and LRU table
     logic CurrLRU;   
     logic DirtyIn;
     assign DirtyIn = MemWriteM;
+    assign vin = enable;
     data_writeback_associative_cache_memory #(lines, tagbits, blocksize) dcmem(.*);
 
     // Cache Controller
