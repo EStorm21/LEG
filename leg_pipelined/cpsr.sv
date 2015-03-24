@@ -57,27 +57,27 @@ module cpsr(input  logic        clk, reset,
         CPSR_update = {1'b1, 1'b1, 6'b01_0011}; // Supervisor Mode (Fast Interrupt disabled - why?)
         PCVectorAddressE = 7'b000_0001;
       end
-      else if (DataAbort & ~(cpsr[4:0]==5'b10111)) begin // data abort 
+      else if (DataAbort) begin // data abort 
         CPSR_update = {1'b1, cpsr[6], 6'b01_0111}; // Data Abort Mode
         PCVectorAddressE = 7'b001_0000;
       end
-      else if (FastInterrupt & ~(cpsr[4:0]==5'b10001)) begin // FIQ
+      else if (FastInterrupt) begin // FIQ
         CPSR_update = {1'b1, cpsr[6], 6'b01_0001}; // output fast interrupt (FIQ) mode
         PCVectorAddressE = 7'b100_0000;
       end
-      else if (Interrupt & ~(cpsr[4:0]==5'b10010))begin // IRQ
+      else if (Interrupt)begin // IRQ
         CPSR_update = {1'b1, cpsr[6], 6'b01_0010}; // IRQ mode
         PCVectorAddressE = 7'b010_0000;
       end
-      else if (PrefetchAbort & ~(cpsr[4:0]==5'b10111)) begin // prefetch abort
+      else if (PrefetchAbort) begin // prefetch abort
         CPSR_update = {1'b1, cpsr[6], 6'b01_0111}; // Prefetch Abort Mode
         PCVectorAddressE = 7'b000_1000;
       end
-      else if (Undefined & ~(cpsr[4:0]==5'b11011)) begin // undef
+      else if (Undefined) begin // undef
         CPSR_update = {1'b1, cpsr[6], 6'b01_1011}; // Undefined Mode
         PCVectorAddressE = 7'b000_0010;
       end
-      else if (SoftwareInterrupt & ~(cpsr[4:0]==5'b10011)) begin // Software interrupt
+      else if (SoftwareInterrupt) begin // Software interrupt
         CPSR_update = {1'b1, cpsr[6], 6'b01_0011}; // Supervisor Mode
         PCVectorAddressE = 7'b000_0100;
       end

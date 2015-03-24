@@ -63,7 +63,7 @@ module hazard(input  logic       clk, reset,
   assign StallW = DStall | IStall;
   assign StallM = DStall | IStall;
   assign FlushE = ldrStallD | BranchTakenE; 
-  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall;
+  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | (SWI_M | SWI_W);
 
   assign ExceptionSavePC = SWI_E; 
 

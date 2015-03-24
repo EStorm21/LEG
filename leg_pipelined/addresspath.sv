@@ -7,6 +7,7 @@ module addresspath( /// ------ From TOP ------
                     input  logic [1:0]  RegSrcD,
                     input  logic [11:0] CPSR12_W, 
                     input  logic [6:0]  PCVectorAddressW, 
+                    input  logic        SWI_E, 
 
           					/// To Controller 
 
@@ -42,7 +43,7 @@ module addresspath( /// ------ From TOP ------
   mux3 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], InstrD[11:8], {MultSelectD, RegSrcD[1]}, RA2_4b_D);
   mux2 #(4)   destregmux(InstrD[15:12], InstrD[19:16], MultSelectD, DestRegD);
 
-  addressdecode address_decoder(RA1_4b_D, RA2_4b_D, DestRegD, RegFileRzD[2:0], CPSR12_W, RA1D, RA2D, WA3D);
+  addressdecode address_decoder(RA1_4b_D, RA2_4b_D, DestRegD, RegFileRzD[2:0], CPSR12_W, SWI_E, RA1D, RA2D, WA3D);
 
   // ====================================================================================
   // ================================ Execute Stage =====================================

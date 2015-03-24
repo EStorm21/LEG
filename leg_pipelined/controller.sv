@@ -154,7 +154,7 @@ module controller(/// ------ From TOP ------
 
     end else if (ALUOpD) begin                     // which Data-processing Instr?
       ALUControlD = InstrD[24:21];  // Always passes Instruction codes to ALUControlD
-      FlagWriteD[1:0]   = {InstrD[20], InstrD[20]};       // update flags if S bit is set
+      FlagWriteD[1:0]   = {2{InstrD[20] & ~DataRestoreCPSR_D}};       // update flags if S bit is set
     end else begin                    
       ALUControlD     = 4'b0100;      // perform addition for non-dataprocessing instr (branch...)
       FlagWriteD[1:0] = 2'b00;        // don't update Flags
