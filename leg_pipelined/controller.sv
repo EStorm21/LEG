@@ -52,6 +52,7 @@ module controller(/// ------ From TOP ------
 
                   /// ------ To   Hazard ------
                     output logic         RegWriteM, MemtoRegE, PCWrPendingF, SWI_E, SWI_D, SWI_M, SWI_W,
+                    output logic         UndefD, UndefE, UndefM, UndefW,
 
                   /// For BX instruction
                     output logic         BXInstrD, TFlagNextE,
@@ -85,7 +86,6 @@ module controller(/// ------ From TOP ------
   logic [1:0]  ByteOffsetE, ByteOffsetM;
   logic [1:0]  STR_cycleD;
   logic        doNotUpdateFlagD, LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD;
-  logic        undefM, undefW, undefD, undefE;
   logic        RegWriteControlE;
   logic [3:0]  FlagsM;
   logic [6:0]  PCVectorAddressE, PCVectorAddressM;

@@ -56,6 +56,7 @@ module leg(input  logic        clk, reset,
 
   // Exceptions
   logic       UndefinedInstr, SWI, SWI_E, SWI_D, SWI_M, SWI_W;
+  logic       UndefD, UndefE, UndefM, UndefW;
   logic [1:0] PCInSelect;
 
   
