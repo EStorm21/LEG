@@ -6,12 +6,12 @@ module coprocessor_registers (input logic         clk, reset,
 															output logic        StallCP,
 															output logic [31:0] rd, control);
 
-logic [31:0] rf[15:0];
+logic [31:0] rf[14:0];
 logic [31:0] wd;
 integer i, j;
 
 assign we = CPUWriteEn | MMUWriteEn;
-mux2(32) wdmux(CPUWriteData, MMUWriteData, MMUWriteEn, wd);
+mux2 #(32) wdmux(CPUWriteData, MMUWriteData, MMUWriteEn, wd);
 
 always_ff @(negedge clk) begin
   if (reset)
