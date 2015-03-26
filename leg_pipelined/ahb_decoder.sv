@@ -1,7 +1,10 @@
 module ahb_decoder(input  logic [31:0] HADDR,
-                   output logic HSEL);
+                   output logic [2:0]  HSEL);
                    
-  assign HSEL = 1'b1;
+  //assign HSEL = 1'b1;
+  assign HSEL[0] = (HADDR[31:25] != 7'b0001010) && (HADDR[31:25] != 7'b1100101);
+  assign HSEL[1] = (HADDR[31:25] == 7'b0001010);
+  assign HSEL[2] = (HADDR[31:25] == 7'b1100101);
   // Decode based on most significant bits of the address
   // assign HSEL[0] = (HADDR[31:16] == 0x0000); // 64KB ROM  at 0x00000000 - 0x0000FFFF
   // assign HSEL[1] = (HADDR[31:17] == 0x0001); // 128KB RAM at 0x00020000 - 0x003FFFFF
