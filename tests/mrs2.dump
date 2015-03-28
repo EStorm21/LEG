@@ -1,0 +1,50 @@
+
+mrs2.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <start>:
+   0:	ea00000d 	b	3c <reset>
+   4:	ea000010 	b	4c <undef>
+   8:	ea00000c 	b	40 <swi>
+   c:	ea00000f 	b	50 <pfa>
+  10:	ea00000f 	b	54 <da>
+  14:	e1a00000 	nop			; (mov r0, r0)
+  18:	ea00000f 	b	5c <irq>
+  1c:	ea00000f 	b	60 <fiq>
+
+00000020 <prog>:
+  20:	e0500000 	subs	r0, r0, r0
+  24:	e3a00005 	mov	r0, #5
+  28:	e3a01004 	mov	r1, #4
+  2c:	e10fd000 	mrs	sp, CPSR
+  30:	e321f017 	msr	CPSR_c, #23
+  34:	e10fd000 	mrs	sp, CPSR
+
+00000038 <stop>:
+  38:	eafffffe 	b	38 <stop>
+
+0000003c <reset>:
+  3c:	eafffff7 	b	20 <prog>
+
+00000040 <swi>:
+  40:	e0812002 	add	r2, r1, r2
+  44:	e1a01002 	mov	r1, r2
+  48:	e1b0f00e 	movs	pc, lr
+
+0000004c <undef>:
+  4c:	eafffff3 	b	20 <prog>
+
+00000050 <pfa>:
+  50:	eafffff2 	b	20 <prog>
+
+00000054 <da>:
+  54:	e10fd000 	mrs	sp, CPSR
+  58:	eafffff0 	b	20 <prog>
+
+0000005c <irq>:
+  5c:	eaffffef 	b	20 <prog>
+
+00000060 <fiq>:
+  60:	eaffffee 	b	20 <prog>
