@@ -1,7 +1,7 @@
 module addressdecode(input  logic [3:0]  RA1_4b_D, RA2_4b_D, DestRegD,
                     input  logic [2:0]  RegFileRzD,			  
                     input  logic [7:0] StatusRegisterInput,
-                    input  logic        SWI_E,
+                    input  logic        SWI_E, undefE,
                     output logic [31:0] RA1D, RA2D, WA3D);
  /***** Brief Description *******
  *
@@ -18,6 +18,8 @@ module addressdecode(input  logic [3:0]  RA1_4b_D, RA2_4b_D, DestRegD,
 always_comb begin
   if (SWI_E)
     StatusRegisterFinal = 5'b10011;
+  else if(undefE)
+    StatusRegisterFinal = 5'b11011;
   else
     StatusRegisterFinal = StatusRegisterInput[4:0];
 end
