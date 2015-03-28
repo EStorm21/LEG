@@ -1,5 +1,5 @@
 module longmult_addressdecode(input  logic [3:0]  RdLow_4b,
-                    input  logic [11:0] StatusRegisterE,
+                    input  logic [7:0] StatusRegisterE,
                     output logic [31:0] RdLoE_32b
           			);
 

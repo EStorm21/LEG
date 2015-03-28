@@ -5,7 +5,7 @@ module controller(/// ------ From TOP ------
                     output logic         MemtoRegM,
 
                   /// ------ To   Addresspath ------
-                    output logic [11:0]  CPSR12_W,
+                    output logic [7:0]  CPSR8_W,
                     output logic [6:0]   PCVectorAddressW,
                     output logic         Reg_usr_D,
 
@@ -277,7 +277,7 @@ module controller(/// ------ From TOP ------
                                                    {FlagsNextW, SetNextFlagsW, PSRtypeW, MSRmaskW});
   cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefW, SWI_W, 4'b0}, restoreCPSR_W, ~StallW, CPSRW, SPSRW, PCVectorAddressW); // TO CHANGE
   // Hazard Prediction
-  assign CPSR12_W = {CPSRW[31:28], CPSRW[7:0]};
+  assign CPSR8_W = {CPSRW[7:0]};
 
   assign PCWrPendingF = PCSrcD | PCSrcE | PCSrcM;
   assign PSR_W = PSRtypeW ? SPSRW : CPSRW;

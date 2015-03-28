@@ -1,6 +1,6 @@
 module addressdecode(input  logic [3:0]  RA1_4b_D, RA2_4b_D, DestRegD,
                     input  logic [2:0]  RegFileRzD,			  
-                    input  logic [11:0] StatusRegisterInput,
+                    input  logic [7:0] StatusRegisterInput,
                     input  logic        SWI_E,
                     output logic [31:0] RA1D, RA2D, WA3D);
  /***** Brief Description *******

@@ -44,8 +44,8 @@
 #tst_rs
 #ldr_str_ri
 #memrewrite
-#rand0
-#random1
+rand0
+random1
 #mul
 #mla
 #smull
@@ -62,4 +62,5 @@ random2
 #dhry
 #random3
 mrs
+mrs2
 #mrc
