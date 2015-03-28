@@ -55,7 +55,8 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
     instr_cache_controller #(tagbits) icc(.*);
 
     // Select from the ways
-    mux2 #(32) CacheOutMux(W2RD, W1RD, W1Hit, CacheOut);
+    logic WaySel;
+    mux2 #(32) CacheOutMux(W2RD, W1RD, WaySel, CacheOut);
 
     // Select from cache or memory
     mux2 #(32) RDMux(CacheOut, HRData, RDSel, RD);

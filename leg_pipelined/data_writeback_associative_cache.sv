@@ -46,7 +46,7 @@ module data_writeback_associative_cache
     // W2D:        Way 2 dirty bit
     // RDSel:      Select output from bus or from cache
     // Hit:        Hit in the cache
-    logic BlockWE, W1D, W2D, Hit, W1Hit;
+    logic BlockWE, W1D, W2D, Hit, WaySel;
     logic [setbits-1:0] set;   // Set bits
     // Counter for sequential buss access
     logic [1:0] Counter, WordOffset, CacheRDSel, RDSel;   
@@ -75,7 +75,8 @@ module data_writeback_associative_cache
     data_writeback_associative_cache_controller #(blocksize, tagbits) dcc(.*);
 
     // HWData Mux
-    mux2 #(32) HWDataMux(W2RD, W1RD, W1EN, HWData);
+    // mux2 #(32) HWDataMux(W2RD, W1RD, W1EN, HWData);
+    assign HWData = RD;
 
     // HAddr Mux's
     logic UseCacheA;
@@ -83,7 +84,7 @@ module data_writeback_associative_cache
     mux2 #(32) HAddrMux(ANew, CachedAddr, UseCacheA, HAddr);
 
     // Select from the ways
-    mux2 #(32) CacheOutMux(W2RD, W1RD, W1Hit, CacheOut);
+    mux2 #(32) CacheOutMux(W2RD, W1RD, WaySel, CacheOut);
 
     // Select from cache or memory
     mux3 #(32) RDMux(CacheOut, HRData, WD, RDSel, RD);
