@@ -4,7 +4,7 @@
 
 //--------------------CACHE-----------------------------
 module instr_cache #(parameter blocksize = 4, parameter lines = 2)
-                  (input  logic clk, reset, enable, BusReady,
+                  (input  logic clk, reset, enable, BusReady, invalidate,
                    input  logic [31:0] A, 
                    input  logic [31:0] HRData,
                    output logic [31:0] RD, HAddrF,

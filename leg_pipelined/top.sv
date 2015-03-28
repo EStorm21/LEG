@@ -33,15 +33,18 @@ module top(input  logic        clk, reset,
 
   // False signal for the Caches
   // TODO: Hook these up to the coprocessor
-  logic IEN; // Instruction cache enable
-  logic DEN; // Data cache enable
-  assign IEN = 1'b0;
-  assign DEN = 1'b0;
+  logic IEN, INV; // Instruction cache enable and invalidate
+  logic DEN, DNV, DCLEAN; // Data cache enable and invalidate
+  assign INV = 1'b0;
+  assign DNV = 1'b0;
+  assign IEN = 1'b1;
+  assign DEN = 1'b1;
+  assign DCLEAN = 1'b0;
 
   // instruction cache with a block size of 4 words and 16 lines
   instr_cache #(4, 128) 
-    instr_cache(.clk(clk), .reset(reset), .enable(IEN), .BusReady(BusReadyF),
-                .A(PCF), .HRData(HRData), .RD(InstrF), 
+    instr_cache(.clk(clk), .reset(reset), .enable(IEN), .invalidate(INV),
+      .BusReady(BusReadyF), .A(PCF), .HRData(HRData), .RD(InstrF), 
                 .IStall(IStall), .HAddrF(HAddrF), .HRequestF(HRequestF) );
 
   // Read straight from the memory, then write to the cache
@@ -51,12 +54,13 @@ module top(input  logic        clk, reset,
   //                       .rd(ReadDataM), .Stall(DStall), .MemRE(MemRE), .HWriteM(HWriteM));
 
   data_writeback_associative_cache #(4, 128)
-    data_cache(.clk(clk), .reset(reset), .enable(DEN), .MemWriteM(MemWriteM), 
-               .MemtoRegM(MemtoRegM), .BusReady(BusReadyM), .IStall(IStall), 
-               .A(DataAdrM), .WD(WriteDataM), .HRData(HRData), 
-               .ByteMask(ByteMaskM), .HWData(HWData), .RD(ReadDataM), 
-               .HAddr(HAddrM), .Stall(DStall), .HRequestM(HRequestM), 
-               .HWriteM(HWriteM));
+    data_cache(.clk(clk), .reset(reset), .enable(DEN), .invalidate(DNV),
+      .clean(DCLEAN),
+      .MemWriteM(MemWriteM), .MemtoRegM(MemtoRegM), .BusReady(BusReadyM), 
+      .IStall(IStall), .A(DataAdrM), .WD(WriteDataM), .HRData(HRData), 
+      .ByteMask(ByteMaskM), .HWData(HWData), .RD(ReadDataM), 
+      .HAddr(HAddrM), .Stall(DStall), .HRequestM(HRequestM), 
+      .HWriteM(HWriteM));
 
   // Create ahb arbiter
   ahb_arbiter ahb_arb(.HWriteM(HWriteM), .IStall(IStall), .DStall(DStall), .HReady(CPUHReady),
