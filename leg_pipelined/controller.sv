@@ -5,7 +5,7 @@ module controller(/// ------ From TOP ------
                     output logic         MemtoRegM,
 
                   /// ------ To   Addresspath ------
-                    output logic [11:0]  CPSR12_W,
+                    output logic [7:0]  CPSR8_W,
                     output logic [6:0]   PCVectorAddressW,
                     output logic         Reg_usr_D,
 
@@ -52,6 +52,7 @@ module controller(/// ------ From TOP ------
 
                   /// ------ To   Hazard ------
                     output logic         RegWriteM, MemtoRegE, PCWrPendingF, SWI_E, SWI_D, SWI_M, SWI_W,
+                    output logic         undefD, undefE, undefM, undefW,
 
                   /// For BX instruction
                     output logic         BXInstrD, TFlagNextE,
@@ -85,7 +86,6 @@ module controller(/// ------ From TOP ------
   logic [1:0]  ByteOffsetE, ByteOffsetM;
   logic [1:0]  STR_cycleD;
   logic        doNotUpdateFlagD, LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD;
-  logic        undefM, undefW, undefD, undefE;
   logic        RegWriteControlE;
   logic [3:0]  FlagsM;
   logic [6:0]  PCVectorAddressE, PCVectorAddressM;
@@ -154,7 +154,7 @@ module controller(/// ------ From TOP ------
 
     end else if (ALUOpD) begin                     // which Data-processing Instr?
       ALUControlD = InstrD[24:21];  // Always passes Instruction codes to ALUControlD
-      FlagWriteD[1:0]   = {InstrD[20], InstrD[20]};       // update flags if S bit is set
+      FlagWriteD[1:0]   = {2{InstrD[20] & ~DataRestoreCPSR_D}};       // update flags if S bit is set
     end else begin                    
       ALUControlD     = 4'b0100;      // perform addition for non-dataprocessing instr (branch...)
       FlagWriteD[1:0] = 2'b00;        // don't update Flags
@@ -181,8 +181,8 @@ module controller(/// ------ From TOP ------
   // ----- Exception handling -----
   assign SWI_D = InstrD[27:24] == 4'hF;
   assign undefD = InstrD[27:25] == 3'b011 & InstrD[4];
-  assign UndefinedInstr = undefD;
-  assign SWI = SWI_D | SWI_E | SWI_M | SWI_W; // TODO: Create logic to determine SWI instr
+  assign UndefinedInstr = undefD | undefE | undefM | undefW;
+  assign SWI = SWI_D | SWI_E | SWI_M | SWI_W; 
 
   // ====================================================================================
   // =============================== Execute Stage ======================================
@@ -277,7 +277,7 @@ module controller(/// ------ From TOP ------
                                                    {FlagsNextW, SetNextFlagsW, PSRtypeW, MSRmaskW});
   cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefW, SWI_W, 4'b0}, restoreCPSR_W, ~StallW, CPSRW, SPSRW, PCVectorAddressW); // TO CHANGE
   // Hazard Prediction
-  assign CPSR12_W = {CPSRW[31:28], CPSRW[7:0]};
+  assign CPSR8_W = {CPSRW[7:0]};
 
   assign PCWrPendingF = PCSrcD | PCSrcE | PCSrcM;
   assign PSR_W = PSRtypeW ? SPSRW : CPSRW;

@@ -55,15 +55,15 @@ module hazard(input  logic       clk, reset,
 
   assign ldrStallD = Match_12D_E & MemtoRegE;
   
-  assign StallD = ldrStallD | DStall | uOpStallD | IStall | MultStallD;
+  assign StallD = ldrStallD | DStall | uOpStallD | IStall | MultStallD | SWI_E;
   assign StalluOp = ldrStallD | DStall | IStall | MultStallD;
   assign StallF = ldrStallD | PCWrPendingF | DStall | IStall | uOpStallD | MultStallD | (SWI_D | SWI_E | SWI_M);
   assign StallE = DStall | IStall;
   assign FlushW = DStall | IStall;
   assign StallW = DStall | IStall;
   assign StallM = DStall | IStall;
-  assign FlushE = ldrStallD | BranchTakenE; 
-  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall;
+  assign FlushE = ldrStallD | BranchTakenE | SWI_M; 
+  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | (SWI_E | SWI_M | SWI_W);
 
   assign ExceptionSavePC = SWI_E; 
 
@@ -74,7 +74,7 @@ module hazard(input  logic       clk, reset,
     else if (IRQ) PCInSelect = 2'b00;
     else if (FIQ) PCInSelect = 2'b00;
     else if (UndefinedInstr) PCInSelect = 2'b01;
-    else if (SWI) PCInSelect = 2'b01;
+    else if (SWI) PCInSelect = 2'b10; // PC+0 Because we are sending every 'mov r14_exc r15' one cycle late through the pipeline
     else PCInSelect = 2'b00;
   end
   

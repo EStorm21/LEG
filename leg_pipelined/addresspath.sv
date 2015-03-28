@@ -5,8 +5,9 @@ module addresspath( /// ------ From TOP ------
                     input  logic        WriteMultLoE, MultSelectD, 
                     input  logic [3:0]  RegFileRzD,
                     input  logic [1:0]  RegSrcD,
-                    input  logic [11:0] CPSR12_W, 
+                    input  logic [7:0]  CPSR8_W, 
                     input  logic [6:0]  PCVectorAddressW, 
+                    input  logic        SWI_E, 
 
           					/// To Controller 
 
@@ -42,7 +43,7 @@ module addresspath( /// ------ From TOP ------
   mux3 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], InstrD[11:8], {MultSelectD, RegSrcD[1]}, RA2_4b_D);
   mux2 #(4)   destregmux(InstrD[15:12], InstrD[19:16], MultSelectD, DestRegD);
 
-  addressdecode address_decoder(RA1_4b_D, RA2_4b_D, DestRegD, RegFileRzD[2:0], CPSR12_W, RA1D, RA2D, WA3D);
+  addressdecode address_decoder(RA1_4b_D, RA2_4b_D, DestRegD, RegFileRzD[2:0], CPSR8_W, SWI_E, RA1D, RA2D, WA3D);
 
   // ====================================================================================
   // ================================ Execute Stage =====================================
@@ -52,7 +53,7 @@ module addresspath( /// ------ From TOP ------
   flopenr #(32)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
   flopenr #(32)  ra2reg(clk, reset, ~StallE, RA2D, RA2E); 
   
-  longmult_addressdecode multAddr(InstrE[15:12], CPSR12_W, RdLoE);
+  longmult_addressdecode multAddr(InstrE[15:12], CPSR8_W, RdLoE);
   
   // Long Multiply RdLo register
   assign WA3E = WriteMultLoE ? RdLoE: WA3E_1;

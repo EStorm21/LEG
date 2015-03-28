@@ -27,9 +27,9 @@ module regfile(input  logic        clk, reset,
     if (reset)
       rf <= '{32{32'b0}};
     else begin
-      for (j = 0; j < 32; j = j+1) begin
-        if(we3 & wa3[j]) rf[j] <= wd3;	
-      end
+      for (j = 0; j < 32; j = j+1)
+        if(we3 & wa3[15]) rf[15] <= 32'b0;
+        else if(we3 & wa3[j]) rf[j] <= wd3;	
     end
   end
   

@@ -66,7 +66,7 @@ module top(input  logic        clk, reset,
 
   // Create an ahb memory
   ahb_lite ahb(.HCLK(clk), .HRESETn(reset), .HADDR(HAddr), .HWRITE(HWrite), .HREQUEST(HRequest),
-               .HWDATA(HWData), .HRDATA(HRData), .HREADY(HReady));
+               .HWDATA(HWData), .HRDATA(HRData), .HREADY(HReady), .irq(IRQ), .fiq(FIQ));
 
   // Create the mmu
   mmu mmuInst(.*);
