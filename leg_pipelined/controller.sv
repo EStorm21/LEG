@@ -52,7 +52,7 @@ module controller(/// ------ From TOP ------
 
                   /// ------ To   Hazard ------
                     output logic         RegWriteM, MemtoRegE, PCWrPendingF, SWI_E, SWI_D, SWI_M, SWI_W,
-                    output logic         UndefD, UndefE, UndefM, UndefW,
+                    output logic         undefD, undefE, undefM, undefW,
 
                   /// For BX instruction
                     output logic         BXInstrD, TFlagNextE,
@@ -181,8 +181,8 @@ module controller(/// ------ From TOP ------
   // ----- Exception handling -----
   assign SWI_D = InstrD[27:24] == 4'hF;
   assign undefD = InstrD[27:25] == 3'b011 & InstrD[4];
-  assign UndefinedInstr = undefD;
-  assign SWI = SWI_D | SWI_E | SWI_M | SWI_W; // TODO: Create logic to determine SWI instr
+  assign UndefinedInstr = undefD | undefE | undefM | undefW;
+  assign SWI = SWI_D | SWI_E | SWI_M | SWI_W; 
 
   // ====================================================================================
   // =============================== Execute Stage ======================================
