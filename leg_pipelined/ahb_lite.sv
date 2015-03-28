@@ -9,7 +9,7 @@ module ahb_lite(input  logic        HCLK,
               
   // TODO: Make memRE functional
   logic HSEL;
-  logic [31:0] HRDATA0; // NOTE: This assumes memory outputs 4 words at a time
+  logic [31:0] HRDATA0; 
   
   // Memory map decoding
   ahb_decoder dec(HADDR, HSEL);

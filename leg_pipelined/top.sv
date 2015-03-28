@@ -36,7 +36,7 @@ module top(input  logic        clk, reset,
   logic IEN; // Instruction cache enable
   logic DEN; // Data cache enable
   assign IEN = 1'b1;
-  assign DEN = 1'b1;
+  assign DEN = 1'b0;
 
   // instruction cache with a block size of 4 words and 16 lines
   instr_cache #(4, 128) 

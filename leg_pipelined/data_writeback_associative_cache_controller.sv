@@ -5,9 +5,9 @@ module data_writeback_associative_cache_controller
    input  logic [1:0] WordOffset,
    input  logic [3:0] ByteMask,
    input  logic [tagbits-1:0] W1Tag, W2Tag, Tag, CachedTag,
-   output logic RDSel, CWE, Stall, HWriteM, HRequestM, BlockWE, ResetCounter,
-   output logic W1WE, W2WE, W1EN, UseWD, W1Hit,
-   output logic [1:0] Counter, CacheRDSel,
+   output logic CWE, Stall, HWriteM, HRequestM, BlockWE, ResetCounter,
+   output logic W1WE, W2WE, W1EN, UseWD, UseCacheA, W1Hit, DirtyIn,
+   output logic [1:0] Counter, CacheRDSel, RDSel,
    output logic [3:0] ActiveByteMask,
    output logic [$clog2(blocksize)-1:0] NewWordOffset);
 
@@ -28,14 +28,20 @@ module data_writeback_associative_cache_controller
   // Counter Disable Mux
   mux2 #(2) cenMux(WordOffset, CounterMid, enable, Counter);
 
+  // Create Dirty Signal
+  assign DirtyIn = enable & MemWriteM;
+
   // Create Hit signal 
   logic Hit, W2Hit;
   assign W1Hit = (W1V & (Tag == W1Tag));
   assign W2Hit = (W2V & (Tag == W2Tag));
-  assign Hit = W1Hit | W2Hit;
-
+  assign Hit = (W1Hit | W2Hit) & enable;
+  
   // CacheIn Logic
   assign CacheRDSel = HWriteM ? Counter : WordOffset;
+
+  // Cached address selection
+  assign UseCacheA = enable & HWriteM;
 
   // Write-to logic
   // IN: W1V, W2V, LRU 
@@ -44,7 +50,7 @@ module data_writeback_associative_cache_controller
   always_comb
     begin
       writeW1 = ( (~W1V & W2V) | CurrLRU ) & ~W2Hit;
-      W1EN = writeW1 | W1Hit;
+      W1EN = writeW1 | W1Hit | ~enable;
       W2EN = ~W1EN;
     end
 
@@ -63,7 +69,7 @@ module data_writeback_associative_cache_controller
   assign UseWD = ~BlockWE | ( BlockWE & MemWriteM & (Counter == WordOffset) );
   mux2 #(4)  MaskMux(4'b1111, ByteMask, UseWD, ActiveByteMask);
 
-  typedef enum logic[2:0] {READY, MEMREAD, WRITEBACK, NEXTINSTR, WAIT, DISABLED} statetype;
+  typedef enum logic[2:0] {READY, MEMREAD, WRITEBACK, WRITE, NEXTINSTR, WAIT, DISABLED} statetype;
   statetype state, nextstate;
 
   // state register
@@ -77,12 +83,16 @@ module data_writeback_associative_cache_controller
       READY:    if ( Hit | (~MemWriteM & ~MemtoRegM) ) begin
                   nextstate <= READY;
                 end
-                else if( ~Hit & ~Dirty ) begin
+                else if( MemWriteM & ~enable) begin
+                  nextstate <= WRITE;
+                end
+                else if( ~Dirty ) begin
                   nextstate <= MEMREAD;
                 end
                 else begin
                   nextstate <= WRITEBACK;
                 end
+                
       // If we have finished writing back four words, start reading from memory
       // If the cache is disabled, then only write one line. (line isn't valid)
       WRITEBACK: nextstate <= ( BusReady & (Counter == 3) ) |
@@ -94,19 +104,25 @@ module data_writeback_associative_cache_controller
       // If the instruction memory is stalling, then wait for a new instruction
       NEXTINSTR: nextstate <= IStall ? WAIT : READY;
       WAIT:      nextstate <= IStall ? WAIT : READY;
+      WRITE:     nextstate <= BusReady ? NEXTINSTR : WRITE;
       default:   nextstate <= READY;
     endcase
 
   // output logic
   assign Stall  = (state == MEMREAD) | 
                   (state == WRITEBACK) | 
+                  (state == WRITE) |
                   ( (state == READY) & (MemtoRegM | MemWriteM) & ~Hit );
-  assign CWE    = ( (state == READY) & ( (MemWriteM & Hit) |  
-                  (BusReady & ~Hit & ~Dirty) )) |
+  assign CWE    = ( (state == READY) & ( (MemWriteM & Hit) |  (BusReady & ~Hit & ~Dirty) ) ) |
                   ( (state == MEMREAD) & BusReady );
-  assign HWriteM = (state == WRITEBACK) | ((state == READY) & ~Hit & Dirty);
+  assign HWriteM = (state == WRITEBACK) | (state == WRITE) | 
+                   ((state == READY) & ~Hit & Dirty & enable);
   assign HRequestM  = Stall;
-  assign RDSel  = ( (state == NEXTINSTR) & (WordOffset == 2'b11) );
+  assign RDSel[0] = (state == NEXTINSTR) & (WordOffset == 2'b11) & enable | 
+                    // (state == NEXTINSTR) & ~enable |
+                    (state == WRITE);
+  assign RDSel[1] = (state == WRITE);
+
   assign BlockWE = (state == MEMREAD) | ( (state == NEXTINSTR)  & 
                    (~MemWriteM || MemWriteM & ~Dirty) ) |
                    ( (state == READY) & ~Hit & ~Dirty );

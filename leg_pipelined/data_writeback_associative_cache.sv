@@ -6,15 +6,16 @@
 //--------------------CACHE-----------------------------
 //------------------------------------------------------
 //------------------------------------------------------
-module data_writeback_associative_cache #(parameter blocksize = 4, parameter lines = 2)
-                  (input  logic clk, reset, enable, MemWriteM, MemtoRegM, 
-                                BusReady, IStall,
-                   input  logic [31:0] A, WD,
-                   input  logic [31:0] HRData,
-                   input  logic [3:0]  ByteMask, 
-                   output logic [31:0] HWData,
-                   output logic [31:0] RD, HAddr,
-                   output logic Stall, HRequestM, HWriteM);
+module data_writeback_associative_cache 
+    #(parameter blocksize = 4, parameter lines = 2)
+    (input  logic clk, reset, enable, MemWriteM, MemtoRegM, 
+    BusReady, IStall,
+    input  logic [31:0] A, WD,
+    input  logic [31:0] HRData,
+    input  logic [3:0]  ByteMask, 
+    output logic [31:0] HWData,
+    output logic [31:0] RD, HAddr,
+    output logic Stall, HRequestM, HWriteM);
 
     parameter setbits = $clog2(lines);
     parameter blockbits = $clog2(blocksize);
@@ -45,9 +46,10 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     // W2D:        Way 2 dirty bit
     // RDSel:      Select output from bus or from cache
     // Hit:        Hit in the cache
-    logic BlockWE, W1D, W2D, RDSel, Hit;
+    logic BlockWE, W1D, W2D, Hit, W1Hit;
     logic [setbits-1:0] set;   // Set bits
-    logic [1:0] Counter, WordOffset, CacheRDSel;   // Counter for sequential buss access
+    // Counter for sequential buss access
+    logic [1:0] Counter, WordOffset, CacheRDSel, RDSel;   
     logic [tagbits-1:0] Tag;   // Current tag
 
 
@@ -63,7 +65,7 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     // This module contains both way memories and LRU table
     logic CurrLRU;   
     logic DirtyIn;
-    assign DirtyIn = MemWriteM;
+    // assign DirtyIn = MemWriteM;
     assign vin = enable;
     data_writeback_associative_cache_memory #(lines, tagbits, blocksize) dcmem(.*);
 
@@ -76,13 +78,14 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     mux2 #(32) HWDataMux(W2RD, W1RD, W1EN, HWData);
 
     // HAddr Mux's
+    logic UseCacheA;
     assign CachedAddr = {CachedTag, ANew[31-tagbits:0]};
-    mux2 #(32) HAddrMux(ANew, CachedAddr, HWriteM, HAddr);
+    mux2 #(32) HAddrMux(ANew, CachedAddr, UseCacheA, HAddr);
 
     // Select from the ways
     mux2 #(32) CacheOutMux(W2RD, W1RD, W1Hit, CacheOut);
 
     // Select from cache or memory
-    mux2 #(32) RDMux(CacheOut, HRData, RDSel, RD);
+    mux3 #(32) RDMux(CacheOut, HRData, WD, RDSel, RD);
 
 endmodule
