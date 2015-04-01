@@ -65,8 +65,7 @@ module hazard(input  logic       clk, reset,
   assign StallM = DStall | IStall;
   assign FlushE = ldrStallD | BranchTakenE | (SWI_M | undefM); 
   assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | (SWI_E | SWI_M | SWI_W | undefE | undefM | undefW | RegtoCPSR);
-
-  assign ExceptionSavePC = SWI_E; 
+  assign ExceptionSavePC = SWI_E | undefE; 
 
   // exception handling
   always_comb begin

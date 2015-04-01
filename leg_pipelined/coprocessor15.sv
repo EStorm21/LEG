@@ -8,6 +8,13 @@ module coprocessor15 (input logic         clk, reset,
 															output logic        StallCP, FlushI, FlushD, CleanI, CleanD, TLBFlushD, TLBFlushI,
 															output logic [31:0] rd, control);
 
+/* 
+Brief:
+Coprocessor talks with both LEG datapath/controller and MMU.
+For LEG: CPUWriteEn is high during MCR instructions.
+         CPUEn is high during MRC instructions
+*/
+
 logic [31:0] rf[15:0];
 logic [31:0] wd;
 logic [15:0] reg_select;

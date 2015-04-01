@@ -9,7 +9,13 @@ module leg(input  logic        clk, reset,
            output logic        MemtoRegM,
            output logic [3:0]  ByteMaskM,
            // Added for exceptions
-           input logic PrefetchAbort, DataAbort, IRQ, FIQ);
+           input logic         PrefetchAbort, DataAbort, IRQ, FIQ,
+           // Added for Coprocessor Instructions
+           output logic        CPUWriteEn, CPUEn, 
+           output logic [3:0]  CP15_addr, CRm, 
+           output logic [2:0]  opcode_2, 
+           output logic [31:0] CPUWriteData, 
+           input logic  [31:0] CP15_rd);
 
   /// Output from Hazard Unit
   logic [1:0]  ForwardAE, ForwardBE;
