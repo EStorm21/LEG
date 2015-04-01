@@ -88,6 +88,9 @@ module controller(/// ------ From TOP ------
   logic [1:0]  STR_cycleD;
   logic        doNotUpdateFlagD, LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD;
   logic        RegWriteControlE;
+  logic        CoProc_WrEnE, CoProc_EnE, CoProc_EnM, CoProc_WrEnM, MCR_D;
+  logic [2:0]  CoProc_Op2M;
+  logic [3:0]  CoProc_AddrM, CoProc_CRmM; // Coprocessor Variables
   logic [3:0]  FlagsM;
   logic [6:0]  PCVectorAddressE, PCVectorAddressM;
   logic [31:0] SPSRW, CPSRW;
@@ -124,13 +127,14 @@ module controller(/// ------ From TOP ------
                 // else if (InstrD[24:23] == 2'b10 & (&InstrD[21:16]) & ~(|InstrD[11:0]))  ControlsD = 13'b00_00_0  // MRS
                 else  ControlsD = 13'b00_00_0010_01000; // Data processing register
               end
-  	  2'b01: if (InstrD[25] & InstrD[4])           ControlsD = 13'b00_00_0000_00000;  // undefD = 1; Exception: UNDEFINED INSTRUCTION
+  	  2'b01: if (InstrD[25] & InstrD[4])           ControlsD = 13'b00_00_0000_00000;  // Exception: UNDEFINED INSTRUCTION
              else if (InstrD[20] & ~InstrD[25])    ControlsD = 13'b00_01_1110_00010; // LDR, "I-type" 0xf0
              else if (InstrD[20] & InstrD[25])     ControlsD = 13'b00_01_0110_00010; // LDR, "R-Type" 0xb0
              else if (~InstrD[20] & ~InstrD[25])   ControlsD = 13'b10_01_1101_00010; // STR, "I-type"
              else if (~InstrD[20] & InstrD[25])    ControlsD = 13'b10_01_0101_00010; // STR, "R-type"
   	  2'b10:                 ControlsD = 13'b01_10_1000_10000; // B                           0x344
-      2'b11:  if(InstrD[25:24] == 2'b11)         ControlsD = 13'b00_00_0000_00000; // SWI_D = 1;  Exception: SWI;  Unimplemented Coprocessor stuff 
+      2'b11: if(InstrD[25:24] == 2'b11)         ControlsD = 13'b00_00_0000_00000; // Exception: SWI
+             else if (InstrD[25:24] == 2'b10)   ControlsD = 13'b10_00_0000_00000; // MCR (move to coprocessor from register)
   	  default:          ControlsD = 13'bx;      // unimplemented
   	endcase
 
@@ -220,7 +224,7 @@ module controller(/// ------ From TOP ------
   assign  PreviousTFlagE = 1'b0; // = StatusRegisterE[5];
   flopenrc  #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);
   conditional Cond(CondE, FlagsE, ALUFlagsE, MultFlagsE, FlagWriteE, CondExE, FlagsNext0E, ResultSelectE[1]);
-  assign FlagsNextE = (RegtoCPSR_E & InstrE[19]) ? ALUResultE[31:28] : FlagsNext0E; // If flags field is set by MSR instruction !!!!!!!!!!!!!!!!!!
+  assign FlagsNextE = (RegtoCPSR_E & InstrE[19]) ? ALUResultE[31:28] : FlagsNext0E; // If flags field is set by MSR, update flags now!
 
   /*** BRIEF ***
    * These bits select which bit of memory to mask for Load/Store Byte, Word and Halfword operations
@@ -256,6 +260,8 @@ module controller(/// ------ From TOP ------
   // ====================================================================================
   // =============================== Memory Stage =======================================
   // ====================================================================================
+  flopenr #(13) CoProc_Data(clk, reset, ~StallM, {InstrE[19:16], InstrE[7:5], InstrE[3:0], CoProc_WrEnE, CoProc_EnE}, 
+                                                 {CoProc_AddrM, CoProc_Op2M, CoProc_CRmM, CoProc_WrEnM, CoProc_EnM});
   flopenr #(14) regsM(clk, reset, ~StallM,
                    {MemWriteGatedE, MemtoRegE, RegWriteGatedE, PCSrcGatedE, ByteMaskE, 
                                         ByteOrWordE, ByteOffsetE, WriteHalfwordE, HalfwordOffsetE, CPSRtoRegE},
