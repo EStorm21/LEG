@@ -1,4 +1,4 @@
-module coprocessor_registers (input logic         clk, reset,
+module coprocessor15 (input logic         clk, reset,
 															// For CPU and MMU, enable without writeEn means read
 															input logic         CPUWriteEn, CPUEn, MMUWriteEn, MMUEn, 
 															input logic [3:0]   addr,
