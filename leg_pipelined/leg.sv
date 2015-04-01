@@ -42,7 +42,7 @@ module leg(input  logic        clk, reset,
   logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnable, LoadLengthW;
   logic [3:0]  RegFileRzD;
   logic        ShifterCarryOut_cycle2E;
-  logic [11:0] CPSR12_W;
+  logic [7:0]  CPSR8_W;
   logic [31:0] PSR_W;
   logic [6:0]  PCVectorAddressW;
 
@@ -55,8 +55,9 @@ module leg(input  logic        clk, reset,
   logic        BXInstrD, BXInstrE, TFlagNextE, TFlagE, IncrementE;
 
   // Exceptions
-  logic       UndefinedInstr, SWI, SWI_E, SWI_D, SWI_M, SWI_W;
-  logic       UndefD, UndefE, UndefM, UndefW;
+  logic       UndefinedInstr, undefD, undefE, undefM, undefW;
+  logic       SWI, SWI_E, SWI_D, SWI_M, SWI_W;
+  logic       RegtoCPSR, RegtoCPSR_D, RegtoCPSR_E, RegtoCPSR_M, RegtoCPSR_W;
   logic [1:0] PCInSelect;
 
   

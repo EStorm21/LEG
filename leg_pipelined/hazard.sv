@@ -14,7 +14,8 @@ module hazard(input  logic       clk, reset,
               input logic        uOpStallD, LDMSTMforwardE,
               output logic       StalluOp, ExceptionSavePC,
               // For exceptions
-              input logic        PrefetchAbort, DataAbort, IRQ, FIQ, UndefinedInstr, SWI, SWI_E, SWI_D, SWI_M, SWI_W,
+              input logic        PrefetchAbort, DataAbort, IRQ, FIQ, UndefinedInstr, undefD, undefE, undefM, undefW,
+              input logic        SWI, SWI_E, SWI_D, SWI_M, SWI_W, RegtoCPSR,
               output logic [1:0] PCInSelect);
                 
   // forwarding logic
@@ -55,15 +56,15 @@ module hazard(input  logic       clk, reset,
 
   assign ldrStallD = Match_12D_E & MemtoRegE;
   
-  assign StallD = ldrStallD | DStall | uOpStallD | IStall | MultStallD | SWI_E;
+  assign StallD = ldrStallD | DStall | uOpStallD | IStall | MultStallD | (SWI_E | undefE);
   assign StalluOp = ldrStallD | DStall | IStall | MultStallD;
-  assign StallF = ldrStallD | PCWrPendingF | DStall | IStall | uOpStallD | MultStallD | (SWI_D | SWI_E | SWI_M);
+  assign StallF = ldrStallD | PCWrPendingF | DStall | IStall | uOpStallD | MultStallD | (SWI_D | SWI_E | SWI_M | undefD | undefE | undefM | RegtoCPSR);
   assign StallE = DStall | IStall;
   assign FlushW = DStall | IStall;
   assign StallW = DStall | IStall;
   assign StallM = DStall | IStall;
-  assign FlushE = ldrStallD | BranchTakenE | SWI_M; 
-  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | (SWI_E | SWI_M | SWI_W);
+  assign FlushE = ldrStallD | BranchTakenE | (SWI_M | undefM); 
+  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | (SWI_E | SWI_M | SWI_W | undefE | undefM | undefW | RegtoCPSR);
 
   assign ExceptionSavePC = SWI_E; 
 
