@@ -1,7 +1,7 @@
 module data_writeback_associative_cache_memory #(parameter lines = 65536, parameter tagbits = 14, 
                            parameter blocksize = 4)
                     (input logic clk, reset, W1WE, W2WE, DirtyIn, vin, 
-                     input logic invalidate, clean,
+                     input logic invalidate, 
                      input logic [31:0] CacheWD,
                      input logic [31:0] ANew,
                      input logic [3:0]  ActiveByteMask,

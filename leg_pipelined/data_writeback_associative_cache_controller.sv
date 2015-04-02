@@ -72,7 +72,7 @@ module data_writeback_associative_cache_controller
   assign UseWD = ~BlockWE | ( BlockWE & MemWriteM & (Counter == WordOffset) );
   mux2 #(4)  MaskMux(4'b1111, ByteMask, UseWD, ActiveByteMask);
 
-  typedef enum logic[2:0] {READY, MEMREAD, WRITEBACK, WRITE, NEXTINSTR, WAIT, DISABLED} statetype;
+  typedef enum logic[2:0] {READY, MEMREAD, WRITEBACK, DWRITE, NEXTINSTR, WAIT, DISABLED} statetype;
   statetype state, nextstate;
 
   // state register
@@ -87,7 +87,7 @@ module data_writeback_associative_cache_controller
                   nextstate <= READY;
                 end
                 else if( MemWriteM & ~enable) begin
-                  nextstate <= WRITE;
+                  nextstate <= DWRITE;
                 end
                 else if( ~Dirty ) begin
                   nextstate <= MEMREAD;
@@ -105,24 +105,24 @@ module data_writeback_associative_cache_controller
       // If the instruction memory is stalling, then wait for a new instruction
       NEXTINSTR: nextstate <= IStall ? WAIT : READY;
       WAIT:      nextstate <= IStall ? WAIT : READY;
-      WRITE:     nextstate <= BusReady ? NEXTINSTR : WRITE;
+      DWRITE:     nextstate <= BusReady ? NEXTINSTR : DWRITE;
       default:   nextstate <= READY;
     endcase
 
   // output logic
   assign Stall  = (state == MEMREAD) | 
                   (state == WRITEBACK) | 
-                  (state == WRITE) |
+                  (state == DWRITE) |
                   ( (state == READY) & (MemtoRegM | MemWriteM) & ~Hit );
   assign CWE    = ( (state == READY) & ( (MemWriteM & Hit) |  (BusReady & ~Hit & ~Dirty) ) ) |
                   ( (state == MEMREAD) & BusReady );
-  assign HWriteM = (state == WRITEBACK) | (state == WRITE) | 
+  assign HWriteM = (state == WRITEBACK) | (state == DWRITE) | 
                    ((state == READY) & ~Hit & Dirty );
   assign HRequestM  = Stall;
   assign RDSel[0] = (state == NEXTINSTR) & (WordOffset == 2'b11) & enable | 
                     // (state == NEXTINSTR) & ~enable |
-                    (state == WRITE);
-  assign RDSel[1] = (state == WRITE);
+                    (state == DWRITE);
+  assign RDSel[1] = (state == DWRITE);
 
   assign BlockWE = (state == MEMREAD) | ( (state == NEXTINSTR)  & 
                    (~MemWriteM || MemWriteM & ~Dirty) ) |

@@ -37,8 +37,8 @@ module top(input  logic        clk, reset,
   logic DEN, DNV, DCLEAN; // Data cache enable and invalidate
   assign INV = 1'b0;
   assign DNV = 1'b0;
-  assign IEN = 1'b1;
-  assign DEN = 1'b1;
+  assign IEN = 1'b0;
+  assign DEN = 1'b0;
   assign DCLEAN = 1'b0;
 
   // instruction cache with a block size of 4 words and 16 lines

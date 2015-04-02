@@ -9,7 +9,7 @@
 module data_writeback_associative_cache 
     #(parameter blocksize = 4, parameter lines = 2)
     (input  logic clk, reset, enable, MemWriteM, MemtoRegM, 
-    BusReady, IStall, invalidate,
+    BusReady, IStall, invalidate, clean,
     input  logic [31:0] A, WD,
     input  logic [31:0] HRData,
     input  logic [3:0]  ByteMask, 
