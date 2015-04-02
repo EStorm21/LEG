@@ -4,7 +4,7 @@
 
 //--------------------CACHE-----------------------------
 module instr_cache #(parameter blocksize = 4, parameter lines = 2)
-                  (input  logic clk, reset, BusReady,
+                  (input  logic clk, reset, enable, BusReady, invalidate,
                    input  logic [31:0] A, 
                    input  logic [31:0] HRData,
                    output logic [31:0] RD, HAddrF,
@@ -42,11 +42,12 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
     logic [3:0] ActiveByteMask;
     logic [31:0] CacheWD;
     logic [1:0] CacheRDSel;
-    logic DirtyIn, W1D, W2D;
+    logic DirtyIn, W1D, W2D, vin;
     assign ActiveByteMask = 4'b1111;
     assign CacheWD = HRData;
     assign CacheRDSel = WordOffset;
     assign DirtyIn = 1'b0;
+    assign vin = enable;
     data_writeback_associative_cache_memory #(lines, tagbits, blocksize) icm(.*);
 
     // Cache Controller
@@ -54,7 +55,8 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
     instr_cache_controller #(tagbits) icc(.*);
 
     // Select from the ways
-    mux2 #(32) CacheOutMux(W2RD, W1RD, W1Hit, CacheOut);
+    logic WaySel;
+    mux2 #(32) CacheOutMux(W2RD, W1RD, WaySel, CacheOut);
 
     // Select from cache or memory
     mux2 #(32) RDMux(CacheOut, HRData, RDSel, RD);

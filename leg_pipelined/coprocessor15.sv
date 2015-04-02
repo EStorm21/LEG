@@ -6,7 +6,7 @@ module coprocessor15 (input logic         clk, reset,
                               input logic [2:0]   opcode_2,
                               input logic [3:0]   CRm,
 															output logic        StallCP, FlushI, FlushD, CleanI, CleanD, TLBFlushD, TLBFlushI,
-															output logic [31:0] rd, control);
+															output logic [31:0] rd, control, tbase);
 
 /* 
 Brief:
@@ -16,7 +16,7 @@ For LEG: CPUWriteEn is high during MCR instructions.
 */
 
 logic [31:0] rf[15:0];
-logic [31:0] wd;
+logic [31:0] wd;  
 logic [15:0] reg_select;
 integer i, j;
 
@@ -78,8 +78,9 @@ always_comb begin
   end
 end
 
-// always output control register
+// always output control register and translation base address
 assign control = rf[1];
+assign tbase = rf[2];
 
 
 // ********************************************

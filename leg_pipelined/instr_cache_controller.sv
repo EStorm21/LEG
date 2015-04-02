@@ -1,12 +1,12 @@
 // Cache controller works according to schematic
 module instr_cache_controller #(parameter tagbits = 14)
-  (input  logic clk, reset,
+  (input  logic clk, reset, enable,
    input  logic W1V, W2V, CurrLRU,
    input  logic BusReady,
    input  logic [1:0] WordOffset,
    input  logic [tagbits-1:0] W1Tag, W2Tag, Tag,
    output logic [1:0] Counter,
-   output logic W1WE, W2WE, W1Hit,
+   output logic W1WE, W2WE, WaySel,
    output logic IStall, RDSel, ResetCounter, HRequestF,
    output logic [1:0] NewWordOffset);
 
@@ -15,6 +15,9 @@ module instr_cache_controller #(parameter tagbits = 14)
   assign W1Hit = (W1V & (Tag == W1Tag));
   assign W2Hit = (W2V & (Tag == W2Tag));
   assign Hit = W1Hit | W2Hit;
+
+  // Select output from Way 1 or Way 2
+  assign WaySel = enable & W1Hit | ~enable;
 
   typedef enum logic [1:0] {READY, MEMREAD, NEXTINSTR} statetype;
   statetype state, nextstate;
@@ -36,7 +39,7 @@ module instr_cache_controller #(parameter tagbits = 14)
   // output logic
   assign IStall =  (state == MEMREAD) | ((state == READY) & ~Hit);
   assign CWE    = ( (state == MEMREAD) & BusReady | ( (state == READY) & ~Hit & BusReady) );
-  assign RDSel  = ( (state == NEXTINSTR) & (WordOffset == 2'b11) );
+  assign RDSel  = ( (state == NEXTINSTR) & (WordOffset == 2'b11) ) & enable;
   assign HRequestF  = (state == MEMREAD) | ((state == READY) & ~Hit);
   assign ResetCounter = ( (state == READY) & Hit ) | ( state == NEXTINSTR );
 
@@ -56,7 +59,7 @@ module instr_cache_controller #(parameter tagbits = 14)
   always_comb
     begin
       writeW1 = ( (~W1V & W2V) | CurrLRU ) & ~W2Hit;
-      W1EN = writeW1 | W1Hit;
+      W1EN = writeW1 | W1Hit | ~enable;
       W2EN = ~W1EN;
     end
 

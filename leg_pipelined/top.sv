@@ -31,7 +31,7 @@ module top(input  logic        clk, reset,
   logic [2:0]   opcode_2;
   logic [3:0]   CRm;
   logic         StallCP, FlushI, FlushD, CleanI, CleanD, TLBFlushD, TLBFlushI;
-  logic [31:0]  CP15_rd, control;
+  logic [31:0]  CP15_rd, control, DummyTBase;
 
 
   // instantiate processor and memories
@@ -45,19 +45,29 @@ module top(input  logic        clk, reset,
           CPUWriteData, CP15_rd); 
 
 
+  // False signal for the Caches
+  // TODO: Hook these up to the coprocessor
+  logic IEN, INV; // Instruction cache enable and invalidate
+  logic DEN, DNV, DCLEAN; // Data cache enable and invalidate
+  assign INV = 1'b0;
+  assign DNV = 1'b0;
+  assign IEN = 1'b0;
+  assign DEN = 1'b0;
+  assign DCLEAN = 1'b0;
+
   coprocessor15 cp15(.clk(clk), .reset(reset), .CPUWriteEn(CPUWriteEn), .CPUEn(CPUEn), 
                     .MMUWriteEn(MMUWriteEn), .MMUEn(MMUEn), .addr(CP15_addr), 
                     .CPUWriteData(CPUWriteData), .MMUWriteData(MMUWriteData), 
                     .opcode_2(opcode_2), .CRm(CRm),
                     .StallCP(StallCP), .FlushI(FlushI), .FlushD(FlushD), 
                     .CleanI(CleanI), .CleanD(CleanD), .TLBFlushD(TLBFlushD), 
-                    .TLBFlushI(TLBFlushI), .rd(CP15_rd), .control(control));
+                    .TLBFlushI(TLBFlushI), .rd(CP15_rd), .control(control), .tbase(DummyTBase));
 
   
   // instruction cache with a block size of 4 words and 16 lines
   instr_cache #(4, 128) 
-    instr_cache(.clk(clk), .reset(reset), .BusReady(BusReadyF),
-                .A(PCF), .HRData(HRData), .RD(InstrF), 
+    instr_cache(.clk(clk), .reset(reset), .enable(IEN), .invalidate(INV),
+      .BusReady(BusReadyF), .A(PCF), .HRData(HRData), .RD(InstrF), 
                 .IStall(IStall), .HAddrF(HAddrF), .HRequestF(HRequestF) );
 
   // Read straight from the memory, then write to the cache
@@ -67,10 +77,13 @@ module top(input  logic        clk, reset,
   //                       .rd(ReadDataM), .Stall(DStall), .MemRE(MemRE), .HWriteM(HWriteM));
 
   data_writeback_associative_cache #(4, 128)
-    data_cache(.clk(clk), .reset(reset), .MemWriteM(MemWriteM), .MemtoRegM(MemtoRegM), 
-               .BusReady(BusReadyM), .IStall(IStall), .A(DataAdrM), .WD(WriteDataM),
-               .HRData(HRData), .ByteMask(ByteMaskM), .HWData(HWData), .RD(ReadDataM), .HAddr(HAddrM),
-               .Stall(DStall), .HRequestM(HRequestM), .HWriteM(HWriteM));
+    data_cache(.clk(clk), .reset(reset), .enable(DEN), .invalidate(DNV),
+      .clean(DCLEAN),
+      .MemWriteM(MemWriteM), .MemtoRegM(MemtoRegM), .BusReady(BusReadyM), 
+      .IStall(IStall), .A(DataAdrM), .WD(WriteDataM), .HRData(HRData), 
+      .ByteMask(ByteMaskM), .HWData(HWData), .RD(ReadDataM), 
+      .HAddr(HAddrM), .Stall(DStall), .HRequestM(HRequestM), 
+      .HWriteM(HWriteM));
 
   // Create ahb arbiter
   ahb_arbiter ahb_arb(.HWriteM(HWriteM), .IStall(IStall), .DStall(DStall), .HReady(CPUHReady),
@@ -86,7 +99,7 @@ module top(input  logic        clk, reset,
   mmu mmuInst(.*);
 
   // False Signals for the mmu
-  // TODO: Hook these wires up to the 
+  // TODO: Hook these wires up to the coprocessor
   logic MMUExtInt;
   logic [31:0] Dom;
   logic [6:0] TLBCont, Cont;
