@@ -4,9 +4,13 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
            input  logic [31:0] CPUHAddr, HRData, Dom,
            input  logic [6:0] TLBCont, Cont, // Cont[0] is the enable bit
            input  logic [17:0] TBase,
-           output logic [31:0] HAddr, FAR,
+           output logic [31:0] HAddr, FAR, MMUWriteData,
            output logic [7:0] FSR,
-           output logic HRequest, HWrite, CPUHReady, Fault);
+           output logic HRequest, HWrite, CPUHReady, Fault, MMUWriteEn);
+  // TODO: Add MMU Writes for FSR and FAR
+  assign MMUWriteEn = 1'b0;
+  assign MMUWriteData = 32'h0000_0000;
+
   // TODO: Assertions
   // Note that the faults are listed in priority order.
   typedef enum logic [3:0] {TERMFAULT = 4'b0010, 
