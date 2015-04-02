@@ -6,14 +6,16 @@
 //--------------------CACHE-----------------------------
 //------------------------------------------------------
 //------------------------------------------------------
-module data_writeback_associative_cache #(parameter blocksize = 4, parameter lines = 2)
-                  (input  logic clk, reset, MemWriteM, MemtoRegM, BusReady, IStall,
-                   input  logic [31:0] A, WD,
-                   input  logic [31:0] HRData,
-                   input  logic [3:0]  ByteMask, 
-                   output logic [31:0] HWData,
-                   output logic [31:0] RD, HAddr,
-                   output logic Stall, HRequestM, HWriteM);
+module data_writeback_associative_cache 
+    #(parameter blocksize = 4, parameter lines = 2)
+    (input  logic clk, reset, enable, MemWriteM, MemtoRegM, 
+    BusReady, IStall, invalidate, clean,
+    input  logic [31:0] A, WD,
+    input  logic [31:0] HRData,
+    input  logic [3:0]  ByteMask, 
+    output logic [31:0] HWData,
+    output logic [31:0] RD, HAddr,
+    output logic Stall, HRequestM, HWriteM);
 
     parameter setbits = $clog2(lines);
     parameter blockbits = $clog2(blocksize);
@@ -25,7 +27,8 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     // W1WE: way 1 write enable, W1WE = W1EN & CWE
     // ActiveByteMask: mask currently used on the cache
     // CWE:  Cache Write Enable
-    logic W1V, W2V, W1EN, W2EN, W1WE, W2WE, ResetCounter, CWE;
+    // vin:  Valid bit in
+    logic W1V, W2V, W1EN, W2EN, W1WE, W2WE, ResetCounter, CWE, vin;
     logic [tagbits-1:0] W1Tag, W2Tag, CachedTag;
 
     // TODO: Remove blockout wires (they are moved to the cache memory)
@@ -43,9 +46,10 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     // W2D:        Way 2 dirty bit
     // RDSel:      Select output from bus or from cache
     // Hit:        Hit in the cache
-    logic BlockWE, W1D, W2D, RDSel, Hit;
+    logic BlockWE, W1D, W2D, Hit, WaySel;
     logic [setbits-1:0] set;   // Set bits
-    logic [1:0] Counter, WordOffset, CacheRDSel;   // Counter for sequential buss access
+    // Counter for sequential buss access
+    logic [1:0] Counter, WordOffset, CacheRDSel, RDSel;   
     logic [tagbits-1:0] Tag;   // Current tag
 
 
@@ -54,17 +58,15 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     mux2 #(32) CacheWDMux(HRData, WD, UseWD, CacheWD);
 
     // Create New Address using the counter as the word offset
-    // TODO: Make this structural
-    // Move to controller
-    // assign ANew = ResetCounter ? A : {A[31:4], Counter, A[1:0]};
     logic [blockbits-1:0] NewWordOffset;
     assign ANew = {A[31:4], NewWordOffset, A[1:0]};
 
-
-    // Create Cache memory. This module contains both way memories and LRU table
+    // Create Cache memory. 
+    // This module contains both way memories and LRU table
     logic CurrLRU;   
     logic DirtyIn;
-    assign DirtyIn = MemWriteM;
+    // assign DirtyIn = MemWriteM;
+    assign vin = enable;
     data_writeback_associative_cache_memory #(lines, tagbits, blocksize) dcmem(.*);
 
     // Cache Controller
@@ -73,16 +75,18 @@ module data_writeback_associative_cache #(parameter blocksize = 4, parameter lin
     data_writeback_associative_cache_controller #(blocksize, tagbits) dcc(.*);
 
     // HWData Mux
-    mux2 #(32) HWDataMux(W2RD, W1RD, W1EN, HWData);
+    // mux2 #(32) HWDataMux(W2RD, W1RD, W1EN, HWData);
+    assign HWData = RD;
 
     // HAddr Mux's
+    logic UseCacheA;
     assign CachedAddr = {CachedTag, ANew[31-tagbits:0]};
-    mux2 #(32) HAddrMux(ANew, CachedAddr, HWriteM, HAddr);
+    mux2 #(32) HAddrMux(ANew, CachedAddr, UseCacheA, HAddr);
 
     // Select from the ways
-    mux2 #(32) CacheOutMux(W2RD, W1RD, W1Hit, CacheOut);
+    mux2 #(32) CacheOutMux(W2RD, W1RD, WaySel, CacheOut);
 
     // Select from cache or memory
-    mux2 #(32) RDMux(CacheOut, HRData, RDSel, RD);
+    mux3 #(32) RDMux(CacheOut, HRData, WD, RDSel, RD);
 
 endmodule

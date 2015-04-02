@@ -1,36 +1,50 @@
-module data_writeback_associative_cache_controller #(parameter blocksize, parameter tagbits = 14)
-  (input  logic clk, reset, W1V, W2V, CurrLRU, W1D, W2D,
+module data_writeback_associative_cache_controller 
+  #(parameter blocksize, parameter tagbits = 14)
+  (input  logic clk, reset, enable, W1V, W2V, CurrLRU, W1D, W2D,
    input  logic IStall, MemWriteM, MemtoRegM, BusReady, 
    input  logic [1:0] WordOffset,
    input  logic [3:0] ByteMask,
    input  logic [tagbits-1:0] W1Tag, W2Tag, Tag, CachedTag,
-   output logic RDSel, CWE, Stall, HWriteM, HRequestM, BlockWE, ResetCounter,
-   output logic W1WE, W2WE, W1EN, UseWD, W1Hit,
-   output logic [1:0] Counter, CacheRDSel,
+   output logic CWE, Stall, HWriteM, HRequestM, BlockWE, ResetCounter,
+   output logic W1WE, W2WE, W1EN, UseWD, UseCacheA, DirtyIn, WaySel,
+   output logic [1:0] CacheRDSel, RDSel,
    output logic [3:0] ActiveByteMask,
    output logic [$clog2(blocksize)-1:0] NewWordOffset);
 
   // Control Signals
   // Create Counter for sequential bus access
+  logic [1:0] CounterMid, Counter;
   always_ff @(posedge clk, posedge reset)
     if(reset | ResetCounter) begin
-        Counter <= 0;
+        CounterMid <= 0;
     end else begin
         if (BusReady) begin
-            Counter <= Counter + 1;
+            CounterMid <= CounterMid + 1;
         end else begin
-            Counter <= Counter;
+            CounterMid <= CounterMid;
         end
     end
 
+  // Counter Disable Mux
+  mux2 #(2) cenMux(CounterMid, WordOffset, (~enable & HWriteM), Counter);
+
+  // Create Dirty Signal
+  assign DirtyIn = enable & MemWriteM;
+
   // Create Hit signal 
-  logic Hit, W2Hit;
+  logic Hit, W2Hit, W1Hit;
   assign W1Hit = (W1V & (Tag == W1Tag));
   assign W2Hit = (W2V & (Tag == W2Tag));
-  assign Hit = W1Hit | W2Hit;
-
+  assign Hit = (W1Hit | W2Hit) & enable;
+  
+  // Select output from Way 1 or Way 2
+  assign WaySel = enable & W1Hit | ~enable;
+  
   // CacheIn Logic
   assign CacheRDSel = HWriteM ? Counter : WordOffset;
+
+  // Cached address selection
+  assign UseCacheA = enable & HWriteM;
 
   // Write-to logic
   // IN: W1V, W2V, LRU 
@@ -39,7 +53,7 @@ module data_writeback_associative_cache_controller #(parameter blocksize, parame
   always_comb
     begin
       writeW1 = ( (~W1V & W2V) | CurrLRU ) & ~W2Hit;
-      W1EN = writeW1 | W1Hit;
+      W1EN = writeW1 | W1Hit | ~enable;
       W2EN = ~W1EN;
     end
 
@@ -52,13 +66,13 @@ module data_writeback_associative_cache_controller #(parameter blocksize, parame
 
   // Dirty Mux
   logic Dirty;
-  assign Dirty = W1EN ? W1D : W2D;
+  mux2 #(1) DirtyMux(W2D, W1D, W1EN, Dirty);
 
   // Select Data source and Byte Mask for the data cache
   assign UseWD = ~BlockWE | ( BlockWE & MemWriteM & (Counter == WordOffset) );
   mux2 #(4)  MaskMux(4'b1111, ByteMask, UseWD, ActiveByteMask);
 
-  typedef enum logic [2:0] {READY, MEMREAD, WRITEBACK, NEXTINSTR, WAIT} statetype;
+  typedef enum logic[2:0] {READY, MEMREAD, WRITEBACK, DWRITE, NEXTINSTR, WAIT, DISABLED} statetype;
   statetype state, nextstate;
 
   // state register
@@ -69,41 +83,53 @@ module data_writeback_associative_cache_controller #(parameter blocksize, parame
   // next state logic
   always_comb
     case (state)
-      READY:      if ( Hit | (~MemWriteM & ~MemtoRegM) ) begin
-                    nextstate <= READY;
-                  end
-                  else if( ~Hit & ~Dirty ) begin
-                    nextstate <= MEMREAD;
-                  end
-                  else begin
-                    nextstate <= WRITEBACK;
-                  end
+      READY:    if ( Hit | (~MemWriteM & ~MemtoRegM) ) begin
+                  nextstate <= READY;
+                end
+                else if( MemWriteM & ~enable) begin
+                  nextstate <= DWRITE;
+                end
+                else if( ~Dirty ) begin
+                  nextstate <= MEMREAD;
+                end
+                else begin
+                  nextstate <= WRITEBACK;
+                end
+                
       // If we have finished writing back four words, start reading from memory
-      WRITEBACK: nextstate <= ( BusReady & (Counter == 3) )? MEMREAD : WRITEBACK;
-      // If all four word have been fetched from memory and 
+      // If the cache is disabled, then only write one line. (line isn't valid)
+      WRITEBACK: nextstate <= ( BusReady & (Counter == 3) ) ? MEMREAD : WRITEBACK;
+      // If all four words have been fetched from memory, then move on.
+      // If the cache is disabled, then only read one line. (line isn't valid)
       MEMREAD:   nextstate <= ( BusReady & (Counter == 3) ) ? NEXTINSTR : MEMREAD;
       // If the instruction memory is stalling, then wait for a new instruction
       NEXTINSTR: nextstate <= IStall ? WAIT : READY;
       WAIT:      nextstate <= IStall ? WAIT : READY;
+      DWRITE:     nextstate <= BusReady ? NEXTINSTR : DWRITE;
       default:   nextstate <= READY;
     endcase
 
   // output logic
   assign Stall  = (state == MEMREAD) | 
                   (state == WRITEBACK) | 
+                  (state == DWRITE) |
                   ( (state == READY) & (MemtoRegM | MemWriteM) & ~Hit );
-  assign CWE    = ( (state == READY) & ( (MemWriteM & Hit) |  (BusReady & ~Hit & ~Dirty) )) |
+  assign CWE    = ( (state == READY) & ( (MemWriteM & Hit) |  (BusReady & ~Hit & ~Dirty) ) ) |
                   ( (state == MEMREAD) & BusReady );
-  assign HWriteM = (state == WRITEBACK) | ((state == READY) & ~Hit & Dirty);
+  assign HWriteM = (state == WRITEBACK) | (state == DWRITE) | 
+                   ((state == READY) & ~Hit & Dirty );
   assign HRequestM  = Stall;
-  assign RDSel  = ( (state == NEXTINSTR) & (WordOffset == 2'b11) );
+  assign RDSel[0] = (state == NEXTINSTR) & (WordOffset == 2'b11) & enable | 
+                    // (state == NEXTINSTR) & ~enable |
+                    (state == DWRITE);
+  assign RDSel[1] = (state == DWRITE);
+
   assign BlockWE = (state == MEMREAD) | ( (state == NEXTINSTR)  & 
                    (~MemWriteM || MemWriteM & ~Dirty) ) |
                    ( (state == READY) & ~Hit & ~Dirty );
   assign ResetCounter = ((state == READY) & Hit) | (state == NEXTINSTR) ;
 
   // Create the block offset for the cache
-  mux2 #($clog2(blocksize)) WordOffsetMux(Counter, WordOffset, ResetCounter, NewWordOffset);
-
-
+  mux2 #($clog2(blocksize)) WordOffsetMux(Counter, WordOffset, ResetCounter, 
+                                          NewWordOffset);
 endmodule
