@@ -4,7 +4,7 @@ module cpsr(input  logic        clk, reset,
               input logic [4:0] MSRmask,    // Highest bit of MSRmask is R
               input logic [5:0] Exceptions, // Exceptions[5:0] are: [5]undef, swi, prefetch_abt, data_abt, irq, fiq[0] 
               input logic       RestoreCPSR,
-              input logic       NotStallW, 
+              input logic       NotStallW, CoProc_FlagUpd_W,
               output logic [31:0] CPSRdata, 
               output logic [31:0] SPSRdata,
               output logic [6:0] PCVectorAddressE);

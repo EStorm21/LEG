@@ -300,7 +300,8 @@ module controller(/// ------ From TOP ------
   flopenrc #(2) undef_exceptionMW(clk, reset, ~StallW, FlushW, {undefM, SWI_M}, {undefW, SWI_W});
   flopenrc #(11) flagW(clk, reset, ~StallW, FlushW, {FlagsNextM, SetNextFlagsM, PSRtypeM, MSRmaskM}, 
                                                    {FlagsNextW, SetNextFlagsW, PSRtypeW, MSRmaskW});
-  cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefW, SWI_W, 4'b0}, restoreCPSR_W, ~StallW, CPSRW, SPSRW, PCVectorAddressW); // TO CHANGE
+  cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefW, SWI_W, 4'b0}, restoreCPSR_W, ~StallW, CoProc_FlagUpd_W,
+                      CPSRW, SPSRW, PCVectorAddressW); // TO CHANGE
   // Hazard Prediction
   assign CPSR8_W = {CPSRW[7:0]};
 
