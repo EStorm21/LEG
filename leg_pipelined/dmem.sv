@@ -5,7 +5,7 @@ module dmem
             output logic [31:0] rd,
             output logic Valid);
 
-  logic [31:0] RAM[2097151:0];
+  logic [31:0] RAM[67108864:0];
   assign Valid = re | we;
 
   // ------------------ Actual Memory ----------------------
@@ -13,7 +13,8 @@ module dmem
       //$readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
        // $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
       // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/LEG/tests/simTest.dat",RAM); //teqrs
-       $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
+       //$readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
+	$readmemh("/proj/leg/sim/simTest.dat", RAM);
       // $readmemh("F:/Academics/Research Clay Wolkin - LEG v4/LEG/tests/simTest.dat",RAM); //teqrs
        // $readmemh("F:/Academics/Research Clay Wolkin - LEG v4/LEG/tests/simTest.dat",RAM); //teqrs
       // $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/mmu/sectionTest.dat",RAM);
