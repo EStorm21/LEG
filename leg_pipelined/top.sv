@@ -31,7 +31,7 @@ module top(input  logic        clk, reset,
   logic [2:0]   opcode_2;
   logic [3:0]   CRm;
   logic         StallCP, FlushI, FlushD, CleanI, CleanD, TLBFlushD, TLBFlushI;
-  logic [31:0]  CP15_rd, control;
+  logic [31:0]  CP15_rd, control, DummyTBase;
 
 
   // instantiate processor and memories
@@ -51,7 +51,7 @@ module top(input  logic        clk, reset,
                     .opcode_2(opcode_2), .CRm(CRm),
                     .StallCP(StallCP), .FlushI(FlushI), .FlushD(FlushD), 
                     .CleanI(CleanI), .CleanD(CleanD), .TLBFlushD(TLBFlushD), 
-                    .TLBFlushI(TLBFlushI), .rd(CP15_rd), .control(control));
+                    .TLBFlushI(TLBFlushI), .rd(CP15_rd), .control(control), .tbase(DummyTBase));
 
   
   // instruction cache with a block size of 4 words and 16 lines
