@@ -24,12 +24,26 @@ module top(input  logic        clk, reset,
   logic DataAbort, PrefetchAbort; // TODO: signals come from MMU
   logic IRQ, FIQ; // TODO: change to external input pins
 
+  // CP15 signals for LEG
+  logic         CPUWriteEn, CPUEn, MMUWriteEn, MMUEn;
+  logic [3:0]   CP15_addr;
+  logic [31:0]  CPUWriteData, MMUWriteData;
+  logic [2:0]   opcode_2;
+  logic [3:0]   CRm;
+  logic         StallCP, FlushI, FlushD, CleanI, CleanD, TLBFlushD, TLBFlushI;
+  logic [31:0]  CP15_rd, control, DummyTBase;
+
+
   // instantiate processor and memories
   leg leg(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
           // Added for memory (DStall, MemtoRegM)
           WriteDataM, ReadDataM, DStall, IStall, MemtoRegM, ByteMaskM,
           // Added for exceptions
-          PrefetchAbort, DataAbort, IRQ, FIQ); 
+          PrefetchAbort, DataAbort, IRQ, FIQ,
+          // Added for Coprocessor
+          CPUWriteEn, CPUEn, CP15_addr, CRm, opcode_2, 
+          CPUWriteData, CP15_rd); 
+
 
   // False signal for the Caches
   // TODO: Hook these up to the coprocessor
@@ -41,6 +55,15 @@ module top(input  logic        clk, reset,
   assign DEN = 1'b0;
   assign DCLEAN = 1'b0;
 
+  coprocessor15 cp15(.clk(clk), .reset(reset), .CPUWriteEn(CPUWriteEn), .CPUEn(CPUEn), 
+                    .MMUWriteEn(MMUWriteEn), .MMUEn(MMUEn), .addr(CP15_addr), 
+                    .CPUWriteData(CPUWriteData), .MMUWriteData(MMUWriteData), 
+                    .opcode_2(opcode_2), .CRm(CRm),
+                    .StallCP(StallCP), .FlushI(FlushI), .FlushD(FlushD), 
+                    .CleanI(CleanI), .CleanD(CleanD), .TLBFlushD(TLBFlushD), 
+                    .TLBFlushI(TLBFlushI), .rd(CP15_rd), .control(control), .tbase(DummyTBase));
+
+  
   // instruction cache with a block size of 4 words and 16 lines
   instr_cache #(4, 128) 
     instr_cache(.clk(clk), .reset(reset), .enable(IEN), .invalidate(INV),
