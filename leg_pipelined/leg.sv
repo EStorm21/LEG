@@ -63,7 +63,7 @@ module leg(input  logic        clk, reset,
   // Exceptions
   logic       UndefinedInstr, undefD, undefE, undefM, undefW;
   logic       SWI, SWI_E, SWI_D, SWI_M, SWI_W;
-  logic       RegtoCPSR, RegtoCPSR_D, RegtoCPSR_E, RegtoCPSR_M, RegtoCPSR_W;
+  logic       RegtoCPSR, CPSRtoReg;
   logic [1:0] PCInSelect;
 
   
