@@ -22,7 +22,9 @@ module cpsr(input  logic        clk, reset,
   logic [31:0] cpsr;
   logic [7:0]  CPSR_update;
   logic [31:0] MSR_update;
+  logic [3:0]  FlagsUpdate;
 
+  assign FlagsUpdate = CoProc_FlagUpd_W ? ALUout[31:28] : FlagsNext;
 
   // CPSR: 3'b000
   // SPSR: SVC(0), Abort(1), Undef(2), IRQ(3), FIQ(4) ; 
@@ -164,7 +166,7 @@ module cpsr(input  logic        clk, reset,
         cpsr <= spsr[regnumber];
       // ========= Just update flags =========
       else if (NotStallW) begin
-        cpsr <= {FlagsNext, cpsr[27:0]};
+        cpsr <= {FlagsUpdate, cpsr[27:0]};
       end
     end
 

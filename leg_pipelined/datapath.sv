@@ -1,10 +1,10 @@
-module datapath(/// ------ From TOP (Memory) ------
+module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic        clk, reset,
                   input  logic [31:0] InstrF,  
-                  input  logic [31:0] ReadDataM,
+                  input  logic [31:0] ReadDataM, CP15rd_M,
 
-                /// ------ To TOP (Memory) ------
-                  output logic [31:0] PCF,
+                /// ------ To TOP (Memory & Coproc) ------
+                  output logic [31:0] PCF, WriteDataM,
 
                 ///  ------- From Controller ------
                   input  logic [1:0]  ImmSrcD,
@@ -31,11 +31,11 @@ module datapath(/// ------ From TOP (Memory) ------
                   input  logic [3:0]  RegFileRzD,
                   input  logic [31:0] uOpInstrD,
                   input  logic        WriteMultLoKeptE,
-                  input  logic        ShifterCarryOut_cycle2E,
+                  input  logic        ShifterCarryOut_cycle2E, CoProc_EnM, 
 
                 /// ------ To Controller ------
                   output logic [31:0] InstrD,
-                  output logic [31:0] ALUOutM, WriteDataM, ALUOutW,
+                  output logic [31:0] ALUOutM, ALUOutW,
                   output logic [3:0]  ALUFlagsE, MultFlagsE,
                   output logic [1:0]  STR_cycleD,
                   output logic [31:0] ALUResultE, DefaultInstrD,
@@ -63,6 +63,7 @@ module datapath(/// ------ From TOP (Memory) ------
   logic [31:0] MultOutputBE, MultOutputAE;
   logic [31:0] ReadDataRawW, ReadDataW, Result1_W, ResultW;
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE, MoveR14PC_D;
+  logic [31:0] ALUorCP15_M;
   
 
   // ====================================================================================
@@ -136,12 +137,13 @@ module datapath(/// ------ From TOP (Memory) ------
   // =============================== Memory Stage =======================================
   // ====================================================================================
   flopenr #(32) aluresreg(clk, reset, ~StallM, ALUResultE, ALUOutM);
+  mux2 #(32) CP15_ALU_mux(ALUOutM, CP15rd_M, CoProc_EnM, ALUorCP15_M);
   flopenr #(32) wdreg(clk, reset, ~StallM, WriteDataReplE, WriteDataM);
   
   // ====================================================================================
   // =============================== Writeback Stage ====================================
   // ====================================================================================
-  flopenrc #(32) aluoutreg(clk, reset, ~StallW, FlushW, ALUOutM, ALUOutW);
+  flopenrc #(32) aluoutreg(clk, reset, ~StallW, FlushW, ALUorCP15_M, ALUOutW);
   flopenrc #(32) rdreg(clk, reset, ~StallW, FlushW, ReadDataM, ReadDataRawW);
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, Result1_W);
   mux2 #(32)  msr_mrs_mux(Result1_W, PSR_W, CPSRtoRegW, ResultW);
