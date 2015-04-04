@@ -13,11 +13,11 @@ prog:
 	mrc p15, 0, r1, c1, c0, 0
 	mrc p15, 0, r2, c2, c0, 0
 	mrc p15, 0, r3, c3, c0, 0
-	mrc p15, 0, r4, c4, c0, 0
 	mrc p15, 0, r5, c5, c0, 0
-	mrc p15, 0, r6, c6, c0, 0
-
-
+	mrc p15, 0, r9, c9, c0, 0
+	mrc p15, 0, r10, c10, c0, 0
+	mrc p15, 0, r13, c13, c0, 0
+	
 stop:    b stop
 
 reset: b prog

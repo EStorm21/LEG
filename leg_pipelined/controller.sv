@@ -2,10 +2,12 @@ module controller(/// ------ From TOP ------
                     input  logic         clk, reset,
 
                   /// ------ To   TOP ------
-                    output logic         MemtoRegM,
+                    output logic         MemtoRegM, CoProc_WrEnM, CoProc_EnM, 
+                    output logic [3:0]   CoProc_AddrM, CoProc_CRmM, 
+                    output logic [2:0]   CoProc_Op2M, 
 
                   /// ------ To   Addresspath ------
-                    output logic [7:0]  CPSR8_W,
+                    output logic [7:0]   CPSR8_W,
                     output logic [6:0]   PCVectorAddressW,
                     output logic         Reg_usr_D,
 
@@ -53,7 +55,7 @@ module controller(/// ------ From TOP ------
                   /// ------ To   Hazard ------
                     output logic         RegWriteM, MemtoRegE, PCWrPendingF, SWI_E, SWI_D, SWI_M, SWI_W,
                     output logic         undefD, undefE, undefM, undefW,
-                    output logic         RegtoCPSR, CPSRtoReg,
+                    output logic         RegtoCPSR, CPSRtoReg, CoProc_En,
                     
                   /// For BX instruction
                     output logic         BXInstrD, TFlagNextE,
@@ -90,13 +92,10 @@ module controller(/// ------ From TOP ------
   logic        RegWriteControlE;
   logic        CoProc_MCR_D, CoProc_MRC_D, CoProc_FlagUpd_D, CoProc_WrEnD, CoProc_EnD;
   logic        CoProc_FlagUpd_E, CoProc_FlagUpd_M, CoProc_FlagUpd_W;
-  logic        CoProc_WrEnE, CoProc_EnE, CoProc_EnM, CoProc_WrEnM, MCR_D;
-  logic [2:0]  CoProc_Op2M;
-  logic [3:0]  CoProc_AddrM, CoProc_CRmM; // Coprocessor Variables
+  logic        CoProc_WrEnE, CoProc_EnE, MCR_D;
   logic [3:0]  FlagsM;
   logic [6:0]  PCVectorAddressE, PCVectorAddressM;
   logic [31:0] SPSRW, CPSRW;
-
 
 
   // ====================================================================================
@@ -120,6 +119,7 @@ module controller(/// ------ From TOP ------
   assign CoProc_FlagUpd_D = CoProc_MRC_D & InstrD[15:12] == 4'hF; // MRC instruction that only updates flags
   assign CoProc_EnD    = CoProc_MRC_D | CoProc_MCR_D;
   assign CoProc_WrEnD  = CoProc_MCR_D;
+  assign CoProc_En     = CoProc_EnD | CoProc_EnE | CoProc_EnM | CoProc_FlagUpd_W;
 
   always_comb
   	casex(InstrD[27:26]) 
@@ -233,7 +233,7 @@ module controller(/// ------ From TOP ------
   flopenrc #(2) undef_exception(clk, reset, ~StallE, FlushE, {undefD, SWI_D}, {undefE, SWI_E});
 
 
-  assign  FlagsE = SetNextFlagsM ? FlagsNextM : FlagsNextW;
+  assign  FlagsE = SetNextFlagsM ? FlagsNextM : (SetNextFlagsW ? FlagsNextW : CPSRW[31:28]);
   assign  PreviousTFlagE = 1'b0; // = StatusRegisterE[5];
   flopenrc  #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);
   conditional Cond(CondE, FlagsE, ALUFlagsE, MultFlagsE, FlagWriteE, CondExE, FlagsNext0E, ResultSelectE[1]);
@@ -302,7 +302,7 @@ module controller(/// ------ From TOP ------
   flopenrc #(11) flagW(clk, reset, ~StallW, FlushW, {FlagsNextM, SetNextFlagsM, PSRtypeM, MSRmaskM}, 
                                                    {FlagsNextW, SetNextFlagsW, PSRtypeW, MSRmaskW});
   cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefW, SWI_W, 4'b0}, restoreCPSR_W, ~StallW, CoProc_FlagUpd_W,
-                      CPSRW, SPSRW, PCVectorAddressW); // TO CHANGE
+                      CPSRW, SPSRW, PCVectorAddressW); 
   // Hazard Prediction
   assign CPSR8_W = {CPSRW[7:0]};
 

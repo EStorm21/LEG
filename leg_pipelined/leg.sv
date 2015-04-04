@@ -11,11 +11,11 @@ module leg(input  logic        clk, reset,
            // Added for exceptions
            input logic         PrefetchAbort, DataAbort, IRQ, FIQ,
            // Added for Coprocessor Instructions
-           output logic        CPUWriteEn, CPUEn, 
-           output logic [3:0]  CP15_addr, CRm, 
-           output logic [2:0]  opcode_2, 
+           output logic        CoProc_WrEnM, CoProc_EnM, 
+           output logic [3:0]  CoProc_AddrM, CoProc_CRmM, 
+           output logic [2:0]  CoProc_Op2M, 
            output logic [31:0] CPUWriteData, 
-           input logic  [31:0] CP15_rd);
+           input logic  [31:0] CP15rd_M);
 
   /// Output from Hazard Unit
   logic [1:0]  ForwardAE, ForwardBE;
@@ -47,7 +47,7 @@ module leg(input  logic        clk, reset,
   logic [2:0]  ALUOperationE, CVUpdateE;
   logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnable, LoadLengthW;
   logic [3:0]  RegFileRzD;
-  logic        ShifterCarryOut_cycle2E;
+  logic        ShifterCarryOut_cycle2E, CoProc_En;
   logic [7:0]  CPSR8_W;
   logic [31:0] PSR_W;
   logic [6:0]  PCVectorAddressW;

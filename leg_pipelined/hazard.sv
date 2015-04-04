@@ -8,7 +8,7 @@ module hazard(input  logic       clk, reset,
               // Added DStall, StallE, StallM, and FlushW for memory
               output logic       FlushD, FlushE, IncrementE,
               input  logic       DStall, IStall,
-              input  logic       MultStallD, MultStallE,
+              input  logic       MultStallD, MultStallE, CoProc_En,
               output logic       StallE, StallM, FlushW, StallW,
               // For Micro-ops
               input logic        uOpStallD, LDMSTMforwardE,
@@ -58,13 +58,13 @@ module hazard(input  logic       clk, reset,
   
   assign StallD = ldrStallD | DStall | uOpStallD | IStall | MultStallD | (SWI_E | undefE);
   assign StalluOp = ldrStallD | DStall | IStall | MultStallD;
-  assign StallF = ldrStallD | PCWrPendingF | DStall | IStall | uOpStallD | MultStallD | (SWI_D | SWI_E | SWI_M | undefD | undefE | undefM | RegtoCPSR | CPSRtoReg);
+  assign StallF = ldrStallD | PCWrPendingF | DStall | IStall | uOpStallD | MultStallD | (SWI_D | SWI_E | SWI_M | undefD | undefE | undefM | RegtoCPSR | CPSRtoReg | CoProc_En);
   assign StallE = DStall | IStall;
   assign FlushW = DStall | IStall;
   assign StallW = DStall | IStall;
   assign StallM = DStall | IStall;
   assign FlushE = ldrStallD | BranchTakenE | (SWI_M | undefM); 
-  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | (SWI_E | SWI_M | SWI_W | undefE | undefM | undefW | RegtoCPSR | CPSRtoReg);
+  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | (SWI_E | SWI_M | SWI_W | undefE | undefM | undefW | RegtoCPSR | CPSRtoReg | CoProc_En);
   assign ExceptionSavePC = SWI_E | undefE; 
 
   // exception handling

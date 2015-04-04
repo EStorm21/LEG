@@ -25,13 +25,13 @@ module top(input  logic        clk, reset,
   logic IRQ, FIQ; // TODO: change to external input pins
 
   // CP15 signals for LEG
-  logic         CPUWriteEn, CPUEn, MMUWriteEn, MMUEn;
-  logic [3:0]   CP15_addr;
+  logic         CoProc_WrEnM, CoProc_EnM, MMUWriteEn, MMUEn;
+  logic [3:0]   CoProc_AddrM;
   logic [31:0]  CPUWriteData, MMUWriteData;
-  logic [2:0]   opcode_2;
-  logic [3:0]   CRm;
+  logic [2:0]   CoProc_Op2M;
+  logic [3:0]   CoProc_CRmM;
   logic         StallCP, FlushI, FlushD, CleanI, CleanD, TLBFlushD, TLBFlushI;
-  logic [31:0]  CP15_rd, control, DummyTBase;
+  logic [31:0]  CP15rd_M, control, DummyTBase;
 
 
   // instantiate processor and memories
@@ -41,8 +41,8 @@ module top(input  logic        clk, reset,
           // Added for exceptions
           PrefetchAbort, DataAbort, IRQ, FIQ,
           // Added for Coprocessor
-          CPUWriteEn, CPUEn, CP15_addr, CRm, opcode_2, 
-          CPUWriteData, CP15_rd); 
+          CoProc_WrEnM, CoProc_EnM, CoProc_AddrM, CoProc_CRmM, CoProc_Op2M, 
+          CPUWriteData, CP15rd_M); 
 
 
   // False signal for the Caches
@@ -55,13 +55,13 @@ module top(input  logic        clk, reset,
   assign DEN = 1'b0;
   assign DCLEAN = 1'b0;
 
-  coprocessor15 cp15(.clk(clk), .reset(reset), .CPUWriteEn(CPUWriteEn), .CPUEn(CPUEn), 
-                    .MMUWriteEn(MMUWriteEn), .MMUEn(MMUEn), .addr(CP15_addr), 
-                    .CPUWriteData(CPUWriteData), .MMUWriteData(MMUWriteData), 
-                    .opcode_2(opcode_2), .CRm(CRm),
+  coprocessor15 cp15(.clk(clk), .reset(reset), .CPUWriteEn(CoProc_WrEnM), .CPUEn(CoProc_EnM), 
+                    .MMUWriteEn(MMUWriteEn), .MMUEn(MMUEn), .addr(CoProc_AddrM), 
+                    .CPUWriteData(WriteDataM), .MMUWriteData(MMUWriteData), 
+                    .opcode_2(CoProc_Op2M), .CRm(CoProc_CRmM),
                     .StallCP(StallCP), .FlushI(FlushI), .FlushD(FlushD), 
                     .CleanI(CleanI), .CleanD(CleanD), .TLBFlushD(TLBFlushD), 
-                    .TLBFlushI(TLBFlushI), .rd(CP15_rd), .control(control), .tbase(DummyTBase));
+                    .TLBFlushI(TLBFlushI), .rd(CP15rd_M), .control(control), .tbase(DummyTBase));
 
   
   // instruction cache with a block size of 4 words and 16 lines
