@@ -131,7 +131,7 @@ always_comb
 								defaultInstrD[11:0]}; // This needs to be MOV R1 R2 << R3. 
 				end
 				// Start multiply accumulate
-				else if(defaultInstrD[21] && (defaultInstrD[7:4] == 4'b1001)) begin 
+				else if((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:21] == 7'h01)) begin 
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 0;
 					uOpStallD = 1;
