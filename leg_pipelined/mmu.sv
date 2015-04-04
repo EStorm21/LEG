@@ -2,7 +2,7 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
            input  logic CPUHWrite, HReady, DataAccess, CPSR4,
            input  logic SBit, RBit, SupMode, WordAccess, DStall, IStall,
            input  logic [31:0] CPUHAddr, HRData, Dom,
-           input  logic [6:0] TLBCont, Cont, // Cont[0] is the enable bit
+           input  logic [31:0] Cont, // Cont[0] is the enable bit
            input  logic [17:0] TBase,
            output logic [31:0] HAddr, FAR, MMUWriteData,
            output logic [7:0] FSR,
@@ -42,8 +42,8 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   
   // Bypass translation
   mux2 #(35) enableMux({CPUHAddr, CPUHRequest, CPUHWrite, HReady},
-                       {HAdderOut, HRequestMid, HWriteMid, CPUHReadyMid}, Cont[0], 
-                       {HAddr, HRequest, HWrite, CPUHReady});
+                       {HAdderOut, HRequestMid, HWriteMid, CPUHReadyMid}, 
+                       Enable, {HAddr, HRequest, HWrite, CPUHReady});
   
   // PHRData flop: Hold onto the previous bus value for current translation
   flopenr #(32) HRDataFlop(clk, reset, HReady, HRData, PHRData);

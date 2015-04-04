@@ -12,7 +12,7 @@ module dmem
   initial
       // $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
       $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
+      // $readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
       //$readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
        // $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
       // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/LEG/tests/simTest.dat",RAM); //teqrs
