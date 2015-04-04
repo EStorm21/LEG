@@ -31,7 +31,7 @@ module top(input  logic        clk, reset,
   logic [2:0]   CoProc_Op2M;
   logic [3:0]   CoProc_CRmM;
   logic         StallCP, FlushI, FlushD, CleanI, CleanD, TLBFlushD, TLBFlushI;
-  logic [31:0]  CP15rd_M, control, DummyTBase;
+  logic [31:0]  CP15rd_M, control, FullTBase;
 
 
   // instantiate processor and memories
@@ -61,7 +61,7 @@ module top(input  logic        clk, reset,
                     .opcode_2(CoProc_Op2M), .CRm(CoProc_CRmM),
                     .StallCP(StallCP), .FlushI(FlushI), .FlushD(FlushD), 
                     .CleanI(CleanI), .CleanD(CleanD), .TLBFlushD(TLBFlushD), 
-                    .TLBFlushI(TLBFlushI), .rd(CP15rd_M), .control(control), .tbase(DummyTBase));
+                    .TLBFlushI(TLBFlushI), .rd(CP15rd_M), .control(control), .tbase(FullTBase));
 
   
   // instruction cache with a block size of 4 words and 16 lines
@@ -104,7 +104,7 @@ module top(input  logic        clk, reset,
   logic [31:0] Dom;
   logic [6:0] TLBCont, Cont;
   logic [17:0] TBase;
-  logic [31:0] FAR, FullTBase;
+  logic [31:0] FAR;
   logic [7:0] FSR;
   logic DataAccess, CPSR4, Fault;
   logic SBit, RBit, SupMode, WordAccess;
@@ -116,7 +116,7 @@ module top(input  logic        clk, reset,
   assign RBit = 1'b1;
   assign DataAccess = 1'b1;   // Trying to access data memory, not instruction memory
   assign CPSR4 = 1'b1;
-  assign FullTBase = 32'h0030_0000; // Translation Base at 0x0010_0000
+  // assign FullTBase = 32'h0030_0000; // Translation Base at 0x0010_0000
   assign TBase = FullTBase[31:14];
   assign Cont  = 7'b000_0000;     // Enable the MMU with Cont[0]
   assign MMUExtInt = 1'b0;        // No External Interrupt
