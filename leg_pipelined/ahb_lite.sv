@@ -30,7 +30,7 @@ module ahb_lite(input  logic        HCLK,
 dmem mem (.clk(HCLK), .we(HWRITE), .re(HREQUEST & ~HWRITE), 
                       .a(HADDR), .wd(HWDATA), .rd(HRDATA0), .Valid(HREADY), .HSEL(HSEL[0]));
 
-pic primaryInterruptController(.*, .HSEL(HSEL[1]), .HRDATA(HRDATA1), .HADDR(HADDR[5:2]));
+pic primaryInterruptController(.*, .HSEL(HSEL[1]), .HRDATA(HRDATA1), .HADDR(HADDR[6:2]));
 sic secondaryInterruptController(.*, .HSEL(HSEL[2]), .HRDATA(HRDATA2), .HADDR(HADDR[4:2]), .interrupt(SICinterrupt));
   
 endmodule
