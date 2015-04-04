@@ -55,7 +55,7 @@ module controller(/// ------ From TOP ------
                   /// ------ To   Hazard ------
                     output logic         RegWriteM, MemtoRegE, PCWrPendingF, SWI_E, SWI_D, SWI_M, SWI_W,
                     output logic         undefD, undefE, undefM, undefW,
-                    output logic         RegtoCPSR, CPSRtoReg,
+                    output logic         RegtoCPSR, CPSRtoReg, CoProc_En,
                     
                   /// For BX instruction
                     output logic         BXInstrD, TFlagNextE,

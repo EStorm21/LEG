@@ -47,7 +47,7 @@ module leg(input  logic        clk, reset,
   logic [2:0]  ALUOperationE, CVUpdateE;
   logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnable, LoadLengthW;
   logic [3:0]  RegFileRzD;
-  logic        ShifterCarryOut_cycle2E;
+  logic        ShifterCarryOut_cycle2E, CoProc_En;
   logic [7:0]  CPSR8_W;
   logic [31:0] PSR_W;
   logic [6:0]  PCVectorAddressW;
