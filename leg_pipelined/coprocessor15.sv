@@ -64,7 +64,9 @@ assign StallCP = (CPUWriteEn & MMUWriteEn) | (CPUEn & MMUEn);
 
 always_ff @(negedge clk) begin
   if (reset)
-    rf <= '{16{32'b0}};
+    rf <= {32'b0, 32'b0, 32'b0, 32'b0, 32'b0, 32'b0,
+           32'b0, 32'b0, 32'b0, 32'b0, 32'b0, 32'b0,
+           32'b0, 32'b0, 32'b0, 32'h69052d00};
   else begin
     for (j = 1; j < 16; j = j+1) begin // r0 is read only, so we start at r1
       if(we & reg_select[j]) rf[j] <= wd;	
