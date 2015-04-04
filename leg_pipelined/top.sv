@@ -34,7 +34,7 @@ module top(input  logic        clk, reset,
   logic [31:0]  CP15rd_M, control, FullTBase;
 
   synchronizer synchro(.*);
-  
+
   // instantiate processor and memories
   leg leg(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
           // Added for memory (DStall, MemtoRegM)
@@ -53,8 +53,8 @@ module top(input  logic        clk, reset,
   logic DEN, DNV, DCLEAN; // Data cache enable and invalidate
   assign INV = 1'b0;
   assign DNV = 1'b0;
-  assign IEN = 1'b1;
-  assign DEN = 1'b1;
+  assign IEN = 1'b0;
+  assign DEN = 1'b0;
   assign DCLEAN = 1'b0;
 
   coprocessor15 cp15(.clk(clk), .reset(reset), .CPUWriteEn(CoProc_WrEnM), .CPUEn(CoProc_EnM), 
