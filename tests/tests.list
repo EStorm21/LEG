@@ -60,7 +60,7 @@ ldm
 stm
 ldrh_strh_i
 #dhry
-#random3
+random3
 mrs
 mrs2
 mrc

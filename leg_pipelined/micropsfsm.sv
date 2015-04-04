@@ -8,7 +8,7 @@ module micropsfsm(input  logic        clk, reset,
 			   input  logic		   StalluOp, ExceptionSavePC);
 
 // define states READY and RSR 
-typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, ldr, str, str2, blx, strHalf, exception} statetype;
+typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, ldr, str, blx, strHalf, exception} statetype;
 statetype state, nextState;
 
 // --------------------------- ADDED FOR LDM/STM -------------------------------
@@ -360,6 +360,20 @@ always_comb
 								}; 
 
 				end
+				// // SWP instruction: (1) Rz_temp = Mem(Rn), (2) Mem(Rn) = Rm, (3) Rd = Rz_temp;
+				// else if (defaultInstrD[27:20] == 8'h10 & defaultInstrD[11:4] == 8'h09) begin
+				// 	nextState = swp;
+				// 	InstrMuxD = 1;
+				// 	regFileRz = {1'b0, // Control inital mux for RA1D
+				// 				3'b100}; // 5th bit of WA3, RA2D and RA1D
+				// 	uOpStallD = 1;
+				// 	doNotUpdateFlagD = 1;
+				// 	uOpInstrD = {defaultInstrD[31:28], // condition bits
+				// 				8'b0101_1001, 	// Load with zero immediate offset, word acceess, load
+				// 				defaultInstrD[19:16], // Access Mem(Rn)
+				// 				4'b1111, // Load into Rz
+				// 				12'b0};
+				// end
 				/* --- Stay in the READY state ----
 				 */
 				else begin 
