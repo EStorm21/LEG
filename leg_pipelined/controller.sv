@@ -53,8 +53,8 @@ module controller(/// ------ From TOP ------
                   /// ------ To   Hazard ------
                     output logic         RegWriteM, MemtoRegE, PCWrPendingF, SWI_E, SWI_D, SWI_M, SWI_W,
                     output logic         undefD, undefE, undefM, undefW,
-                    output logic         RegtoCPSR, RegtoCPSR_D, RegtoCPSR_E, RegtoCPSR_M, RegtoCPSR_W,
-
+                    output logic         RegtoCPSR, CPSRtoReg,
+                    
                   /// For BX instruction
                     output logic         BXInstrD, TFlagNextE,
                     input  logic         TFlagE,
@@ -77,7 +77,7 @@ module controller(/// ------ From TOP ------
   logic        CPSRtoRegD, CPSRtoReg0E, CPSRtoRegE, CPSRtoRegM;
   logic        PSRtypeD, PSRtypeE, PSRtypeM;
   logic        PSRtypeW, RegtoCPSRr_D, RegtoCPSRi_D;
-  logic        RegtoCPSR_0E;
+  logic        RegtoCPSR_D, RegtoCPSR_0E, RegtoCPSR_E, RegtoCPSR_M, RegtoCPSR_W;
   logic [1:0]  FlagWriteD, FlagWriteE;
   logic        PCSrcD, PCSrcE, PCSrcM;
   logic [3:0]  FlagsNext0E, FlagsNextE, FlagsNextM, FlagsNextW, CondE;
@@ -112,6 +112,8 @@ module controller(/// ------ From TOP ------
   assign RegtoCPSRi_D  = (InstrD[27:23] == 5'b00110 & InstrD[21:20] == 2'b10 & InstrD[15:12] == 4'hF); // Move immediate to CPSR/SPSR (MSR instruction I type)
   assign RegtoCPSR_D   = RegtoCPSRr_D | RegtoCPSRi_D;
   assign RegtoCPSR     = RegtoCPSR_D | RegtoCPSR_E | RegtoCPSR_M | RegtoCPSR_W;
+  assign CPSRtoRegD    = (InstrD[27:23] == 5'b00010 & InstrD[21:16] == 6'b001111 & ~(|InstrD[11:0])); // MRS instruction
+  assign CPSRtoReg     = CPSRtoRegD | CPSRtoRegE | CPSRtoRegM | CPSRtoRegW;
 
   assign CoProc_MRC_D  = (InstrD[27:24] == 4'b1110 & InstrD[20] & InstrD[4]); // MRC instruction
   assign CoProc_MCR_D = InstrD[27:24] == 4'b1110 & ~InstrD[20] & InstrD[4]; // MCR instruction
@@ -179,7 +181,6 @@ module controller(/// ------ From TOP ------
   assign MultControlD  = InstrD[23:21];   // Control for the Multiplier Block
   assign RselectD      = (InstrD[27:25] == 3'b000 & InstrD[4] == 0) | (LdrStrRtypeD & ~LDMSTMforwardD); // Is a R-type instruction or R-type load store
   assign RSRselectD    = (InstrD[27:25] == 3'b000 & ~InstrD[7] & InstrD[4] == 1) & ~(InstrD[27:4] == {8'b0001_0010, 12'hFFF, 4'b0001});
-  assign CPSRtoRegD    = (InstrD[27:23] == 5'b00010 & InstrD[21:16] == 6'b001111 & ~(|InstrD[11:0])); // MRS instruction
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~RegFileRzD[2] & ~CPSRtoRegD & ~RegtoCPSR_D) | BranchD); // Chooses program counter either from DMEM or from ALU calculation
   assign PSRtypeD = (CPSRtoRegD & InstrD[22]);
   assign ResultSelectD = {MultSelectD, RSRselectD}; 
