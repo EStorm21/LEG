@@ -32,7 +32,7 @@ module instr_cache_controller #(parameter tagbits = 14)
     case (state)
       READY:      nextstate <= Hit ? READY : MEMREAD;
       NEXTINSTR:  nextstate <= READY;
-      MEMREAD:    nextstate <= ( BusReady & (Counter == 3) ) ? NEXTINSTR : MEMREAD;
+      MEMREAD:    nextstate <= ( BusReady & ( (Counter == 3) | ~enable ) ) ? NEXTINSTR : MEMREAD;
       default: nextstate <= READY;
     endcase
 
@@ -43,17 +43,20 @@ module instr_cache_controller #(parameter tagbits = 14)
   assign HRequestF  = (state == MEMREAD) | ((state == READY) & ~Hit);
   assign ResetCounter = ( (state == READY) & Hit ) | ( state == NEXTINSTR );
 
+  logic [1:0] CounterMid;
   // Create Counter for sequential bus access
   always_ff @(posedge clk, posedge reset)
     if(reset | ResetCounter) begin
-        Counter <= 0;
+        CounterMid <= 0;
     end else begin
       if (BusReady) begin
-          Counter <= Counter + 1;
+          CounterMid <= CounterMid + 1;
       end else begin
-          Counter <= Counter;
+          CounterMid <= CounterMid;
       end
     end
+
+  mux2 #(2) cenMux(WordOffset, CounterMid, enable, Counter);
 
   logic writeW1;
   always_comb

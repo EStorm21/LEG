@@ -98,7 +98,7 @@ module data_writeback_associative_cache_controller
                 
       // If we have finished writing back four words, start reading from memory
       // If the cache is disabled, then only write one line. (line isn't valid)
-      WRITEBACK: nextstate <= ( BusReady & (Counter == 3) ) ? MEMREAD : WRITEBACK;
+      WRITEBACK: nextstate <= ( ( BusReady & (Counter == 3) ) ) ? MEMREAD : WRITEBACK;
       // If all four words have been fetched from memory, then move on.
       // If the cache is disabled, then only read one line. (line isn't valid)
       MEMREAD:   nextstate <= ( BusReady & (Counter == 3) ) ? NEXTINSTR : MEMREAD;
