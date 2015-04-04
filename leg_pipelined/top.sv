@@ -22,7 +22,7 @@ module top(input  logic        clk, reset,
   
   // ----- Exception signals -----
   logic DataAbort, PrefetchAbort; // TODO: signals come from MMU
-  logic IRQ, FIQ; // TODO: change to external input pins
+  logic IRQ, FIQ, IRQsync, FIQsync; 
 
   // CP15 signals for LEG
   logic         CoProc_WrEnM, CoProc_EnM, MMUWriteEn, MMUEn;
@@ -33,16 +33,18 @@ module top(input  logic        clk, reset,
   logic         StallCP, FlushI, FlushD, CleanI, CleanD, TLBFlushD, TLBFlushI;
   logic [31:0]  CP15rd_M, control, FullTBase;
 
+  synchronizer synchro(.*);
 
   // instantiate processor and memories
   leg leg(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
           // Added for memory (DStall, MemtoRegM)
           WriteDataM, ReadDataM, DStall, IStall, MemtoRegM, ByteMaskM,
           // Added for exceptions
-          PrefetchAbort, DataAbort, IRQ, FIQ,
+          PrefetchAbort, DataAbort, IRQsync, FIQsync,
           // Added for Coprocessor
           CoProc_WrEnM, CoProc_EnM, CoProc_AddrM, CoProc_CRmM, CoProc_Op2M, 
           CPUWriteData, CP15rd_M); 
+
 
 
   // False signal for the Caches

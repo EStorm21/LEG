@@ -52,7 +52,7 @@
 #umull
 #umlal
 #smlal
-#random2
+random2
 #ldr_str_i
 #ldr_str_r
 #bx
@@ -61,7 +61,7 @@
 #ldrh_strh_i
 #dhry
 #random3
-#mrs
-#mrs2
-#mrc
-linux
+mrs
+mrs2
+mrc
+#linux
