@@ -2,7 +2,7 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
            input  logic CPUHWrite, HReady, DataAccess, CPSR4,
            input  logic SBit, RBit, SupMode, WordAccess, DStall, IStall,
            input  logic [31:0] CPUHAddr, HRData, Dom,
-           input  logic [31:0] Cont, // Cont[0] is the enable bit
+           input  logic [31:0] control, // Cont[0] is the enable bit
            input  logic [17:0] TBase,
            output logic [31:0] HAddr, FAR, MMUWriteData,
            output logic [7:0] FSR,
@@ -38,7 +38,7 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   logic [1:0] CurrAP, dPerm;
   assign FSR[7:4] = Domain;    // Define the location of the domain
   assign FAR = CPUHAddr;           // Set the FAR
-  assign Enable = Cont[0];         // Add enable, disable
+  assign Enable = control[0];         // Add enable, disable
   
   // Bypass translation
   mux2 #(35) enableMux({CPUHAddr, CPUHRequest, CPUHWrite, HReady},
@@ -119,7 +119,6 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
     endcase
 
   // Fault and FaultCode output logic
-  // TODO: Make this structural
   always_comb
     case (state)
       READY: 
