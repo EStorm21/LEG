@@ -17,6 +17,8 @@ prog:
 	mrc p15, 0, r9, c9, c0, 0
 	mrc p15, 0, r10, c10, c0, 0
 	mrc p15, 0, r13, c13, c0, 0
+	mcr     p15, 0, r0, c1, c0, 0
+	mrc p15, 0, r4, c1, c0, 0
 	
 stop:    b stop
 
