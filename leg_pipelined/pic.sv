@@ -2,7 +2,7 @@
 module pic(input  logic        HCLK, 
            input  logic        HRESETn, 
            input  logic        HSEL, 
-           input  logic [3:0] HADDR, 
+           input  logic [4:0] HADDR, 
            input  logic        HWRITE, 
            input  logic [31:0] HWDATA, 
            input  logic [31:0] rawIRQVec, rawFIQVec, 
