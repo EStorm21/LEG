@@ -107,15 +107,14 @@ module top(input  logic        clk, reset,
   logic SBit, RBit, SupMode, WordAccess;
 
   assign Dom = 32'hffff_ffff; // Full permissions to all domains
-  assign WordAccess = 1'b1;   // Assuming not byte or halfword accesses
+  assign WordAccess = 1'b0;   // Assuming byte or halfword accesses
   assign SupMode = 1'b1;      // in supervisor mode
-  assign SBit = 1'b0;         // Give the most permissions with S and R
-  assign RBit = 1'b1;
+  // assign SBit = control[7];         // Give the most permissions with S and R
+  // assign RBit = control[9];
   assign DataAccess = 1'b1;   // Trying to access data memory, not instruction memory
   assign CPSR4 = 1'b1;
   // assign FullTBase = 32'h0030_0000; // Translation Base at 0x0010_0000
   assign TBase = FullTBase[31:14];
-  assign Cont  = 7'b000_0000;     // Enable the MMU with Cont[0]
   assign MMUExtInt = 1'b0;        // No External Interrupt
 
   // Create memory with a 2 cycle delay and 4 word block size (Parameterized block size not functional)

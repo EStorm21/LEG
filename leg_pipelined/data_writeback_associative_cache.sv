@@ -46,10 +46,10 @@ module data_writeback_associative_cache
     // W2D:        Way 2 dirty bit
     // RDSel:      Select output from bus or from cache
     // Hit:        Hit in the cache
-    logic BlockWE, W1D, W2D, Hit, WaySel, RDSel;
+    logic BlockWE, W1D, W2D, Hit, WaySel;
     logic [setbits-1:0] set;   // Set bits
     // Counter for sequential buss access
-    logic [1:0] Counter, WordOffset, CacheRDSel;   
+    logic [1:0] Counter, WordOffset, CacheRDSel, RDSel;   
     logic [tagbits-1:0] Tag;   // Current tag
 
 
@@ -59,8 +59,7 @@ module data_writeback_associative_cache
 
     // Create New Address using the counter as the word offset
     logic [blockbits-1:0] NewWordOffset;
-    logic [$clog2(lines/blocksize)-1:0] BlockNum;
-    assign ANew = {A[31:12], BlockNum, NewWordOffset, A[1:0]};
+    assign ANew = {A[31:4], NewWordOffset, A[1:0]};
 
     // Create Cache memory. 
     // This module contains both way memories and LRU table
@@ -73,7 +72,7 @@ module data_writeback_associative_cache
     // Cache Controller
     assign WordOffset = A[3:2]; // Create word offset for cache controller
     assign Tag = ANew[31:31-tagbits+1];           
-    data_writeback_associative_cache_controller #(lines, blocksize, tagbits) dcc(.*);
+    data_writeback_associative_cache_controller #(blocksize, tagbits) dcc(.*);
 
     // HWData Mux
     // mux2 #(32) HWDataMux(W2RD, W1RD, W1EN, HWData);
@@ -88,6 +87,6 @@ module data_writeback_associative_cache
     mux2 #(32) CacheOutMux(W2RD, W1RD, WaySel, CacheOut);
 
     // Select from cache or memory
-    mux2 #(32) RDMux(CacheOut, WD, RDSel, RD);
+    mux3 #(32) RDMux(CacheOut, HRData, WD, RDSel, RD);
 
 endmodule
