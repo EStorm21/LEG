@@ -7,7 +7,7 @@ module instr_cache_controller #(parameter tagbits = 14)
    input  logic [tagbits-1:0] W1Tag, W2Tag, Tag,
    output logic [1:0] Counter,
    output logic W1WE, W2WE, WaySel,
-   output logic IStall, RDSel, ResetCounter, HRequestF,
+   output logic IStall, ResetCounter, HRequestF,
    output logic [1:0] NewWordOffset);
 
   logic W1EN, W2EN, Hit, W2Hit;
@@ -39,7 +39,7 @@ module instr_cache_controller #(parameter tagbits = 14)
   // output logic
   assign IStall =  (state == MEMREAD) | ((state == READY) & ~Hit);
   assign CWE    = ( (state == MEMREAD) & BusReady | ( (state == READY) & ~Hit & BusReady) );
-  assign RDSel  = ( (state == NEXTINSTR) & (WordOffset == 2'b11) ) & enable;
+  // assign RDSel  = ( (state == NEXTINSTR) & (WordOffset == 2'b11) ) & enable;
   assign HRequestF  = (state == MEMREAD) | ((state == READY) & ~Hit);
   assign ResetCounter = ( (state == READY) & Hit ) | ( state == NEXTINSTR );
 

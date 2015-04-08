@@ -87,7 +87,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   flopenrc #(32) pcplus0(clk, reset, ~StallD, FlushD, PCPlus4D, PCPlus0D);
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
   mux3 #(32)  exceptionPC(PCPlus8D, PCPlus4D, PCPlus0D, PCInSelect, PC_in);
-  exception_pchandling exc_pc(MoveR14PC_D);
+  exception_pchandling exc_pc(MoveR14PC_D); // *** delete?
 
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   // mux2 #(32)  instrDmux2(Instr_1D, MoveR14PC_D, 1'b0, InstrD);

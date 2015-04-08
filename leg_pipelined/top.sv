@@ -34,7 +34,7 @@ module top(input  logic        clk, reset,
   logic [31:0]  CP15rd_M, control, FullTBase;
 
 
-  // instantiate processor and memories
+  // instantiate processor core
   leg leg(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
           // Added for memory (DStall, MemtoRegM)
           WriteDataM, ReadDataM, DStall, IStall, MemtoRegM, ByteMaskM,
@@ -64,19 +64,14 @@ module top(input  logic        clk, reset,
                     .TLBFlushI(TLBFlushI), .rd(CP15rd_M), .control(control), .tbase(FullTBase));
 
   
-  // instruction cache with a block size of 4 words and 16 lines
-  instr_cache #(4, 128) 
+  // instruction cache
+  instr_cache #(4, 1024) 
     instr_cache(.clk(clk), .reset(reset), .enable(IEN), .invalidate(INV),
       .BusReady(BusReadyF), .A(PCF), .HRData(HRData), .RD(InstrF), 
                 .IStall(IStall), .HAddrF(HAddrF), .HRequestF(HRequestF) );
 
   // Read straight from the memory, then write to the cache
-  // cache with a block size of 4 words and 16 lines (Parameterized block size not functional)
-  // data_associative_cache #(4, 16) data_cache(.clk(clk), .reset(reset), .MemWriteM(MemWriteM), .IStall(IStall),
-  //                       .MemtoRegM(MemtoRegM), .Valid(Valid), .a(DataAdrM), .MemBlock(HRData),
-  //                       .rd(ReadDataM), .Stall(DStall), .MemRE(MemRE), .HWriteM(HWriteM));
-
-  data_writeback_associative_cache #(4, 128)
+  data_writeback_associative_cache #(4, 1024)
     data_cache(.clk(clk), .reset(reset), .enable(DEN), .invalidate(DNV),
       .clean(DCLEAN),
       .MemWriteM(MemWriteM), .MemtoRegM(MemtoRegM), .BusReady(BusReadyM), 

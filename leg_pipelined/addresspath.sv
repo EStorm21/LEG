@@ -48,6 +48,7 @@ module addresspath( /// ------ From TOP ------
   // ====================================================================================
   // ================================ Execute Stage =====================================
   // ====================================================================================
+  // *** use short register addrsses through address path
   
   flopenr #(32)  wa3ereg(clk, reset, ~StallE, WA3D, WA3E_1); 
   flopenr #(32)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
