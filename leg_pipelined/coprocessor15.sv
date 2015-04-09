@@ -15,12 +15,14 @@ For LEG: CPUWriteEn is high during MCR instructions.
          CPUEn is high during MRC instructions
 */
 
-logic [31:0] rf[15:0];
+logic [31:0] rf[15:0], rd_mask[15:0];
 logic [31:0] wd;  
 logic [15:0] reg_select;
 integer i, j;
 
-
+assign rd_mask = {32'h0, 32'h0, 32'h0, 32'h0, 32'h0, 32'h0,
+           32'h0, 32'h0, 32'h0, 32'hFFFFFFFF, 32'h1FF, 32'h0, 
+           32'hFFFFFFFF, 32'hFFFFC000, 32'h0000FFFF, 32'h0}; // R3 thru R0
 
 // ********************************
 // ******* Address Decoding *******
@@ -66,7 +68,8 @@ always_ff @(negedge clk) begin
   if (reset)
     rf <= {32'b0, 32'b0, 32'b0, 32'b0, 32'b0, 32'b0,
            32'b0, 32'b0, 32'b0, 32'b0, 32'b0, 32'b0,
-           32'b0, 32'b0, 32'b0, 32'h41069265};
+           32'b0, 32'b0, 32'h78, 32'h69052d00}; // C_R0 is 32'h41069265 for Linux booting, 32'h69052d00 for Modelsim Qemu Simulation
+
   else begin
     for (j = 1; j < 16; j = j+1) begin // r0 is read only, so we start at r1
       if(we & reg_select[j]) rf[j] <= wd;	
