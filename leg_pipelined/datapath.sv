@@ -94,7 +94,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                  Rd1D, Rd2D); 
   extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25], SignExtendD);
   rotator   rotat(ExtImmD, InstrD, RotImmD, noRotateD); 
-  
+
 
   // ====================================================================================
   // ============================== Execute Stage =======================================
@@ -102,7 +102,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // Added enable to StallE, StallM, and Added FlushW. (Added for memory)
   flopenrc #(32) rd1reg(clk, reset, ~StallE, FlushE, Rd1D, Rd1E);
   flopenrc #(32) rd2reg(clk, reset, ~StallE, FlushE, Rd2D, Rd2E);
-  flopenrc #(32) immreg(clk, reset, ~StallE, FlushE, RotImmD, ExtImmE); // Modified by Ivan
+  flopenrc #(32) immreg(clk, reset, ~StallE, FlushE, RotImmD, ExtImmE);
 
   mux3 #(32)  byp1mux(Rd1E, ResultW, ALUorCP15_M, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(Rd2E, ResultW, ALUorCP15_M, ForwardBE, WriteDataE);
