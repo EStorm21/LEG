@@ -6,3 +6,6 @@
 *.fls
 *.out
 *.toc
+
+## Always ignore the pdf for documentation
+documentation/main.pdf
