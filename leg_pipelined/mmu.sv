@@ -1,6 +1,6 @@
 module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest, 
            input  logic CPUHWrite, HReady, DataAccess, CPSR4,
-           input  logic SBit, RBit, SupMode, WordAccess, DStall, IStall,
+           input  logic SupMode, WordAccess, DStall, IStall,
            input  logic [31:0] CPUHAddr, HRData, Dom,
            input  logic [31:0] control, // Cont[0] is the enable bit
            input  logic [17:0] TBase,
@@ -39,6 +39,8 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   assign FSR[7:4] = Domain;    // Define the location of the domain
   assign FAR = CPUHAddr;           // Set the FAR
   assign Enable = control[0];         // Add enable, disable
+  assign SBit = control[7];
+  assign RBit = control[9];
   
   // Bypass translation
   mux2 #(35) enableMux({CPUHAddr, CPUHRequest, CPUHWrite, HReady},

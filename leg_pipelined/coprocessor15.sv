@@ -68,8 +68,7 @@ always_ff @(negedge clk) begin
   if (reset)
     rf <= {32'b0, 32'b0, 32'b0, 32'b0, 32'b0, 32'b0,
            32'b0, 32'b0, 32'b0, 32'b0, 32'b0, 32'b0,
-           32'b0, 32'b0, 32'h78, 32'h69052d00}; // C_R0 is 32'h41069265 for Linux booting, 32'h69052d00 for Modelsim Qemu Simulation
-
+           32'b0, 32'b0, 32'h00090078, 32'h41069265};
   else begin
     for (j = 1; j < 16; j = j+1) begin // r0 is read only, so we start at r1
       if(we & reg_select[j]) rf[j] <= wd;	

@@ -34,8 +34,7 @@ module top(input  logic        clk, reset,
   logic [31:0]  CP15rd_M, control, FullTBase;
 
   synchronizer synchro(.*);
-  
-  // instantiate processor and memories
+  // instantiate processor core
   leg leg(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
           // Added for memory (DStall, MemtoRegM)
           WriteDataM, ReadDataM, DStall, IStall, MemtoRegM, ByteMaskM,
@@ -66,19 +65,14 @@ module top(input  logic        clk, reset,
                     .TLBFlushI(TLBFlushI), .rd(CP15rd_M), .control(control), .tbase(FullTBase));
 
   
-  // instruction cache with a block size of 4 words and 16 lines
-  instr_cache #(4, 128) 
+  // instruction cache
+  instr_cache #(4, 1024) 
     instr_cache(.clk(clk), .reset(reset), .enable(IEN), .invalidate(INV),
       .BusReady(BusReadyF), .A(PCF), .HRData(HRData), .RD(InstrF), 
                 .IStall(IStall), .HAddrF(HAddrF), .HRequestF(HRequestF) );
 
   // Read straight from the memory, then write to the cache
-  // cache with a block size of 4 words and 16 lines (Parameterized block size not functional)
-  // data_associative_cache #(4, 16) data_cache(.clk(clk), .reset(reset), .MemWriteM(MemWriteM), .IStall(IStall),
-  //                       .MemtoRegM(MemtoRegM), .Valid(Valid), .a(DataAdrM), .MemBlock(HRData),
-  //                       .rd(ReadDataM), .Stall(DStall), .MemRE(MemRE), .HWriteM(HWriteM));
-
-  data_writeback_associative_cache #(4, 128)
+  data_writeback_associative_cache #(4, 1024)
     data_cache(.clk(clk), .reset(reset), .enable(DEN), .invalidate(DNV),
       .clean(DCLEAN),
       .MemWriteM(MemWriteM), .MemtoRegM(MemtoRegM), .BusReady(BusReadyM), 
@@ -112,15 +106,14 @@ module top(input  logic        clk, reset,
   logic SBit, RBit, SupMode, WordAccess;
 
   assign Dom = 32'hffff_ffff; // Full permissions to all domains
-  assign WordAccess = 1'b1;   // Assuming not byte or halfword accesses
+  assign WordAccess = 1'b0;   // Assuming byte or halfword accesses
   assign SupMode = 1'b1;      // in supervisor mode
-  assign SBit = 1'b0;         // Give the most permissions with S and R
-  assign RBit = 1'b1;
+  // assign SBit = control[7];         // Give the most permissions with S and R
+  // assign RBit = control[9];
   assign DataAccess = 1'b1;   // Trying to access data memory, not instruction memory
   assign CPSR4 = 1'b1;
   // assign FullTBase = 32'h0030_0000; // Translation Base at 0x0010_0000
   assign TBase = FullTBase[31:14];
-  assign Cont  = 7'b000_0000;     // Enable the MMU with Cont[0]
   assign MMUExtInt = 1'b0;        // No External Interrupt
 
   // Create memory with a 2 cycle delay and 4 word block size (Parameterized block size not functional)

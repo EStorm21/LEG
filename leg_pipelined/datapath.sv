@@ -87,7 +87,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   flopenrc #(32) pcplus0(clk, reset, ~StallD, FlushD, PCPlus4D, PCPlus0D);
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
   mux3 #(32)  exceptionPC(PCPlus8D, PCPlus4D, PCPlus0D, PCInSelect, PC_in);
-  exception_pchandling exc_pc(MoveR14PC_D);
+  exception_pchandling exc_pc(MoveR14PC_D); // *** delete?
 
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   // mux2 #(32)  instrDmux2(Instr_1D, MoveR14PC_D, 1'b0, InstrD);
@@ -110,8 +110,8 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   flopenrc #(32) rd2reg(clk, reset, ~StallE, FlushE, Rd2D, Rd2E);
   flopenrc #(32) immreg(clk, reset, ~StallE, FlushE, RotImmD, ExtImmE); // Modified by Ivan
 
-  mux3 #(32)  byp1mux(Rd1E, ResultW, ALUOutM, ForwardAE, SrcAE);
-  mux3 #(32)  byp2mux(Rd2E, ResultW, ALUOutM, ForwardBE, WriteDataE);
+  mux3 #(32)  byp1mux(Rd1E, ResultW, ALUorCP15_M, ForwardAE, SrcAE);
+  mux3 #(32)  byp2mux(Rd2E, ResultW, ALUorCP15_M, ForwardBE, WriteDataE);
   mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcB4E);
   mux2 #(32)  shifterAin(SrcAE, ExtImmE, RselectE, ShifterAinE); 
   mux2 #(32)  select4(ALUSrcB4E, 32'h4, IncrementE, ALUSrcBE);
