@@ -15,12 +15,14 @@ For LEG: CPUWriteEn is high during MCR instructions.
          CPUEn is high during MRC instructions
 */
 
-logic [31:0] rf[15:0];
+logic [31:0] rf[15:0], rd_mask[15:0];
 logic [31:0] wd;  
 logic [15:0] reg_select;
 integer i, j;
 
-
+assign rd_mask = {32'h0, 32'h0, 32'h0, 32'h0, 32'h0, 32'h0,   // R15 thru R10
+           32'h0, 32'h0, 32'h0, 32'hFFFFFFFF, 32'h1FF, 32'h0,  // R9 thru R4
+           32'hFFFFFFFF, 32'hFFFFC000, 32'h0000FFFF, 32'h0}; // R3 thru R0
 
 // ********************************
 // ******* Address Decoding *******
