@@ -5,11 +5,17 @@ module dmem
             output logic [31:0] rd,
             output logic Valid);
 
-  logic [31:0] RAM[67108864:0];
+  parameter MEM_SIZE = 67108864;
+  logic [31:0] RAM[MEM_SIZE:0];
   assign Valid = re | we;
 
   // ------------------ Actual Memory ----------------------
+  integer i;
   initial
+	begin
+	for(i = 0; i < MEM_SIZE; i = i + 1) begin
+		RAM[i] = 32'b0;
+	end
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
@@ -25,7 +31,7 @@ module dmem
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/mmu/python/pagetable.dat",RAM);
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/mmu/sectionTest.dat",RAM);
       // $readmemh("/home/zakinator/LEG/simTest.dat",RAM);
-      
+      end
   assign rd = RAM[a[22:2]];
 
   // Write a word
