@@ -34,7 +34,6 @@ module top(input  logic        clk, reset,
   logic [31:0]  CP15rd_M, control, FullTBase, DummyTBase;
 
   synchronizer synchro(.*);
-
   // instantiate processor core
   leg leg(clk, reset, PCF, InstrF, MemWriteM, DataAdrM, 
           // Added for memory (DStall, MemtoRegM)
