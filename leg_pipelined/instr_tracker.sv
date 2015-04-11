@@ -5,16 +5,25 @@
  *
  * nothing to worry about if cancelled, need to abort if executing.
  */
-module instr_tracker(input logic instr_abort, stallD, flushD, flushE,
-                    output logic cancelled, executing);
+module instr_tracker(input logic clk, instr_abort, stallD, flushD, flushE,
+                    output logic InstrCancelled, InstrExecuting);
 
-  logic abortD, executing;
+  logic abortD, InstrExecuting;
   always_ff @(posedge clk)
-    abortD <= instr_abort & (~stallD & ~flushD);
+    if(flushD)
+      abortD <= 0;
+    else if(~stallD)
+      abortD <= instr_abort;
 
   always_ff @(posedge clk)
-    executing <= (abortD & ~flushE);
+    if(flushE)
+      InstrExecuting <= 0;
+    else
+      InstrExecuting <= abortD;
 
-  assign cancelled = flushD | flushE;
+  assign InstrCancelled = flushD | flushE;
+
+  if(InstrCancelled)
+    abortD <= 0;
 
 endmodule
