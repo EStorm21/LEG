@@ -6,7 +6,8 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
            input  logic [17:0] TBase,
            output logic [31:0] HAddr, FAR, MMUWriteData,
            output logic [7:0] FSR,
-           output logic HRequest, HWrite, CPUHReady, Fault, MMUWriteEn);
+           output logic HRequest, HWrite, CPUHReady, MMUWriteEn, 
+                        PrefetchAbort, DataAbort);
   // TODO: Add MMU Writes for FSR and FAR
   assign MMUWriteEn = 1'b0;
   assign MMUWriteData = 32'h0000_0000;
@@ -31,7 +32,7 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
                             } faulttype;
   faulttype FaultCode, FaultCodeMid;
   logic Enable, SubAPFault, APFault, DomainFault, TerminalException;
-  logic VectorException, APMidFault, FaultMid, SelPrevAddr, PStall;
+  logic VectorException, APMidFault, FaultMid, Fault, SelPrevAddr, PStall;
   logic [31:0] HAddrMid, PHRData, PHAddr, HAdderOut;
   logic HRequestMid, CPUHReadyMid, HWriteMid; // Output signals from MMU
   logic [3:0] Domain, StoredDomain;
@@ -57,9 +58,17 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   flopr #(32) HAddrFlop(clk, reset, HAddr, PHAddr);
   mux2 #(32) HAddrMidMux(HAddrMid, PHAddr, SelPrevAddr, HAdderOut);
   flopr #(1) StallFlop(clk, reset, (DStall | IStall), PStall);
+  
+  // Instruction Tracker
+  // --- Track whether an instruction was executed.
+  // --- If an instruction that causes a memory fault is executed, raise a prefetch abort
+  logic InstrExecuting;
+  logic InstrCancelled;
+  assign InstExecuting = 1'b0;
+  assign InstrCancelled = 1'b0;  
 
-  typedef enum logic [3:0] {READY, SECTIONTRANS, COARSEFETCH, FINEFETCH, 
-                            SMALLTRANS, LARGETRANS, TINYTRANS} statetype;
+  typedef enum logic [2:0] {READY, SECTIONTRANS, COARSEFETCH, FINEFETCH, 
+      SMALLTRANS, LARGETRANS, TINYTRANS, INSTRFAULT} statetype;
   statetype state, nextstate;
 
   // state register
@@ -70,7 +79,9 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   // next state logic
   always_comb
     case (state)
-      READY:        if (~HReady | ~CPUHRequest | ~Enable | Fault | reset) begin 
+      READY:        if ( Enable & Fault ) begin
+                      nextstate <= DataAccess ? READY : INSTRFAULT;
+                    end else if (~HReady | ~CPUHRequest | ~Enable | Fault | reset) begin 
                       nextstate <= READY;
                     end else if(HRData[1:0] == 2'b01) begin
                       nextstate <= COARSEFETCH;
@@ -79,24 +90,49 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
                     end else begin
                       nextstate <= SECTIONTRANS;
                     end
-      SECTIONTRANS: nextstate <= HReady ?  READY : SECTIONTRANS;
-      COARSEFETCH:  if (~HReady) begin
+      SECTIONTRANS: if ( Fault ) begin
+                      nextstate <= DataAccess ? READY : INSTRFAULT;
+                    end else begin
+                      nextstate <= HReady ?  READY : SECTIONTRANS;
+                    end
+      COARSEFETCH:  if ( Fault ) begin
+                      nextstate <= DataAccess ? READY : INSTRFAULT;
+                    end else if (~HReady) begin
                       nextstate <= COARSEFETCH;
                     end else if(HRData[1:0] == 2'b01) begin 
                       nextstate <= LARGETRANS;
                     end else begin
                       nextstate <= SMALLTRANS;
                     end
-      FINEFETCH:   if (~HReady) begin
+      FINEFETCH:    if ( Fault ) begin
+                      nextstate <= DataAccess ? READY: INSTRFAULT;
+                    end else if (~HReady) begin
                       nextstate <= FINEFETCH;
                     end else if(HRData[1:0] == 2'b11) begin 
                       nextstate <= TINYTRANS;
                     end else begin
                       nextstate <= SMALLTRANS;
                     end
-      SMALLTRANS:   nextstate <= HReady ? READY : SMALLTRANS;
-      LARGETRANS:   nextstate <= HReady ? READY : LARGETRANS;
-      TINYTRANS:   nextstate <= HReady ? READY : TINYTRANS;
+      SMALLTRANS:   if ( Fault ) begin
+                      nextstate <= DataAccess ? READY : INSTRFAULT;
+                    end else begin
+                      nextstate <= HReady ? READY : SMALLTRANS;
+                    end
+      LARGETRANS:   if ( Fault ) begin
+                      nextstate <= DataAccess ? READY : INSTRFAULT;
+                    end else begin
+                      nextstate <= HReady ? READY : LARGETRANS;
+                    end
+      TINYTRANS:    if ( Fault ) begin
+                      nextstate <= DataAccess ? READY : INSTRFAULT;
+                    end else begin 
+                      nextstate <= HReady ? READY : TINYTRANS;
+                    end
+      INSTRFAULT:   if (InstrExecuting | InstrCancelled) begin
+                      nextstate <= READY;
+                    end else begin
+                      nextstate <= INSTRFAULT;
+                    end
     default:        nextstate <= READY;
     endcase
 
@@ -233,6 +269,7 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
 
 
   // terminal and vector exception Logic
+  // TODO: Separate behavior for instruction and data fault
   always_comb
     if(TerminalException) begin
       FaultCode <= TERMFAULT;
@@ -305,6 +342,12 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
 
   // Access Permissions
   assign APFault = APMidFault & (dPerm == 2'b01);
+
+  // Instruction Fault
+  assign PrefetchAbort = (state == INSTRFAULT) & InstrExecuting;
+
+  // Data Abort
+  assign DataAbort = Fault & DataAccess;
 
   // FSR[3:0] output Logic
   // TODO: Make writes to FSR and FAR Sequential

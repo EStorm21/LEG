@@ -1,6 +1,7 @@
+// Create an n bit counter with reset and enable
 module countEn #(parameter n)
 	(input logic clk, reset, en,
-	 output logic[$clog2(n) -1:0] q);
+	 output logic[n-1:0] q);
 	always_ff @(posedge clk)
     if(reset) begin
         q <= 0;
