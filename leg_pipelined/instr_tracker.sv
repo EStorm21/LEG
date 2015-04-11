@@ -23,6 +23,8 @@ module instr_tracker(input logic clk, instr_abort, stallD, flushD, flushE,
 
   assign InstrCancelled = flushD | flushE;
 
+  // in case cancelled at start of execute stage. Then don't want to propagate old
+  // signal from deocde.
   if(InstrCancelled)
     abortD <= 0;
 
