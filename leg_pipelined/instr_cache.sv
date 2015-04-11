@@ -20,13 +20,15 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
     // W1WE:  way 1 write enable, W1WE = W1EN & CWE
     // RDSel: Select output from bus or cache
     // CWE:   Cache Write Enable
-    logic W1V, W2V, W1EN, W2EN, W1WE, W2WE, RDSel, CWE, ResetCounter, Hit, W1Hit, W2Hit, CurrLRU;        
+    logic W1V, W2V, W1EN, W2EN, W1WE, W2WE, CWE, ResetCounter, Hit, W1Hit, W2Hit, CurrLRU;        
     logic [tagbits-1:0] W1Tag, W2Tag;
     logic [blocksize*32-1:0] W1BlockOut, W2BlockOut;  // Way output (4 words)
     
     // W2RD:       Word selected from way 2 output
     // CacheOut:   Word chosen from way 1 or 2
+    // BlockNum:       Current Block. Used when flushing
     logic [31:0] W1RD, W2RD, CacheOut, ANew;
+    logic [7:0] BlockNum;
     logic [1:0] Counter, WordOffset;
     logic [tagbits-1:0] Tag;   // Current tag
     logic [blockbits-1:0] NewWordOffset;
@@ -42,12 +44,13 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
     logic [3:0] ActiveByteMask;
     logic [31:0] CacheWD;
     logic [1:0] CacheRDSel;
-    logic DirtyIn, W1D, W2D, vin;
+    logic DirtyIn, W1D, W2D, vin, clean;
     assign ActiveByteMask = 4'b1111;
     assign CacheWD = HRData;
     assign CacheRDSel = WordOffset;
-    assign DirtyIn = 1'b0;
+    assign DirtyIn = 1'b0; // Disabling writeback functionality
     assign vin = enable;
+    assign cleanCurr = 1'b0;   // Disabling writeback functionality
     data_writeback_associative_cache_memory #(lines, tagbits, blocksize) icm(.*);
 
     // Cache Controller
@@ -59,6 +62,6 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
     mux2 #(32) CacheOutMux(W2RD, W1RD, WaySel, CacheOut);
 
     // Select from cache or memory
-    mux2 #(32) RDMux(CacheOut, HRData, RDSel, RD);
+    assign RD = CacheOut;
 
 endmodule
