@@ -5,7 +5,7 @@ module coprocessor15 (input logic         clk, reset,
 															input logic [31:0]  CPUWriteData, MMUWriteData,
                               input logic [2:0]   opcode_2,
                               input logic [3:0]   CRm,
-															output logic        StallCP, FlushI, FlushD, CleanI, CleanD, TLBFlushD, TLBFlushI,
+															output logic        StallCP, INVI, INVD, CleanI, CleanD, TLBFlushD, TLBFlushI,
 															output logic [31:0] rd, control, tbase);
 
 /* 
@@ -15,12 +15,14 @@ For LEG: CPUWriteEn is high during MCR instructions.
          CPUEn is high during MRC instructions
 */
 
-logic [31:0] rf[15:0];
+logic [31:0] rf[15:0], rd_mask[15:0];
 logic [31:0] wd;  
 logic [15:0] reg_select;
 integer i, j;
 
-
+assign rd_mask = {32'h0, 32'h0, 32'h0, 32'h0, 32'h0, 32'h0,   // R15 thru R10
+           32'h0, 32'h0, 32'h0, 32'hFFFFFFFF, 32'h1FF, 32'h0,  // R9 thru R4
+           32'hFFFFFFFF, 32'hFFFFC000, 32'h0000FFFF, 32'h0}; // R3 thru R0
 
 // ********************************
 // ******* Address Decoding *******
@@ -92,24 +94,24 @@ assign tbase = rf[2];
 always_comb
   case ({we, reg_select[7], opcode_2, CRm})
     // opcode_2 000
-    9'b1_1_000_0111: {FlushI, FlushD, CleanI, CleanD} = 4'b1100;
-    9'b1_1_000_0101: {FlushI, FlushD, CleanI, CleanD} = 4'b1000;
-    9'b1_1_000_0110: {FlushI, FlushD, CleanI, CleanD} = 4'b0100;
-    9'b1_1_000_1011: {FlushI, FlushD, CleanI, CleanD} = 4'b0011;
-    9'b1_1_000_1010: {FlushI, FlushD, CleanI, CleanD} = 4'b0001;
-    9'b1_1_000_1111: {FlushI, FlushD, CleanI, CleanD} = 4'b1111;
-    9'b1_1_000_1110: {FlushI, FlushD, CleanI, CleanD} = 4'b0101;
+    9'b1_1_000_0111: {INVI, INVD, CleanI, CleanD} = 4'b1100;
+    9'b1_1_000_0101: {INVI, INVD, CleanI, CleanD} = 4'b1000;
+    9'b1_1_000_0110: {INVI, INVD, CleanI, CleanD} = 4'b0100;
+    9'b1_1_000_1011: {INVI, INVD, CleanI, CleanD} = 4'b0011;
+    9'b1_1_000_1010: {INVI, INVD, CleanI, CleanD} = 4'b0001;
+    9'b1_1_000_1111: {INVI, INVD, CleanI, CleanD} = 4'b1111;
+    9'b1_1_000_1110: {INVI, INVD, CleanI, CleanD} = 4'b0101;
 
     // opcode_2 001
-    9'b1_1_001_0111: {FlushI, FlushD, CleanI, CleanD} = 4'b1100;
-    9'b1_1_001_0101: {FlushI, FlushD, CleanI, CleanD} = 4'b1000;
-    9'b1_1_001_0110: {FlushI, FlushD, CleanI, CleanD} = 4'b0100;
-    9'b1_1_001_1011: {FlushI, FlushD, CleanI, CleanD} = 4'b0011;
-    9'b1_1_001_1010: {FlushI, FlushD, CleanI, CleanD} = 4'b0001;
-    9'b1_1_001_1111: {FlushI, FlushD, CleanI, CleanD} = 4'b1111;
-    9'b1_1_001_1110: {FlushI, FlushD, CleanI, CleanD} = 4'b0101;
+    9'b1_1_001_0111: {INVI, INVD, CleanI, CleanD} = 4'b1100;
+    9'b1_1_001_0101: {INVI, INVD, CleanI, CleanD} = 4'b1000;
+    9'b1_1_001_0110: {INVI, INVD, CleanI, CleanD} = 4'b0100;
+    9'b1_1_001_1011: {INVI, INVD, CleanI, CleanD} = 4'b0011;
+    9'b1_1_001_1010: {INVI, INVD, CleanI, CleanD} = 4'b0001;
+    9'b1_1_001_1111: {INVI, INVD, CleanI, CleanD} = 4'b1111;
+    9'b1_1_001_1110: {INVI, INVD, CleanI, CleanD} = 4'b0101;
 
-    default: {FlushI, FlushD, CleanI, CleanD} = 4'b0000;
+    default: {INVI, INVD, CleanI, CleanD} = 4'b0000;
   endcase
 
 always_comb

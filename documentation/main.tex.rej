@@ -1,0 +1,14 @@
+diff a/documentation/main.tex b/documentation/main.tex	(rejected hunks)
+@@ -1,12 +0,0 @@
+-\documentclass[12pt]{article}
+-
+-\usepackage{graphicx}
+-
+-\begin{document}
+-
+-\input{iwong/datapath.tex}
+-\input{mwaugaman/mmu.tex}
+-\input{estorm/testing.tex}
+-\input{zakinator/tera.tex}
+-
+-\end{document}

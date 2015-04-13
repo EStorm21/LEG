@@ -44,12 +44,13 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
     logic [3:0] ActiveByteMask;
     logic [31:0] CacheWD;
     logic [1:0] CacheRDSel;
-    logic DirtyIn, W1D, W2D, vin;
+    logic DirtyIn, W1D, W2D, vin, clean;
     assign ActiveByteMask = 4'b1111;
     assign CacheWD = HRData;
     assign CacheRDSel = WordOffset;
-    assign DirtyIn = 1'b0;
+    assign DirtyIn = 1'b0; // Disabling writeback functionality
     assign vin = enable;
+    assign cleanCurr = 1'b0;   // Disabling writeback functionality
     data_writeback_associative_cache_memory #(lines, tagbits, blocksize) icm(.*);
 
     // Cache Controller
