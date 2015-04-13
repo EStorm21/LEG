@@ -63,8 +63,8 @@ module top(input  logic        clk, reset,
                     .opcode_2(CoProc_Op2M), .CRm(CoProc_CRmM),
                     .StallCP(StallCP), .INVI(INVI), .INVD(INVD), 
                     .CleanI(CleanI), .CleanD(CleanD), .TLBFlushD(TLBFlushD), 
-                    // .TLBFlushI(TLBFlushI), .rd(CP15rd_M), .control(control), .tbase(FullTBase));
-                    .TLBFlushI(TLBFlushI), .rd(CP15rd_M), .control(controlDummy), .tbase(DummyTBase));
+                    .TLBFlushI(TLBFlushI), .rd(CP15rd_M), .control(control), .tbase(FullTBase));
+                    // .TLBFlushI(TLBFlushI), .rd(CP15rd_M), .control(controlDummy), .tbase(DummyTBase));
 
   
   // instruction cache
@@ -112,10 +112,10 @@ module top(input  logic        clk, reset,
   assign SupMode = 1'b1;      // in supervisor mode
   // assign SBit = control[7];         // Give the most permissions with S and R
   // assign RBit = control[9];
-  assign control = 32'h0000_0001; // Fake Control signal
+  // assign control = 32'h0000_0001; // Fake Control signal
   assign DataAccess = 1'b1;   // Trying to access data memory, not instruction memory
   assign CPSR4 = 1'b1;
-  assign FullTBase = 32'h0030_0000; // Fix the translation base
+  // assign FullTBase = 32'h0030_0000; // Fix the translation base
   assign TBase = FullTBase[31:14];
   assign MMUExtInt = 1'b0;          // No External Interrupt
 
