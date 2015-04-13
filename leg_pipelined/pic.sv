@@ -52,7 +52,7 @@ module pic(input  logic        HCLK,
 	    end
 
 	    assign HRDATA = regs[HADDR];
-	    assign fiq    = fiqEn & rawFIQVec; // Can I double check if this works if we use a single & operator?
+	    assign fiq    = fiqEn & rawFIQVec;
 	    assign irq    = irqEn & rawIRQVec;
 
 endmodule
