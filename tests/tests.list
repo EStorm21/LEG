@@ -52,7 +52,7 @@
 #umull
 #umlal
 #smlal
-#random2
+random2
 #ldr_str_i
 #ldr_str_r
 #bx
