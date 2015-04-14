@@ -65,6 +65,11 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
   logic [31:0] ALUorCP15_M;
   
+/***** Brief Description *******
+ *
+ * 32-BIT DATAPATH - SHOULD ONLY HAVE 32 BIT SIGNALS ONLY
+ *
+ ******************************/
 
   // ====================================================================================
   // ================================ Fetch Stage =======================================
