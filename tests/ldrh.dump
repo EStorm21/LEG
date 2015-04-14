@@ -1,0 +1,47 @@
+
+ldrh.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <start>:
+   0:	ea00000b 	b	34 <reset>
+   4:	ea00000e 	b	44 <undef>
+   8:	ea00000a 	b	38 <swi>
+   c:	ea00000d 	b	48 <pfa>
+  10:	ea00000d 	b	4c <da>
+  14:	e1a00000 	nop			; (mov r0, r0)
+  18:	ea00000c 	b	50 <irq>
+  1c:	ea00000c 	b	54 <fiq>
+
+00000020 <prog>:
+  20:	e2803c01 	add	r3, r0, #256	; 0x100
+  24:	e28328ff 	add	r2, r3, #16711680	; 0xff0000
+  28:	e1c320b2 	strh	r2, [r3, #2]
+  2c:	e1f310b2 	ldrh	r1, [r3, #2]!
+
+00000030 <stop>:
+  30:	eafffffe 	b	30 <stop>
+
+00000034 <reset>:
+  34:	eafffff9 	b	20 <prog>
+
+00000038 <swi>:
+  38:	e0812002 	add	r2, r1, r2
+  3c:	e1a01002 	mov	r1, r2
+  40:	e1b0f00e 	movs	pc, lr
+
+00000044 <undef>:
+  44:	eafffff5 	b	20 <prog>
+
+00000048 <pfa>:
+  48:	eafffff4 	b	20 <prog>
+
+0000004c <da>:
+  4c:	eafffff3 	b	20 <prog>
+
+00000050 <irq>:
+  50:	eafffff2 	b	20 <prog>
+
+00000054 <fiq>:
+  54:	eafffff1 	b	20 <prog>
