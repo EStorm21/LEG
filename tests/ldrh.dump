@@ -15,10 +15,10 @@ Disassembly of section .text:
   1c:	ea00000c 	b	54 <fiq>
 
 00000020 <prog>:
-  20:	e2803c01 	add	r3, r0, #256	; 0x100
-  24:	e28328ff 	add	r2, r3, #16711680	; 0xff0000
-  28:	e1c320b2 	strh	r2, [r3, #2]
-  2c:	e1f310b2 	ldrh	r1, [r3, #2]!
+  20:	e2803c01 	add	r3, r0, #256	; r3 = 0x100 
+  24:	e28328ff 	add	r2, r3, #16711680	; r2 = 0xff0000 + 0xff0100
+  28:	e1c320b2 	strh	r2, [r3, #2] ; store 0x0100 in memory @ location 0x102
+  2c:	e1f310b2 	ldrh	r1, [r3, #2]! ; retrieve 0x0100 from memory location 0x102 and r1 is now 0x0100, r3 is now 0x102
 
 00000030 <stop>:
   30:	eafffffe 	b	30 <stop>
