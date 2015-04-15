@@ -3,7 +3,9 @@
 project open "C:/altera/13.0sp1/pipelined_processor.mpf"; list
 #compile project
 
-vlog C:/Users/estor_000/Documents/LEG/leg_pipelined/testbench.sv ; list
+# +acc flag for use with ModelSim SE (on tera)
+vlog +acc C:/Users/estor_000/Documents/LEG/leg_pipelined/testbench.sv ; list
+#vlog C:/Users/estor_000/Documents/LEG/leg_pipelined/testbench.sv ; list
 #vlog "F:/Academics/Research Clay Wolkin - LEG v4/LEG/leg_pipelined/*.sv" ; list
 
 #set testPath "F:/Academics/Research Clay Wolkin - LEG v4/LEG/tests/"; list
