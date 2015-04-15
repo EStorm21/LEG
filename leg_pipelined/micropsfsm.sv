@@ -8,7 +8,7 @@ module micropsfsm(input  logic        clk, reset,
 			   input  logic		   StalluOp, ExceptionSavePC);
 
 // define states READY and RSR 
-typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, ldr, str, blx, strHalf, ldrHalf, exception, ldrh, strh} statetype;
+typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, ldr, str, blx, strHalf, ldrHalf, halfword} statetype;
 statetype state, nextState;
 
 // --------------------------- ADDED FOR LDM/STM -------------------------------
@@ -340,9 +340,42 @@ always_comb
 				end 
 				// LOAD/STORE HALF-WORDS
 				else if (defaultInstrD[27:25] == 3'b000) begin
+					// COMMENT: ldrh/strh immediate pre indexed (yes both load and store!)
+					if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b11 & defaultInstrD[7] & defaultInstrD[4]) begin
+						nextState = halfword;
+						InstrMuxD = 1;
+						ldrstrRtype = 0;
+						doNotUpdateFlagD = 1;
+						uOpStallD = 1;
+						regFileRz = {1'b0, // Control inital mux for RA1D
+									3'b000}; // 5th bit of WA3, RA2D and RA1D
+						// We need to calculate Rn + Rm in the first cycle, then second cycle save it! 
+						uOpInstrD = {defaultInstrD[31:28], 3'b001, // I-Type Data processing instr
+							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
+							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + imm 
+							4'b0, defaultInstrD[11:8], defaultInstrD[3:0] // Immediate
+							};
+					// COMMENT: ldrh/strh register pre indexed (yes, both load and store!) 
+					end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:7] == 5'b00001 & defaultInstrD[4]) begin 
+						nextState = halfword;
+						InstrMuxD = 1;
+						ldrstrRtype = 0;
+						doNotUpdateFlagD = 1;
+						uOpStallD = 1;
+						regFileRz = {1'b0, // Control inital mux for RA1D
+									3'b000}; // 5th bit of WA3, RA2D and RA1D
+						// We need to calculate Rn + Rm in the first cycle, then second cycle save it! 
+						uOpInstrD = {defaultInstrD[31:28], 3'b000, // I-Type Data processing instr
+							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
+							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + Rm 
+							8'b0, defaultInstrD[3:0] // add Rm
+							};
+					// COMMENT: ldrh/strh immediate post indexed (yes, both load and store)
+
+					
 					// To change in the future (defaultInstrD[24] & (defaultInstrD[22:21] == 2'b01) & defaultInstrD[7] & defaultInstrD[4])
-					if (~defaultInstrD[20] & ~defaultInstrD[22] & defaultInstrD[7] 
-								& defaultInstrD[4] & ~(defaultInstrD[6:5] == 2'b00)) begin // store, r type, pre indexed (!)
+					end else if (~defaultInstrD[20] & ~defaultInstrD[22] & defaultInstrD[7] 
+								& defaultInstrD[4] & defaultInstrD[6:5] == 2'b01) begin // store, r type, pre indexed (!)
 						nextState = strHalf;
 						STR_cycle = 2'b11; // for debugging
 						InstrMuxD = 1;
@@ -360,20 +393,6 @@ always_comb
 									1'b0, defaultInstrD[19:16], // S = 0, Rn is same
 									4'b1111, 8'b0, defaultInstrD[3:0] // Add and store into Rz,
 									}; 
-					end else if (defaultInstrD[24] & defaultInstrD[22:20] == 3'b111 & defaultInstrD[7] & defaultInstrD[4]) begin // ldrh immediate pre indexed
-						nextState = ldrHalf;
-						InstrMuxD = 1;
-						ldrstrRtype = 0;
-						doNotUpdateFlagD = 1;
-						uOpStallD = 1;
-						regFileRz = {1'b0, // Control inital mux for RA1D
-									3'b000}; // 5th bit of WA3, RA2D and RA1D
-						// We need to calculate Rn + Rm in the first cycle, then second cycle save it! 
-						uOpInstrD = {defaultInstrD[31:28], 3'b001, // I-Type Data processing instr
-							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
-							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + imm 
-							4'b0, defaultInstrD[11:8], defaultInstrD[3:0] // Immediate
-							};
 					end else begin // NOT POST-INCREMENT OR !
 						nextState = ready;
 						InstrMuxD = 0;
@@ -432,12 +451,30 @@ always_comb
 							defaultInstrD[15:12], 4'b0, 
 							defaultInstrD[7:4], 4'b0 	// Rd, with 0 offset (i type)
 							};
-			end
-
+			end 
 		end
-		ldrHalf: begin
+
+		halfword: begin
 			// immediate pre-indexed
-			if (defaultInstrD[24] & defaultInstrD[22:20] == 3'b111 & defaultInstrD[7] & defaultInstrD[4]) begin 
+			if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b11 & defaultInstrD[7] & defaultInstrD[4]) begin 
+				InstrMuxD = 1;
+				doNotUpdateFlagD = 1;
+				uOpStallD = 0;
+				prevRSRstate = 0;
+				regFileRz = {1'b0, // Control inital mux for RA1D
+							3'b010}; // 5th bit of WA3, RA2D and RA1D
+				noRotate = 0;
+				ldrstrRtype = 0;
+				nextState = ready;
+				// Store Rn <= Rz
+				uOpInstrD = {defaultInstrD[31:22], 
+							1'b0, // Only make one change: to normal immediate offset mode
+							defaultInstrD[20:12], 
+							4'b0, // make immediate 0
+							defaultInstrD[7:4],
+							4'b0
+							};
+			end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:7] == 5'b00001 & defaultInstrD[4]) begin
 				InstrMuxD = 1;
 				doNotUpdateFlagD = 1;
 				uOpStallD = 0;
