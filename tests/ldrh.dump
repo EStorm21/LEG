@@ -5,43 +5,47 @@ ldrh.o:     file format elf32-littlearm
 Disassembly of section .text:
 
 00000000 <start>:
-   0:	ea00000b 	b	34 <reset>
-   4:	ea00000e 	b	44 <undef>
-   8:	ea00000a 	b	38 <swi>
-   c:	ea00000d 	b	48 <pfa>
-  10:	ea00000d 	b	4c <da>
+   0:	ea00000f 	b	44 <reset>
+   4:	ea000012 	b	54 <undef>
+   8:	ea00000e 	b	48 <swi>
+   c:	ea000011 	b	58 <pfa>
+  10:	ea000011 	b	5c <da>
   14:	e1a00000 	nop			; (mov r0, r0)
-  18:	ea00000c 	b	50 <irq>
-  1c:	ea00000c 	b	54 <fiq>
+  18:	ea000010 	b	60 <irq>
+  1c:	ea000010 	b	64 <fiq>
 
 00000020 <prog>:
-  20:	e2803c01 	add	r3, r0, #256	; r3 = 0x100 
-  24:	e28328ff 	add	r2, r3, #16711680	; r2 = 0xff0000 + 0xff0100
-  28:	e1c320b2 	strh	r2, [r3, #2] ; store 0x0100 in memory @ location 0x102
-  2c:	e1f310b2 	ldrh	r1, [r3, #2]! ; retrieve 0x0100 from memory location 0x102 and r1 is now 0x0100, r3 is now 0x102
+  20:	e2803bfa 	add	r3, r0, #256000	; 0x3e800
+  24:	e28328ff 	add	r2, r3, #16711680	; 0xff0000
+  28:	e5832000 	str	r2, [r3]
+  2c:	e5937000 	ldr	r7, [r3]
+  30:	e1f310b2 	ldrh	r1, [r3, #2]!
+  34:	e2822001 	add	r2, r2, #1
+  38:	e5832002 	str	r2, [r3, #2]
+  3c:	e0d340b2 	ldrh	r4, [r3], #2
 
-00000030 <stop>:
-  30:	eafffffe 	b	30 <stop>
+00000040 <stop>:
+  40:	eafffffe 	b	40 <stop>
 
-00000034 <reset>:
-  34:	eafffff9 	b	20 <prog>
-
-00000038 <swi>:
-  38:	e0812002 	add	r2, r1, r2
-  3c:	e1a01002 	mov	r1, r2
-  40:	e1b0f00e 	movs	pc, lr
-
-00000044 <undef>:
+00000044 <reset>:
   44:	eafffff5 	b	20 <prog>
 
-00000048 <pfa>:
-  48:	eafffff4 	b	20 <prog>
+00000048 <swi>:
+  48:	e0812002 	add	r2, r1, r2
+  4c:	e1a01002 	mov	r1, r2
+  50:	e1b0f00e 	movs	pc, lr
 
-0000004c <da>:
-  4c:	eafffff3 	b	20 <prog>
-
-00000050 <irq>:
-  50:	eafffff2 	b	20 <prog>
-
-00000054 <fiq>:
+00000054 <undef>:
   54:	eafffff1 	b	20 <prog>
+
+00000058 <pfa>:
+  58:	eafffff0 	b	20 <prog>
+
+0000005c <da>:
+  5c:	eaffffef 	b	20 <prog>
+
+00000060 <irq>:
+  60:	eaffffee 	b	20 <prog>
+
+00000064 <fiq>:
+  64:	eaffffed 	b	20 <prog>
