@@ -93,21 +93,19 @@ module top(input  logic        clk, reset,
   ahb_lite ahb(.HCLK(clk), .HRESETn(reset), .HADDR(HAddr), .HWRITE(HWrite), .HREQUEST(HRequest),
                .HWDATA(HWData), .HRDATA(HRData), .HREADY(HReady), .irq(IRQ), .fiq(FIQ));
 
-  // Create the mmu
-  mmu mmuInst(.*);
-
   // False Signals for the mmu
   // TODO: Hook these wires up to the coprocessor
   logic MMUExtInt;
   logic [31:0] Dom;
   logic [6:0] TLBCont, Cont;
   logic [17:0] TBase;
-  logic [31:0] FAR;
-  logic [7:0] FSR;
   logic DataAccess, CPSR4;
+  logic [3:0]  CP15A;
   logic SBit, RBit, SupMode, WordAccess;
 
-  assign Dom = 32'hffff_ffff; // Full permissions to all domains
+  // Create the mmu
+  mmu mmuInst(.*);
+
   assign WordAccess = 1'b0;   // Assuming byte or halfword accesses
   assign SupMode = 1'b1;      // in supervisor mode
   // assign SBit = control[7];         // Give the most permissions with S and R

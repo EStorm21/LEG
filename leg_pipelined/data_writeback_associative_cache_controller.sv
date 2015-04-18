@@ -16,8 +16,8 @@ module data_writeback_associative_cache_controller
    output logic [$clog2(blocksize)-1:0] NewWordOffset);
 
   // Writeback cache states
-  typedef enum logic[2:0] {READY, MEMREAD, WRITEBACK, DWRITE, NEXTINSTR, 
-                           FLUSH, WAIT, DISABLED} statetype;
+  typedef enum logic[3:0] {READY, MEMREAD, WRITEBACK, DWRITE, NEXTINSTR, 
+                           FLUSH, WAIT, DISABLED, WRITEBYTES} statetype;
   statetype state, nextstate;
 
   // Control Signals
@@ -46,6 +46,9 @@ module data_writeback_associative_cache_controller
   // Counter Disable Mux
   mux2 #(2) cenMux(WordOffset, CounterMid, 
                    (enable | (state == WRITEBACK)), Counter);
+  // Word Access
+  logic WordAccess;
+  assign WordAccess = (ByteMask == 4'b1111);
 
   //------------HIT, DIRTY, VALID-----------------
   // Create Dirty Signal
@@ -108,7 +111,7 @@ module data_writeback_associative_cache_controller
                 else if ( Hit | (~MemWriteM & ~MemtoRegM) ) begin
                   nextstate <= READY;
                 end
-                else if( MemWriteM & ~enable) begin
+                else if( MemWriteM & ~enable & WordAccess) begin
                   nextstate <= DWRITE;
                 end
                 else if( ~Dirty ) begin
@@ -127,7 +130,16 @@ module data_writeback_associative_cache_controller
                 end
       // If all four words have been fetched from memory, then move on.
       // If the cache is disabled, then only read one line. (line isn't valid)
-      MEMREAD:   nextstate <= ( BusReady & ( (Counter == 3) | ~enable) ) ? NEXTINSTR : MEMREAD;
+      // MEMREAD:   nextstate <= ( BusReady & ( (Counter == 3) | ~enable) ) ? NEXTINSTR : MEMREAD;
+      MEMREAD:   if( BusReady & ( (Counter == 3) | (~enable & ~WordAccess) ) )
+                 begin 
+                  nextstate <= WRITEBYTES;
+                 end else if( BusReady & ( (Counter == 3) | (~enable & WordAccess) ) )
+                 begin 
+                  nextstate <= NEXTINSTR;
+                 end else begin 
+                  nextstate <= MEMREAD;
+                 end
       // If the instruction memory is stalling, then wait for a new instruction
       NEXTINSTR: nextstate <= IStall ? WAIT : READY;
       WAIT:      nextstate <= IStall ? WAIT : READY;
@@ -139,6 +151,7 @@ module data_writeback_associative_cache_controller
                 end else begin
                   nextstate <= FLUSH;
                 end
+      WRITEBYTES: nextstate <= BusReady ? NEXTINSTR : WRITEBYTES;
       default:   nextstate <= READY;
     endcase
 
@@ -147,14 +160,17 @@ module data_writeback_associative_cache_controller
                   (state == WRITEBACK) | 
                   (state == DWRITE) |
                   (state == FLUSH) |
+                  (state == WRITEBYTES) |
                   ( (state == READY) & (MemtoRegM | MemWriteM) & ~Hit );
   assign CWE    = ( (state == READY) & ( (MemWriteM & Hit) |  (BusReady & ~Hit & ~Dirty) ) ) |
                   ( (state == MEMREAD) & BusReady );
-  assign HWriteM = (state == WRITEBACK) | (state == DWRITE) | 
+  assign HWriteM = (state == WRITEBACK) | 
+                   (state == DWRITE) |
+                   (state == WRITEBYTES) | 
                    ((state == READY) & ~Hit & Dirty );
   assign HRequestM  = Stall;
-  // assign RDSel[0] = (state == NEXTINSTR) & (WordOffset == 2'b11) & enable | 
-  assign RDSel = (state == DWRITE);
+
+  assign RDSel = (state == DWRITE); // Choose write value from bus
 
   assign BlockWE = (state == MEMREAD) | ( (state == NEXTINSTR)  & 
                    (~MemWriteM || MemWriteM & ~Dirty) ) |

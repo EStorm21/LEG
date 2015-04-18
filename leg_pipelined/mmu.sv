@@ -2,18 +2,15 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
            input  logic CPUHWrite, HReady, DataAccess, CPSR4,
            input  logic SupMode, WordAccess, DStall, IStall,
            input  logic StallD, FlushD, FlushE,
-           input  logic [31:0] CPUHAddr, HRData, Dom,
-           input  logic [31:0] control, // Cont[0] is the enable bit
+           input  logic [31:0] CPUHAddr, HRData,
+           input  logic [31:0] control, CP15rd_M, // Cont[0] is the enable bit
            input  logic [17:0] TBase,
-           output logic [31:0] HAddr, FAR, MMUWriteData,
-           output logic [7:0] FSR,
+           output logic [31:0] HAddr, MMUWriteData, 
+           output logic [3:0]  CP15A,
            output logic HRequest, HWrite, CPUHReady, MMUWriteEn, 
-                        PrefetchAbort, DataAbort);
-  // TODO: Add MMU Writes for FSR and FAR
-  assign MMUWriteEn = 1'b0;
-  assign MMUWriteData = 32'h0000_0000;
-
-  // TODO: Assertions
+                        PrefetchAbort, DataAbort, MMUEn);
+  
+    // TODO: Assertions
   // Note that the faults are listed in priority order.
   typedef enum logic [3:0] {TERMFAULT = 4'b0010, 
                             VECTORFAULT = 4'b0000, 
@@ -38,6 +35,7 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   logic VectorException, APMidFault, FaultMid, Fault, SelPrevAddr, PStall;
   logic [3:0] Domain, StoredDomain;
   logic [1:0] CurrAP, dPerm;
+  logic [31:0] FSR, FAR, Dom;
 
   // Translation Signals
   logic [31:0] HAddrMid, PHRData, PHAddr, HAdderOut;
@@ -49,8 +47,8 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   logic instr_abort;
   
   assign FSR[7:4] = Domain;    // Define the location of the domain
-  assign FAR = CPUHAddr;           // Set the FAR
-  assign Enable = control[0];         // Add enable, disable
+  assign FAR = CPUHAddr;       // Set the FAR
+  assign Enable = control[0];  // Add enable, disable
   assign SBit = control[7];
   assign RBit = control[9];
   
@@ -69,9 +67,12 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   flopr #(32) HAddrFlop(clk, reset, HAddr, PHAddr);
   mux2 #(32) HAddrMidMux(HAddrMid, PHAddr, SelPrevAddr, HAdderOut);
   flopr #(1) StallFlop(clk, reset, (DStall | IStall), PStall);
+
+  // MMUWriteData Mux
+  mux2 #(32) WDMux(FAR, FSR, WDSel, MMUWriteData);
   
-  typedef enum logic [2:0] {READY, SECTIONTRANS, COARSEFETCH, FINEFETCH, 
-      SMALLTRANS, LARGETRANS, TINYTRANS, INSTRFAULT} statetype;
+  typedef enum logic [3:0] {READY, SECTIONTRANS, COARSEFETCH, FINEFETCH, 
+      SMALLTRANS, LARGETRANS, TINYTRANS, INSTRFAULT, FAULTFSR, FAULTFAR} statetype;
   statetype state, nextstate;
 
   // state register
@@ -83,7 +84,7 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   always_comb
     case (state)
       READY:        if ( Enable & Fault ) begin
-                      nextstate <= DataAccess ? READY : INSTRFAULT;
+                      nextstate <= DataAccess ? FAULTFSR : INSTRFAULT;
                     end else if (~HReady | ~CPUHRequest | ~Enable | Fault | reset) begin 
                       nextstate <= READY;
                     end else if(HRData[1:0] == 2'b01) begin
@@ -136,6 +137,8 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
                     end else begin
                       nextstate <= INSTRFAULT;
                     end
+      FAULTFSR:     nextstate <= FAULTFAR;
+      FAULTFAR:     nextstate <= READY;
     default:        nextstate <= READY;
     endcase
 
@@ -286,6 +289,8 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
     end
 
   // DomainMatch Logic
+  assign Dom = 32'hffff_ffff; // Full permissions to all domains
+  // assign Dom = CP15RD;
   always_comb
     case (Domain)
       4'b0000: dPerm = Dom[1:0];
@@ -310,8 +315,7 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   // Domain Fault
   assign DomainFault = (dPerm == 2'b00);
 
-  // Get the current access permissions
-  // TODO: Make this structural
+  // Access Permissions
   always_comb
     case(state)
       SECTIONTRANS: CurrAP <= PHRData[11:10];
@@ -358,7 +362,22 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   // Data Abort
   assign DataAbort = Fault & DataAccess;
 
-  // CP15 Logic (FAR, FSR)
+  // CP15 Logic (WDSel, MMUEn, MMUWriteEn)
+  assign MMUEn = (state == READY) & HReady;
+  assign MMUWriteEn = (state == INSTRFAULT) & PrefetchAbort |
+                      (state == FAULTFSR) | (state == FAULTFAR);
+  assign WDSel = (state == FAULTFSR);
+
+  // Write Address (CP15A) Logic
+  always_comb
+    case(state)
+      FAULTFSR: CP15A <= 4'b0101;  // Write to the FSR register (r5)
+      FAULTFAR: CP15A <= 4'b0110;  // Write to the FAR register (r6)
+      READY:    CP15A <= 4'b0011;  // Read the domain register  (r3)
+      default:  CP15A <= 4'b0101;
+    endcase
+
+  // FSR Output Logic
   always_comb
     if(TerminalException) begin
       FSR[3:0] <= 4'b0010;
@@ -368,6 +387,7 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
       FSR[3:0] <= FaultCode;
     end
 
+  // SelPrevAddr 
   assign SelPrevAddr = (state == READY) & (PStall & ~IStall & ~DStall);
 
   // HRequestMid Logic

@@ -22,7 +22,7 @@ pageASMFile = 'pagetable.asm'
 addInstrToTest = True
 
 vrange = 3*2**20 		# 3 MB of mapped memory
-psize = 4*2**10  		# 4 KB Page size (small)
+psize = 2**20  			# 1 MB Page size (section)
 tsize = 2**20 			# 1 MB first level entry size
 n = vrange/psize		# 3MB/4KB pages
 
@@ -35,8 +35,8 @@ for i in xrange(n):
 
 	# Create the appropriate translation entry
 	physPB = intToHexStr(int(virtPB, 16) + 2**12) # 12 kB offset
-	trans = ['small', virtPB, physPB, tbase, Domain, AP, C, B, t2base, res]
-	virtPB = nextFree('small', virtPB)
+	trans = ['section', virtPB, physPB, tbase, Domain, AP, C, B]
+	virtPB = nextFree('section', virtPB)
 	translist.append(trans)
 
 print translist[0]
