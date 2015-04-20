@@ -1,0 +1,50 @@
+
+lsl.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <start>:
+   0:	ea00000e 	b	40 <reset>
+   4:	ea000011 	b	50 <undef>
+   8:	ea00000d 	b	44 <swi>
+   c:	ea000010 	b	54 <pfa>
+  10:	ea000010 	b	58 <da>
+  14:	e1a00000 	nop			; (mov r0, r0)
+  18:	ea00000f 	b	5c <irq>
+  1c:	ea00000f 	b	60 <fiq>
+
+00000020 <prog>:
+  20:	e3a0c001 	mov	ip, #1
+  24:	e3a06006 	mov	r6, #6
+  28:	e8800108 	stm	r0, {r3, r8}
+  2c:	e8900108 	ldm	r0, {r3, r8}
+  30:	e1a0661c 	lsl	r6, ip, r6
+
+00000034 <stop>:
+  34:	e3a01000 	mov	r1, #0
+  38:	e3a02000 	mov	r2, #0
+  3c:	eafffffc 	b	34 <stop>
+
+00000040 <reset>:
+  40:	eafffff6 	b	20 <prog>
+
+00000044 <swi>:
+  44:	e0812002 	add	r2, r1, r2
+  48:	e1a01002 	mov	r1, r2
+  4c:	e1b0f00e 	movs	pc, lr
+
+00000050 <undef>:
+  50:	eafffff2 	b	20 <prog>
+
+00000054 <pfa>:
+  54:	eafffff1 	b	20 <prog>
+
+00000058 <da>:
+  58:	eafffff0 	b	20 <prog>
+
+0000005c <irq>:
+  5c:	eaffffef 	b	20 <prog>
+
+00000060 <fiq>:
+  60:	eaffffee 	b	20 <prog>
