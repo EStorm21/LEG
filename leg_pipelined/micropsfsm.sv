@@ -125,6 +125,7 @@ always_comb
 					prevRSRstate = 0;
 					nextState = rsr;
 					keepV = 0;
+					LDMSTMforward = 0;
 					uOpInstrD = {defaultInstrD[31:25], // Condition bits and RSR-type
 								4'b1101, 1'b0, // MOV instruction, Do not update flags [24:20]
 								4'b0000, 4'b1111, // If we have SBZ then [19:16]  shb 0000, we should use Rz [15:12]
@@ -879,6 +880,7 @@ always_comb
 					uOpStallD = 0;
 					prevRSRstate = 1;
 					keepV = 0;
+					LDMSTMforward = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b010}; // 5th bit of WA3, RA2D and RA1D
 					nextState = ready;
