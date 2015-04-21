@@ -1,0 +1,176 @@
+
+setUpTranslation.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <start>:
+   0:	ea000059 	b	16c <reset>
+   4:	ea00005c 	b	17c <undef>
+   8:	ea000058 	b	170 <swi>
+   c:	ea00005b 	b	180 <pfa>
+  10:	ea00005b 	b	184 <da>
+  14:	e1a00000 	nop			; (mov r0, r0)
+  18:	ea00005a 	b	188 <irq>
+  1c:	ea00005a 	b	18c <fiq>
+
+00000020 <prog>:
+  20:	e3a01c03 	mov	r1, #768	; 0x300
+  24:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
+  28:	e3a01603 	mov	r1, #3145728	; 0x300000
+  2c:	e59f215c 	ldr	r2, [pc, #348]	; 190 <fiq+0x4>
+  30:	e5812000 	str	r2, [r1]
+  34:	e59f1158 	ldr	r1, [pc, #344]	; 194 <fiq+0x8>
+  38:	e59f2158 	ldr	r2, [pc, #344]	; 198 <fiq+0xc>
+  3c:	e5812000 	str	r2, [r1]
+  40:	e59f1154 	ldr	r1, [pc, #340]	; 19c <fiq+0x10>
+  44:	e59f2154 	ldr	r2, [pc, #340]	; 1a0 <fiq+0x14>
+  48:	e5812000 	str	r2, [r1]
+  4c:	e3a01603 	mov	r1, #3145728	; 0x300000
+  50:	ee021f10 	mcr	15, 0, r1, cr2, cr0, {0}
+  54:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
+  58:	e3811001 	orr	r1, r1, #1
+  5c:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
+
+00000060 <next14>:
+  60:	e59f1000 	ldr	r1, [pc]	; 68 <val15>
+  64:	ea000000 	b	6c <next15>
+
+00000068 <val15>:
+  68:	00000001 	.word	0x00000001
+
+0000006c <next15>:
+  6c:	e50d1000 	str	r1, [sp, #-0]
+  70:	e59f1000 	ldr	r1, [pc]	; 78 <val16>
+  74:	ea000000 	b	7c <next16>
+
+00000078 <val16>:
+  78:	00000002 	.word	0x00000002
+
+0000007c <next16>:
+  7c:	e50d1004 	str	r1, [sp, #-4]
+  80:	e59f1000 	ldr	r1, [pc]	; 88 <val17>
+  84:	ea000000 	b	8c <next17>
+
+00000088 <val17>:
+  88:	00000003 	.word	0x00000003
+
+0000008c <next17>:
+  8c:	e50d1008 	str	r1, [sp, #-8]
+  90:	e59f1000 	ldr	r1, [pc]	; 98 <val18>
+  94:	ea000000 	b	9c <next18>
+
+00000098 <val18>:
+  98:	00000004 	.word	0x00000004
+
+0000009c <next18>:
+  9c:	e50d100c 	str	r1, [sp, #-12]
+  a0:	e59f1000 	ldr	r1, [pc]	; a8 <val19>
+  a4:	ea000000 	b	ac <next19>
+
+000000a8 <val19>:
+  a8:	00000005 	.word	0x00000005
+
+000000ac <next19>:
+  ac:	e50d1010 	str	r1, [sp, #-16]
+  b0:	e59f1000 	ldr	r1, [pc]	; b8 <val20>
+  b4:	ea000000 	b	bc <next20>
+
+000000b8 <val20>:
+  b8:	00000006 	.word	0x00000006
+
+000000bc <next20>:
+  bc:	e50d1014 	str	r1, [sp, #-20]
+  c0:	e59f1000 	ldr	r1, [pc]	; c8 <val21>
+  c4:	ea000000 	b	cc <next21>
+
+000000c8 <val21>:
+  c8:	00000007 	.word	0x00000007
+
+000000cc <next21>:
+  cc:	e50d1018 	str	r1, [sp, #-24]
+  d0:	e59f1000 	ldr	r1, [pc]	; d8 <val22>
+  d4:	ea000000 	b	dc <next22>
+
+000000d8 <val22>:
+  d8:	00000008 	.word	0x00000008
+
+000000dc <next22>:
+  dc:	e50d101c 	str	r1, [sp, #-28]
+  e0:	e59f1000 	ldr	r1, [pc]	; e8 <val23>
+  e4:	ea000000 	b	ec <next23>
+
+000000e8 <val23>:
+  e8:	00000009 	.word	0x00000009
+
+000000ec <next23>:
+  ec:	e50d1020 	str	r1, [sp, #-32]
+  f0:	e59f1000 	ldr	r1, [pc]	; f8 <val24>
+  f4:	ea000000 	b	fc <next24>
+
+000000f8 <val24>:
+  f8:	0000000a 	.word	0x0000000a
+
+000000fc <next24>:
+  fc:	e50d1024 	str	r1, [sp, #-36]	; 0x24
+ 100:	e59f1000 	ldr	r1, [pc]	; 108 <val25>
+ 104:	ea000000 	b	10c <next25>
+
+00000108 <val25>:
+ 108:	0000000b 	.word	0x0000000b
+
+0000010c <next25>:
+ 10c:	e50d1028 	str	r1, [sp, #-40]	; 0x28
+ 110:	e51d0000 	ldr	r0, [sp, #-0]
+ 114:	e51d1004 	ldr	r1, [sp, #-4]
+ 118:	e51d2008 	ldr	r2, [sp, #-8]
+ 11c:	e51d300c 	ldr	r3, [sp, #-12]
+ 120:	e51d4010 	ldr	r4, [sp, #-16]
+ 124:	e51d5014 	ldr	r5, [sp, #-20]
+ 128:	e51d6018 	ldr	r6, [sp, #-24]
+ 12c:	e51d701c 	ldr	r7, [sp, #-28]
+ 130:	e51d8020 	ldr	r8, [sp, #-32]
+ 134:	e51d9024 	ldr	r9, [sp, #-36]	; 0x24
+ 138:	e51da028 	ldr	sl, [sp, #-40]	; 0x28
+ 13c:	e50d0028 	str	r0, [sp, #-40]	; 0x28
+ 140:	e50d1024 	str	r1, [sp, #-36]	; 0x24
+ 144:	e50d2020 	str	r2, [sp, #-32]
+ 148:	e50d301c 	str	r3, [sp, #-28]
+ 14c:	e50d4018 	str	r4, [sp, #-24]
+ 150:	e50d5014 	str	r5, [sp, #-20]
+ 154:	e50d6010 	str	r6, [sp, #-16]
+ 158:	e50d700c 	str	r7, [sp, #-12]
+ 15c:	e50d8008 	str	r8, [sp, #-8]
+ 160:	e50d9004 	str	r9, [sp, #-4]
+ 164:	e50da000 	str	sl, [sp, #-0]
+
+00000168 <stop>:
+ 168:	eafffffe 	b	168 <stop>
+
+0000016c <reset>:
+ 16c:	eaffffab 	b	20 <prog>
+
+00000170 <swi>:
+ 170:	e0812002 	add	r2, r1, r2
+ 174:	e1a01002 	mov	r1, r2
+ 178:	e1b0f00e 	movs	pc, lr
+
+0000017c <undef>:
+ 17c:	eaffffa7 	b	20 <prog>
+
+00000180 <pfa>:
+ 180:	eaffffa6 	b	20 <prog>
+
+00000184 <da>:
+ 184:	eaffffa5 	b	20 <prog>
+
+00000188 <irq>:
+ 188:	eaffffa4 	b	20 <prog>
+
+0000018c <fiq>:
+ 18c:	eaffffa3 	b	20 <prog>
+ 190:	0003fdee 	.word	0x0003fdee
+ 194:	00300004 	.word	0x00300004
+ 198:	0403fdee 	.word	0x0403fdee
+ 19c:	00300008 	.word	0x00300008
+ 1a0:	0803fdee 	.word	0x0803fdee

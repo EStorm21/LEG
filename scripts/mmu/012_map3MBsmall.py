@@ -4,6 +4,7 @@ from genDat import genDat
 from datToInstr import genInstr
 from transFuncts import nextFree
 from transFuncts import intToHexStr
+from inserter import insertInstrInTest
 
 # Memory Properties
 tbase  = '00300000'
@@ -15,6 +16,10 @@ C = '1'
 B = '1'
 translist = []
 virtPB = '00000000'
+testFile = '../../tests/setUpTranslation.s'
+pageDatFile = 'pagetable.dat'
+pageASMFile = 'pagetable.asm'
+addInstrToTest = True
 
 vrange = 3*2**20 		# 3 MB of mapped memory
 psize = 4*2**10  		# 4 KB Page size (small)
@@ -29,7 +34,7 @@ for i in xrange(n):
 		print t2base, i
 
 	# Create the appropriate translation entry
-	physPB = virtPB
+	physPB = intToHexStr(int(virtPB, 16) + 2**12) # 12 kB offset
 	trans = ['small', virtPB, physPB, tbase, Domain, AP, C, B, t2base, res]
 	virtPB = nextFree('small', virtPB)
 	translist.append(trans)
@@ -37,8 +42,12 @@ for i in xrange(n):
 print translist[0]
 print translist[1]
 # Generate the appropriate files
-genDat(translist, tbase, t2base, 'pagetable.dat')
-genInstr('pagetable.dat', 'pagetable.asm')
+genDat(translist, tbase, t2base,  pageDatFile)
+genInstr( pageDatFile, pageASMFile )
+
+# Add pagetable.asm to desired test file
+if addInstrToTest:
+	insertInstrInTest( pageASMFile, testFile )
 
 # Here is an example translist covering different types of pages
 # -- Note that the last 5 hex digits must be the same for corresponding addresses

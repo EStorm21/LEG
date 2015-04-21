@@ -15,11 +15,13 @@ module leg(input  logic        clk, reset,
            output logic [3:0]  CoProc_AddrM, CoProc_CRmM, 
            output logic [2:0]  CoProc_Op2M, 
            output logic [31:0] CPUWriteData, 
-           input logic  [31:0] CP15rd_M);
+           input logic  [31:0] CP15rd_M,
+           // Added for MMU
+           output logic StallD, FlushD, FlushE);
 
   /// Output from Hazard Unit
   logic [1:0]  ForwardAE, ForwardBE;
-  logic        StallF, StallD, FlushD, StallE, FlushE, StallM, FlushW, StallW, StalluOp;
+  logic        StallF, StallE, StallM, FlushW, StallW, StalluOp;
   logic        ExceptionSavePC;
 
   /// Output from Datapath

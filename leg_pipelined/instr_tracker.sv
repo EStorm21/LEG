@@ -5,24 +5,22 @@
  *
  * nothing to worry about if cancelled, need to abort if executing.
  */
-module instr_tracker(input logic clk, instr_abort, stallD, flushD, flushE,
+module instr_tracker(input logic clk, instr_abort, StallD, FlushD, FlushE,
                     output logic InstrCancelled, InstrExecuting);
 
-  logic abortD;
+  logic AbortD;
   always_ff @(posedge clk)
-    if(flushD)
-      abortD <= 0;
-    else if(~stallD)
-      abortD <= instr_abort;
-    else if(InstrCancelled)  // in case cancelled at start of execute stage. Then don't want to propagate old signal from deocde.
-      abortD <= 0;
+    if(FlushD | InstrCancelled)
+      AbortD <= 0;
+    else if(~StallD)
+      AbortD <= instr_abort;
 
   always_ff @(posedge clk)
-    if(flushE)
+    if(FlushE)
       InstrExecuting <= 0;
     else
-      InstrExecuting <= abortD;
+      InstrExecuting <= AbortD;
 
-  assign InstrCancelled = flushD | flushE;
+  assign InstrCancelled = FlushD | FlushE;
 
 endmodule

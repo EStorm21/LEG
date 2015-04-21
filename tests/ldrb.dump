@@ -1,0 +1,55 @@
+
+ldrb.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <start>:
+   0:	ea000011 	b	4c <reset>
+   4:	ea000016 	b	64 <undef>
+   8:	ea000012 	b	58 <swi>
+   c:	ea000015 	b	68 <pfa>
+  10:	ea000015 	b	6c <da>
+  14:	e1a00000 	nop			; (mov r0, r0)
+  18:	ea000014 	b	70 <irq>
+  1c:	ea000014 	b	74 <fiq>
+
+00000020 <prog>:
+  20:	e3a00000 	mov	r0, #0
+  24:	e2804001 	add	r4, r0, #1
+  28:	e2802c01 	add	r2, r0, #256	; 0x100
+  2c:	e28330a0 	add	r3, r3, #160	; 0xa0
+  30:	e5830004 	str	r0, [r3, #4]
+  34:	e7c33104 	strb	r3, [r3, r4, lsl #2]
+  38:	e7d31104 	ldrb	r1, [r3, r4, lsl #2]
+  3c:	e3a03040 	mov	r3, #64	; 0x40
+  40:	e7833104 	str	r3, [r3, r4, lsl #2]
+  44:	e7935104 	ldr	r5, [r3, r4, lsl #2]
+
+00000048 <stop>:
+  48:	eafffffe 	b	48 <stop>
+
+0000004c <reset>:
+  4c:	e3a01000 	mov	r1, #0
+  50:	e3a02000 	mov	r2, #0
+  54:	eafffff1 	b	20 <prog>
+
+00000058 <swi>:
+  58:	e0812002 	add	r2, r1, r2
+  5c:	e1a01002 	mov	r1, r2
+  60:	e1b0f00e 	movs	pc, lr
+
+00000064 <undef>:
+  64:	eaffffed 	b	20 <prog>
+
+00000068 <pfa>:
+  68:	eaffffec 	b	20 <prog>
+
+0000006c <da>:
+  6c:	eaffffeb 	b	20 <prog>
+
+00000070 <irq>:
+  70:	eaffffea 	b	20 <prog>
+
+00000074 <fiq>:
+  74:	eaffffe9 	b	20 <prog>

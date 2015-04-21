@@ -5,7 +5,7 @@ module coprocessor15 (input logic         clk, reset,
 															input logic [31:0]  CPUWriteData, MMUWriteData,
                               input logic [2:0]   opcode_2,
                               input logic [3:0]   CRm,
-															output logic        StallCP, FlushI, FlushD, CleanI, CleanD, TLBFlushD, TLBFlushI,
+															output logic        StallCP, INVI, INVD, CleanI, CleanD, TLBFlushD, TLBFlushI,
 															output logic [31:0] rd, control, tbase);
 
 /* 
@@ -94,24 +94,24 @@ assign tbase = rf[2];
 always_comb
   case ({we, reg_select[7], opcode_2, CRm})
     // opcode_2 000
-    9'b1_1_000_0111: {FlushI, FlushD, CleanI, CleanD} = 4'b1100;
-    9'b1_1_000_0101: {FlushI, FlushD, CleanI, CleanD} = 4'b1000;
-    9'b1_1_000_0110: {FlushI, FlushD, CleanI, CleanD} = 4'b0100;
-    9'b1_1_000_1011: {FlushI, FlushD, CleanI, CleanD} = 4'b0011;
-    9'b1_1_000_1010: {FlushI, FlushD, CleanI, CleanD} = 4'b0001;
-    9'b1_1_000_1111: {FlushI, FlushD, CleanI, CleanD} = 4'b1111;
-    9'b1_1_000_1110: {FlushI, FlushD, CleanI, CleanD} = 4'b0101;
+    9'b1_1_000_0111: {INVI, INVD, CleanI, CleanD} = 4'b1100;
+    9'b1_1_000_0101: {INVI, INVD, CleanI, CleanD} = 4'b1000;
+    9'b1_1_000_0110: {INVI, INVD, CleanI, CleanD} = 4'b0100;
+    9'b1_1_000_1011: {INVI, INVD, CleanI, CleanD} = 4'b0011;
+    9'b1_1_000_1010: {INVI, INVD, CleanI, CleanD} = 4'b0001;
+    9'b1_1_000_1111: {INVI, INVD, CleanI, CleanD} = 4'b1111;
+    9'b1_1_000_1110: {INVI, INVD, CleanI, CleanD} = 4'b0101;
 
     // opcode_2 001
-    9'b1_1_001_0111: {FlushI, FlushD, CleanI, CleanD} = 4'b1100;
-    9'b1_1_001_0101: {FlushI, FlushD, CleanI, CleanD} = 4'b1000;
-    9'b1_1_001_0110: {FlushI, FlushD, CleanI, CleanD} = 4'b0100;
-    9'b1_1_001_1011: {FlushI, FlushD, CleanI, CleanD} = 4'b0011;
-    9'b1_1_001_1010: {FlushI, FlushD, CleanI, CleanD} = 4'b0001;
-    9'b1_1_001_1111: {FlushI, FlushD, CleanI, CleanD} = 4'b1111;
-    9'b1_1_001_1110: {FlushI, FlushD, CleanI, CleanD} = 4'b0101;
+    9'b1_1_001_0111: {INVI, INVD, CleanI, CleanD} = 4'b1100;
+    9'b1_1_001_0101: {INVI, INVD, CleanI, CleanD} = 4'b1000;
+    9'b1_1_001_0110: {INVI, INVD, CleanI, CleanD} = 4'b0100;
+    9'b1_1_001_1011: {INVI, INVD, CleanI, CleanD} = 4'b0011;
+    9'b1_1_001_1010: {INVI, INVD, CleanI, CleanD} = 4'b0001;
+    9'b1_1_001_1111: {INVI, INVD, CleanI, CleanD} = 4'b1111;
+    9'b1_1_001_1110: {INVI, INVD, CleanI, CleanD} = 4'b0101;
 
-    default: {FlushI, FlushD, CleanI, CleanD} = 4'b0000;
+    default: {INVI, INVD, CleanI, CleanD} = 4'b0000;
   endcase
 
 always_comb
