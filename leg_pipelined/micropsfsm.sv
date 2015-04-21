@@ -477,22 +477,94 @@ always_comb
 
 					// Immediate pre indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b01 & defaultInstrD[21]) begin
-
+						nextState = ls_byte;
+						InstrMuxD = 1;
+						ldrstrRtype = 0;
+						doNotUpdateFlagD = 1;
+						uOpStallD = 1;
+						regFileRz = {1'b0, // Control inital mux for RA1D
+									3'b000}; // 5th bit of WA3, RA2D and RA1D
+						// (1) Rn = Rn + Imm
+						uOpInstrD = {defaultInstrD[31:28], 3'b001, // I-Type Data processing instr
+							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
+							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + imm 
+							defaultInstrD[11:0] // Immediate
+							};
 					// Register pre indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
-
+						nextState = ls_byte;
+						InstrMuxD = 1;
+						ldrstrRtype = 0;
+						doNotUpdateFlagD = 1;
+						uOpStallD = 1;
+						regFileRz = {1'b0, // Control inital mux for RA1D
+									3'b000}; // 5th bit of WA3, RA2D and RA1D
+						// (1) Rn = Rn + Rm
+						uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
+							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
+							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + Rm 
+							8'b0, defaultInstrD[3:0] // add Rm
+							};
 					// Scaled register pre indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & ~defaultInstrD[4]) begin
-
+						nextState = ls_byte;
+						InstrMuxD = 1;
+						ldrstrRtype = 0;
+						doNotUpdateFlagD = 1;
+						uOpStallD = 1;
+						regFileRz = {1'b0, // Control inital mux for RA1D
+									3'b000}; // 5th bit of WA3, RA2D and RA1D
+						// (1) Rn = Rn + scaled(Rm)
+						uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
+							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
+							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + scaled(Rm) 
+							defaultInstrD[11:0] // add scaled(Rm)
+							};
 					// immediate post indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin
-
+						nextState = ls_byte;
+						InstrMuxD = 1;
+						ldrstrRtype = 0;
+						doNotUpdateFlagD = 1;
+						uOpStallD = 1;
+						regFileRz = {1'b0, // Control inital mux for RA1D
+									3'b000}; // 5th bit of WA3, RA2D and RA1D
+						// Load immedate byte/word
+						uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
+								defaultInstrD[23:22], 1'b0, 	// 
+								defaultInstrD[20], defaultInstrD[19:16],  // Load from saved register
+								defaultInstrD[15:12], 		   // Store into Rd
+								12'b0};	
 					// Register post indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
-
+						nextState = ls_byte;
+						InstrMuxD = 1;
+						ldrstrRtype = 0;
+						doNotUpdateFlagD = 1;
+						uOpStallD = 1;
+						regFileRz = {1'b0, // Control inital mux for RA1D
+									3'b000}; // 5th bit of WA3, RA2D and RA1D
+						// Load immediate byte/word
+						uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
+								defaultInstrD[23:22], 1'b0, 	// 
+								defaultInstrD[20], defaultInstrD[19:16],  // Load from saved register
+								defaultInstrD[15:12], 		   // Store into Rd
+								12'b0};	
 					// Scaled register post indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
-
+						nextState = ls_byte;
+						InstrMuxD = 1;
+						ldrstrRtype = 0;
+						doNotUpdateFlagD = 1;
+						uOpStallD = 1;
+						regFileRz = {1'b0, // Control inital mux for RA1D
+									3'b000}; // 5th bit of WA3, RA2D and RA1D
+						// Load immediate byte/word
+						uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
+								defaultInstrD[23:22], 1'b0, 	// 
+								defaultInstrD[20], defaultInstrD[19:16],  // Load from saved register
+								defaultInstrD[15:12], 		   // Store into Rd
+								12'b0};	
 					end
 				end
 				/* --- Stay in the READY state ----
@@ -519,6 +591,7 @@ always_comb
 
 		ls_byte: begin
 			if(defaultInstrD[27:26] == 2'b01 & defaultInstrD[22]) begin
+				// scaled register
 				if(defaultInstrD[25:24] == 2'b11 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
 					nextState = ready;
 					InstrMuxD = 1;
@@ -527,11 +600,101 @@ always_comb
 					uOpStallD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b001}; // 5th bit of WA3, RA2D and RA1D
-					// (1) Rz = Rm shifted by shift_imm (R-type instr), (2) Rn = Rn +/- Rz
+					// Load immedate byte/word
 					uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
 								defaultInstrD[23:20], 4'b1111, // Load Rz
 								defaultInstrD[15:12], 		   // Store into Rd
 								12'b0};						   // no offset
+				// immediate pre-indexed
+				end else if (defaultInstrD[25:24] == 2'b01 & defaultInstrD[21]) begin
+					nextState = ready;
+					InstrMuxD = 1;
+					ldrstrRtype = 0;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					// Load immediate byte/word
+					uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
+								defaultInstrD[23:22], 1'b0, 	// 
+								defaultInstrD[20], defaultInstrD[19:16],  // Load from saved register
+								defaultInstrD[15:12], 		   // Store into Rd
+								12'b0};	
+				// register pre-indexed
+				end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
+					nextState = ready;
+					InstrMuxD = 1;
+					ldrstrRtype = 0;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					// Load immediate byte/word
+					uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
+								defaultInstrD[23:22], 1'b0, 	// 
+								defaultInstrD[20], defaultInstrD[19:16],  // Load from saved register
+								defaultInstrD[15:12], 		   // Store into Rd
+								12'b0};	
+				// scaled register pre-indexed
+				end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
+					nextState = ready;
+					InstrMuxD = 1;
+					ldrstrRtype = 0;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					// Load immediate byte/word
+					uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
+								defaultInstrD[23:22], 1'b0, 	// 
+								defaultInstrD[20], defaultInstrD[19:16],  // Load from saved register
+								defaultInstrD[15:12], 		   // Store into Rd
+								12'b0};	
+				// immediate post indexed
+				end else if (defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin
+					nextState = ready;
+					InstrMuxD = 1;
+					ldrstrRtype = 0;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					// (1) Rn = Rn + Imm
+					uOpInstrD = {defaultInstrD[31:28], 3'b001, // I-Type Data processing instr
+							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
+							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + imm 
+							defaultInstrD[11:0] // Immediate
+							};
+				// register post indexed
+				end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
+					nextState = ready;
+					InstrMuxD = 1;
+					ldrstrRtype = 0;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					// (1) Rn = Rn + Rm
+					uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
+							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
+							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + Rm 
+							8'b0, defaultInstrD[3:0] // add Rm
+							};
+				// scaled register post indexed
+				end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
+					nextState = ready;
+					InstrMuxD = 1;
+					ldrstrRtype = 0;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					// (1) Rn = Rn + scaled(Rm)
+					uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
+							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
+							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + scaled(Rm) 
+							defaultInstrD[11:0] // add scaled(Rm)
+							};
 				end
 			end
 		end

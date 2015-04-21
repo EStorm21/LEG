@@ -19,10 +19,10 @@ Disassembly of section .text:
   24:	e2804001 	add	r4, r0, #1
   28:	e2802c01 	add	r2, r0, #256	; 0x100
   2c:	e28330a0 	add	r3, r3, #160	; 0xa0
-  30:	e5830004 	str	r0, [r3, #4]
-  34:	e7c33104 	strb	r3, [r3, r4, lsl #2]
-  38:	e7d31104 	ldrb	r1, [r3, r4, lsl #2]
-  3c:	e3a03040 	mov	r3, #64	; 0x40
+  30:	e5830004 	str	r0, [r3, #4]  ; store 0 into 0xa4
+  34:	e7c33104 	strb	r3, [r3, r4, lsl #2] ; store 0xa0 into (r3 + (1<<2)) 
+  38:	e7d31104 	ldrb	r1, [r3, r4, lsl #2] ; put that into r1
+  3c:	e3a03040 	mov	r3, #64	; 0x40        ; r3 is now 0x40
   40:	e7833104 	str	r3, [r3, r4, lsl #2]
   44:	e7935104 	ldr	r5, [r3, r4, lsl #2]
 
