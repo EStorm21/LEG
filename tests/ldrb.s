@@ -19,7 +19,12 @@ prog:
 	mov r3, #0x40
 	str r3, [r3, r4, lsl #2]
 	ldr r5, [r3, r4, lsl #2]
-	
+	str r3, [r3, #0]
+	ldrb r6, [r3, #1]!
+	ldrb r7, [r3], #1	
+	mov r3, #0x40
+	ldr r8, [r3], #4
+	ldr r9, [r3, #-4]!
 
 stop:    b stop
 
