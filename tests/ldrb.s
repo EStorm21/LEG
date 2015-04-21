@@ -21,10 +21,29 @@ prog:
 	ldr r5, [r3, r4, lsl #2]
 	str r3, [r3, #0]
 	ldrb r6, [r3, #1]!
-	ldrb r7, [r3], #1	
+	add r11, r3, r11
+	ldrb r7, [r3], #1
+	add r11, r3, r11
+	add r11, r3, r11	
 	mov r3, #0x40
 	ldr r8, [r3], #4
+	add r11, r3, r11
 	ldr r9, [r3, #-4]!
+	add r11, r3, r11
+	ldrb r10, [r3, r4, lsl #2]!
+	add r11, r3, r11
+	mov r3, #0x40
+	strb r3, [r5], r4, lsl #2
+	add r11, r3, r11
+	mov r3, #0x40
+	ldrb r12, [r5], r4, lsl #2 
+	add r11, r3, r11
+	mov r3, #0x40
+	str r3, [r5], r4, lsl #2
+	add r11, r3, r11
+	mov r3, #0x40
+	ldr r13, [r5], r4, lsl #2
+
 
 stop:    b stop
 
