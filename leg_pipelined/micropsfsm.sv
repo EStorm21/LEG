@@ -11,6 +11,7 @@ module micropsfsm(input  logic        clk, reset,
 typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, ls_word, str, blx, strHalf, ls_halfword, ls_byte} statetype; // theres a bug if we get rid of strHalf... need to figoure out why
 statetype state, nextState;
 
+string debugText;
 // --------------------------- ADDED FOR LDM/STM -------------------------------
 // Conditional Unit
 logic readyState, Ubit_ADD, LastCycle, WriteBack, ZeroRegsLeft;
@@ -117,6 +118,7 @@ always_comb
 				//start RSR type instructions
 				else if (defaultInstrD[27:25] == 3'b0 & defaultInstrD[7] == 0 & defaultInstrD[4] == 1 
 				  & ~(defaultInstrD[27:6] == {8'b0001_0010, 12'hFFF, 2'b00}) & defaultInstrD[4]) begin 
+				  	debugText = "rsr type data processing instr";
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
@@ -133,6 +135,7 @@ always_comb
 				end
 				// Start multiply accumulate
 				else if((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:21] == 7'h01)) begin 
+					debugText = "multiply accumulate";
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 0;
 					uOpStallD = 1;
@@ -147,6 +150,7 @@ always_comb
 								defaultInstrD[11:0]}; 
 				end
 				else if(defaultInstrD[27:24]== 4'b1011) begin // bl
+					debugText = "bl";
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 0;
 					uOpStallD = 1;
@@ -163,6 +167,7 @@ always_comb
 				end
 
 				else if(defaultInstrD[27:4]== {8'b00010010, 12'hfff, 4'b0011}) begin // blx
+					debugText = "blx";
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 0;
 					uOpStallD = 1;
@@ -177,13 +182,12 @@ always_comb
 								4'b1111, 4'b1110, // R15, link register destination
 								4'b0000, 8'b00000100}; // We need PC - 4
 				end
-
+				/*
 				// ---------- LOAD/STORE Pre/Post Increment Mode ------------
 				else if (defaultInstrD[27:26] == 2'b01 & ~defaultInstrD[22]) begin // ldr/store post-increment mode (Word)
-					/*
-					 * I TYPE OF LOADS AND STORES, WORKS FOR BOTH
-					 */
+					//I TYPE OF LOADS AND STORES, WORKS FOR BOTH
 					if(defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin // ldr/str i type, post index
+						debugText = "Load Stores I type post index";
 						nextState = ls_word; // ** Note: handles both load & store
 						InstrMuxD = 1;
 						doNotUpdateFlagD = 1;
@@ -199,6 +203,7 @@ always_comb
 									};
 					// Scaled Register offests ldr/str
 					end else if (defaultInstrD[25:24] == 2'b11 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
+						debugText = "ldr/str scaled register offset";
 						nextState = ls_word;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
@@ -214,6 +219,7 @@ always_comb
 							};
 
 					end else if (defaultInstrD[25:24] == 2'b01 & defaultInstrD[21]) begin // load, uses the ! operator for preindex i type
+						debugText = "ldr immediate preindex";
 						nextState = ls_word; // ** Note: handles both load & store
 						InstrMuxD = 1;
 						doNotUpdateFlagD = 1;
@@ -229,6 +235,7 @@ always_comb
 									};
 
 					end else if (defaultInstrD[25:24] == 2'b10 & defaultInstrD[21:20] == 2'b01 ) begin // load, register shifted type, post index 
+						debugText = "ldr scaled register post-index";
 						nextState = ls_word;
 						ldrstrRtype = 0;
 						InstrMuxD = 1;
@@ -245,6 +252,7 @@ always_comb
 									12'b0  				 	// Offset = 0
 									};
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21:20] == 2'b11) begin // load, register shifted type, ! operator pre indexing
+						debugText = "ldr scaled register pre-index";
 						nextState = ls_word;
 						ldrstrRtype = 1;
 						InstrMuxD = 1;
@@ -262,6 +270,7 @@ always_comb
 									};
 
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21:20] == 2'b00) begin // Store, r type, no pre or post indexing
+						debugText = "store r-type";
 						nextState = str;
 						STR_cycle = 2'b01; // for debugging
 						InstrMuxD = 1;
@@ -280,6 +289,7 @@ always_comb
 									4'b1111, defaultInstrD[11:0] // Add and store into Rz, leave bottom 12 bits same
 									}; 
 					end else if (defaultInstrD[25:24] == 2'b10 & defaultInstrD[21:20] == 2'b00) begin // Store, r type, post indexed
+						debugText = "str register post index";
 						nextState = str;
 						STR_cycle = 2'b10; // for debugging
 						ldrstrRtype = 0;
@@ -297,6 +307,7 @@ always_comb
 									12'b0  				 	// Offset = 0
 									};
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21:20] == 2'b10) begin // store, r type, pre indexed (!)
+						debugText = "str r type preindex";
 						nextState = str;
 						STR_cycle = 2'b11; // for debugging
 						ldrstrRtype = 1;
@@ -315,6 +326,7 @@ always_comb
 									defaultInstrD[19:16], defaultInstrD[11:0] // add and store into Rz = Rn + shift(Rm)
 									};
 					end else begin // NOT POST-INCREMENT OR !
+						debugText = "ldr/str else case";
 						nextState = ready;
 						InstrMuxD = 0;
 						doNotUpdateFlagD = 0;
@@ -330,10 +342,11 @@ always_comb
 						STR_cycle = 2'b0;
 						ldrstrRtype = 0;
 					end 
-				end
+				end */
 				// LOAD MULTIPLE & STORE MULTIPLE
 				// First instruction should be a move Rz = Rn or Rz = Rn + 4 or Rz = Rn - # bits set - 4 etc...
 				else if(defaultInstrD[27:25] == 3'b100) begin 
+					debugText = "ldm / stm";
 					InstrMuxD = 1;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
@@ -356,7 +369,8 @@ always_comb
 								 };
 				end 
 				// LOAD/STORE HALF-WORDS
-				else if (defaultInstrD[27:25] == 3'b000) begin
+				else if (defaultInstrD[27:25] == 3'b000 & defaultInstrD[7:4] == 4'b1011) begin // LDRH and STRH only
+					debugText = "ldrh/strh";
 					// COMMENT: ldrh/strh immediate pre indexed (yes both load and store!)
 					if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b11 & defaultInstrD[7:4] == 4'b1011) begin
 						nextState = ls_halfword;
@@ -457,8 +471,9 @@ always_comb
 						ldrstrRtype = 0;
 					end 
 				end
-				// ALL LOAD and STORE BYTES --- ldrb and strb
-				else if (defaultInstrD[27:26] == 2'b01 & defaultInstrD[22]) begin // ldrb or strb 
+				// ALL LOAD and STORE WORDS / BYTES --- ldr, str, ldrb, strb
+				else if (defaultInstrD[27:26] == 2'b01) begin // ldrb or strb   & defaultInstrD[22]
+					debugText = "ldr/str/ldrb/strb";
 					// Scaled Register offests ldrb/strb
 					if (defaultInstrD[25:24] == 2'b11 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
 						nextState = ls_byte;
@@ -477,6 +492,7 @@ always_comb
 
 					// Immediate pre indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b01 & defaultInstrD[21]) begin
+						debugText = "ldr/str/ldrb/strb pre-indexed immediate";
 						nextState = ls_byte;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
@@ -492,6 +508,7 @@ always_comb
 							};
 					// Register pre indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
+						debugText = "ldr/str/ldrb/strb pre-indexed register";
 						nextState = ls_byte;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
@@ -507,6 +524,7 @@ always_comb
 							};
 					// Scaled register pre indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & ~defaultInstrD[4]) begin
+						debugText = "ldr/str/ldrb/strb pre-indexed scaled register";
 						nextState = ls_byte;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
@@ -522,6 +540,7 @@ always_comb
 							};
 					// immediate post indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin
+						debugText = "ldr/str/ldrb/strb post indexed immediate";
 						nextState = ls_byte;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
@@ -537,6 +556,7 @@ always_comb
 								12'b0};	
 					// Register post indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
+						debugText = "ldr/str/ldrb/strb post indexed register";
 						nextState = ls_byte;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
@@ -552,6 +572,7 @@ always_comb
 								12'b0};	
 					// Scaled register post indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
+						debugText = "ldr/str/ldrb/strb post indexed scaled register";
 						nextState = ls_byte;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
@@ -565,7 +586,23 @@ always_comb
 								defaultInstrD[20], defaultInstrD[19:16],  // Load from saved register
 								defaultInstrD[15:12], 		   // Store into Rd
 								12'b0};	
-					end
+					end else begin // NOT POST-INCREMENT OR !
+						debugText = "ldr/str/ldrb/strb else case";
+						nextState = ready;
+						InstrMuxD = 0;
+						doNotUpdateFlagD = 0;
+						uOpStallD = 0;
+						prevRSRstate = 0;
+						keepV = 0;
+						regFileRz = {1'b0, // Control inital mux for RA1D
+									3'b000}; // 5th bit of RA2D and RA1D
+						uOpInstrD = {defaultInstrD};
+						LDMSTMforward = 0;
+						SignExtend = 0;
+						noRotate = 0;
+						STR_cycle = 2'b0;
+						ldrstrRtype = 0;
+					end 
 				end
 				/* --- Stay in the READY state ----
 				 */
@@ -590,12 +627,13 @@ always_comb
 			end
 
 		ls_byte: begin
-			if(defaultInstrD[27:26] == 2'b01 & defaultInstrD[22]) begin
+			if(defaultInstrD[27:26] == 2'b01) begin // & defaultInstrD[22]
 				// scaled register
 				if(defaultInstrD[25:24] == 2'b11 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
+					debugText = "ldr/str/ldrb/strb cycle 2 scaled register";
 					nextState = ready;
 					InstrMuxD = 1;
-					ldrstrRtype = 0;
+					ldrstrRtype = 1;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
@@ -607,6 +645,7 @@ always_comb
 								12'b0};						   // no offset
 				// immediate pre-indexed
 				end else if (defaultInstrD[25:24] == 2'b01 & defaultInstrD[21]) begin
+					debugText = "ldr/str/ldrb/strb cycle 2 immediate pre index";
 					nextState = ready;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -622,6 +661,7 @@ always_comb
 								12'b0};	
 				// register pre-indexed
 				end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
+					debugText = "ldr/str/ldrb/strb cycle 2 register pre index";
 					nextState = ready;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -636,10 +676,11 @@ always_comb
 								defaultInstrD[15:12], 		   // Store into Rd
 								12'b0};	
 				// scaled register pre-indexed
-				end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
+				end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & ~defaultInstrD[4]) begin
+					debugText = "ldr/str/ldrb/strb cycle 2 scaled register pre index";
 					nextState = ready;
 					InstrMuxD = 1;
-					ldrstrRtype = 0;
+					ldrstrRtype = 1;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
@@ -652,6 +693,7 @@ always_comb
 								12'b0};	
 				// immediate post indexed
 				end else if (defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin
+					debugText = "ldr/str/ldrb/strb cycle 2 immediate post index";
 					nextState = ready;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -667,6 +709,7 @@ always_comb
 							};
 				// register post indexed
 				end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
+					debugText = "ldr/str/ldrb/strb cycle 2 register post index";
 					nextState = ready;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -682,9 +725,10 @@ always_comb
 							};
 				// scaled register post indexed
 				end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
+					debugText = "ldr/str/ldrb/strb cycle 2 scaled register post index";
 					nextState = ready;
 					InstrMuxD = 1;
-					ldrstrRtype = 0;
+					ldrstrRtype = 1;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
@@ -695,7 +739,23 @@ always_comb
 							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + scaled(Rm) 
 							defaultInstrD[11:0] // add scaled(Rm)
 							};
-				end
+				end else begin // NOT POST-INCREMENT OR !
+						debugText = "ldr/str/ldrb/strb cycle 2 else case";
+						nextState = ready;
+						InstrMuxD = 0;
+						doNotUpdateFlagD = 0;
+						uOpStallD = 0;
+						prevRSRstate = 0;
+						keepV = 0;
+						regFileRz = {1'b0, // Control inital mux for RA1D
+									3'b000}; // 5th bit of RA2D and RA1D
+						uOpInstrD = {defaultInstrD};
+						LDMSTMforward = 0;
+						SignExtend = 0;
+						noRotate = 0;
+						STR_cycle = 2'b0;
+						ldrstrRtype = 0;
+				end 
 			end
 		end
 
@@ -859,6 +919,7 @@ always_comb
 					prevRSRstate = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					STR_cycle = 2'b00;
 					nextState = ready;
 					noRotate = 1;
 					// Do the same calculation but store it in Rn = Rn + shift(Rm) for LOAD/STR I TYPES
@@ -870,10 +931,11 @@ always_comb
 				end else if((defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21]) | (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21]))
 					begin // r type load, post index
 					InstrMuxD = 1;
-					ldrstrRtype = 1;
+					ldrstrRtype = 0;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 0;
 					prevRSRstate = 0;
+					STR_cycle = 2'b01;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of WA3, RA2D and RA1D
 					nextState = ready;
@@ -891,6 +953,7 @@ always_comb
 					ldrstrRtype = 0;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 0;
+					STR_cycle = 2'b10;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b001}; // 5th bit of WA3, RA2D and RA1D
 					// (1) Rz = Rm shifted by shift_imm (R-type instr), (2) Rn = Rn +/- Rz

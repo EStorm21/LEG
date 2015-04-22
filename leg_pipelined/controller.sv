@@ -124,8 +124,8 @@ module controller(/// ------ From TOP ------
   	  2'b01: if (InstrD[25] & InstrD[4])           ControlsD = 13'b00_00_0000_00000;  // Exception: UNDEFINED INSTRUCTION
              else if (InstrD[20] & ~InstrD[25])    ControlsD = 13'b00_01_1110_00010; // LDR, "I-type" 0xf0
              else if (InstrD[20] & InstrD[25])     ControlsD = 13'b00_01_0110_00010; // LDR, "R-Type" 0xb0
-             else if (~InstrD[20] & ~InstrD[25])   ControlsD = 13'b10_01_1101_00010; // STR, "I-type"
-             else if (~InstrD[20] & InstrD[25])    ControlsD = 13'b10_01_0101_00010; // STR, "R-type"
+             else if (~InstrD[20] & ~InstrD[25])   ControlsD = 13'b10_01_1001_00010; // STR, "I-type"
+             else if (~InstrD[20] & InstrD[25])    ControlsD = 13'b10_01_0001_00010; // STR, "R-type"
   	  2'b10:                 ControlsD = 13'b01_10_1000_10000; // B                           0x344
       2'b11: if(InstrD[25:24] == 2'b11)         ControlsD = 13'b00_00_0000_00000; // Exception: SWI
              else if (CoProc_MCR_D)   ControlsD = 13'b10_00_0000_00000; // MCR (move to coprocessor from register)
