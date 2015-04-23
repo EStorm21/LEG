@@ -55,7 +55,12 @@ module data_writeback_associative_cache
 
     // CacheIn Selection
     logic UseWD;
-    mux2 #(32) CacheWDMux(HRData, WD, UseWD, CacheWD);
+    logic [3:0] WDSel;
+    // mux2 #(32) CacheWDMux(HRData, WD, UseWD, CacheWD);
+    mux2 #(8) CacheWDMux0(HRData[7:0],   WD[7:0],   WDSel[0], CacheWD[7:0]);
+    mux2 #(8) CacheWDMux1(HRData[15:8],  WD[15:8],  WDSel[1], CacheWD[15:8]);
+    mux2 #(8) CacheWDMux2(HRData[23:16], WD[23:16], WDSel[2], CacheWD[23:16]);
+    mux2 #(8) CacheWDMux3(HRData[31:24], WD[31:24], WDSel[3], CacheWD[31:24]);
 
     // Create New Address using the counter as the word offset
     logic [blockbits-1:0] NewWordOffset;
