@@ -12,7 +12,7 @@ prog:
 	mov r0, #0
 	add r4, r0, #1
 	add r2, r0, #0x100
-	add r3, r3, #160
+	add r3, r3, #0x300
 	str r0, [r3, #4]	
 	strb r3, [r3, r4, lsl #2]
 	ldrb r1, [r3, r4, lsl #2]

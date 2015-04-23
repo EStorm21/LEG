@@ -10,7 +10,7 @@ module data_writeback_associative_cache_controller
    output logic W1WE, W2WE, W1EN, UseWD, UseCacheA, DirtyIn, WaySel, RDSel,
    output logic cleanCurr,
    output logic [1:0] CacheRDSel, 
-   output logic [3:0] ActiveByteMask,
+   output logic [3:0] ActiveByteMask, WDSel,
    output logic [tagbits-1:0] CachedTag,
    output logic [$clog2(lines)-1:0] BlockNum,
    output logic [$clog2(blocksize)-1:0] NewWordOffset);
@@ -95,7 +95,9 @@ module data_writeback_associative_cache_controller
 
   // Select Data source and Byte Mask for the data cache
   assign UseWD = ~BlockWE | ( BlockWE & MemWriteM & (Counter == WordOffset) );
-  mux2 #(4)  MaskMux(4'b1111, ByteMask, UseWD, ActiveByteMask);
+  assign WDSel = ~(ByteMask ^ {4{UseWD}});
+  mux2 #(4)  MaskMux(4'b1111, ByteMask, ( UseWD & ~(state == MEMREAD) ), 
+    ActiveByteMask);
 
   // state register
   always_ff @(posedge clk, posedge reset)
