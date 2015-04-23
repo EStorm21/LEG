@@ -133,10 +133,11 @@ module data_writeback_associative_cache_controller
       // If all four words have been fetched from memory, then move on.
       // If the cache is disabled, then only read one line. (line isn't valid)
       // MEMREAD:   nextstate <= ( BusReady & ( (Counter == 3) | ~enable) ) ? NEXTINSTR : MEMREAD;
-      MEMREAD:   if( BusReady & ( (Counter == 3) | (~enable & ~WordAccess) ) )
+      MEMREAD:   if( BusReady & MemWriteM & 
+                 ( (Counter == 3) | (~enable & ~WordAccess) ) )
                  begin 
                   nextstate <= WRITEBYTES;
-                 end else if( BusReady & ( (Counter == 3) | (~enable & WordAccess) ) )
+                 end else if( BusReady & ( (Counter == 3) | ~enable ) )
                  begin 
                   nextstate <= NEXTINSTR;
                  end else begin 
