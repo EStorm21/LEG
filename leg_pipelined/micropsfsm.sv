@@ -8,7 +8,7 @@ module micropsfsm(input  logic        clk, reset,
 			   input  logic		   StalluOp, ExceptionSavePC);
 
 // define states READY and RSR 
-typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, ls_word, str, blx, strHalf, ls_halfword, ls_byte} statetype; // theres a bug if we get rid of strHalf... need to figoure out why
+typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, ls_word, str, blx, strHalf, ls_halfword, ls_word_byte} statetype; // theres a bug if we get rid of strHalf... need to figoure out why
 statetype state, nextState;
 
 string debugText;
@@ -476,7 +476,7 @@ always_comb
 					debugText = "ldr/str/ldrb/strb";
 					// Scaled Register offests ldrb/strb
 					if (defaultInstrD[25:24] == 2'b11 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
-						nextState = ls_byte;
+						nextState = ls_word_byte;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
 						doNotUpdateFlagD = 1;
@@ -493,7 +493,7 @@ always_comb
 					// Immediate pre indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b01 & defaultInstrD[21]) begin
 						debugText = "ldr/str/ldrb/strb pre-indexed immediate";
-						nextState = ls_byte;
+						nextState = ls_word_byte;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
 						doNotUpdateFlagD = 1;
@@ -509,7 +509,7 @@ always_comb
 					// Register pre indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
 						debugText = "ldr/str/ldrb/strb pre-indexed register";
-						nextState = ls_byte;
+						nextState = ls_word_byte;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
 						doNotUpdateFlagD = 1;
@@ -525,7 +525,7 @@ always_comb
 					// Scaled register pre indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & ~defaultInstrD[4]) begin
 						debugText = "ldr/str/ldrb/strb pre-indexed scaled register";
-						nextState = ls_byte;
+						nextState = ls_word_byte;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
 						doNotUpdateFlagD = 1;
@@ -541,7 +541,7 @@ always_comb
 					// immediate post indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin
 						debugText = "ldr/str/ldrb/strb post indexed immediate";
-						nextState = ls_byte;
+						nextState = ls_word_byte;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
 						doNotUpdateFlagD = 1;
@@ -557,7 +557,7 @@ always_comb
 					// Register post indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
 						debugText = "ldr/str/ldrb/strb post indexed register";
-						nextState = ls_byte;
+						nextState = ls_word_byte;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
 						doNotUpdateFlagD = 1;
@@ -573,7 +573,7 @@ always_comb
 					// Scaled register post indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
 						debugText = "ldr/str/ldrb/strb post indexed scaled register";
-						nextState = ls_byte;
+						nextState = ls_word_byte;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
 						doNotUpdateFlagD = 1;
@@ -607,6 +607,7 @@ always_comb
 				/* --- Stay in the READY state ----
 				 */
 				else begin 
+					debugText = "stay in ready";
 					nextState = ready;
 					InstrMuxD = 0;
 					doNotUpdateFlagD = 0;
@@ -626,14 +627,14 @@ always_comb
 				end
 			end
 
-		ls_byte: begin
+		ls_word_byte: begin
 			if(defaultInstrD[27:26] == 2'b01) begin // & defaultInstrD[22]
 				// scaled register
 				if(defaultInstrD[25:24] == 2'b11 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
 					debugText = "ldr/str/ldrb/strb cycle 2 scaled register";
 					nextState = ready;
 					InstrMuxD = 1;
-					ldrstrRtype = 1;
+					ldrstrRtype = 0;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
@@ -680,7 +681,7 @@ always_comb
 					debugText = "ldr/str/ldrb/strb cycle 2 scaled register pre index";
 					nextState = ready;
 					InstrMuxD = 1;
-					ldrstrRtype = 1;
+					ldrstrRtype = 0;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
@@ -728,7 +729,7 @@ always_comb
 					debugText = "ldr/str/ldrb/strb cycle 2 scaled register post index";
 					nextState = ready;
 					InstrMuxD = 1;
-					ldrstrRtype = 1;
+					ldrstrRtype = 0;
 					doNotUpdateFlagD = 1;
 					uOpStallD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
@@ -852,7 +853,7 @@ always_comb
 			end
 
 		end
-
+		/*
 		str: begin
 			if(defaultInstrD[27:26] == 2'b01) begin //
 				if(defaultInstrD[25:24] == 2'b11 & defaultInstrD[21:20] == 2'b00) begin // Basic R type, store
@@ -903,12 +904,12 @@ always_comb
 								};
 				end
 			end
-		end
+		end*/
 
 
 		/*
-		 * PRE or POST - INDEXED Load 
-		 */
+		//PRE or POST - INDEXED Load 
+		 
 		ls_word: begin
 			if(defaultInstrD[27:26] == 2'b01) begin // ldr post increment i type
 				if((defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) | (defaultInstrD[25:24] == 2'b01 & defaultInstrD[21])) 
@@ -964,7 +965,7 @@ always_comb
 				end
 
 			end
-		end
+		end */
 		/*
 		 * STORE MULTIPLE
 		 */

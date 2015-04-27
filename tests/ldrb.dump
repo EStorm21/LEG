@@ -20,7 +20,7 @@ Disassembly of section .text:
   28:	e2802c01 	add	r2, r0, #256	; 0x100
   2c:	e28330a0 	add	r3, r3, #160	; 0xa0
   30:	e5830004 	str	r0, [r3, #4]  ; store 0 into 0xa4
-  34:	e7c33104 	strb	r3, [r3, r4, lsl #2] ; store 0xa0 into (0xa0 + 4 = 0xa4) 
+  34:	e7c33104 	strb	r3, [r3, r4, lsl #2] ; store4 0xa0 into (0xa0 + 4 = 0xa) 
   38:	e7d31104 	ldrb	r1, [r3, r4, lsl #2] ; put that into r1
   3c:	e3a03040 	mov	r3, #64	; 0x40        ; r3 is now 0x40
   40:	e7833104 	str	r3, [r3, r4, lsl #2]  ; store 0x40 into (40 + 4)
@@ -48,7 +48,7 @@ Disassembly of section .text:
   98:	e6853104 	str	r3, [r5], r4, lsl #2    ; store 0x40 into addr 48, r5 = 4c
   9c:	e083b00b 	add	fp, r3, fp              ; r11 = 20d + 40 = 24d
   a0:	e3a03040 	mov	r3, #64	; 0x40          ; r3 = 0x40;
-  a4:	e695d104 	ldr	sp, [r5], r4, lsl #2    ; load from addr 4c into r13,
+  a4:	e695d104 	ldr	sp, [r5], r4, lsl #2    ; load from addr 4c (value: 0) into r13, r5 = 50
 
 000000a8 <stop>:
   a8:	eafffffe 	b	a8 <stop>
