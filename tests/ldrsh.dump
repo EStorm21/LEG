@@ -15,22 +15,22 @@ Disassembly of section .text:
   1c:	ea00001a 	b	8c <fiq>
 
 00000020 <prog>:
-  20:	e3a00000 	mov	r0, #0
-  24:	e2401002 	sub	r1, r0, #2
-  28:	e280e701 	add	lr, r0, #262144	; 0x40000
-  2c:	e58e1000 	str	r1, [lr]
-  30:	e1de20b0 	ldrh	r2, [lr]
-  34:	e1de30f0 	ldrsh	r3, [lr]
-  38:	e1de40d0 	ldrsb	r4, [lr]
-  3c:	e1de50f2 	ldrsh	r5, [lr, #2]
-  40:	11deb0f0 	ldrshne	fp, [lr]
-  44:	e2801002 	add	r1, r0, #2
-  48:	e58e1000 	str	r1, [lr]
-  4c:	e1de60f0 	ldrsh	r6, [lr]
-  50:	e1de70f2 	ldrsh	r7, [lr, #2]
-  54:	e1de80d0 	ldrsb	r8, [lr]
-  58:	e1de90d3 	ldrsb	r9, [lr, #3]
-  5c:	11dea0f0 	ldrshne	sl, [lr]
+  20:	e3a00000 	mov	r0, #0 ; correct
+  24:	e2401002 	sub	r1, r0, #2 ; 
+  28:	e280e701 	add	lr, r0, #262144	; 0x40000 , correct
+  2c:	e58e1000 	str	r1, [lr] ; 
+  30:	e1de20b0 	ldrh	r2, [lr] ; correct
+  34:	e1de30f0 	ldrsh	r3, [lr] ; correct
+  38:	e1de40d0 	ldrsb	r4, [lr] ; incorrect
+  3c:	e1de50f2 	ldrsh	r5, [lr, #2] ; correct
+  40:	11deb0f0 	ldrshne	fp, [lr] ; seems to be correct
+  44:	e2801002 	add	r1, r0, #2 ; 
+  48:	e58e1000 	str	r1, [lr] ; correct
+  4c:	e1de60f0 	ldrsh	r6, [lr] ; correct
+  50:	e1de70f2 	ldrsh	r7, [lr, #2] ; correct
+  54:	e1de80d0 	ldrsb	r8, [lr] ; wrong
+  58:	e1de90d3 	ldrsb	r9, [lr, #3] ; correct
+  5c:	11dea0f0 	ldrshne	sl, [lr] ; wrong
 
 00000060 <stop>:
   60:	eafffffe 	b	60 <stop>

@@ -38,13 +38,14 @@ module leg(input  logic        clk, reset,
   logic        ALUSrcE, BranchTakenE, MemtoRegW, PCSrcW, RegWriteW, Reg_usr_D;
   logic [6:4]  ShiftOpCode_E;
   logic [31:0] InstrE, ALUResultE;
-  logic        RegWriteM, MemtoRegE, PCWrPendingF, WriteByteE, WriteHalfwordE, WriteHalfwordW, HalfwordOffsetW;
+  logic        RegWriteM, MemtoRegE, PCWrPendingF, WriteByteE, StrHalfwordE, LdrHalfwordW, HalfwordOffsetW;
+  logic        Ldr_SignBW, Ldr_SignHW;
   logic        DoNotWriteRegE, doNotUpdateFlagD,uOpStallD, PrevRSRstateD, PrevRSRstateE, CPSRtoRegW;
   logic        LDMSTMforwardD, LDMSTMforwardE, LDRSTRshiftE, MultSelectD, RselectE;
   logic [3:0]  FlagsE; // [1] is C, [0] is V
   logic [1:0]  ResultSelectE, STR_cycleD, ByteOffsetW;
   logic [2:0]  MultControlE;
-  logic        KeepVE, SignExtendD, noRotateD, InstrMuxD;
+  logic        KeepVE, noRotateD, InstrMuxD;
   logic [31:0] uOpInstrD;
   logic [2:0]  ALUOperationE, CVUpdateE;
   logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnable, LoadLengthW;
