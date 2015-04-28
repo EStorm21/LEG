@@ -1,0 +1,62 @@
+
+ldrsh.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <start>:
+   0:	ea000017 	b	64 <reset>
+   4:	ea00001d 	b	80 <undef>
+   8:	ea000019 	b	74 <swi>
+   c:	ea00001c 	b	84 <pfa>
+  10:	ea00001c 	b	88 <da>
+  14:	e1a00000 	nop			; (mov r0, r0)
+  18:	ea00001b 	b	8c <irq>
+  1c:	ea00001b 	b	90 <fiq>
+
+00000020 <prog>:
+  20:	e3a00000 	mov	r0, #0 ; correct
+  24:	e2401002 	sub	r1, r0, #2 ; 
+  28:	e280e701 	add	lr, r0, #262144	; 0x40000 , correct
+  2c:	e58e1000 	str	r1, [lr] ; 
+  30:	e1de20b0 	ldrh	r2, [lr] ; correct
+  34:	e1de30f0 	ldrsh	r3, [lr] ; correct
+  38:	e1de40d0 	ldrsb	r4, [lr] ; incorrect
+  3c:	e1de50f2 	ldrsh	r5, [lr, #2] ; correct
+  40:	11deb0f0 	ldrshne	fp, [lr] ; seems to be correct
+  44:	e2801002 	add	r1, r0, #2 ; 
+  48:	e58e1000 	str	r1, [lr] ; correct
+  4c:	e1de60f0 	ldrsh	r6, [lr] ; correct
+  50:	e1de70f2 	ldrsh	r7, [lr, #2] ; correct
+  54:	e1de80d0 	ldrsb	r8, [lr] ; wrong
+  58:	e1de90d3 	ldrsb	r9, [lr, #3] ; correct
+  5c:	11dea0f0 	ldrshne	sl, [lr] ; wrong
+
+00000060 <stop>:
+  60:	eafffffe 	b	60 <stop>
+
+00000064 <reset>:
+  64:	e3a01000 	mov	r1, #0
+  68:	e3a02000 	mov	r2, #0
+  6c:	e0500000 	subs	r0, r0, r0
+  70:	eaffffea 	b	20 <prog>
+
+00000074 <swi>:
+  74:	e0812002 	add	r2, r1, r2
+  78:	e1a01002 	mov	r1, r2
+  7c:	e1b0f00e 	movs	pc, lr
+
+00000080 <undef>:
+  80:	eaffffe6 	b	20 <prog>
+
+00000084 <pfa>:
+  84:	eaffffe5 	b	20 <prog>
+
+00000088 <da>:
+  88:	eaffffe4 	b	20 <prog>
+
+0000008c <irq>:
+  8c:	eaffffe3 	b	20 <prog>
+
+00000090 <fiq>:
+  90:	eaffffe2 	b	20 <prog>

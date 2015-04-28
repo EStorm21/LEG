@@ -38,9 +38,9 @@ module controller(/// ------ From TOP ------
                     output logic [3:0]   ByteMaskM,
                     output logic         LoadLengthW, HalfwordOffsetW,
                     output logic [1:0]   ByteOffsetW,
-                    output logic         WriteByteE, WriteHalfwordE, WriteHalfwordW,
+                    output logic         WriteByteE, StrHalfwordE, LdrHalfwordW, Ldr_SignBW, Ldr_SignHW,
                     // For micro-op decoding
-                    output logic         KeepVE, SignExtendD, noRotateD, InstrMuxD, uOpStallD,
+                    output logic         KeepVE, noRotateD, InstrMuxD, uOpStallD,
                     output logic [3:0]   RegFileRzD,
                     output logic [31:0]  uOpInstrD, PSR_W,
                     // Handle Multiplication stalls
@@ -80,12 +80,13 @@ module controller(/// ------ From TOP ------
   logic        PSRtypeD, PSRtypeE, PSRtypeM;
   logic        PSRtypeW, RegtoCPSRr_D, RegtoCPSRi_D;
   logic        RegtoCPSR_D, RegtoCPSR_0E, RegtoCPSR_E, RegtoCPSR_M, RegtoCPSR_W;
-  logic [1:0]  FlagWriteD, FlagWriteE;
+  logic [1:0]  FlagWriteD, FlagWriteE, SignExtendD;
   logic        PCSrcD, PCSrcE, PCSrcM;
   logic [3:0]  FlagsNext0E, FlagsNextE, FlagsNextM, FlagsNextW, CondE;
   logic        RegWritepreMuxE, RselectD, RSRselectD, LdrStrRtypeD;
   logic [1:0]  ResultSelectD;
-  logic        ByteOrWordE, ByteOrWordM, LdrStr_HalfwordD, LdrStr_HalfwordE, HalfwordE, WriteHalfwordM;
+  logic        ByteOrWordE, ByteOrWordM, LdrStr_HalfD, LdrStr_HalfE, LdrHalfwordE, LdrHalfwordM;
+  logic        Ldr_SignBD, Ldr_SignHD, Ldr_SignBE, Ldr_SignHE, Ldr_SignBM, Ldr_SignHM;
   logic [1:0]  ByteOffsetE, ByteOffsetM;
   logic [1:0]  STR_cycleD;
   logic        doNotUpdateFlagD, LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD;
@@ -101,8 +102,8 @@ module controller(/// ------ From TOP ------
   // ======================================= Decode Stage ===============================================
   // ====================================================================================================
 
-  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, STR_cycleD,
-                            PrevRSRstateD, KeepVD, SignExtendD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC);
+  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, STR_cycleD, SignExtendD,
+                            PrevRSRstateD, KeepVD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC);
 
   // === Control Logic for Datapath ===
   always_comb
@@ -111,10 +112,10 @@ module controller(/// ------ From TOP ------
   	  2'b00: if (InstrD[25]) ControlsD = 13'b00_00_1010_01000; // Data processing immediate   0x52
   	         else begin   // (~InstrD[25])      
                 if (InstrD[7:4] == 4'b1001 & ~InstrD[24])       ControlsD = 13'b00_00_0010_01100; // Multiply                             
-                else if (InstrD[22] & InstrD[20] & LdrStr_HalfwordD)   ControlsD = 13'b00_11_1110_00010;  // LDH I-type
-                else if (~InstrD[22] & InstrD[20] & LdrStr_HalfwordD)  ControlsD = 13'b00_11_0110_00010;  // LDH R-type
-                else if (InstrD[22] & ~InstrD[20] & LdrStr_HalfwordD)  ControlsD = 13'b10_11_1101_00010;  // STH I-type
-                else if (~InstrD[22] & ~InstrD[20] & LdrStr_HalfwordD) ControlsD = 13'b10_11_0101_00010;  // STH R-type
+                else if (InstrD[22] & InstrD[20] & LdrStr_HalfD)   ControlsD = 13'b00_11_1110_00010;  // LDH I-type
+                else if (~InstrD[22] & InstrD[20] & LdrStr_HalfD)  ControlsD = 13'b00_11_0110_00010;  // LDH R-type
+                else if (InstrD[22] & ~InstrD[20] & LdrStr_HalfD)  ControlsD = 13'b10_11_1101_00010;  // STH I-type
+                else if (~InstrD[22] & ~InstrD[20] & LdrStr_HalfD) ControlsD = 13'b10_11_0101_00010;  // STH R-type
                 // "Move register to status register" not implemented
                 else if ((InstrD[24:20] == 5'b10010) & (InstrD[19:4] == 16'hFFF1))
                       ControlsD = 13'b01_00_0000_10001; // BX
@@ -142,10 +143,10 @@ module controller(/// ------ From TOP ------
   // === Controlling the ALU === 
    always_comb
     // The following two are: LOAD STORE LOGIC
-    if ((InstrD[27:26] == 2'b01 | LdrStr_HalfwordD) & InstrD[23]) begin// Load/Store (Rn + 12 bit offset)
+    if ((InstrD[27:26] == 2'b01 | LdrStr_HalfD) & InstrD[23]) begin// Load/Store (Rn + 12 bit offset)
       ALUControlD     = 4'b0100;  // "Add" operation
       FlagWriteD[1:0] = 2'b00;
-    end else if ((InstrD[27:26] == 2'b01 | LdrStr_HalfwordD) & ~InstrD[23]) begin // Load/Store (Rn - 12 bit offset)
+    end else if ((InstrD[27:26] == 2'b01 | LdrStr_HalfD) & ~InstrD[23]) begin // Load/Store (Rn - 12 bit offset)
       ALUControlD     = 4'b0010;  // "Subtract" operation
       FlagWriteD[1:0] = 2'b00;
     // Checking for MSR instruction (move register/imm to CPSR/SPSR)
@@ -162,8 +163,11 @@ module controller(/// ------ From TOP ------
   // === END ===
 
   // === LOAD/STORE ===
-  assign LdrStr_HalfwordD = (InstrD[27:25] == 3'b000 & InstrD[7] & InstrD[4] & ~(InstrD[6:5] == 2'b00));
-  assign LdrStrRtypeD  = uOpRtypeLdrStrD | (LdrStr_HalfwordD & ~InstrD[20] & ~InstrD[22] & InstrD[11:8] == 4'b0); // Am I doing a R-type LDR/STR that may require reg access?
+  assign LdrStr_HalfD = (InstrD[27:25] == 3'b000 & InstrD[7:4] == 4'b1011) | Ldr_SignBD | Ldr_SignHD;
+  assign Ldr_SignBD = (InstrD[27:25] == 3'b000 & InstrD[20] & InstrD[7:4] == 4'b1101);
+  assign Ldr_SignHD = (InstrD[27:25] == 3'b000 & InstrD[20] & InstrD[7:4] == 4'b1111);
+  assign LdrStrRtypeD  = uOpRtypeLdrStrD | ((LdrStr_HalfD | Ldr_SignBD | Ldr_SignHD)
+                               & ~InstrD[22] & InstrD[11:8] == 4'b0); // Am I doing a R-type LDR/STR that may require reg access?
   assign LDRSTRshiftD  = LdrStrRtypeD;    // Tells the shifter (located in E-stage) whether its a LDR/STR type
   // === END ===
 
@@ -222,8 +226,8 @@ module controller(/// ------ From TOP ------
   flopenrc #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);
   flopenrc #(3) CoprocE(clk, reset, ~StallE, FlushE, {CoProc_FlagUpd_D, CoProc_EnD, CoProc_WrEnD}, {CoProc_FlagUpd_E, CoProc_EnE, CoProc_WrEnE});
   flopenrc #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
-  flopenrc  #(7) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD, LDRSTRshiftD, LdrStr_HalfwordD}, 
-                                                            {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE, LDRSTRshiftE, LdrStr_HalfwordE});
+  flopenrc  #(9) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD, LDRSTRshiftD, LdrStr_HalfD, Ldr_SignHD, Ldr_SignBD}, 
+                                                            {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE, LDRSTRshiftE, LdrStr_HalfE, Ldr_SignHE, Ldr_SignBE});
   flopenrc #(11) flushedregsE(clk, reset, ~StallE, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD, ldrstrALUopD, BXInstrD, CPSRtoRegD, RegtoCPSR_D},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE, ldrstrALUopE, BXInstrE, CPSRtoReg0E, RegtoCPSR_0E});
@@ -247,13 +251,13 @@ module controller(/// ------ From TOP ------
   /*** BRIEF ***
    * These bits select which bit of memory to mask for Load/Store Byte, Word and Halfword operations
    *************/
-  assign ByteOrWordE = (InstrE[27:26] == 2'b01 & InstrE[22]);
-  assign HalfwordE = (LdrStr_HalfwordE & InstrE[5]);
+  assign ByteOrWordE = (InstrE[27:26] == 2'b01 & InstrE[22]); // 0 if Word, 1 if byte
+  assign StrHalfwordE = LdrStr_HalfE & ~InstrE[20];
   assign ByteOffsetE = ALUResultE[1:0];
-  assign HalfwordOffsetE = (LdrStr_HalfwordE & ALUResultE[1]);
+  assign HalfwordOffsetE = (LdrStr_HalfE & ALUResultE[1]); // to verify if it is offset by 2
   assign WriteByteE  = (InstrE[27:26] == 2'b01) & InstrE[22] & ~InstrE[20];
-  assign WriteHalfwordE = (LdrStr_HalfwordE);
-  memory_mask MemMask(ByteOrWordE, HalfwordE, HalfwordOffsetE, ALUResultE[1:0], ByteMaskE);
+  assign LdrHalfwordE = LdrStr_HalfE & InstrE[20];
+  memory_mask MemMask(ByteOrWordE, StrHalfwordE, HalfwordOffsetE, ALUResultE[1:0], ByteMaskE);
 
 
   // === CONDITIONAL EXECUTION CHECKING ===
@@ -286,11 +290,11 @@ module controller(/// ------ From TOP ------
   flopenr #(14) CoProc_M(clk, reset, ~StallM, 
               {InstrE[19:16], InstrE[7:5], InstrE[3:0], (CoProc_WrEnE & CondExE), (CoProc_EnE & CondExE), (CoProc_FlagUpd_E & CondExE)}, 
               {CoProc_AddrM, CoProc_Op2M, CoProc_CRmM, CoProc_WrEnM, CoProc_EnM, CoProc_FlagUpd_M});
-  flopenr #(14) regsM(clk, reset, ~StallM,
+  flopenr #(16) regsM(clk, reset, ~StallM,
                    {MemWriteGatedE, MemtoRegE, RegWriteGatedE, PCSrcGatedE, ByteMaskE, 
-                                        ByteOrWordE, ByteOffsetE, WriteHalfwordE, HalfwordOffsetE, CPSRtoRegE},
+                                        ByteOrWordE, ByteOffsetE, LdrHalfwordE, Ldr_SignBE, Ldr_SignHE, HalfwordOffsetE, CPSRtoRegE},
                    {MemWriteM, MemtoRegM, RegWriteM, PCSrcM, ByteMaskM, 
-                                        ByteOrWordM, ByteOffsetM, WriteHalfwordM, HalfwordOffsetM, CPSRtoRegM});
+                                        ByteOrWordM, ByteOffsetM, LdrHalfwordM, Ldr_SignBM, Ldr_SignHM, HalfwordOffsetM, CPSRtoRegM});
   
   // ====================================================================================================
   // ======================================= Writeback Stage ============================================
@@ -299,9 +303,9 @@ module controller(/// ------ From TOP ------
   flopenrc #(1) CoProc_W(clk, reset, ~StallW, FlushW, {CoProc_FlagUpd_M}, {CoProc_FlagUpd_W});
   flopenrc #(2) msr_mrs_W(clk, reset, ~StallW, FlushW, {restoreCPSR_M, RegtoCPSR_M}, {restoreCPSR_W, RegtoCPSR_W});
   flopenrc #(2) undef_exceptionMW(clk, reset, ~StallW, FlushW, {undefM, SWI_M}, {undefW, SWI_W});
-  flopenrc #(9) regsW(clk, reset, ~StallW, FlushW, 
-                   {MemtoRegM, RegWriteM, PCSrcM, ByteOrWordM, ByteOffsetM, WriteHalfwordM, HalfwordOffsetM, CPSRtoRegM},
-                   {MemtoRegW, RegWriteW, PCSrcW, LoadLengthW, ByteOffsetW, WriteHalfwordW, HalfwordOffsetW, CPSRtoRegW});
+  flopenrc #(11) regsW(clk, reset, ~StallW, FlushW, 
+                   {MemtoRegM, RegWriteM, PCSrcM, ByteOrWordM, ByteOffsetM, LdrHalfwordM, Ldr_SignBM, Ldr_SignHM, HalfwordOffsetM, CPSRtoRegM},
+                   {MemtoRegW, RegWriteW, PCSrcW, LoadLengthW, ByteOffsetW, LdrHalfwordW, Ldr_SignBW, Ldr_SignHW, HalfwordOffsetW, CPSRtoRegW});
   flopenrc #(11) flagW(clk, reset, ~StallW, FlushW, {FlagsNextM, SetNextFlagsM, PSRtypeM, MSRmaskM}, 
                                                    {FlagsNextW, SetNextFlagsW, PSRtypeW, MSRmaskW});
 

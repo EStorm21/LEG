@@ -44,10 +44,17 @@
 #sbc_rs
 #teq_rs
 #tst_rs
+<<<<<<< HEAD
 #ldr_str_ri
 #memrewrite
 #rand0
 #random1
+=======
+ldr_str_ri
+memrewrite
+rand0
+random1
+>>>>>>> 0ab5d9705209dbe18bfde0a67da9566bfc0825ed
 #mul
 #mla
 #smull
@@ -58,6 +65,7 @@
 #ldr_str_i
 #ldr_str_r
 #bx
+<<<<<<< HEAD
 #ldm
 #stm
 #ldrh_strh_i
@@ -70,3 +78,19 @@ linux
 #ldrh
 #lsl
 #ldrb
+=======
+ldm
+stm
+ldrh_strh_i
+#dhry
+#random3
+mrs
+mrs2
+mrc
+#linux
+ldrh
+#lsl
+#ldrb
+#ldrb2
+ldrsh
+>>>>>>> 0ab5d9705209dbe18bfde0a67da9566bfc0825ed
