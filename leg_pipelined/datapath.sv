@@ -23,11 +23,11 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic [6:4]  ShiftOpCode_E,
                   input  logic        MultEnable, 
                   // To handle load-store half-words and bytes
-                  input  logic        LoadLengthW, HalfwordOffsetW,
+                  input  logic        LoadLengthW, HalfwordOffsetW, Ldr_SignBW, Ldr_SignHW,
                   input  logic [1:0]  ByteOffsetW,
-                  input  logic        WriteByteE, WriteHalfwordE, WriteHalfwordW, IncrementE, //HalfwordOffset, 
+                  input  logic        WriteByteE, StrHalfwordE, LdrHalfwordW, IncrementE, //HalfwordOffset, 
                   // Added for moving MicroOpFSM to Controller decode
-                  input  logic        KeepVE, SignExtendD, noRotateD, InstrMuxD,
+                  input  logic        KeepVE, noRotateD, InstrMuxD,
                   input  logic [3:0]  RegFileRzD,
                   input  logic [31:0] uOpInstrD,
                   input  logic        WriteMultLoKeptE,
@@ -97,7 +97,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   regfile     rf(clk, reset, RegWriteW, RA1D, RA2D,
                  WA3W, ResultW, PC_in, 
                  Rd1D, Rd2D); 
-  extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25], SignExtendD);
+  extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25]);
   rotator   rotat(ExtImmD, InstrD, RotImmD, noRotateD); 
 
 
@@ -130,7 +130,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   multiplier  mult(clk, reset, MultEnable, StallE, WriteMultLoKeptE, SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, FlagsE[1:0]);
   
   mux3 #(32)  aluoutputmux(ALUOutputE, ShiftBE, MultOutputE, ResultSelectE, ALUResultE); 
-  data_replicator memReplicate(WriteByteE, WriteHalfwordE, WriteDataE, WriteDataReplE);
+  data_replicator memReplicate(WriteByteE, StrHalfwordE, WriteDataE, WriteDataReplE);
   
   // ====================================================================================
   // =============================== Memory Stage =======================================
@@ -147,6 +147,6 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, Result1_W);
   mux2 #(32)  msr_mrs_mux(Result1_W, PSR_W, CPSRtoRegW, ResultW);
   //TODO: Think about how we want to implement this - should it be in the 32bit datapath?
-  data_selector byteShift(LoadLengthW, WriteHalfwordW, HalfwordOffsetW, ByteOffsetW, ReadDataRawW, ReadDataW); 
+  data_selector byteShift(LoadLengthW, LdrHalfwordW, HalfwordOffsetW, Ldr_SignBW, Ldr_SignHW, ByteOffsetW, ReadDataRawW, ReadDataW); 
   
 endmodule

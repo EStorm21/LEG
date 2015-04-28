@@ -11,6 +11,11 @@ module regfile(input  logic        clk, reset,
  * Currently only user/system mode R0-R14 are accessible
  * Recently added R16 thru R30 to be accessible --> R31 is shadow register Rz 
  * ==> See addressdecode.sv for full mapping of registers R0 - R31 for each status mode.
+ * r10 also called sl
+ * r11 also called fp
+ * r12 also called ip
+ * r13 also called sp
+ * r14 also called lr
  *
  ******************************/
 
