@@ -38,10 +38,22 @@ prog:
     orr     r1, r1, #1;
     mcr     p15, 0, r1, cr1, cr0, 0;    # Turn on the MMU for translation
 
+    # Enable the I$
+    mcr     p15, 0, r1, cr1, cr0, 0;   # Read in the control register
+    orr     r1, r1, #4096;             # Set the I Bit (bit 12)
+    mcr     p15, 0, r1, cr1, cr0, 0;
+
+    # Enable D$
+    mcr     15, 0, r1, cr1, cr0, 0;    # Read in the control register
+    orr     r1, r1, #4;                # Set the C Bit (bit 2)
+    mcr     15, 0, r1, cr1, cr0, 0;  
+
     # Run other tests (i.e. ldrstri) 
     ldr r5, =0x11112222;                # Value to store
     ldr r4, =0x00210000;                # address
     str r5, [r4];                       # store 0x11112222 virt addr 0x00010000
+    ldr r6, [r4];                       # load 0x11112222 into r6
+    ldr r7, [r4];                       # load 0x11112222 into r7
 
     
 stop:    b stop

@@ -44,6 +44,34 @@ prog:
 	mov r3, #0x200
 	ldr r13, [r5], r4, lsl #2
 
+	# Test for storing to all the bytes individually
+	mov r3, #0x200;
+	ldr r5, =0xffee1122;
+	str r5, [r3];			# store 0xffee1122 into r3
+	ldr r5, =0x33445566;
+	strb r5, [r3, #3];	
+	ldr r0, [r3];			# load 0x66ee1122 into r0
+	ldr r5, =0x334455aa;
+	strb r5, [r3, #2];  	
+	ldr r0, [r3];			# load 0x66661122 into r0
+	strb r5, [r3, #1];	   
+	ldr r0, [r3];			# load 0x66666622 into r0
+	strb r5, [r3];		
+	ldr r0, [r3];			# load 0x66666666 into r0
+
+	# Test loading byte into r5
+	ldrb r0, [r3, #2];		# load 0x00440000 into r0
+
+	# Test storing twice from the same way
+	ldr r6, =0x00ff1200;
+	ldr r5, =0x11223344; 
+	strb r5, [r6];		 # Store ffff1244 into addr 0xffff1200;
+	ldr r0, [r6];		 # Load 0x00000044 into r0;
+
+	# Loads and stores from linux kernel code
+	mov r3, #0x200
+	ldrb	r2, [r3], #1
+
 
 stop:    b stop
 

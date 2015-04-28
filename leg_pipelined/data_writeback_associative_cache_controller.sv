@@ -1,7 +1,8 @@
 module data_writeback_associative_cache_controller 
   #(parameter lines, parameter blocksize, parameter tagbits = 14)
   (input  logic clk, reset, enable, W1V, W2V, CurrLRU, W1D, W2D, clean,
-   input  logic IStall, MemWriteM, MemtoRegM, BusReady, 
+   input  logic IStall, MemWriteM, MemtoRegM, BusReady, PAReady,
+   // input  logic IStall, MemWriteM, MemtoRegM, BusReady, 
    input  logic [1:0] WordOffset,
    input  logic [3:0] ByteMask,
    input  logic [31:0] A,
@@ -58,6 +59,7 @@ module data_writeback_associative_cache_controller
   logic Hit, W2Hit, W1Hit;
   assign W1Hit = (W1V & (Tag == W1Tag));
   assign W2Hit = (W2V & (Tag == W2Tag));
+  // assign Hit = (W1Hit | W2Hit) & enable & PAReady;
   assign Hit = (W1Hit | W2Hit) & enable;
   
   // Select output from Way 1 or Way 2
@@ -110,7 +112,8 @@ module data_writeback_associative_cache_controller
       READY:    if (clean) begin
                   nextstate <= FLUSH;
                 end
-                else if ( Hit | (~MemWriteM & ~MemtoRegM) ) begin
+                else if ( Hit | (~MemWriteM & ~MemtoRegM) | ~PAReady & enable) begin
+                // else if ( Hit | (~MemWriteM & ~MemtoRegM) & enable) begin
                   nextstate <= READY;
                 end
                 else if( MemWriteM & ~enable & WordAccess) begin
@@ -133,8 +136,8 @@ module data_writeback_associative_cache_controller
       // If all four words have been fetched from memory, then move on.
       // If the cache is disabled, then only read one line. (line isn't valid)
       // MEMREAD:   nextstate <= ( BusReady & ( (Counter == 3) | ~enable) ) ? NEXTINSTR : MEMREAD;
-      MEMREAD:   if( BusReady & MemWriteM & 
-                 ( (Counter == 3) | (~enable & ~WordAccess) ) )
+      MEMREAD:   if( BusReady & MemWriteM & ~enable & 
+                 ( (Counter == 3) | ~WordAccess)  )
                  begin 
                   nextstate <= WRITEBYTES;
                  end else if( BusReady & ( (Counter == 3) | ~enable ) )
@@ -180,6 +183,7 @@ module data_writeback_associative_cache_controller
                    ( (state == READY) & ~Hit & ~Dirty );
   assign ResetCounter = ((state == READY) & Hit) | (state == NEXTINSTR) | 
                         (state == FLUSH);
+
   // -------------Flush controls------------
   assign incFlush = (state == FLUSH) & ~(W1D & W1V) & ~(W2D & W2V);
   assign cleanCurr = (state == WRITEBACK) & BusReady;

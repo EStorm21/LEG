@@ -1,0 +1,76 @@
+
+enCaches.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <start>:
+   0:	ea000022 	b	90 <reset>
+   4:	ea000025 	b	a0 <undef>
+   8:	ea000021 	b	94 <swi>
+   c:	ea000024 	b	a4 <pfa>
+  10:	ea000024 	b	a8 <da>
+  14:	e1a00000 	nop			; (mov r0, r0)
+  18:	ea000023 	b	ac <irq>
+  1c:	ea000023 	b	b0 <fiq>
+
+00000020 <prog>:
+  20:	e3a01c03 	mov	r1, #768	; 0x300
+  24:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
+  28:	e3a01603 	mov	r1, #3145728	; 0x300000
+  2c:	e59f2080 	ldr	r2, [pc, #128]	; b4 <fiq+0x4>
+  30:	e5812000 	str	r2, [r1]
+  34:	e59f107c 	ldr	r1, [pc, #124]	; b8 <fiq+0x8>
+  38:	e59f207c 	ldr	r2, [pc, #124]	; bc <fiq+0xc>
+  3c:	e5812000 	str	r2, [r1]
+  40:	e59f1078 	ldr	r1, [pc, #120]	; c0 <fiq+0x10>
+  44:	e59f2078 	ldr	r2, [pc, #120]	; c4 <fiq+0x14>
+  48:	e5812000 	str	r2, [r1]
+  4c:	e3a01603 	mov	r1, #3145728	; 0x300000
+  50:	ee021f10 	mcr	15, 0, r1, cr2, cr0, {0}
+  54:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
+  58:	e3811001 	orr	r1, r1, #1
+  5c:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
+  60:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
+  64:	e3811a01 	orr	r1, r1, #4096	; 0x1000
+  68:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
+  6c:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
+  70:	e3811004 	orr	r1, r1, #4
+  74:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
+  78:	e59f5048 	ldr	r5, [pc, #72]	; c8 <fiq+0x18>
+  7c:	e3a04821 	mov	r4, #2162688	; 0x210000
+  80:	e5845000 	str	r5, [r4]
+  84:	e5946000 	ldr	r6, [r4]
+  88:	e5947000 	ldr	r7, [r4]
+
+0000008c <stop>:
+  8c:	eafffffe 	b	8c <stop>
+
+00000090 <reset>:
+  90:	eaffffe2 	b	20 <prog>
+
+00000094 <swi>:
+  94:	e0812002 	add	r2, r1, r2
+  98:	e1a01002 	mov	r1, r2
+  9c:	e1b0f00e 	movs	pc, lr
+
+000000a0 <undef>:
+  a0:	eaffffde 	b	20 <prog>
+
+000000a4 <pfa>:
+  a4:	eaffffdd 	b	20 <prog>
+
+000000a8 <da>:
+  a8:	eaffffdc 	b	20 <prog>
+
+000000ac <irq>:
+  ac:	eaffffdb 	b	20 <prog>
+
+000000b0 <fiq>:
+  b0:	eaffffda 	b	20 <prog>
+  b4:	0003fdee 	.word	0x0003fdee
+  b8:	00300004 	.word	0x00300004
+  bc:	0423fdee 	.word	0x0423fdee
+  c0:	00300008 	.word	0x00300008
+  c4:	0833fdee 	.word	0x0833fdee
+  c8:	11112222 	.word	0x11112222

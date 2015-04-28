@@ -1,8 +1,6 @@
 // Cache controller works according to schematic
 module instr_cache_controller #(parameter tagbits = 14)
-  (input  logic clk, reset, enable,
-   input  logic W1V, W2V, CurrLRU,
-   input  logic BusReady,
+  (input  logic clk, reset, enable, PAReady, W1V, W2V, CurrLRU, BusReady,
    input  logic [1:0] WordOffset,
    input  logic [tagbits-1:0] W1Tag, W2Tag, Tag,
    output logic [1:0] Counter,
@@ -30,7 +28,7 @@ module instr_cache_controller #(parameter tagbits = 14)
   // next state logic
   always_comb
     case (state)
-      READY:      nextstate <= Hit ? READY : MEMREAD;
+      READY:      nextstate <= (Hit | ~PAReady & enable) ? READY : MEMREAD;
       NEXTINSTR:  nextstate <= READY;
       MEMREAD:    nextstate <= ( BusReady & ( (Counter == 3) | ~enable ) ) ? NEXTINSTR : MEMREAD;
       default: nextstate <= READY;
