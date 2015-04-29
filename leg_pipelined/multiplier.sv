@@ -4,7 +4,12 @@ module multiplier(input logic clk, reset, MultEnable, StallE, WriteMultLoE,
            output logic [31:0] Result,
            output logic [3:0]  Flags,
            input logic [1:0] PreviousCVflag); // [1] = C flag, [0] = V flag
-
+ 
+ /***** Brief Description *******
+ * First Created by Eric Storm for Clay Wolkin 2014-2015
+ * Handles Multiply instructions!
+ ******************************/
+ 
   logic        Neg, Zero, Carry, Overflow;
   logic [63:0] Product, Product_signed, ProductKept, ProdAccumLong;
   logic        Long, Sign, Accumulate;

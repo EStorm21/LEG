@@ -5,7 +5,7 @@ module extend(input  logic [23:0] Instr,
               input  logic 		  RiType);
  
  /***** Brief Description *******
- *
+ * Created by Ivan Wong for Clay Wolkin 2014-2015
  * 32-BIT DATAPATH DECODE STAGE
  * Extender is used to ensure that the immediates are 32 bit in the pipeline
  * Different instructions have different immediate lengths

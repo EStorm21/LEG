@@ -7,6 +7,14 @@ module micropsfsm(input  logic        clk, reset,
 			   output logic [31:0] uOpInstrD,
 			   input  logic		   StalluOp, ExceptionSavePC);
 
+ /***** Brief Description *******
+ * First Created by Ivan Wong for Clay Wolkin 2014-2015
+ *
+ * MicroOpFSM breaks down complex instructions into simple instructions
+ * while stalling the pipeline. Uses Mealy FSM for max efficiency.
+ ******************************/
+
+
 // define states READY and RSR 
 typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, ls_word, str, blx, strHalf, ls_halfword, ls_word_byte} statetype; // theres a bug if we get rid of strHalf... need to figoure out why
 statetype state, nextState;

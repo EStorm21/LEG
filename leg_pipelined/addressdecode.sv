@@ -4,7 +4,7 @@ module addressdecode(input  logic [3:0]  RA1_4b_D, RA2_4b_D, DestRegD,
                     input  logic        SWI_E, undefE,
                     output logic [31:0] RA1D, RA2D, WA3D);
  /***** Brief Description *******
- *
+ * First Created by Ivan Wong for Clay Wolkin 2014-2015
  * Decodes a 4 bit address to a 32 bit address using the following
  * additional information:
  * 1) Current Status Mode

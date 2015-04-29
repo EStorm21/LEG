@@ -3,6 +3,15 @@ module microps_reg_selector(input logic [31:0] InstrD,
 							input logic [15:0] RegisterListNow,
 							output logic [15:0]  RegisterListNext,
 							output logic [3:0]   Rd);
+/* Brief
+First created by Ivan Wong for Clay Wolkin 2014-2015
+
+Takes in a RegisterList (for ldm/stm) and modifies the register list for subsequent ldm/stm 
+instructions. This makes it such that it is very efficient and loads one register per cycle
+up to a maximum efficiency of 17 cycles for 16 loads/stores. 
+
+*/
+
 always_comb
  begin
   if (ReadyState) begin

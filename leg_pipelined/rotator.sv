@@ -4,7 +4,7 @@ module rotator(input  logic [31:0] ExtImmD,
               input logic		noRotateD);
  
  /***** Brief Description *******
- *
+ * First created by Ivan Wong for Clay Wolkin 2014-2015
  * 32-BIT DATAPATH DECODE STAGE
  * Rotator is used for Data-processing I-type instructions which require an
  * immediate rotated by another rotate_immediate. 
