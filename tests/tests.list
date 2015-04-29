@@ -61,9 +61,9 @@ stm
 ldrh_strh_i
 #dhry
 #random3
-#mrs
-#mrs2
-#mrc
+mrs
+mrs2
+mrc
 #linux
 ldrh
 #lsl

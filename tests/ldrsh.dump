@@ -6,13 +6,13 @@ Disassembly of section .text:
 
 00000000 <start>:
    0:	ea000017 	b	64 <reset>
-   4:	ea00001c 	b	7c <undef>
-   8:	ea000018 	b	70 <swi>
-   c:	ea00001b 	b	80 <pfa>
-  10:	ea00001b 	b	84 <da>
+   4:	ea00001d 	b	80 <undef>
+   8:	ea000019 	b	74 <swi>
+   c:	ea00001c 	b	84 <pfa>
+  10:	ea00001c 	b	88 <da>
   14:	e1a00000 	nop			; (mov r0, r0)
-  18:	ea00001a 	b	88 <irq>
-  1c:	ea00001a 	b	8c <fiq>
+  18:	ea00001b 	b	8c <irq>
+  1c:	ea00001b 	b	90 <fiq>
 
 00000020 <prog>:
   20:	e3a00000 	mov	r0, #0 ; correct
@@ -38,24 +38,25 @@ Disassembly of section .text:
 00000064 <reset>:
   64:	e3a01000 	mov	r1, #0
   68:	e3a02000 	mov	r2, #0
-  6c:	eaffffeb 	b	20 <prog>
+  6c:	e0500000 	subs	r0, r0, r0
+  70:	eaffffea 	b	20 <prog>
 
-00000070 <swi>:
-  70:	e0812002 	add	r2, r1, r2
-  74:	e1a01002 	mov	r1, r2
-  78:	e1b0f00e 	movs	pc, lr
+00000074 <swi>:
+  74:	e0812002 	add	r2, r1, r2
+  78:	e1a01002 	mov	r1, r2
+  7c:	e1b0f00e 	movs	pc, lr
 
-0000007c <undef>:
-  7c:	eaffffe7 	b	20 <prog>
-
-00000080 <pfa>:
+00000080 <undef>:
   80:	eaffffe6 	b	20 <prog>
 
-00000084 <da>:
+00000084 <pfa>:
   84:	eaffffe5 	b	20 <prog>
 
-00000088 <irq>:
+00000088 <da>:
   88:	eaffffe4 	b	20 <prog>
 
-0000008c <fiq>:
+0000008c <irq>:
   8c:	eaffffe3 	b	20 <prog>
+
+00000090 <fiq>:
+  90:	eaffffe2 	b	20 <prog>

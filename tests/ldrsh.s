@@ -30,6 +30,7 @@ stop:    b stop
 
 reset: mov r1, #0
 	mov r2, #0
+	subs r0, r0, r0
 	b prog
 
 swi:
