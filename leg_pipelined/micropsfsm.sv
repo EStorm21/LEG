@@ -750,7 +750,7 @@ always_comb
 							20'b0 			// Add R0 = R0 + 0 (never execute)
 							};
 			end
-			/* If it's the last cycle and NO WRITEBACK
+			/* If it's the last cycle and WRITEBACK
 			 */
 			else if(LastCycle & WriteBack) begin
 				debugText = "stm2";
