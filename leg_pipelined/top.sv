@@ -85,7 +85,7 @@ module top(input  logic        clk, reset,
       .clean(CLEAND), .PAReady(PAReady),
       // .clean(CLEAND),
       .MemWriteM(MemWriteM), .MemtoRegM(MemtoRegM), .BusReady(BusReadyM), 
-      .IStall(IStall), .A({HAddr[31:12], DataAdrM[11:0]}), .WD(WriteDataM), 
+      .IStall(IStall), .PhysTag(HAddr[31:12]), .VirtA(DataAdrM), .WD(WriteDataM), 
       .HRData(HRData), .ByteMask(ByteMaskM), .HWData(HWData), .RD(ReadDataM), 
       .HAddr(HAddrM), .Stall(DStall), .HRequestM(HRequestM), 
       .HWriteM(HWriteM));

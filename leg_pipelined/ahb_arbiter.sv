@@ -1,4 +1,5 @@
-module ahb_arbiter( input  logic HWriteM, IStall, DStall, HReady, HRequestF, HRequestM,
+module ahb_arbiter( input  logic HWriteM, IStall, DStall, HReady, HRequestF, 
+                    input  logic HRequestM,
                     input  logic [31:0] HAddrF, HAddrM,
                     output logic HReadyF, HReadyM, HWrite, HRequest,
                     output logic [31:0] HAddr);

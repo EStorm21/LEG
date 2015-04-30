@@ -142,7 +142,8 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
     default:        nextstate <= READY;
     endcase
 
-  // Domain flop: Hold onto the translation domain for faults. Update when domain is read
+  // Domain flop: Hold onto the translation domain for faults. 
+  // Update when domain is read
   flopenr #(4) DomainFlop(clk, reset, 
     (state == SECTIONTRANS | state == SECONDFETCH), PHRData[8:5], Domain);
 
