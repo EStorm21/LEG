@@ -3,6 +3,7 @@ module exception_vector_address (input logic  [6:0] VectorAddressW,
 																output logic  			ExceptionVectorSelectW);
 
 /*
+Created by Ivan Wong for Clay Wolkin 2014-2015
 This module allows us to change the PC given an exception thrown.
 
 Exceptions come from the CPSR module:

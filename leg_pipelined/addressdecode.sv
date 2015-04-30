@@ -4,7 +4,7 @@ module addressdecode(input  logic [3:0]  RA1_4b_D, RA2_4b_D, DestRegD,
                     input  logic        SWI_E, undefE,
                     output logic [31:0] RA1D, RA2D, WA3D);
  /***** Brief Description *******
- *
+ * First Created by Ivan Wong for Clay Wolkin 2014-2015
  * Decodes a 4 bit address to a 32 bit address using the following
  * additional information:
  * 1) Current Status Mode
@@ -134,6 +134,7 @@ end
       default: RA2D = 32'h0;
     endcase 
 
+/* WRITE PORT WA3*/
   always_comb 
     casez ({RegFileRzD[2], Mode, DestRegD})  // Bits {1 , 6 , 4}
       11'b0_??????_0000: WA3D = 32'h00000001; // R0

@@ -6,6 +6,11 @@ module alu(input  logic [31:0] AIn, BIn,
            input logic [1:0] PreviousCVFlag, // [1] = C flag, [0] = V flag
            input  logic ShifterCarryOut_cycle2E, ShifterCarryOut_cycle1E, PrevRSRstateE, KeepV);
 
+ /***** Brief Description *******
+ * First Created by Ivan Wong for Clay Wolkin 2014-2015
+ * ALU receives all control signals from Controller.
+ * To be implemented in 32-bit datapath.
+ ******************************/
   logic        Neg, Zero, Carry, Overflow, ShifterCarryOutE;
   logic [31:0] Condinvb, A, B;
   logic [32:0] Sum;

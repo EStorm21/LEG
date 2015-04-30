@@ -10,6 +10,7 @@ module coprocessor15 (input logic         clk, reset,
 
 /* 
 Brief:
+First created by Zakkai Davidson for Clay Wolkin 2014-2015
 Coprocessor talks with both LEG datapath/controller and MMU.
 For LEG: CPUWriteEn is high during MCR instructions.
          CPUEn is high during MRC instructions

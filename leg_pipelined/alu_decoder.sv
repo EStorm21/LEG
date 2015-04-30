@@ -6,7 +6,7 @@ module alu_decoder(input  logic       ALUOpE,
            output   logic     InvertB, ReverseInputs, ALUCarry, DoNotWriteReg);
 
  /***** Brief Description *******
- *
+ * First Created by Ivan Wong for Clay Wolkin 2014-2015
  * CONTROLLER EXECUTE STAGE
  * ALU_Decoder is used to generate all necessary controls for the ALU to operate. 
  * Which flags to update are also handled by ALU_Decoder

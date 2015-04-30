@@ -4,7 +4,7 @@ module longmult_addressdecode(input  logic [3:0]  RdLow_4b,
           			);
 
  /***** Brief Description *******
- *
+ * Created by Eric Storm for Clay Wolkin 2014-2015
  * Decodes a 4 bit address to a 32 bit address for ONLY
  * the Multiply Long instruction
  *

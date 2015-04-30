@@ -7,7 +7,7 @@ module conditional(input  logic [3:0] Cond,
                    input logic        MultSelectE);
 
 /***** Brief Description *******
- *
+ * First Created by Ivan Wong for Clay Wolkin 2014-2015
  * CONTROLLER EXECUTE STAGE
  * Conditional is to check for conditional execution for instructions and whether flags should
  * be updated or not. 

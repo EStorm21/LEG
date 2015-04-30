@@ -97,6 +97,13 @@ module controller(/// ------ From TOP ------
   logic [3:0]  FlagsM;
   logic [31:0] SPSRW, CPSRW;
 
+ /***** Brief Description *******
+ * Created by Ivan Wong for Clay Wolkin 2014-2015
+ * Controller contains all control signals (no predefined width)
+ * Datapath should have only 32-bit signals
+ * Micro-OpFSM is huge
+ * Decode to Writeback Stage
+ ******************************/
 
   // ====================================================================================================
   // ======================================= Decode Stage ===============================================

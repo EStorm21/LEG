@@ -5,7 +5,7 @@ module memory_mask (input  logic       ByteOrWord, //byte or word
               		output logic [3:0] FinalByteMask);
 
 /***** Brief Description *******
- *
+ * Created by Eric Storm for Clay Wolkin 2014-2015
  * CONTROLLER EXECUTE STAGE
  * The data_selector is used for STR, STRB and STRH to select the data (including offset)
  * Gets data from registers and chooses output to write accordingly to memory.
