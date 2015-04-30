@@ -23,10 +23,12 @@ module dmem
      // $readmemh("/proj/leg/sim/simTest.dat", RAM);
       // $readmemh("F:/Academics/Research Clay Wolkin - LEG v4/LEG/tests/simTest.dat",RAM); //teqrs
        // $readmemh("F:/Academics/Research Clay Wolkin - LEG v4/LEG/tests/simTest.dat",RAM); //teqrs
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/mmu/sectionTest.dat",RAM);
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/mmu/python/pagetable.dat",RAM);
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/mmu/python/pagetable.dat",RAM);
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/mmu/sectionTest.dat",RAM);
+      //$readmemh("F:/Academics/Research Clay Wolkin - ARM v4/LEG/tests/simTest.dat",RAM); //teqrs
+      //$readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
+      // $readmemh("C:/Users/Sam/Documents/CW/LEG/LEG/tests/simTest.dat", RAM);
+      // $readmemh("/proj/leg/sim/simTest.dat", RAM);
+      // $readmemh("F:/Academics/Research Clay Wolkin - LEG v4/LEG/tests/simTest.dat",RAM); //teqrs
+      // $readmemh("F:/Academics/Research Clay Wolkin - LEG v4/LEG/tests/simTest.dat",RAM); //teqrs
       // $readmemh("/home/zakinator/LEG/simTest.dat",RAM);
       end
   assign rd = RAM[a[$clog2(MEM_SIZE)+1:2]];

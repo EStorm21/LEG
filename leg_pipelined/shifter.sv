@@ -7,7 +7,7 @@ module shifter(input  logic [31:0] a,
               output logic      shifterCarryOutE);
  
  /***** Brief Description *******
- *
+ * First created by Ivan Wong for Clay Wolkin 2014-2015
  * 32-BIT DATAPATH EXECUTE STAGE
  * Shifter is used to execute all various types of shifts for R type,
  * RSR type and load/store shift immediate types. 

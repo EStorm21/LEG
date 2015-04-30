@@ -7,9 +7,9 @@ module data_selector (input  logic       ByteOrWord, //byte or word
               		   output logic [31:0] DataOut);
 
 /***** Brief Description *******
- *
+ * Created by Eric Storm for Clay Wolkin 2014-2015
  * 32-BIT DATAPATH WRITEBACK STAGE
- * The data_selector is used for LDR, LDRB and LDRH to select the data (including offset)
+ * The data_selector is used for LDR, LDR(S)B and LDR(S)H to select the data (including offset)
  * Gets data from memory (ReadDataM) --> (ReadDataRawW) and chooses output accordingly (ReadDataW).
  *
  ******************************/

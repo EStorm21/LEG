@@ -10,7 +10,7 @@ module cpsr(input  logic        clk, reset,
               output logic [6:0] PCVectorAddressE);
 
  /***** Brief Description *******
- *
+ * Created by Ivan Wong for Clay Wolkin 2014-2015
  * CONTROLLER EXECUTE STAGE
  * CPSR stores all the processor's current flags and processor mode. 
  *
