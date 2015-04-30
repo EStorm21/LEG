@@ -71,3 +71,4 @@ ldrh
 #ldrb2
 #ldrsh
 ldmfd
+mla2
