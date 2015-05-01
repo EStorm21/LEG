@@ -280,7 +280,7 @@ always_comb
 							};
 					
 					// COMMENT: ldrh/strh register post-indexed (yest both load store)
-					// BUG: actually register pre-indexed
+					// SD 5/1/2015 BUG: actually register pre-indexed
 					end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:4] == 8'h0B) begin
 						nextState = ls_halfword;
 						InstrMuxD = 1;
@@ -299,7 +299,7 @@ always_comb
 
 
 					// To change in the future (defaultInstrD[24] & (defaultInstrD[22:21] == 2'b01) & defaultInstrD[7] & defaultInstrD[4])
-					// BUG: actually nothing useful. Comment is load/store register signed/unsigned halfword/signed byte
+					// SD 5/1/2015 BUG: actually nothing useful. Comment is load/store register signed/unsigned halfword/signed byte
 					end else if (defaultInstrD[27:25] == 3'b000 & ~defaultInstrD[20] & ~defaultInstrD[22] & defaultInstrD[7] 
 								& defaultInstrD[4] & defaultInstrD[6:5] == 2'b01) begin // store, r type, pre indexed (!)
 						nextState = strHalf;
@@ -341,6 +341,8 @@ always_comb
 				else if (defaultInstrD[27:26] == 2'b01) begin // ldrb or strb   & defaultInstrD[22]
 					debugText = "ldr/str/ldrb/strb";
 					// Scaled Register offests ldr/str/ldrb/strb
+					// SD 5/1/2015 BUG: data processing has 8-bit immediate
+					// SD 5/1/2015 Why? Don't need to use Rz for data processing immediate shift
 					if (defaultInstrD[25:24] == 2'b11 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
 						nextState = ls_word_byte;
 						InstrMuxD = 1;
@@ -358,6 +360,7 @@ always_comb
 							};
 
 					// Immediate pre indexed ldrb/strb
+					// SD 5/1/2015 BUG: data processing has 8-bit immediate
 					end else if (defaultInstrD[25:24] == 2'b01 & defaultInstrD[21]) begin
 						debugText = "ldr/str/ldrb/strb pre-indexed immediate";
 						nextState = ls_word_byte;
@@ -392,6 +395,7 @@ always_comb
 							8'b0, defaultInstrD[3:0] // add Rm
 							};
 					// Scaled register pre indexed ldrb/strb
+					// SD 5/1/2015: Why separate case from just above?
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & ~defaultInstrD[4]) begin
 						debugText = "ldr/str/ldrb/strb pre-indexed scaled register";
 						nextState = ls_word_byte;
@@ -426,6 +430,7 @@ always_comb
 								defaultInstrD[15:12], 		   // Store into Rd
 								12'b0};	
 					// Register post indexed ldrb/strb
+					// SD 5/1/2015: Why separate case from just above?
 					end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
 						debugText = "ldr/str/ldrb/strb post indexed register";
 						nextState = ls_word_byte;
@@ -443,6 +448,7 @@ always_comb
 								defaultInstrD[15:12], 		   // Store into Rd
 								12'b0};	
 					// Scaled register post indexed ldrb/strb
+					// SD 5/1/2015: Why separate case from just above?
 					end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
 						debugText = "ldr/str/ldrb/strb post indexed scaled register";
 						nextState = ls_word_byte;
