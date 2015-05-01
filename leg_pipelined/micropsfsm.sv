@@ -280,6 +280,7 @@ always_comb
 							};
 					
 					// COMMENT: ldrh/strh register post-indexed (yest both load store)
+					// BUG: actually register pre-indexed
 					end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:4] == 8'h0B) begin
 						nextState = ls_halfword;
 						InstrMuxD = 1;
@@ -298,6 +299,7 @@ always_comb
 
 
 					// To change in the future (defaultInstrD[24] & (defaultInstrD[22:21] == 2'b01) & defaultInstrD[7] & defaultInstrD[4])
+					// BUG: actually nothing useful. Comment is load/store register signed/unsigned halfword/signed byte
 					end else if (defaultInstrD[27:25] == 3'b000 & ~defaultInstrD[20] & ~defaultInstrD[22] & defaultInstrD[7] 
 								& defaultInstrD[4] & defaultInstrD[6:5] == 2'b01) begin // store, r type, pre indexed (!)
 						nextState = strHalf;
@@ -318,7 +320,7 @@ always_comb
 									1'b0, defaultInstrD[19:16], // S = 0, Rn is same
 									4'b1111, 8'b0, defaultInstrD[3:0] // Add and store into Rz,
 									}; 
-					end else begin // NOT POST-INCREMENT OR !
+					end else begin // OFFSET (no writeback)
 						nextState = ready;
 						InstrMuxD = 0;
 						doNotUpdateFlagD = 0;
@@ -338,7 +340,7 @@ always_comb
 				// ALL LOAD and STORE WORDS / BYTES --- ldr, str, ldrb, strb
 				else if (defaultInstrD[27:26] == 2'b01) begin // ldrb or strb   & defaultInstrD[22]
 					debugText = "ldr/str/ldrb/strb";
-					// Scaled Register offests ldrb/strb
+					// Scaled Register offests ldr/str/ldrb/strb
 					if (defaultInstrD[25:24] == 2'b11 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
 						nextState = ls_word_byte;
 						InstrMuxD = 1;
