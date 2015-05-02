@@ -97,7 +97,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   regfile     rf(clk, reset, RegWriteW, RA1D, RA2D,
                  WA3W, ResultW, PC_in, 
                  Rd1D, Rd2D); 
-  extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25]);
+  extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25], noRotateD);
   rotator   rotat(ExtImmD, InstrD, RotImmD, noRotateD); 
 
 

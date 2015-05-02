@@ -433,7 +433,6 @@ always_comb
 				else if (defaultInstrD[27:26] == 2'b01) begin // ldrb or strb   & defaultInstrD[22]
 					debugText = "ldr/str/ldrb/strb";
 					// Scaled Register offests ldr/str/ldrb/strb
-					// SD 5/1/2015 BUG: data processing has 8-bit immediate
 					// SD 5/1/2015 Why? Don't need to use Rz for data processing immediate shift
 					if (defaultInstrD[25:24] == 2'b11 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
 						nextState = ls_word_byte;
@@ -441,6 +440,7 @@ always_comb
 						ldrstrRtype = 0;
 						doNotUpdateFlagD = 1;
 						uOpStallD = 1;
+						noRotate = 1;
 						addCarry = 0;
 						keepZ = 0;
 						addZero = 0;
@@ -455,7 +455,6 @@ always_comb
 							};
 
 					// Immediate pre indexed ldrb/strb
-					// SD 5/1/2015 BUG: data processing has 8-bit immediate
 					end else if (defaultInstrD[25:24] == 2'b01 & defaultInstrD[21]) begin
 						debugText = "ldr/str/ldrb/strb pre-indexed immediate";
 						nextState = ls_word_byte;
@@ -463,6 +462,7 @@ always_comb
 						ldrstrRtype = 0;
 						doNotUpdateFlagD = 1;
 						uOpStallD = 1;
+						noRotate = 1;
 						addCarry = 0;
 						keepZ = 0;
 						addZero = 0;
@@ -585,6 +585,7 @@ always_comb
 						doNotUpdateFlagD = 0;
 						uOpStallD = 0;
 						prevRSRstate = 0;
+						noRotate = 1;
 						keepV = 0;
 						addCarry = 0;
 						keepZ = 0;
@@ -711,6 +712,7 @@ always_comb
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
 					addCarry = 0;
+					noRotate = 1;
 					keepZ = 0;
 					addZero = 0;
 					doNotUpdateFlagD = 1;
@@ -770,6 +772,7 @@ always_comb
 						doNotUpdateFlagD = 0;
 						uOpStallD = 0;
 						addCarry = 0;
+						noRotate = 1;
 						prevRSRstate = 0;
 						keepV = 0;
 						keepZ = 0;
