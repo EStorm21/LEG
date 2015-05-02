@@ -8,7 +8,7 @@ module hazard(input  logic       clk, reset,
               // Added DStall, StallE, StallM, and FlushW for memory
               output logic       FlushD, FlushE, IncrementE,
               input  logic       DStall, IStall,
-              input  logic       MultStallD, MultStallE, CoProc_En,
+              input  logic       CoProc_En,
               output logic       StallE, StallM, FlushW, StallW,
               // For Micro-ops
               input logic        uOpStallD, LDMSTMforwardE,
@@ -56,9 +56,9 @@ module hazard(input  logic       clk, reset,
 
   assign ldrStallD = Match_12D_E & MemtoRegE;
   
-  assign StallD = ldrStallD | DStall | uOpStallD | IStall | MultStallD | (SWI_E | undefE);
-  assign StalluOp = ldrStallD | DStall | IStall | MultStallD;
-  assign StallF = ldrStallD | PCWrPendingF | DStall | IStall | uOpStallD | MultStallD | (SWI_D | SWI_E | SWI_M | undefD | undefE | undefM | RegtoCPSR | CPSRtoReg | CoProc_En);
+  assign StallD = ldrStallD | DStall | uOpStallD | IStall | (SWI_E | undefE);
+  assign StalluOp = ldrStallD | DStall | IStall ;
+  assign StallF = ldrStallD | PCWrPendingF | DStall | IStall | uOpStallD | (SWI_D | SWI_E | SWI_M | undefD | undefE | undefM | RegtoCPSR | CPSRtoReg | CoProc_En);
   assign StallE = DStall | IStall;
   assign FlushW = DStall | IStall;
   assign StallW = DStall | IStall;

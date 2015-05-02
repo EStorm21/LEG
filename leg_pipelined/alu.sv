@@ -1,6 +1,6 @@
 module alu(input  logic [31:0] AIn, BIn,
            input  logic [2:0]  ALUOperation, CVUpdate,
-           input logic         InvertB, ReverseInputs, ALUCarry,
+           input logic         InvertB, ReverseInputs, ALUCarry, AddZeroE, ZeroKeptE,
            output logic [31:0] Result,
            output logic [3:0]  Flags,
            input logic [1:0] PreviousCVFlag, // [1] = C flag, [0] = V flag
@@ -39,7 +39,7 @@ module alu(input  logic [31:0] AIn, BIn,
 
   // Order is NZCV
   assign Neg      = Result[31];
-  assign Zero     = (Result == 32'b0);
+  assign Zero     = AddZeroE ? ZeroKeptE & (Result == 32'b0) : (Result == 32'b0);
 
   // TODO: Flags move to control/ext datapath
   // FLAG HANDLING
