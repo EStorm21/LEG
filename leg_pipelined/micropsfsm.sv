@@ -364,6 +364,7 @@ always_comb
 							};
 					
 					// COMMENT: ldrh/strh register post-indexed (yest both load store)
+					// SD 5/1/2015 BUG: same as 2nd above. Actually register pre-indexed.
 					end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:4] == 8'h0B) begin
 						nextState = ls_halfword;
 						InstrMuxD = 1;
@@ -385,6 +386,7 @@ always_comb
 
 
 					// To change in the future (defaultInstrD[24] & (defaultInstrD[22:21] == 2'b01) & defaultInstrD[7] & defaultInstrD[4])
+					// SD 5/1/2015 BUG: actually nothing useful. Comment is load/store register signed/unsigned halfword/signed byte
 					end else if (defaultInstrD[27:25] == 3'b000 & ~defaultInstrD[20] & ~defaultInstrD[22] & defaultInstrD[7] 
 								& defaultInstrD[4] & defaultInstrD[6:5] == 2'b01) begin // store, r type, pre indexed (!)
 						nextState = strHalf;
@@ -408,7 +410,7 @@ always_comb
 									1'b0, defaultInstrD[19:16], // S = 0, Rn is same
 									4'b1111, 8'b0, defaultInstrD[3:0] // Add and store into Rz,
 									}; 
-					end else begin // NOT POST-INCREMENT OR !
+					end else begin // OFFSET (no writeback)
 						nextState = ready;
 						InstrMuxD = 0;
 						doNotUpdateFlagD = 0;
@@ -431,7 +433,9 @@ always_comb
 				// ALL LOAD and STORE WORDS / BYTES --- ldr, str, ldrb, strb
 				else if (defaultInstrD[27:26] == 2'b01) begin // ldrb or strb   & defaultInstrD[22]
 					debugText = "ldr/str/ldrb/strb";
-					// Scaled Register offests ldrb/strb
+					// Scaled Register offests ldr/str/ldrb/strb
+					// SD 5/1/2015 BUG: data processing has 8-bit immediate
+					// SD 5/1/2015 Why? Don't need to use Rz for data processing immediate shift
 					if (defaultInstrD[25:24] == 2'b11 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
 						nextState = ls_word_byte;
 						InstrMuxD = 1;
@@ -452,6 +456,7 @@ always_comb
 							};
 
 					// Immediate pre indexed ldrb/strb
+					// SD 5/1/2015 BUG: data processing has 8-bit immediate
 					end else if (defaultInstrD[25:24] == 2'b01 & defaultInstrD[21]) begin
 						debugText = "ldr/str/ldrb/strb pre-indexed immediate";
 						nextState = ls_word_byte;
@@ -492,6 +497,7 @@ always_comb
 							8'b0, defaultInstrD[3:0] // add Rm
 							};
 					// Scaled register pre indexed ldrb/strb
+					// SD 5/1/2015: Why separate case from just above?
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & ~defaultInstrD[4]) begin
 						debugText = "ldr/str/ldrb/strb pre-indexed scaled register";
 						nextState = ls_word_byte;
@@ -532,6 +538,7 @@ always_comb
 								defaultInstrD[15:12], 		   // Store into Rd
 								12'b0};	
 					// Register post indexed ldrb/strb
+					// SD 5/1/2015: Why separate case from just above?
 					end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
 						debugText = "ldr/str/ldrb/strb post indexed register";
 						nextState = ls_word_byte;
@@ -552,6 +559,7 @@ always_comb
 								defaultInstrD[15:12], 		   // Store into Rd
 								12'b0};	
 					// Scaled register post indexed ldrb/strb
+					// SD 5/1/2015: Why separate case from just above?
 					end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
 						debugText = "ldr/str/ldrb/strb post indexed scaled register";
 						nextState = ls_word_byte;
@@ -658,6 +666,7 @@ always_comb
 								defaultInstrD[15:12], 		   // Store into Rd
 								12'b0};	
 				// register pre-indexed
+				// SD 5/1/2015 Why separate case from just above?
 				end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
 					debugText = "ldr/str/ldrb/strb cycle 2 register pre index";
 					nextState = ready;
@@ -677,6 +686,7 @@ always_comb
 								defaultInstrD[15:12], 		   // Store into Rd
 								12'b0};	
 				// scaled register pre-indexed
+				// SD 5/1/2015 Why separate case from just above?
 				end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & ~defaultInstrD[4]) begin
 					debugText = "ldr/str/ldrb/strb cycle 2 scaled register pre index";
 					nextState = ready;
@@ -715,6 +725,7 @@ always_comb
 							defaultInstrD[11:0] // Immediate
 							};
 				// register post indexed
+				// SD 5/1/2015 Why separate case from just above?
 				end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
 					debugText = "ldr/str/ldrb/strb cycle 2 register post index";
 					nextState = ready;
@@ -734,6 +745,7 @@ always_comb
 							8'b0, defaultInstrD[3:0] // add Rm
 							};
 				// scaled register post indexed
+				// SD 5/1/2015 Why separate case from just above?
 				end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
 					debugText = "ldr/str/ldrb/strb cycle 2 scaled register post index";
 					nextState = ready;
@@ -822,6 +834,8 @@ always_comb
 							defaultInstrD[7:4],
 							4'b0
 							};
+			// SD 5/1/2015 Why separate case from just above?
+			// SD 5/1/2015 BUG: Not changing to immediate offset
 			end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:8] == 4'b0000 & defaultInstrD[7:4] == 4'b1011) begin
 				InstrMuxD = 1;
 				doNotUpdateFlagD = 1;
@@ -843,6 +857,7 @@ always_comb
 							defaultInstrD[7:4],
 							4'b0
 							};
+			// Post-indexed immediate
 			end else if (~defaultInstrD[24] & defaultInstrD[22:21] == 2'b10 & defaultInstrD[7:4] == 4'b1011) begin
 				InstrMuxD = 1;
 				doNotUpdateFlagD = 1;
@@ -861,6 +876,9 @@ always_comb
 							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + imm 
 							4'b0, defaultInstrD[11:8], defaultInstrD[3:0] // Immediate
 							};
+			// SD 5/1/2015 Same condition as 2nd above?
+			// SD 5/1/2015 BUG: condition is pre-indexed, code is post-indexed. 
+			//                  compare to register post-indexed in ready state
 			end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:4] == 8'h0B) begin
 				InstrMuxD = 1;
 				doNotUpdateFlagD = 1;
@@ -1191,6 +1209,7 @@ always_comb
 						regFileRz = {1'b0, // Control inital mux for RA1D
 									3'b001}; // 5th bit of WA3, RA2D and RA1D
 						nextState = ready;
+						//SD 5/1/2015 BUG Should set flags with defaultInstrD[20], and not all flags.
 						uOpInstrD = {defaultInstrD[31:28], 7'b0000100, defaultInstrD[21], //condition code, ADD funct, flag update
 									 4'b1111, defaultInstrD[19:16], //[19:16] is Rz
 									 8'b00000000, defaultInstrD[15:12]};
