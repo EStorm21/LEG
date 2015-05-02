@@ -9,3 +9,5 @@
 
 ## Always ignore the pdf for documentation
 documentation/main.pdf
+/autoSimSD.tcl
+/tests/simTest.dat

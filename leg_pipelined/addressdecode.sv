@@ -134,6 +134,7 @@ end
       default: RA2D = 32'h0;
     endcase 
 
+/* WRITE PORT WA3*/
   always_comb 
     casez ({RegFileRzD[2], Mode, DestRegD})  // Bits {1 , 6 , 4}
       11'b0_??????_0000: WA3D = 32'h00000001; // R0

@@ -29,7 +29,7 @@ module leg(input  logic        clk, reset,
   logic [31:0] InstrD, DefaultInstrD, ALUOutW;
   logic        MultStallD, MultStallE;
   logic        WriteMultLoE, WriteMultLoKeptE;
-  logic        ShifterCarryOutE;
+  logic        ShifterCarryOutE, CarryHiddenE;
   
 
   /// Output from Controller
@@ -44,13 +44,13 @@ module leg(input  logic        clk, reset,
   logic        LDMSTMforwardD, LDMSTMforwardE, LDRSTRshiftE, MultSelectD, RselectE;
   logic [3:0]  FlagsE; // [1] is C, [0] is V
   logic [1:0]  ResultSelectE, STR_cycleD, ByteOffsetW;
-  logic [2:0]  MultControlE;
+  logic [1:0]  MultControlE;
   logic        KeepVE, noRotateD, InstrMuxD;
   logic [31:0] uOpInstrD;
   logic [2:0]  ALUOperationE, CVUpdateE;
-  logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnable, LoadLengthW;
+  logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnableE, ZFlagKeptE, LoadLengthW;
   logic [3:0]  RegFileRzD;
-  logic        ShifterCarryOut_cycle2E, CoProc_En;
+  logic        ShifterCarryOut_cycle2E, CoProc_En, AddZeroE;
   logic [7:0]  CPSR8_W;
   logic [31:0] PSR_W;
   logic [6:0]  PCVectorAddressW;

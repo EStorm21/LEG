@@ -58,14 +58,13 @@ module addresspath( /// ------ From TOP ------
   // ====================================================================================
   // *** use short register addrsses through address path
   
-  flopenr #(32)  wa3ereg(clk, reset, ~StallE, WA3D, WA3E_1); 
+  flopenr #(32)  wa3ereg(clk, reset, ~StallE, WA3D, WA3E); 
   flopenr #(32)  ra1reg(clk, reset, ~StallE, RA1D, RA1E);
   flopenr #(32)  ra2reg(clk, reset, ~StallE, RA2D, RA2E); 
   
   longmult_addressdecode multAddr(InstrE[15:12], CPSR8_W, RdLoE);
   
-  // Long Multiply RdLo register
-  assign WA3E = WriteMultLoE ? RdLoE: WA3E_1;
+
 
   // ====================================================================================
   // ================================ Memory Stage ======================================

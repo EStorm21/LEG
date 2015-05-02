@@ -1,7 +1,6 @@
 #comment out lines like this
 #adc_r
 #and_r
-#and_r_exc
 #bic_r
 #cmn_r
 #cmp_r
@@ -14,7 +13,7 @@
 #sbc_r
 #teq_r
 #tst_r
-#adc_i
+##adc_i
 #and_i
 #bic_i
 #cmn_i
@@ -46,8 +45,8 @@ ldr_str_ri
 memrewrite
 rand0
 random1
-mul
-mla
+#mul
+#mla
 #smull
 #umull
 #umlal
@@ -69,5 +68,6 @@ ldrh_strh_i
 #lsl
 #ldrb
 #ldrb2
-#ldrsh
-#ldmfd
+ldrsh
+ldmfd
+mla2

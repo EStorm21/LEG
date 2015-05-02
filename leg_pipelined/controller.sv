@@ -15,15 +15,15 @@ module controller(/// ------ From TOP ------
                     input  logic [31:0]  InstrD, ALUOutW,
                     input  logic [3:0]   ALUFlagsE, MultFlagsE,
                     input  logic [31:0]  ALUResultE, DefaultInstrD,
-                    input  logic         ShifterCarryOutE,
+                    input  logic         ShifterCarryOutE, CarryHiddenE, 
 
                   /// ------ To   Datapath ------
                     output logic [1:0]   RegSrcD, ImmSrcD, 
                     output logic         ALUSrcE, BranchTakenE,
                     output logic [3:0]   ALUControlE,
-                    output logic [2:0]   MultControlE,
+                    output logic [1:0]   MultControlE,
                     output logic         MemWriteM,
-                    output logic         MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW,
+                    output logic         MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, AddZeroE,
                     // For ALU logic unit
                     output logic  [2:0]  ALUOperationE, CVUpdateE,
                     output logic         DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryE,
@@ -32,7 +32,7 @@ module controller(/// ------ From TOP ------
                     output logic         RselectE, PrevRSRstateE, LDRSTRshiftE, LDMSTMforwardE, 
                     output logic  [1:0]  ResultSelectE,
                     output logic  [6:4]  ShiftOpCode_E,
-                    output logic         MultSelectD, MultEnable,
+                    output logic         MultSelectD, MultEnableE, ZFlagKeptE,
                     output logic [31:0]  InstrE,
                     // To handle memory load/store byte and halfword
                     output logic [3:0]   ByteMaskM,
@@ -44,8 +44,8 @@ module controller(/// ------ From TOP ------
                     output logic [3:0]   RegFileRzD,
                     output logic [31:0]  uOpInstrD, PSR_W,
                     // Handle Multiplication stalls
-                    output logic         MultStallD, MultStallE,
-                    output  logic        WriteMultLoE, WriteMultLoKeptE,
+                    // output logic         MultStallD, MultStallE,
+                    // output  logic        WriteMultLoE, WriteMultLoKeptE,
                     // Shifter carry out to ALU
                     output  logic        ShifterCarryOut_cycle2E,
 
@@ -68,7 +68,8 @@ module controller(/// ------ From TOP ------
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
   logic [3:0]  ALUControlD, ByteMaskE;
   logic [4:0]  MSRmaskD, MSRmaskE, MSRmaskM, MSRmaskW;
-  logic [2:0]  MultControlD;
+  logic [1:0]  MultControlD;
+  logic        MultEnableD;
   logic        ALUSrcD, MemtoRegD, CondExE2;
   logic        RegWriteD, RegWriteE, RegWriteGatedE;
   logic        MemWriteD, MemWriteE, MemWriteGatedE;
@@ -94,7 +95,7 @@ module controller(/// ------ From TOP ------
   logic        CoProc_MCR_D, CoProc_MRC_D, CoProc_FlagUpd_D, CoProc_WrEnD, CoProc_EnD;
   logic        CoProc_FlagUpd_E, CoProc_FlagUpd_M, CoProc_FlagUpd_W;
   logic        CoProc_WrEnE, CoProc_EnE, MCR_D;
-  logic [3:0]  FlagsM;
+  logic [3:0]  FlagsOutE, FlagsM;
   logic [31:0] SPSRW, CPSRW;
 
  /***** Brief Description *******
@@ -110,7 +111,7 @@ module controller(/// ------ From TOP ------
   // ====================================================================================================
 
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, STR_cycleD, SignExtendD,
-                            PrevRSRstateD, KeepVD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC);
+                            PrevRSRstateD, KeepVD, KeepZD, KeepCD, AddCarryD, AddZeroD, noRotateD, uOpRtypeLdrStrD, MultControlD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC);
 
   // === Control Logic for Datapath ===
   always_comb
@@ -187,10 +188,12 @@ module controller(/// ------ From TOP ------
   // === END ===
 
   // === Handling all Multiplication Stalls Decode ===
-  assign MultControlD  = InstrD[23:21];   // Control for the Multiplier Block
-  assign MultStallD = (InstrD[27:24] == 4'b0) & InstrD[23] & (InstrD[7:4] == 4'b1001) & ~InstrD[25] & ~WriteMultLoE; //For Long Multiply
-  flopenrc #(1)  MultOutputSrc(clk, reset, ~StallE, FlushE, MultStallD, WriteMultLoE);
-  flopenrc #(1)  MultOutputSrc1(clk, reset, ~StallE, FlushE, WriteMultLoE, WriteMultLoKeptE); //write the low register on the second cycle
+  // assign MultControlD  = InstrD[23:21];   // Control for the Multiplier Block
+  // assign MultStallD = (InstrD[27:24] == 4'b0) & InstrD[23] & (InstrD[7:4] == 4'b1001) & ~InstrD[25] & ~WriteMultLoE; //For Long Multiply
+  assign MultEnableD = InstrD[7:4] == 4'b1001 && InstrD[27:24] == 4'b0;
+
+  // flopenrc #(1)  MultOutputSrc(clk, reset, ~StallE, FlushE, MultStallD, WriteMultLoE);
+  // flopenrc #(1)  MultOutputSrc1(clk, reset, ~StallE, FlushE, WriteMultLoE, WriteMultLoKeptE); //write the low register on the second cycle
   // === END ===
 
   // === MSR or MRS (CPSR) INSTRUCTIONS ===
@@ -225,7 +228,9 @@ module controller(/// ------ From TOP ------
   // ======================================= Execute Stage ==============================================
   // ====================================================================================================
 
-  flopenrc #(1)  keepV(clk, reset, ~StallE, FlushE, KeepVD, KeepVE);
+  flopenrc #(1) MultZeroPrev(clk, reset, ~StallE & KeepZE, FlushE, FlagsOutE[2], ZFlagKeptE);
+  flopenrc #(1) MlalCarryPrev(clk, reset, ~StallE & KeepCE, FlushE, FlagsOutE[1], CFlagKeptE);
+  flopenrc #(5)  keepV(clk, reset, ~StallE, FlushE, {KeepVD, KeepZD, KeepCD, AddCarryD, AddZeroD}, {KeepVE, KeepZE, KeepCE, AddCarryE, AddZeroE});
   flopenrc #(1) shftrCarryOut(clk, reset, ~StallE, FlushE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
   flopenrc #(1) restoreCPSR_DE(clk, reset, ~StallE, FlushE, restoreCPSR_D, restoreCPSR_E);
   flopenrc #(1) longMultRegWritePt2(clk, reset, ~StallE, FlushE, CondExE, CondExE2);
@@ -238,17 +243,17 @@ module controller(/// ------ From TOP ------
   flopenrc #(11) flushedregsE(clk, reset, ~StallE, FlushE, 
                            {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD, ldrstrALUopD, BXInstrD, CPSRtoRegD, RegtoCPSR_D},
                            {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE, ldrstrALUopE, BXInstrE, CPSRtoReg0E, RegtoCPSR_0E});
-  flopenrc #(14)  regsE(clk, reset, ~StallE, FlushE, {ALUSrcD, ALUControlD, MultControlD, PSRtypeD, MSRmaskD},
-                                                     {ALUSrcE, ALUControlE, MultControlE, PSRtypeE, MSRmaskE});
+  flopenrc #(14)  regsE(clk, reset, ~StallE, FlushE, {ALUSrcD, ALUControlD, MultControlD, MultEnableD, PSRtypeD, MSRmaskD},
+                                                     {ALUSrcE, ALUControlE, MultControlE, MultEnableE, PSRtypeE, MSRmaskE});
   flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE, {(ALUOpD|ldrstrALUopD), InstrD}, {ALUOpE, InstrE});  
 
 
   // < Handling all Multiplication Stalls Execute>
-  assign MultStallE = (InstrD[27:24] == 4'b0) & InstrE[23] & (InstrE[7:4] == 4'b1001) & ~InstrD[25]; //For Long Multiply
-  assign MultEnable = InstrE[7:4] == 4'b1001;
+  // assign MultStallE = (InstrD[27:24] == 4'b0) & InstrE[23] & (InstrE[7:4] == 4'b1001) & ~InstrD[25]; //For Long Multiply
+  // assign MultEnable = InstrE[7:4] == 4'b1001;
 
   // === ALU Decoding ===
-  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
+  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], AddCarryE, CFlagKeptE, BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
   // === END ===         
 
   // TODO: Add Thumb mode
@@ -270,9 +275,9 @@ module controller(/// ------ From TOP ------
   // === CONDITIONAL EXECUTION CHECKING ===
   assign  FlagsE = SetNextFlagsM ? FlagsNextM : (SetNextFlagsW ? FlagsNextW : CPSRW[31:28]);
   assign FlagsNextE = (RegtoCPSR_E & InstrE[19]) ? ALUResultE[31:28] : FlagsNext0E; // If flags field is set by MSR, update flags now!
-  conditional Cond(CondE, FlagsE, ALUFlagsE, MultFlagsE, FlagWriteE, CondExE, FlagsNext0E, ResultSelectE[1]);
+  conditional Cond(CondE, FlagsE, ALUFlagsE, MultFlagsE, FlagWriteE, CondExE, FlagsNext0E, FlagsOutE, ResultSelectE[1], CarryHiddenE);
   assign BranchTakenE    = BranchE & CondExE;
-  assign RegWritepreMuxE = (RegWriteE & CondExE) | (RegWriteE & CondExE2 & WriteMultLoKeptE & MultStallE);
+  assign RegWritepreMuxE = (RegWriteE & CondExE);
   assign MemWriteGatedE  = MemWriteE & CondExE;
   assign PCSrcGatedE     = PCSrcE & CondExE;
   assign SetNextFlagsE   = FlagWriteE[0] & CondExE;

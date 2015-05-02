@@ -10,9 +10,10 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic [1:0]  ImmSrcD,
                   input  logic        ALUSrcE, BranchTakenE,
                   input  logic [3:0]  ALUControlE, 
-                  input  logic [2:0]  MultControlE,
-                  input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW,
-                  input  logic [31:0] InstrE, PSR_W,
+                  input  logic [1:0]  MultControlE,
+                  input  logic        MultEnableE, ZFlagKeptE, 
+                  input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, AddZeroE, 
+                  input  logic [31:0] InstrE, PSR_W, 
                   // Handling data-processing Instrs (ALU)
                   input  logic [3:0]  FlagsE,
                   input  logic [2:0]  CVUpdateE, ALUOperationE,
@@ -21,7 +22,6 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic        RselectE, PrevRSRstateE, LDRSTRshiftE, 
                   input  logic [1:0]  ResultSelectE, // 2 bits Comes from {MultSelectE, RSRselectE}
                   input  logic [6:4]  ShiftOpCode_E,
-                  input  logic        MultEnable, 
                   // To handle load-store half-words and bytes
                   input  logic        LoadLengthW, HalfwordOffsetW, Ldr_SignBW, Ldr_SignHW,
                   input  logic [1:0]  ByteOffsetW,
@@ -39,7 +39,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   output logic [3:0]  ALUFlagsE, MultFlagsE,
                   output logic [1:0]  STR_cycleD,
                   output logic [31:0] ALUResultE, DefaultInstrD,
-                  output logic        ShifterCarryOutE,
+                  output logic        ShifterCarryOutE, CarryHiddenE,
 
                 /// ------ From Hazard ------
                   input  logic [1:0]  ForwardAE, ForwardBE,
@@ -122,12 +122,12 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // TODO: implement as a barrel shift
   shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], LDRSTRshiftE, FlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
   
-  alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, ALUOutputE, ALUFlagsE, FlagsE[1:0], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, KeepVE); 
+  alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, AddZeroE, ZFlagKeptE, ALUOutputE, ALUFlagsE, FlagsE[1:0], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, KeepVE); 
   
   // TODO: Use a signle multiplier for both signed and unsigned
   // - Turn this into structural block
   // - Move relevant signals to controller
-  multiplier  mult(clk, reset, MultEnable, StallE, WriteMultLoKeptE, SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, FlagsE[1:0]);
+  multiplier  mult(clk, reset, SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, FlagsE[1:0], ZFlagKeptE, CarryHiddenE);
   
   mux3 #(32)  aluoutputmux(ALUOutputE, ShiftBE, MultOutputE, ResultSelectE, ALUResultE); 
   data_replicator memReplicate(WriteByteE, StrHalfwordE, WriteDataE, WriteDataReplE);
