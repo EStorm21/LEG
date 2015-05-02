@@ -64,7 +64,7 @@ ldrh_strh_i
 #mrs2
 #mrc
 #linux
-#ldrh
+ldrh
 #lsl
 #ldrb
 #ldrb2

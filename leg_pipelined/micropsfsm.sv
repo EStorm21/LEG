@@ -826,8 +826,8 @@ always_comb
 				addZero = 0;
 				nextState = ready;
 				// Store Rn <= Rz
-				uOpInstrD = {defaultInstrD[31:22], 
-							1'b0, // Only make one change: to normal immediate offset mode
+				uOpInstrD = {defaultInstrD[31:23], 
+							2'b10, // Only make one change: to normal immediate offset mode
 							defaultInstrD[20:12], 
 							4'b0, // make immediate 0
 							defaultInstrD[7:4],
@@ -835,6 +835,7 @@ always_comb
 							};
 			// SD 5/1/2015 Why separate case from just above?
 			// SD 5/1/2015 BUG: Not changing to immediate offset
+			// Register pre indexed
 			end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:8] == 4'b0000 & defaultInstrD[7:4] == 4'b1011) begin
 				InstrMuxD = 1;
 				doNotUpdateFlagD = 1;
@@ -848,9 +849,9 @@ always_comb
 				noRotate = 0;
 				ldrstrRtype = 0;
 				nextState = ready;
-				// Store Rn <= Rz
-				uOpInstrD = {defaultInstrD[31:22], 
-							1'b0, // Only make one change: to normal immediate offset mode
+				// Store Rd <= addr( updatedRn ) 
+				uOpInstrD = {defaultInstrD[31:23], 
+							2'b10, // Only make one change: to normal immediate offset mode
 							defaultInstrD[20:12], 
 							4'b0, // make immediate 0
 							defaultInstrD[7:4],
@@ -949,7 +950,7 @@ always_comb
 							1'b1,  			   	 	// P-bit (preindex)
 							1'b1,			 		// U-bit (ADD)
 							1'b0,					// B-bit (choose word addressing, not byte addressing)
-							1'b1,					// W-bit (Base register should NOT be updated)
+							1'b0,					// W-bit (Base register should NOT be updated)
 							defaultInstrD[20], 		// Differentiate between Load and Store | L = 1 for loads
 							4'b1111,				// Still read from the same Rn
 							Rd,						// 4 bit calculated register file to which the Load will be written back to
