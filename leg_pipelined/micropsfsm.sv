@@ -16,7 +16,7 @@ module micropsfsm(input  logic        clk, reset,
 
 
 // define states READY and RSR 
-typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, ls_word, str, blx, strHalf, ls_halfword, ls_word_byte} statetype; // theres a bug if we get rid of strHalf... need to figoure out why
+typedef enum {ready, rsr, multiply, ldm, stm, bl, ldmstmWriteback, blx, strHalf, ls_halfword, ls_word_byte} statetype; // theres a bug if we get rid of strHalf... need to figoure out why
 statetype state, nextState;
 
 string debugText;
@@ -228,10 +228,10 @@ always_comb
 								 };
 				end 
 				// LOAD/STORE HALF-WORDS
-				else if (defaultInstrD[27:25] == 3'b000 & defaultInstrD[7:4] == 4'b1011) begin // LDRH and STRH only
+				else if (defaultInstrD[27:25] == 3'b000 & defaultInstrD[7] & defaultInstrD[4]) begin // LDRH and STRH only
 					debugText = "ldrh/strh";
 					// COMMENT: ldrh/strh immediate pre indexed (yes both load and store!)
-					if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b11 & defaultInstrD[7:4] == 4'b1011) begin
+					if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b11 & defaultInstrD[7] & defaultInstrD[4]) begin
 						nextState = ls_halfword;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
@@ -247,7 +247,7 @@ always_comb
 							4'b0, defaultInstrD[11:8], defaultInstrD[3:0] // Immediate
 							};
 					// COMMENT: ldrh/strh register pre indexed (yes, both load and store!) 
-					end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:8] == 4'b0000 & defaultInstrD[7:4] == 4'b1011) begin 
+					end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:8] == 4'b0000 & defaultInstrD[7] & defaultInstrD[4]) begin 
 						nextState = ls_halfword;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
@@ -264,7 +264,7 @@ always_comb
 							};
 
 					// COMMENT: ldrh/strh immediate post indexed (yes, both load and store)	
-					end else if (~defaultInstrD[24] & defaultInstrD[22:21] == 2'b10 & defaultInstrD[7:4] == 4'b1011) begin
+					end else if (~defaultInstrD[24] & defaultInstrD[22:21] == 2'b10 & defaultInstrD[7] & defaultInstrD[4]) begin
 						nextState = ls_halfword;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
@@ -280,7 +280,7 @@ always_comb
 							};
 					
 					// COMMENT: ldrh/strh register post-indexed (yest both load store)
-					end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:4] == 8'h0B) begin
+					end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:8] == 4'b0000 & InstrD[7] & InstrD[4]) begin
 						nextState = ls_halfword;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;

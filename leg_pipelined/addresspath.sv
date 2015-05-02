@@ -26,7 +26,13 @@ module addresspath( /// ------ From TOP ------
                     output logic        Match_1D_E, Match_2D_E
           					);
 
-  // First Created by Ivan Wong for Clay Wolkin 2014-2015
+  /*
+  * First Created by Ivan Wong for Clay Wolkin 2014-2015
+  * Handles all addresses for Reg file
+  * Contains address decoder that breaks down 4 bit address from InstrD + current mode into a one hot 32-bit line 
+  * for RegFile
+  * -- Also needed for exception vector addresses in the Writeback stage.
+  */
   
   logic [31:0]  WA3M, WA3E, RA1E, RA2E, RdLoE, WA3E_1, WA3D;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D, DestRegD;
