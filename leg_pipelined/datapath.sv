@@ -66,7 +66,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   logic [31:0] ALUorCP15_M;
   
 /***** Brief Description *******
- * Created by Ivan Wong for Clay Wolkin 2014-2015 
+ * Modified by Ivan Wong for Clay Wolkin 2014-2015 
  * 32-BIT DATAPATH - SHOULD ONLY HAVE 32 BIT SIGNALS ONLY
  *
  ******************************/
