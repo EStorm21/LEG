@@ -83,7 +83,7 @@ module controller(/// ------ From TOP ------
   logic        RegtoCPSR_D, RegtoCPSR_0E, RegtoCPSR_E, RegtoCPSR_M, RegtoCPSR_W;
   logic [1:0]  FlagWriteD, FlagWriteE, SignExtendD;
   logic        PCSrcD, PCSrcE, PCSrcM;
-  logic [3:0]  FlagsNext0E, FlagsNextE, FlagsNextM, FlagsNextW, CondE;
+  logic [3:0]  FlagsNext0E, FlagsNextE, FlagsNextM, FlagsNext0M, FlagsNextW, FlagsNext0W, CondE;
   logic        RegWritepreMuxE, RselectD, RSRselectD, LdrStrRtypeD;
   logic [1:0]  ResultSelectD;
   logic        ByteOrWordE, ByteOrWordM, LdrStr_HalfD, LdrStr_HalfE, LdrHalfwordE, LdrHalfwordM;
@@ -299,7 +299,7 @@ module controller(/// ------ From TOP ------
                                                    {restoreCPSR_M, RegtoCPSR_M});
   flopenr #(2) undef_exceptionEM(clk, reset, ~StallM, {undefE, SWI_E}, {undefM, SWI_M});
   flopenr #(11) flagM(clk, reset, ~StallM, {FlagsNextE, SetNextFlagsE, PSRtypeE, MSRmaskE}, 
-                                          {FlagsNextM, SetNextFlagsM, PSRtypeM, MSRmaskM});
+                                          {FlagsNext0M, SetNextFlagsM, PSRtypeM, MSRmaskM});
   flopenr #(14) CoProc_M(clk, reset, ~StallM, 
               {InstrE[19:16], InstrE[7:5], InstrE[3:0], (CoProc_WrEnE & CondExE), (CoProc_EnE & CondExE), (CoProc_FlagUpd_E & CondExE)}, 
               {CoProc_AddrM, CoProc_Op2M, CoProc_CRmM, CoProc_WrEnM, CoProc_EnM, CoProc_FlagUpd_M});
@@ -308,6 +308,8 @@ module controller(/// ------ From TOP ------
                                         ByteOrWordE, ByteOffsetE, LdrHalfwordE, Ldr_SignBE, Ldr_SignHE, HalfwordOffsetE, CPSRtoRegE},
                    {MemWriteM, MemtoRegM, RegWriteM, PCSrcM, ByteMaskM, 
                                         ByteOrWordM, ByteOffsetM, LdrHalfwordM, Ldr_SignBM, Ldr_SignHM, HalfwordOffsetM, CPSRtoRegM});
+
+  mux2 #(4)  flagM_mux(FlagsNext0M, CPSRW[31:28], CoProc_FlagUpd_W, FlagsNextM);
   
   // ====================================================================================================
   // ======================================= Writeback Stage ============================================

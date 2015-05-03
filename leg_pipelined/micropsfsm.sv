@@ -1201,6 +1201,7 @@ always_comb
 
 		multiply:begin
 					if(defaultInstrD[21] & ~defaultInstrD[23] & (defaultInstrD[7:4] == 4'b1001)) begin //accumulate short
+						debugText = "accumulate short";
 						InstrMuxD = 1;
 						doNotUpdateFlagD = 1;
 						uOpStallD = 0;
@@ -1212,8 +1213,7 @@ always_comb
 						regFileRz = {1'b0, // Control inital mux for RA1D
 									3'b001}; // 5th bit of WA3, RA2D and RA1D
 						nextState = ready;
-						//SD 5/1/2015 BUG Should set flags with defaultInstrD[20], and not all flags.
-						uOpInstrD = {defaultInstrD[31:28], 7'b0000100, defaultInstrD[21], //condition code, ADD funct, flag update
+						uOpInstrD = {defaultInstrD[31:28], 7'b0000100, defaultInstrD[20], //condition code, ADD funct, flag update
 									 4'b1111, defaultInstrD[19:16], //[19:16] is Rz
 									 8'b00000000, defaultInstrD[15:12]};
 					end
@@ -1233,6 +1233,7 @@ always_comb
 						uOpInstrD = {defaultInstrD[31:16], 4'b0, defaultInstrD[11:0]}; 
 					end
 					else if(((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:23] == 5'h01) & defaultInstrD[21])) begin //accumulate long
+						debugText = "accumulate long";
 						InstrMuxD = 1;
 						doNotUpdateFlagD = 1;
 						uOpStallD = 1;
@@ -1250,6 +1251,7 @@ always_comb
 								4'b1111, defaultInstrD[15:12], 8'b00000000, defaultInstrD[15:12]}; 
 					end
 					else begin
+						debugText = "multiply else";
 						nextState = ready;
 						InstrMuxD = 0;
 						doNotUpdateFlagD = 0;

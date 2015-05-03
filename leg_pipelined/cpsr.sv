@@ -24,6 +24,13 @@ module cpsr(input  logic        clk, reset,
   logic [31:0] MSR_update;
   logic [3:0]  FlagsUpdate;
 
+  /* IVAN MADE A HACKY SOLUTION TO FIX A BUG RIGHT BEFORE GRADUATION - DIDN'T HAVE TIME TO 
+  * MAKE IT MORE ELEGANT 
+  * here's the problem: after a mrc r15 instruction, we try and store flags
+  * but the feedback loop to the cond unit causes the flags to oscillate between two values...
+  * solution - add muxes to FlagsNextM and FlagsNextW
+  */
+
   assign FlagsUpdate = CoProc_FlagUpd_W ? ALUout[31:28] : FlagsNext;
 
   // CPSR: 3'b000
