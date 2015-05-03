@@ -5,14 +5,14 @@ mla2.o:     file format elf32-littlearm
 Disassembly of section .text:
 
 00000000 <start>:
-   0:	ea000011 	b	4c <reset>
-   4:	ea000017 	b	68 <undef>
-   8:	ea000013 	b	5c <swi>
-   c:	ea000016 	b	6c <pfa>
-  10:	ea000016 	b	70 <da>
+   0:	ea000014 	b	58 <reset>
+   4:	ea00001a 	b	74 <undef>
+   8:	ea000016 	b	68 <swi>
+   c:	ea000019 	b	78 <pfa>
+  10:	ea000019 	b	7c <da>
   14:	e1a00000 	nop			; (mov r0, r0)
-  18:	ea000015 	b	74 <irq>
-  1c:	ea000015 	b	78 <fiq>
+  18:	ea000018 	b	80 <irq>
+  1c:	ea000018 	b	84 <fiq>
 
 00000020 <prog>:
   20:	e3a00f49 	mov	r0, #292	; 0x124
@@ -25,32 +25,35 @@ Disassembly of section .text:
   3c:	e3a02000 	mov	r2, #0
   40:	e3a00014 	mov	r0, #20
   44:	e023c290 	mla	r3, r0, r2, ip
+  48:	e10f4000 	mrs	r4, CPSR
+  4c:	ee17ff7e 	mrc	15, 0, APSR_nzcv, cr7, cr14, {3}
+  50:	e10f5000 	mrs	r5, CPSR
 
-00000048 <stop>:
-  48:	eafffffe 	b	48 <stop>
+00000054 <stop>:
+  54:	eafffffe 	b	54 <stop>
 
-0000004c <reset>:
-  4c:	e3a01000 	mov	r1, #0
-  50:	e3a02000 	mov	r2, #0
-  54:	e0500000 	subs	r0, r0, r0
-  58:	eafffff0 	b	20 <prog>
+00000058 <reset>:
+  58:	e3a01000 	mov	r1, #0
+  5c:	e3a02000 	mov	r2, #0
+  60:	e0500000 	subs	r0, r0, r0
+  64:	eaffffed 	b	20 <prog>
 
-0000005c <swi>:
-  5c:	e0812002 	add	r2, r1, r2
-  60:	e1a01002 	mov	r1, r2
-  64:	e1b0f00e 	movs	pc, lr
+00000068 <swi>:
+  68:	e0812002 	add	r2, r1, r2
+  6c:	e1a01002 	mov	r1, r2
+  70:	e1b0f00e 	movs	pc, lr
 
-00000068 <undef>:
-  68:	eaffffec 	b	20 <prog>
-
-0000006c <pfa>:
-  6c:	eaffffeb 	b	20 <prog>
-
-00000070 <da>:
-  70:	eaffffea 	b	20 <prog>
-
-00000074 <irq>:
+00000074 <undef>:
   74:	eaffffe9 	b	20 <prog>
 
-00000078 <fiq>:
+00000078 <pfa>:
   78:	eaffffe8 	b	20 <prog>
+
+0000007c <da>:
+  7c:	eaffffe7 	b	20 <prog>
+
+00000080 <irq>:
+  80:	eaffffe6 	b	20 <prog>
+
+00000084 <fiq>:
+  84:	eaffffe5 	b	20 <prog>

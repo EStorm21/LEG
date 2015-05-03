@@ -19,6 +19,9 @@ prog:
 	mov r2, #0
 	mov r0, #20
 	mla r3, r0, r2, r12
+	mrs r4, CPSR
+	mrc     15, 0, r15, cr7, cr14, 3
+	mrs r5, CPSR
 
 stop:    b stop
 
