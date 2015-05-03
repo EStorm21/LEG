@@ -115,10 +115,10 @@ module controller(/// ------ From TOP ------
 
   // === Control Logic for Datapath ===
   always_comb
-  	casex(InstrD[27:26]) 
+    casex(InstrD[27:26]) 
       // If 2'b00, then this is data processing instruction
-  	  2'b00: if (InstrD[25]) ControlsD = 13'b00_00_1010_01000; // Data processing immediate   0x52
-  	         else begin   // (~InstrD[25])      
+      2'b00: if (InstrD[25]) ControlsD = 13'b00_00_1010_01000; // Data processing immediate   0x52
+             else begin   // (~InstrD[25])      
                 if (InstrD[7:4] == 4'b1001 & ~InstrD[24])       ControlsD = 13'b00_00_0010_01100; // Multiply                             
                 else if (InstrD[22] & InstrD[20] & LdrStr_HalfD)   ControlsD = 13'b00_11_1110_00010;  // LDH I-type
                 else if (~InstrD[22] & InstrD[20] & LdrStr_HalfD)  ControlsD = 13'b00_11_0110_00010;  // LDH R-type
@@ -130,17 +130,18 @@ module controller(/// ------ From TOP ------
                 // else if (InstrD[24:23] == 2'b10 & (&InstrD[21:16]) & ~(|InstrD[11:0]))  ControlsD = 13'b00_00_0  // MRS
                 else  ControlsD = 13'b00_00_0010_01000; // Data processing register
               end
-  	  2'b01: if (InstrD[25] & InstrD[4])           ControlsD = 13'b00_00_0000_00000;  // Exception: UNDEFINED INSTRUCTION
+      2'b01: if (InstrD[25] & InstrD[4])           ControlsD = 13'b00_00_0000_00000;  // Exception: UNDEFINED INSTRUCTION
              else if (InstrD[20] & ~InstrD[25])    ControlsD = 13'b00_01_1110_00010; // LDR, "I-type" 0xf0
              else if (InstrD[20] & InstrD[25])     ControlsD = 13'b00_01_0110_00010; // LDR, "R-Type" 0xb0
              else if (~InstrD[20] & ~InstrD[25])   ControlsD = 13'b10_01_1001_00010; // STR, "I-type"
              else if (~InstrD[20] & InstrD[25])    ControlsD = 13'b10_01_0001_00010; // STR, "R-type"
-  	  2'b10:                 ControlsD = 13'b01_10_1000_10000; // B                           0x344
-      2'b11: if(InstrD[25:24] == 2'b11)         ControlsD = 13'b00_00_0000_00000; // Exception: SWI
-             else if (CoProc_MCR_D)   ControlsD = 13'b10_00_0000_00000; // MCR (move to coprocessor from register)
-             else if (CoProc_MRC_D)   ControlsD = 13'b10_00_0010_00000; // MRC (move to register from coprocessor)
-  	  default:          ControlsD = 13'bx;      // unimplemented
-  	endcase
+      2'b10:                 ControlsD = 13'b01_10_1000_10000; // B                           0x344
+      2'b11: if(InstrD[25:24] == 2'b11)                     ControlsD = 13'b00_00_0000_00000; // Exception: SWI
+             else if (CoProc_MCR_D)                           ControlsD = 13'b10_00_0000_00000; // MCR (move to coprocessor from register)
+             else if (CoProc_MRC_D & InstrD[15:12] == 4'hF)   ControlsD = 13'b10_00_0000_00000; // MRC (R15 update flags only)
+             else if (CoProc_MRC_D)                           ControlsD = 13'b10_00_0010_00000; // MRC (move to register from coprocessor)
+      default:          ControlsD = 13'bx;      // unimplemented
+    endcase
 
   // Notes: ldrstrALUopD gives Loads and Stores the ability to choose alu function add or subtract.
   assign {RegSrcD, ImmSrcD,     // 2 bits each
