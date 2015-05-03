@@ -953,7 +953,7 @@ always_comb
 							1'b1,  			   	 	// P-bit (preindex)
 							1'b1,			 		// U-bit (ADD)
 							1'b0,					// B-bit (choose word addressing, not byte addressing)
-							1'b0,					// W-bit (Base register should NOT be updated)
+							1'b1,					// W-bit (Base register should NOT be updated)
 							defaultInstrD[20], 		// Differentiate between Load and Store | L = 1 for loads
 							4'b1111,				// Still read from the same Rn
 							Rd,						// 4 bit calculated register file to which the Load will be written back to
