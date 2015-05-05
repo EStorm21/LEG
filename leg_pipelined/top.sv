@@ -4,7 +4,7 @@ module top(input  logic        clk, reset,
   
   // ----- data cache -----
   logic        Valid, DStall, HWriteM, HRequestM, END, CLEAND;
-  logic [31:0] HRData, HWData, ReadDataM;
+  logic [31:0] HRData, HWData, ReadDataM, DANew;
   logic [3:0]  ByteMaskM;
 
   // ----- instr cache -----
@@ -75,14 +75,15 @@ module top(input  logic        clk, reset,
   instr_cache #(iBlockSize, iLines) 
     instr_cache(.clk(clk), .reset(reset), .enable(ENI), .invalidate(INVI),
       .BusReady(BusReadyF), .A(PCF), .HRData(HRData), .RD(InstrF), 
-      .PAReady(PAReady),  .IStall(IStall), .HAddrF(HAddrF), .HRequestF(HRequestF) );
+      .PhysTag(HAddr[31:12]), .PAReady(PAReadyF),  .IStall(IStall), .HAddrF(HAddrF), 
+      .HRequestF(HRequestF) );
 
   parameter dLines = 256;   // Number of lines in D$
   parameter dBlockSize = 4; // Blocksize of the D$
   // D$
   data_writeback_associative_cache #(dBlockSize, dLines)
     data_cache(.clk(clk), .reset(reset), .enable(END), .invalidate(INVD),
-      .clean(CLEAND), .PAReady(PAReady),
+      .clean(CLEAND), .PAReady(PAReadyM), .ANew(DANew),
       // .clean(CLEAND),
       .MemWriteM(MemWriteM), .MemtoRegM(MemtoRegM), .BusReady(BusReadyM), 
       .IStall(IStall), .PhysTag(HAddr[31:12]), .VirtA(DataAdrM), .WD(WriteDataM), 
@@ -93,6 +94,7 @@ module top(input  logic        clk, reset,
   // Create ahb arbiter
   ahb_arbiter ahb_arb(.HWriteM(HWriteM), .IStall(IStall), .DStall(DStall), .HReady(CPUHReady),
       .HAddrM(HAddrM), .HAddrF(HAddrF), .HRequestF(HRequestF), .HRequestM(HRequestM),
+      .PAReady  (PAReady), .PAReadyF (PAReadyF), .PAReadyM (PAReadyM),
       .HReadyF(BusReadyF), .HReadyM(BusReadyM),
       .HAddr(CPUHAddr), .HWrite(CPUHWrite), .HRequest(CPUHRequest));
 

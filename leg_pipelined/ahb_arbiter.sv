@@ -1,12 +1,15 @@
 module ahb_arbiter( input  logic HWriteM, IStall, DStall, HReady, HRequestF, 
-                    input  logic HRequestM,
+                    input  logic HRequestM, PAReady, 
                     input  logic [31:0] HAddrF, HAddrM,
                     output logic HReadyF, HReadyM, HWrite, HRequest,
+                    output logic PAReadyF, PAReadyM,
                     output logic [31:0] HAddr);
     
     assign HWrite = HWriteM & DStall;
     assign HReadyF = IStall & ~DStall & HReady;
     assign HReadyM = DStall & HReady;
+    assign PAReadyF = IStall & ~DStall & PAReady;
+    assign PAReadyM = DStall & PAReady;
     assign HAddr = DStall ? HAddrM : HAddrF;
     assign HRequest = HRequestF | HRequestM;
     // always_comb

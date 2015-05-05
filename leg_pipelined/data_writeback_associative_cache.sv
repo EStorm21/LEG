@@ -19,27 +19,24 @@ module data_writeback_associative_cache
     input  logic [3:0]  ByteMask, 
     input  logic [tagbits-1:0] PhysTag,
     output logic [31:0] HWData,
-    output logic [31:0] RD, HAddr,
+    output logic [31:0] RD, HAddr, ANew,
     output logic Stall, HRequestM, HWriteM);
 
-    // tagbits = 32 - byte offset - block offset - set bits
-    
-
     // Cache way outputs
-    logic                    W1V, W2V, W1EN, W2EN, W1WE, W2WE, CWE, W1D, W2D;
+    logic                    W1V, W2V, W1EN, W1WE, W2WE, CWE, W1D, W2D;
     logic [tagbits-1:0]      W1Tag, W2Tag, CachedTag;
     logic [blocksize*32-1:0] W1BlockOut, W2BlockOut;  // Way output (4 words)
     logic [31:0]             W1RD, W2RD, CacheOut, CachedAddr, CacheWD;
 
     // Input Control Logic 
-    logic [31:0]              A, ANew;
+    logic [31:0]              A;
     logic [3:0]               ActiveByteMask, WDSel;
     logic [blockbits-1:0]     NewWordOffset;
     logic                     ResetCounter, DirtyIn, vin;
     logic                     UseWD, BlockWE, cleanCurr;
     logic [$clog2(lines)-1:0] BlockNum;
     logic [setbits-1:0]       set;  
-    logic [tagbits-1:0]       Tag;   
+    logic [tagbits-1:0]       Tag, VirtTag;
     logic [1:0]               Counter, WordOffset, CacheRDSel;   
 
     // Output Control logic
@@ -51,12 +48,10 @@ module data_writeback_associative_cache
     mux2 #(8) CacheWDMux2(HRData[23:16], WD[23:16], WDSel[2], CacheWD[23:16]);
     mux2 #(8) CacheWDMux3(HRData[31:24], WD[31:24], WDSel[3], CacheWD[31:24]);
 
-    // PhysTag Mux
-    mux2 #(tagbits) TagMux(VirtA[31:31-tagbits+1], PhysTag, enable, Tag);
-
     // Create New Address using the counter as the word offset
     assign A = VirtA;
-    assign ANew = {VirtA[31:31-tagbits+1], BlockNum, NewWordOffset, A[1:0]};
+    assign VirtTag = VirtA[31:31-tagbits+1];
+    assign ANew = {VirtTag, BlockNum, NewWordOffset, VirtA[1:0]};
 
     // Create Cache memory. 
     // This module contains both way memories and LRU table
@@ -64,7 +59,7 @@ module data_writeback_associative_cache
     data_writeback_associative_cache_memory #(lines, tagbits, blocksize) dcmem(.*);
 
     // Cache Controller
-    assign WordOffset = A[3:2]; // Create word offset for cache controller
+    assign WordOffset = VirtA[3:2]; // Create word offset for cache controller
     // assign Tag = ANew[31:31-tagbits+1];  // PhysTag;
     data_writeback_associative_cache_controller #(lines, blocksize, tagbits) dcc(.*);
 
