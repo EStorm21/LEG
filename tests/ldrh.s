@@ -17,6 +17,9 @@ prog:
 	add r2, r2, #1
 	str r2, [r3, #2]
 	ldrh r4, [r3], #2	
+	str r8, [r3], #2048
+	pop     {r5, r6, r7, r8}
+
 
 stop:    b stop
 

@@ -3,7 +3,6 @@
 #enCaches
 #adc_r
 #and_r
-#and_r_exc
 #bic_r
 #cmn_r
 #cmp_r
@@ -16,7 +15,7 @@
 #sbc_r
 #teq_r
 #tst_r
-#adc_i
+##adc_i
 #and_i
 #bic_i
 #cmn_i

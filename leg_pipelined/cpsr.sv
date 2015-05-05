@@ -24,6 +24,13 @@ module cpsr(input  logic        clk, reset,
   logic [31:0] MSR_update;
   logic [3:0]  FlagsUpdate;
 
+  /* IVAN MADE A HACKY SOLUTION TO FIX A BUG RIGHT BEFORE GRADUATION - DIDN'T HAVE TIME TO 
+  * MAKE IT MORE ELEGANT 
+  * here's the problem: after a mrc r15 instruction, we try and store flags
+  * but the feedback loop to the cond unit causes the flags to oscillate between two values...
+  * solution - add muxes to FlagsNextM and FlagsNextW
+  */
+
   assign FlagsUpdate = CoProc_FlagUpd_W ? ALUout[31:28] : FlagsNext;
 
   // CPSR: 3'b000
@@ -187,28 +194,3 @@ module cpsr(input  logic        clk, reset,
     endcase
 
 endmodule
-
-
-
-
-// IF R == 0 and InAPrivilegedMode
-      /*else if (MSRmask[0] & ~MSRmask[4] & InAPrivilegedMode)  // MSRmask[4] = R
-        cpsr <= {cpsr[31:8], MSR_update};
-      else if (MSRmask[1] & ~MSRmask[4] & InAPrivilegedMode)  
-        cpsr <= {cpsr[31:16], MSR_update, cpsr[7:0]};
-      else if (MSRmask[2] & ~MSRmask[4] & InAPrivilegedMode)  
-        cpsr <= {cpsr[31:24], MSR_update, cpsr[15:0]};
-      else if (MSRmask[3] & ~MSRmask[4])  
-        cpsr <= {MSR_update, cpsr[23:0]};*/
-
-
-      // IF R == 1 and CurrentModeHasSPSR
-      /*
-      else if (MSRmask[0] & CurrentModeHasSPSR)
-        spsr[regnumber] <= {spsr[regnumber][31:8], MSR_update};
-      else if (MSRmask[1] & CurrentModeHasSPSR)
-        spsr[regnumber] <= {spsr[regnumber][31:16], MSR_update, spsr[regnumber][7:0]};
-      else if (MSRmask[2] & CurrentModeHasSPSR)
-        spsr[regnumber] <= {spsr[regnumber][31:24], MSR_update, spsr[regnumber][15:0]};
-      else if (MSRmask[3] & CurrentModeHasSPSR) 
-        spsr[regnumber] <= {MSR_update, spsr[regnumber][23:0]};*/
