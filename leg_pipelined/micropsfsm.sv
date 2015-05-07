@@ -156,6 +156,7 @@ always_comb
 							defaultInstrD[11:0]}; // This needs to be MOV R1 R2 << R3. 
 			end
 			// Start multiply
+            // SD 5/6/2015 Why have this case?
 			else if((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:21] == 7'h0)) begin 
 				debugText = "multiply";
 				InstrMuxD = 1;
@@ -189,7 +190,7 @@ always_comb
 				regFileRz = {1'b1, // Control inital mux for RA1D
 							3'b100}; // 5th bit of WA3, RA2D and RA1D
 				nextState = multiply;
-				uOpInstrD = {defaultInstrD[31:24], 1'b0, defaultInstrD[22], 1'b0, //convert to MUL, preserve sign
+				uOpInstrD = {defaultInstrD[31:24], 1'b0, defaultInstrD[22], 1'b0, //convert to MUL, preserve sign SD 5/6/2015 already 0 b/c cond
 							1'b0, 4'b1111, // [19:16] Rd
 							4'b0000, //SBZ
 							defaultInstrD[11:0]}; 
@@ -206,7 +207,7 @@ always_comb
 				addCarry = 0;
 				prevRSRstate = 0;
 				SignExtend = 2'b0;
-				multControlD = {defaultInstrD[22], 1'b0}; //unsigned/signed low
+				multControlD = {defaultInstrD[22], 1'b0}; //unsigned/signed low. [22]==1 if Signed
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
 				nextState = multiply;
@@ -225,7 +226,7 @@ always_comb
 				addCarry = 0;
 				prevRSRstate = 0;
 				SignExtend = 2'b0;
-				multControlD = {defaultInstrD[22], 1'b0}; //unsigned/signed low
+				multControlD = {defaultInstrD[22], 1'b0}; //unsigned/signed low. [22]==1 if Signed
 				regFileRz = {1'b1, // Control inital mux for RA1D
 							3'b100}; // 5th bit of WA3, RA2D and RA1D
 				nextState = multiply;
@@ -1088,7 +1089,7 @@ always_comb
 				keepZ = 1;
 				addCarry = 0;
 				addZero = 0;
-				multControlD = {defaultInstrD[22], 1'b0}; //unsigned/signed high
+				multControlD = {defaultInstrD[22], 1'b0}; //unsigned/signed high. SD 5/6/2015 not 1, but probably ok for just add
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b001}; // 5th bit of WA3, RA2D and RA1D
 				nextState = mlal1;
