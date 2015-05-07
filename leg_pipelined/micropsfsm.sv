@@ -693,7 +693,7 @@ always_comb
 
 		ls_halfword: begin
 			// immediate pre-indexed
-			if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b11 & defaultInstrD[7:4] == 4'b1011) begin 
+			if (defaultInstrD[24] & defaultInstrD[21] & defaultInstrD[7:4] == 4'b1011) begin 
 				InstrMuxD = 1;
 				doNotUpdateFlagD = 1;
 				uOpStallD = 0;
@@ -707,30 +707,6 @@ always_comb
 				addZero = 0;
 				nextState = ready;
 				// Store Rn <= Rz
-				uOpInstrD = {defaultInstrD[31:23], 
-							2'b10, // Only make one change: to normal immediate offset mode
-							defaultInstrD[20:12], 
-							4'b0, // make immediate 0
-							defaultInstrD[7:4],
-							4'b0
-							};
-			// SD 5/1/2015 Why separate case from just above?
-			// SD 5/1/2015 BUG: Not changing to immediate offset
-			// Register pre indexed
-			end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:8] == 4'b0000 & defaultInstrD[7:4] == 4'b1011) begin
-				InstrMuxD = 1;
-				doNotUpdateFlagD = 1;
-				uOpStallD = 0;
-				prevRSRstate = 0;
-				addCarry = 0;
-				keepZ = 0;
-				addZero = 0;
-				regFileRz = {1'b0, // Control inital mux for RA1D
-							3'b000}; // 5th bit of WA3, RA2D and RA1D
-				noRotate = 0;
-				ldrstrRtype = 0;
-				nextState = ready;
-				// Store Rd <= addr( updatedRn ) 
 				uOpInstrD = {defaultInstrD[31:23], 
 							2'b10, // Only make one change: to normal immediate offset mode
 							defaultInstrD[20:12], 
@@ -757,10 +733,8 @@ always_comb
 							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + imm 
 							4'b0, defaultInstrD[11:8], defaultInstrD[3:0] // Immediate
 							};
-			// SD 5/1/2015 Same condition as 2nd above?
-			// SD 5/1/2015 BUG: condition is pre-indexed, code is post-indexed. 
-			//                  compare to register post-indexed in ready state
-			end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:4] == 8'h0B) begin
+			// Post-indexed register
+			end else if (~defaultInstrD[24] & defaultInstrD[22:21] == 2'b00 & defaultInstrD[11:4] == 8'h0B) begin
 				InstrMuxD = 1;
 				doNotUpdateFlagD = 1;
 				uOpStallD = 0;
@@ -776,7 +750,7 @@ always_comb
 				uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
 							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
 							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + Rm
-							8'b0, defaultInstrD[3:0] // Immediate
+							8'b0, defaultInstrD[3:0] // Rm
 							};
 			end
 
