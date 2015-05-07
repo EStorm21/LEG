@@ -475,30 +475,9 @@ always_comb
 							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + imm 
 							defaultInstrD[11:0] // Immediate
 							};
-					// Register pre indexed ldrb/strb
-					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
-						debugText = "ldr/str/ldrb/strb pre-indexed register";
-						nextState = ls_word_byte;
-						InstrMuxD = 1;
-						ldrstrRtype = 0;
-						doNotUpdateFlagD = 1;
-						uOpStallD = 1;
-						addCarry = 0;
-						keepZ = 0;
-						addZero = 0;
-						SignExtend = 2'b0;
-						regFileRz = {1'b0, // Control inital mux for RA1D
-									3'b000}; // 5th bit of WA3, RA2D and RA1D
-						// (1) Rn = Rn + Rm
-						uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
-							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
-							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + Rm 
-							8'b0, defaultInstrD[3:0] // add Rm
-							};
-					// Scaled register pre indexed ldrb/strb
-					// SD 5/1/2015: Why separate case from just above?
+					// (Scaled) register pre indexed ldrb/strb
 					end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & ~defaultInstrD[4]) begin
-						debugText = "ldr/str/ldrb/strb pre-indexed scaled register";
+						debugText = "ldr/str/ldrb/strb pre-indexed (scaled) register";
 						nextState = ls_word_byte;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
@@ -516,9 +495,10 @@ always_comb
 							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + scaled(Rm) 
 							defaultInstrD[11:0] // add scaled(Rm)
 							};
-					// immediate post indexed ldrb/strb
-					end else if (defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin
-						debugText = "ldr/str/ldrb/strb post indexed immediate";
+					// post indexed ldrb/strb
+					// 	SD 5/6/2015 Maybe should not check [21]. Still valid post-indexed, just privilege change
+					end else if (~defaultInstrD[24] & ~defaultInstrD[21]) begin
+						debugText = "ldr/str/ldrb/strb post indexed";
 						nextState = ls_word_byte;
 						InstrMuxD = 1;
 						ldrstrRtype = 0;
@@ -531,48 +511,6 @@ always_comb
 						regFileRz = {1'b0, // Control inital mux for RA1D
 									3'b000}; // 5th bit of WA3, RA2D and RA1D
 						// Load immedate byte/word
-						uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
-								defaultInstrD[23:22], 1'b0, 	// 
-								defaultInstrD[20], defaultInstrD[19:16],  // Load from saved register
-								defaultInstrD[15:12], 		   // Store into Rd
-								12'b0};	
-					// Register post indexed ldrb/strb
-					// SD 5/1/2015: Why separate case from just above?
-					end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
-						debugText = "ldr/str/ldrb/strb post indexed register";
-						nextState = ls_word_byte;
-						InstrMuxD = 1;
-						ldrstrRtype = 0;
-						doNotUpdateFlagD = 1;
-						uOpStallD = 1;
-						keepZ = 0;
-						addZero = 0;
-						SignExtend = 2'b0;
-						addCarry = 0;
-						regFileRz = {1'b0, // Control inital mux for RA1D
-									3'b000}; // 5th bit of WA3, RA2D and RA1D
-						// Load immediate byte/word
-						uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
-								defaultInstrD[23:22], 1'b0, 	// 
-								defaultInstrD[20], defaultInstrD[19:16],  // Load from saved register
-								defaultInstrD[15:12], 		   // Store into Rd
-								12'b0};	
-					// Scaled register post indexed ldrb/strb
-					// SD 5/1/2015: Why separate case from just above?
-					end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
-						debugText = "ldr/str/ldrb/strb post indexed scaled register";
-						nextState = ls_word_byte;
-						InstrMuxD = 1;
-						ldrstrRtype = 0;
-						doNotUpdateFlagD = 1;
-						uOpStallD = 1;
-						addCarry = 0;
-						keepZ = 0;
-						addZero = 0;
-						regFileRz = {1'b0, // Control inital mux for RA1D
-									3'b000}; // 5th bit of WA3, RA2D and RA1D
-						SignExtend = 2'b0;
-						// Load immediate byte/word
 						uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
 								defaultInstrD[23:22], 1'b0, 	// 
 								defaultInstrD[20], defaultInstrD[19:16],  // Load from saved register
@@ -646,54 +584,14 @@ always_comb
 								defaultInstrD[23:20], 4'b1111, // Load Rz
 								defaultInstrD[15:12], 		   // Store into Rd
 								12'b0};						   // no offset
-				// immediate pre-indexed
-				end else if (defaultInstrD[25:24] == 2'b01 & defaultInstrD[21]) begin
-					debugText = "ldr/str/ldrb/strb cycle 2 immediate pre index";
+				// pre-indexed
+				end else if (defaultInstrD[24] & defaultInstrD[21]) begin
+					debugText = "ldr/str/ldrb/strb cycle 2 pre index";
 					nextState = ready;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
 					doNotUpdateFlagD = 1;
 					addCarry = 0;
-					keepZ = 0;
-					addZero = 0;
-					uOpStallD = 0;
-					regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of WA3, RA2D and RA1D
-					// Load immediate byte/word
-					uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
-								defaultInstrD[23:22], 1'b0, 	// 
-								defaultInstrD[20], defaultInstrD[19:16],  // Load from saved register
-								defaultInstrD[15:12], 		   // Store into Rd
-								12'b0};	
-				// register pre-indexed
-				// SD 5/1/2015 Why separate case from just above?
-				end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
-					debugText = "ldr/str/ldrb/strb cycle 2 register pre index";
-					nextState = ready;
-					InstrMuxD = 1;
-					ldrstrRtype = 0;
-					doNotUpdateFlagD = 1;
-					addCarry = 0;
-					keepZ = 0;
-					addZero = 0;
-					uOpStallD = 0;
-					regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of WA3, RA2D and RA1D
-					// Load immediate byte/word
-					uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
-								defaultInstrD[23:22], 1'b0, 	// 
-								defaultInstrD[20], defaultInstrD[19:16],  // Load from saved register
-								defaultInstrD[15:12], 		   // Store into Rd
-								12'b0};	
-				// scaled register pre-indexed
-				// SD 5/1/2015 Why separate case from just above?
-				end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & ~defaultInstrD[4]) begin
-					debugText = "ldr/str/ldrb/strb cycle 2 scaled register pre index";
-					nextState = ready;
-					InstrMuxD = 1;
-					ldrstrRtype = 0;
-					addCarry = 0;
-					doNotUpdateFlagD = 1;
 					keepZ = 0;
 					addZero = 0;
 					uOpStallD = 0;
@@ -725,10 +623,10 @@ always_comb
 							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + imm 
 							defaultInstrD[11:0] // Immediate
 							};
-				// register post indexed
-				// SD 5/1/2015 Why separate case from just above?
-				end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & defaultInstrD[11:4] == 8'b0) begin
-					debugText = "ldr/str/ldrb/strb cycle 2 register post index";
+				// (scaled) register post indexed
+				// SD 5/6/2015 maybe can combine with above
+				end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
+					debugText = "ldr/str/ldrb/strb cycle 2 (scaled) register post index";
 					nextState = ready;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -744,26 +642,6 @@ always_comb
 							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
 							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + Rm 
 							8'b0, defaultInstrD[3:0] // add Rm
-							};
-				// scaled register post indexed
-				// SD 5/1/2015 Why separate case from just above?
-				end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
-					debugText = "ldr/str/ldrb/strb cycle 2 scaled register post index";
-					nextState = ready;
-					InstrMuxD = 1;
-					ldrstrRtype = 0;
-					addCarry = 0;
-					keepZ = 0;
-					addZero = 0;
-					doNotUpdateFlagD = 1;
-					uOpStallD = 0;
-					regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of WA3, RA2D and RA1D
-					// (1) Rn = Rn + scaled(Rm)
-					uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
-							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
-							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + scaled(Rm) 
-							defaultInstrD[11:0] // add scaled(Rm)
 							};
 				end else begin // NOT POST-INCREMENT OR !
 						debugText = "ldr/str/ldrb/strb cycle 2 else case";
