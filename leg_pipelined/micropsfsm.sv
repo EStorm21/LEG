@@ -565,105 +565,103 @@ always_comb
 			end
 
 		ls_word_byte: begin
-			if(defaultInstrD[27:26] == 2'b01) begin // & defaultInstrD[22]
-				// scaled register
-				if(defaultInstrD[25:24] == 2'b11 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
-					debugText = "ldr/str/ldrb/strb cycle 2 scaled register";
+			// scaled register
+			if(defaultInstrD[25:24] == 2'b11 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
+				debugText = "ldr/str/ldrb/strb cycle 2 scaled register";
+				nextState = ready;
+				InstrMuxD = 1;
+				ldrstrRtype = 0;
+				addCarry = 0;
+				doNotUpdateFlagD = 1;
+				keepZ = 0;
+				addZero = 0;
+				uOpStallD = 0;
+				regFileRz = {1'b0, // Control inital mux for RA1D
+							3'b001}; // 5th bit of WA3, RA2D and RA1D
+				// Load immedate byte/word
+				uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
+							defaultInstrD[23:20], 4'b1111, // Load Rz
+							defaultInstrD[15:12], 		   // Store into Rd
+							12'b0};						   // no offset
+			// pre-indexed
+			end else if (defaultInstrD[24] & defaultInstrD[21]) begin
+				debugText = "ldr/str/ldrb/strb cycle 2 pre index";
+				nextState = ready;
+				InstrMuxD = 1;
+				ldrstrRtype = 0;
+				doNotUpdateFlagD = 1;
+				addCarry = 0;
+				keepZ = 0;
+				addZero = 0;
+				uOpStallD = 0;
+				regFileRz = {1'b0, // Control inital mux for RA1D
+							3'b000}; // 5th bit of WA3, RA2D and RA1D
+				// Load immediate byte/word
+				uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
+							defaultInstrD[23:22], 1'b0, 	// 
+							defaultInstrD[20], defaultInstrD[19:16],  // Load from saved register
+							defaultInstrD[15:12], 		   // Store into Rd
+							12'b0};	
+			// immediate post indexed
+			end else if (defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin
+				debugText = "ldr/str/ldrb/strb cycle 2 immediate post index";
+				nextState = ready;
+				InstrMuxD = 1;
+				ldrstrRtype = 0;
+				addCarry = 0;
+				noRotate = 1;
+				keepZ = 0;
+				addZero = 0;
+				doNotUpdateFlagD = 1;
+				uOpStallD = 0;
+				regFileRz = {1'b0, // Control inital mux for RA1D
+							3'b000}; // 5th bit of WA3, RA2D and RA1D
+				// (1) Rn = Rn + Imm
+				uOpInstrD = {defaultInstrD[31:28], 3'b001, // I-Type Data processing instr
+						1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
+						defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + imm 
+						defaultInstrD[11:0] // Immediate
+						};
+			// (scaled) register post indexed
+			// SD 5/6/2015 maybe can combine with above
+			end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
+				debugText = "ldr/str/ldrb/strb cycle 2 (scaled) register post index";
+				nextState = ready;
+				InstrMuxD = 1;
+				ldrstrRtype = 0;
+				addCarry = 0;
+				keepZ = 0;
+				addZero = 0;
+				doNotUpdateFlagD = 1;
+				uOpStallD = 0;
+				regFileRz = {1'b0, // Control inital mux for RA1D
+							3'b000}; // 5th bit of WA3, RA2D and RA1D
+				// (1) Rn = Rn + Rm
+				uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
+						1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
+						defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + Rm 
+						8'b0, defaultInstrD[3:0] // add Rm
+						};
+			end else begin // NOT POST-INCREMENT OR !
+					debugText = "ldr/str/ldrb/strb cycle 2 else case";
 					nextState = ready;
-					InstrMuxD = 1;
-					ldrstrRtype = 0;
-					addCarry = 0;
-					doNotUpdateFlagD = 1;
-					keepZ = 0;
-					addZero = 0;
+					InstrMuxD = 0;
+					doNotUpdateFlagD = 0;
 					uOpStallD = 0;
-					regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b001}; // 5th bit of WA3, RA2D and RA1D
-					// Load immedate byte/word
-					uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
-								defaultInstrD[23:20], 4'b1111, // Load Rz
-								defaultInstrD[15:12], 		   // Store into Rd
-								12'b0};						   // no offset
-				// pre-indexed
-				end else if (defaultInstrD[24] & defaultInstrD[21]) begin
-					debugText = "ldr/str/ldrb/strb cycle 2 pre index";
-					nextState = ready;
-					InstrMuxD = 1;
-					ldrstrRtype = 0;
-					doNotUpdateFlagD = 1;
-					addCarry = 0;
-					keepZ = 0;
-					addZero = 0;
-					uOpStallD = 0;
-					regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of WA3, RA2D and RA1D
-					// Load immediate byte/word
-					uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
-								defaultInstrD[23:22], 1'b0, 	// 
-								defaultInstrD[20], defaultInstrD[19:16],  // Load from saved register
-								defaultInstrD[15:12], 		   // Store into Rd
-								12'b0};	
-				// immediate post indexed
-				end else if (defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin
-					debugText = "ldr/str/ldrb/strb cycle 2 immediate post index";
-					nextState = ready;
-					InstrMuxD = 1;
-					ldrstrRtype = 0;
 					addCarry = 0;
 					noRotate = 1;
+					prevRSRstate = 0;
+					keepV = 0;
 					keepZ = 0;
 					addZero = 0;
-					doNotUpdateFlagD = 1;
-					uOpStallD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of WA3, RA2D and RA1D
-					// (1) Rn = Rn + Imm
-					uOpInstrD = {defaultInstrD[31:28], 3'b001, // I-Type Data processing instr
-							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
-							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + imm 
-							defaultInstrD[11:0] // Immediate
-							};
-				// (scaled) register post indexed
-				// SD 5/6/2015 maybe can combine with above
-				end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
-					debugText = "ldr/str/ldrb/strb cycle 2 (scaled) register post index";
-					nextState = ready;
-					InstrMuxD = 1;
+								3'b000}; // 5th bit of RA2D and RA1D
+					uOpInstrD = {defaultInstrD};
+					LDMSTMforward = 0;
+					noRotate = 0;
+					STR_cycle = 2'b0;
 					ldrstrRtype = 0;
-					addCarry = 0;
-					keepZ = 0;
-					addZero = 0;
-					doNotUpdateFlagD = 1;
-					uOpStallD = 0;
-					regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of WA3, RA2D and RA1D
-					// (1) Rn = Rn + Rm
-					uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
-							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
-							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + Rm 
-							8'b0, defaultInstrD[3:0] // add Rm
-							};
-				end else begin // NOT POST-INCREMENT OR !
-						debugText = "ldr/str/ldrb/strb cycle 2 else case";
-						nextState = ready;
-						InstrMuxD = 0;
-						doNotUpdateFlagD = 0;
-						uOpStallD = 0;
-						addCarry = 0;
-						noRotate = 1;
-						prevRSRstate = 0;
-						keepV = 0;
-						keepZ = 0;
-						addZero = 0;
-						regFileRz = {1'b0, // Control inital mux for RA1D
-									3'b000}; // 5th bit of RA2D and RA1D
-						uOpInstrD = {defaultInstrD};
-						LDMSTMforward = 0;
-						noRotate = 0;
-						STR_cycle = 2'b0;
-						ldrstrRtype = 0;
-				end 
-			end
+			end 
 		end
 
 		strHalf: begin
@@ -997,21 +995,19 @@ always_comb
 			end
 		end
 		bl:begin
-				if(defaultInstrD[27:24]== 4'b1011) begin
-					InstrMuxD = 1;
-					doNotUpdateFlagD = 0;
-					uOpStallD = 0;
-					prevRSRstate = 0;
-					keepV = 0;
-					addCarry = 0;
-					keepZ = 0;
-					addZero = 0;
-					LDMSTMforward = 0;
-					regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b000}; // 5th bit of WA3, RA2D and RA1D
-					nextState = ready;
-					uOpInstrD = {defaultInstrD[31:25], 1'b0, defaultInstrD[23:0]};//branch without link
-				end
+				InstrMuxD = 1;
+				doNotUpdateFlagD = 0;
+				uOpStallD = 0;
+				prevRSRstate = 0;
+				keepV = 0;
+				addCarry = 0;
+				keepZ = 0;
+				addZero = 0;
+				LDMSTMforward = 0;
+				regFileRz = {1'b0, // Control inital mux for RA1D
+							3'b000}; // 5th bit of WA3, RA2D and RA1D
+				nextState = ready;
+				uOpInstrD = {defaultInstrD[31:25], 1'b0, defaultInstrD[23:0]};//branch without link
 		   end
 
 		blx:begin
@@ -1033,22 +1029,20 @@ always_comb
 		   end
 
 		rsr:begin
-				if(defaultInstrD[27:25] == 3'b0 && defaultInstrD[7] == 0 && defaultInstrD[4] == 1) begin 
-					InstrMuxD = 1;
-					doNotUpdateFlagD = 0;
-					uOpStallD = 0;
-					prevRSRstate = 1;
-					keepV = 0;
-					addCarry = 0;
-					keepZ = 0;
-					addZero = 0;
-					LDMSTMforward = 0;
-					regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b010}; // 5th bit of WA3, RA2D and RA1D
-					nextState = ready;
-					uOpInstrD = {defaultInstrD[31:12], // keep the first 12 bits the same, Rd and Rn are included
-								 8'b0, 4'b1111}; // No shifting, use source Rz
-				end
+				InstrMuxD = 1;
+				doNotUpdateFlagD = 0;
+				uOpStallD = 0;
+				prevRSRstate = 1;
+				keepV = 0;
+				addCarry = 0;
+				keepZ = 0;
+				addZero = 0;
+				LDMSTMforward = 0;
+				regFileRz = {1'b0, // Control inital mux for RA1D
+							3'b010}; // 5th bit of WA3, RA2D and RA1D
+				nextState = ready;
+				uOpInstrD = {defaultInstrD[31:12], // keep the first 12 bits the same, Rd and Rn are included
+							 8'b0, 4'b1111}; // No shifting, use source Rz
 			end
 
 		multiply:begin
