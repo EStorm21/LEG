@@ -116,7 +116,7 @@ def backtraceSummary(title, execct, ID):
 
 def getBugIDAndFile(run_dir):
 	bugDir = os.path.join(run_dir,"bugs")
-	if not os.path.isDir(bugDir):
+	if not os.path.isdir(bugDir):
 		os.mkdir(bugDir)
 
 	bugDirCt = len(os.listdir(bugDir))

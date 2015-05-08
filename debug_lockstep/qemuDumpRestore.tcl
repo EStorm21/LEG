@@ -11,9 +11,12 @@ set dumpDataFile $dumpDir$dumpDataName.dat
 set dumpStateName "qemu_state_dump"
 set dumpStateFile $dumpDir$dumpStateName
 
+set ignoredLogName "wlffile.wlf"
+set ignoredLogFile $dumpDir$ignoredLogName
+
 file copy -force $dumpDataFile "/proj/leg/sim/simTest.dat"; list
-vsim -quiet -wlftlim {1 ns} work.testbench; list
-#  -wlf test.wlf 
+vsim -quiet -wlf ignoredLogFile -wlftlim {1 ns} work.testbench; list
+
 nolog -all
 transcript off
 set temp_t 0
