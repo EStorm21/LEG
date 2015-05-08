@@ -17,11 +17,14 @@ def getQemuInstrCt():
 	timeval = int(countMatch.group(1),16)
 	return int(math.ceil(timeval * 1000. / 24.))
 
-instrParser = re.compile('\\$\\d+ = (.+)')
+dataParser = re.compile('\\$\\d+ = (.+)')
+def getExpr(expr):
+	dataMatch = dataParser.match(gdb.execute('p/x {}'.format(expr), to_string=True))
+	data = int(dataMatch.group(1),16)
+	return data
+
 def getQemuInstr():
-	instrMatch = instrParser.match(gdb.execute('p/x $pc', to_string=True))
-	instr = int(instrMatch.group(1),16)
-	return instr
+	return getExpr('$pc')
 
 def rIdxToMSIdx(idx):
 	#return 15-idx
@@ -123,13 +126,18 @@ def getBugIDAndFile(run_dir):
 
 	return bugDirCt, os.path.join(bugDir,"{}.buglog".format(bugDirCt))
 
+asmInstrParser = re.compile(".+>:\\s+(.+)")
 def handleAbort(title, previnstr, prevstate, mstime, msstate, execct, prevexecct, run_dir, found_bugs):
 	trace = backtrace(previnstr, prevstate, mstime, msstate, execct)
 	print "\n\n\n{}\n------------\n".format(title)
 	print trace
 
 	#Check if we have seen this bug before:
-	instr = getQemuInstr()
+	#instr = getExpr('*((int)($pc-0x4))')
+	instr_str = gdb.execute('x/1i $pc-0x4', to_string=True)
+	instr_asm_match = asmInstrParser.match(instr_str)
+	instr = instr_asm_match.group(1)
+	print instr
 	if instr not in found_bugs:
 		found_bugs.add(instr)
 
@@ -147,8 +155,11 @@ def handleAbort(title, previnstr, prevstate, mstime, msstate, execct, prevexecct
 			f.write('\n\n\n---------------\n\n\n')
 			f.write('{}\n'.format(title))
 			f.write(trace)
+
+		print "Wrote this bug to {}".format(bugFn)
 	else:
 		print "Skipped writing this bug to file (already found)"
+	print ""
 
 
 def preex_fn_stop_interrupt():
