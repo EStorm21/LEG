@@ -13,6 +13,8 @@ import datetime
 import lockstep, checkpoint
 
 OUTPUT_DIR = "output"
+if not os.path.isdir(OUTPUT_DIR):
+	os.mkdir(OUTPUT_DIR)
 
 def get_open_port():
 	import socket
