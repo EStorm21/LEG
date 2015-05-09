@@ -1,0 +1,304 @@
+/dts-v1/;
+
+/ {
+	#address-cells = <0x1>;
+	#size-cells = <0x1>;
+	model = "LEG Minimal (Integrator/CP Compatible)";
+	compatible = "hmc,leg-minimal", "arm,integrator-cp";
+
+	chosen {
+		bootargs = "console=ttyAMA0 earlyprintk rdinit=/sbin/init";
+	};
+
+	aliases {
+	};
+
+	memory {
+		device_type = "memory";
+		reg = <0x0 0x10000000>;
+	};
+
+	core-module@10000000 {
+		compatible = "arm,core-module-integrator", "syscon";
+		reg = <0x10000000 0x200>;
+
+		led@0c.0 {
+			compatible = "register-bit-led";
+			offset = <0xc>;
+			mask = <0x1>;
+			label = "integrator:core_module";
+			linux,default-trigger = "cpu0";
+			default-state = "on";
+		};
+
+		xtal24mhz@24M {
+			#clock-cells = <0x0>;
+			compatible = "fixed-clock";
+			clock-frequency = <0x16e3600>;
+			linux,phandle = <0x1>;
+			phandle = <0x1>;
+		};
+/*
+		cm_aux_osc@25M {
+			#clock-cells = <0x0>;
+			compatible = "arm,integrator-cm-auxosc";
+			clocks = <0x1>;
+			linux,phandle = <0x8>;
+			phandle = <0x8>;
+		};
+*/
+/*
+		kmiclk@1M {
+			#clock-cells = <0x0>;
+			compatible = "fixed-factor-clock";
+			clock-div = <0x3>;
+			clock-mult = <0x1>;
+			clocks = <0x1>;
+			linux,phandle = <0x7>;
+			phandle = <0x7>;
+		};
+*/
+		timclk@1M {
+			#clock-cells = <0x0>;
+			compatible = "fixed-factor-clock";
+			clock-div = <0x18>;
+			clock-mult = <0x1>;
+			clocks = <0x1>;
+			linux,phandle = <0x4>;
+			phandle = <0x4>;
+		};
+	};
+/*
+	ebi@12000000 {
+		compatible = "arm,external-bus-interface";
+		reg = <0x12000000 0x100>;
+	};
+*/
+	timer@13000000 {
+		reg = <0x13000000 0x100>;
+		interrupt-parent = <0x2>;
+		interrupts = <0x5>;
+		compatible = "arm,integrator-cp-timer";
+		clocks = <0x3>;
+	};
+
+	timer@13000100 {
+		reg = <0x13000100 0x100>;
+		interrupt-parent = <0x2>;
+		interrupts = <0x6>;
+		compatible = "arm,integrator-cp-timer";
+		clocks = <0x4>;
+	};
+
+	timer@13000200 {
+		reg = <0x13000200 0x100>;
+		interrupt-parent = <0x2>;
+		interrupts = <0x7>;
+		compatible = "arm,integrator-cp-timer";
+		clocks = <0x4>;
+	};
+
+	pic@14000000 {
+		compatible = "arm,versatile-fpga-irq";
+		#interrupt-cells = <0x1>;
+		interrupt-controller;
+		reg = <0x14000000 0x100>;
+		clear-mask = <0xffffffff>;
+		valid-mask = <0x1fc003ff>;
+		linux,phandle = <0x2>;
+		phandle = <0x2>;
+	};
+/*
+	flash@24000000 {
+		compatible = "cfi-flash";
+		reg = <0x24000000 0x2000000>;
+	};
+*/
+	fpga {
+		compatible = "arm,amba-bus", "simple-bus";
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+		ranges;
+		interrupt-parent = <0x2>;
+
+		rtc@15000000 {
+			reg = <0x15000000 0x1000>;
+			interrupts = <0x8>;
+			compatible = "arm,pl031", "arm,primecell";
+			clocks = <0x5>;
+			clock-names = "apb_pclk";
+		};
+
+		uart@16000000 {
+			reg = <0x16000000 0x1000>;
+			interrupts = <0x1>;
+			compatible = "arm,pl011", "arm,primecell";
+			clocks = <0x6 0x5>;
+			clock-names = "uartclk", "apb_pclk";
+		};
+/*
+		uart@17000000 {
+			reg = <0x17000000 0x1000>;
+			interrupts = <0x2>;
+			compatible = "arm,pl011", "arm,primecell";
+			clocks = <0x6 0x5>;
+			clock-names = "uartclk", "apb_pclk";
+		};
+*/
+/*		kmi@18000000 {
+			reg = <0x18000000 0x1000>;
+			interrupts = <0x3>;
+			compatible = "arm,pl050", "arm,primecell";
+			clocks = <0x7 0x5>;
+			clock-names = "KMIREFCLK", "apb_pclk";
+		};
+
+		kmi@19000000 {
+			reg = <0x19000000 0x1000>;
+			interrupts = <0x4>;
+			compatible = "arm,pl050", "arm,primecell";
+			clocks = <0x7 0x5>;
+			clock-names = "KMIREFCLK", "apb_pclk";
+		};
+*/
+
+		syscon {
+			compatible = "syscon";
+			reg = <0x1a000000 0x10>;
+
+			led@04.0 {
+				compatible = "register-bit-led";
+				offset = <0x4>;
+				mask = <0x1>;
+				label = "integrator:green0";
+				linux,default-trigger = "heartbeat";
+				default-state = "on";
+			};
+
+			led@04.1 {
+				compatible = "register-bit-led";
+				offset = <0x4>;
+				mask = <0x2>;
+				label = "integrator:yellow";
+				default-state = "off";
+			};
+
+			led@04.2 {
+				compatible = "register-bit-led";
+				offset = <0x4>;
+				mask = <0x4>;
+				label = "integrator:red";
+				default-state = "off";
+			};
+
+			led@04.3 {
+				compatible = "register-bit-led";
+				offset = <0x4>;
+				mask = <0x8>;
+				label = "integrator:green1";
+				default-state = "off";
+			};
+		};
+/*
+		mmc@1c000000 {
+			compatible = "arm,pl180", "arm,primecell";
+			reg = <0x1c000000 0x1000>;
+			interrupts = <0x17 0x18>;
+			max-frequency = <0x7de31>;
+			clocks = <0x6 0x5>;
+			clock-names = "mclk", "apb_pclk";
+		};
+
+		aaci@1d000000 {
+			compatible = "arm,pl041", "arm,primecell";
+			reg = <0x1d000000 0x1000>;
+			interrupts = <0x19>;
+			clocks = <0x5>;
+			clock-names = "apb_pclk";
+		};
+
+		clcd@c0000000 {
+			compatible = "arm,pl110", "arm,primecell";
+			reg = <0xc0000000 0x1000>;
+			interrupts = <0x16>;
+			clocks = <0x8 0x5>;
+			clock-names = "clcd", "apb_pclk";
+		};
+*/
+	};
+
+	xtal24.576@24.576M {
+		#clock-cells = <0x0>;
+		compatible = "fixed-clock";
+		clock-frequency = <0x1770000>;
+		linux,phandle = <0x9>;
+		phandle = <0x9>;
+	};
+/*
+	aaci_bitclk@12.288M {
+		#clock-cells = <0x0>;
+		compatible = "fixed-factor-clock";
+		clock-div = <0x2>;
+		clock-mult = <0x1>;
+		clocks = <0x9>;
+	};
+*/
+	xtal25mhz@25M {
+		#clock-cells = <0x0>;
+		compatible = "fixed-clock";
+		clock-frequency = <0x17d7840>;
+		linux,phandle = <0x3>;
+		phandle = <0x3>;
+	};
+
+	uartclk@14.74M {
+		#clock-cells = <0x0>;
+		compatible = "fixed-clock";
+		clock-frequency = <0xe10000>;
+		linux,phandle = <0x6>;
+		phandle = <0x6>;
+	};
+
+	pclk@0 {
+		#clock-cells = <0x0>;
+		compatible = "fixed-clock";
+		clock-frequency = <0x0>;
+		linux,phandle = <0x5>;
+		phandle = <0x5>;
+	};
+
+	syscon {
+		compatible = "arm,integrator-cp-syscon";
+		reg = <0xcb000000 0x100>;
+	};
+/*
+	cic@10000040 {
+		compatible = "arm,versatile-fpga-irq";
+		#interrupt-cells = <0x1>;
+		interrupt-controller;
+		reg = <0x10000040 0x100>;
+		clear-mask = <0xffffffff>;
+		valid-mask = <0x7>;
+	};
+*/
+/*
+	sic@ca000000 {
+		compatible = "arm,versatile-fpga-irq";
+		interrupt-parent = <0x2>;
+		interrupts = <0x1a>;
+		#interrupt-cells = <0x1>;
+		interrupt-controller;
+		reg = <0xca000000 0x100>;
+		clear-mask = <0xfff>;
+		valid-mask = <0xfff>;
+	};
+*/
+/*
+	ethernet@c8000000 {
+		compatible = "smsc,lan91c111";
+		reg = <0xc8000000 0x10>;
+		interrupt-parent = <0x2>;
+		interrupts = <0x1b>;
+	};
+*/
+};
