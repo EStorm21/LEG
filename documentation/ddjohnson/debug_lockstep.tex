@@ -1,0 +1,38 @@
+% TODO
+\section{debug_lockstep}
+
+\subsection{Brief Overview}
+
+This is a tool I made to enable fast debugging and testing of the Linux kernel by comparing the registers of qemu with those of the LEG processor simulated in ModelSim.
+
+\subsection{All Relevant Files and Brief Descriptions}
+
+\begin{itemize}
+\item \textbf{checkpoint.py} Python file that handles creation of checkpoints.
+\item \textbf{checkpoint.tcl} Simple tcl file to create a checkpoint.
+\item \textbf{debug.py} Python file that is executed within GDB and sets up the debugging commands.
+\item \textbf{debug.sh} Script to start the debugging process.
+\item \textbf{debug.tcl} Tcl script that handles lockstep debugging on the ModelSim end.
+\item \textbf{lockstep.py} Python file that handles lockstep debugging on the GDB end.
+\item \textbf{qemuDump.py} Python file that handles dumping Qemu's current state to file.
+\item \textbf{qemuDumpRestore.tcl} Tcl script that manipulates the ModelSim state to match a dumped Qemu state.
+\end{itemize}
+
+\subsection{File structure}
+The scripts place all of their output in the \texttt{output} directory. For each run of the script, a new subdirectory within this directory is created, named according to the appropriate timestamp. Within this directory, the \texttt{bugs} directory contains the full debug output of each found bug, and \texttt{runlog} contains an abbreviated summary of all bugs found in the given run. Duplicate bugs are ignored and do not appear in these files.
+
+Created checkpoints appear in \texttt{output/checkpoints/} with the provided name.
+
+\subsection{How to Use}
+First, start the debug script using \texttt{./debug.sh} in your shell on tera. (For now, this only works on tera.) You will be dropped into a GDB prompt, which is connected to a qemu process that runs the kernel. You can run arbitrary GDB commands in this prompt, but additional commands are enabled:
+
+\begin{itemize}
+\item \texttt{leg-lockstep}: Starts lockstepping at the current instruction. This dumps the current qemu state to a file, and then starts ModelSim initialized with the current state of qemu. It then begins to single step in qemu and advance time in ModelSim, ensuring that all register changes match between the two. As soon as there is a mismatch, or a ModelSim change takes too long to occur, it outputs bug information and returns control to the GDB prompt.
+\item \texttt{leg-lockstep-auto}: Same as \texttt{leg-lockstep}, except that it immediately resumes lockstepping after every found bug, initializing ModelSim with the correct state.
+\item \texttt{leg-jump} \texttt{\emph{BREAK\_LOC}}: Convenience function to jump to a given location in the kernel. This sets a breakpoint at \texttt{BREAK\_LOC}, continues to it, and then automatically removes the breakpoint.
+\item \texttt{leg-frombug} \texttt{\emph{BUGFILE}}: Jumps to the last matching state before a bug. \texttt{BUGFILE} should be a path to a bug output file, specified relative to the \texttt{debug_lockstep} directory. The resulting state is the last state for which qemu and ModelSim changed together correctly, before the given bug was detected. You can run \texttt{leg-lockstep} to check if the bug still occurs, or run \texttt{leg-checkpoint} to create a checkpoint for ModelSim debugging.
+\item \texttt{leg-count}: Prints an estimate of the current instruction count.
+\item \texttt{leg-checkpoint} \texttt{\emph{NAME}}: Dumps the current qemu state, then opens ModelSim and converts the qemu state to a ModelSim checkpoint. \texttt{NAME} gives the desired filename of the created checkpoint.
+\item \texttt{leg-restart}: Stops qemu and restarts it at the beginning of the kernel execution.
+\item \texttt{leg-stop}: Gracefully shuts down qemu and then exits GDB. You should use this instead of \texttt{quit}, because otherwise the qemu process will continue in the background and will have to be killed manually.
+\end{itemize}
