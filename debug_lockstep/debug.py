@@ -143,6 +143,9 @@ class LegStopCommand (gdb.Command):
 		print "Stopping the debug session"
 		gdb.execute('detach')
 		qemu.terminate()
+		if not os.path.isfile(os.path.join(run_dir, "runlog")):
+			print "Cleaning up empty output directory"
+			shutil.rmtree(run_dir)
 		gdb.execute('quit')
 
 LegStopCommand()
