@@ -126,7 +126,7 @@ def getBugIDAndFile(run_dir):
 
 	return bugDirCt, os.path.join(bugDir,"{}.buglog".format(bugDirCt))
 
-asmInstrParser = re.compile(".+>:\\s+(.+)")
+asmInstrParser = re.compile(".+:\\s+(.+)")
 def handleAbort(title, previnstr, prevstate, mstime, msstate, execct, prevexecct, run_dir, found_bugs):
 	trace = backtrace(previnstr, prevstate, mstime, msstate, execct)
 	print "\n\n\n{}\n------------\n".format(title)

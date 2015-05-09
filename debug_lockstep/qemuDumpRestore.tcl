@@ -15,7 +15,7 @@ set ignoredLogName "wlffile.wlf"
 set ignoredLogFile $dumpDir$ignoredLogName
 
 file copy -force $dumpDataFile "/proj/leg/sim/simTest.dat"; list
-vsim -quiet -wlf ignoredLogFile -wlftlim {1 ns} work.testbench; list
+vsim -quiet -wlf "$ignoredLogFile" -wlftlim {1 ns} work.testbench; list
 
 nolog -all
 transcript off
