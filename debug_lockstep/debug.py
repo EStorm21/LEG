@@ -13,8 +13,15 @@ import datetime
 import lockstep, checkpoint
 
 OUTPUT_DIR = "output"
-if not os.path.isdir(OUTPUT_DIR):
-	os.mkdir(OUTPUT_DIR)
+
+def setup():
+	if not os.path.isdir(OUTPUT_DIR):
+		os.mkdir(OUTPUT_DIR)
+	cpdir = os.path.join(OUTPUT_DIR, "checkpoints")
+	if not os.path.isdir(cpdir):
+		os.mkdir(cpdir)
+	if not os.path.isfile('util/convertBinToDat'):
+		subprocess.call(['make', '-C', 'util'])
 
 def get_open_port():
 	import socket
@@ -38,6 +45,8 @@ def preex_fn_stop_interrupt():
     # Ignore the SIGINT signal by setting the handler to the standard
     # signal handler SIG_IGN.
     signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+setup()
 
 openport = get_open_port()
 print "Starting qemu with port {}".format(openport)
