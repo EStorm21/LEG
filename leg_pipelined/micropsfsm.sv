@@ -135,7 +135,7 @@ always_comb
 			end
 			//start RSR type instructions
 			else if (defaultInstrD[27:25] == 3'b0 & defaultInstrD[7] == 0 & defaultInstrD[4] == 1 
-			  & ~(defaultInstrD[27:6] == {8'b0001_0010, 12'hFFF, 2'b00}) & defaultInstrD[4]) begin 
+			  & ~(defaultInstrD[27:6] == {8'b0001_0010, 12'hFFF, 2'b00}) & defaultInstrD[4]) begin  // not BLX (2)
 			  	debugText = "rsr type data processing instr";
 				InstrMuxD = 1;
 				doNotUpdateFlagD = 1;
@@ -434,7 +434,7 @@ always_comb
 			else if (defaultInstrD[27:26] == 2'b01) begin // ldrb or strb   & defaultInstrD[22]
 				debugText = "ldr/str/ldrb/strb";
 				// Scaled Register offests ldr/str/ldrb/strb
-				// SD 5/1/2015 Why? Don't need to use Rz for data processing immediate shift
+				// SD 5/1/2015 Why? Don't need to use Rz for data processing immediate shift. Why not all at once
 				if (defaultInstrD[25:24] == 2'b11 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
 					nextState = ls_word_byte;
 					InstrMuxD = 1;
