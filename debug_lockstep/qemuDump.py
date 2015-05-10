@@ -6,6 +6,7 @@ import binascii
 import array
 import shutil
 import sys
+import subprocess
 
 regParser = re.compile("\\w+\\s+(\\w+)\\s+")
 def parseQemuRegs(regs):
@@ -31,32 +32,7 @@ def dumpQemuFile(path):
 
 	gdb.execute('monitor pmemsave 0x0 0x10000000 "{}"'.format(rawfilename))
 	
-	f = open(rawfilename,'rb')
-	data = f.read()
-
-	hexstr = binascii.hexlify(data)
-
-	wasSkipped = False
-	with open(datfilename, 'w') as f:
-		sys.stdout.write('\n')
-		for i in range(0, len(hexstr), 8):
-			toWrite = hexstr[i:i+8]
-			toWrite = toWrite[6:8] + toWrite[4:6] + toWrite[2:4] + toWrite[0:2]
-			if toWrite == "00000000":
-				wasSkipped = True
-			else:
-				if wasSkipped:
-					f.write('@{:08x}\n'.format(i/8))
-				f.write(toWrite + '\n')
-				wasSkipped = False
-
-			ct = 0x20000000
-			if i/8 % ((ct/8)/100) == 0:
-				sys.stdout.write('\033[1A        {}%\n'.format(100*i/ct))
-				sys.stdout.flush()
-
-		sys.stdout.write('\033[1A        100% - done!\n')
-	print ""
+	subprocess.call(['util/convertBinToDat', rawfilename, datfilename])
 			
 
 def setCPSRMode(modebits):
