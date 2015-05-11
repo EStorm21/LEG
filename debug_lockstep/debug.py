@@ -225,14 +225,12 @@ class LegFromBugCommand (gdb.Command):
 		print "{:#x}, {}, {}ps, with {} instructions executed".format(
 			INITIAL_INSTRUCTION, INITIAL_STATE, INITIAL_MS_TIME, INITIAL_EXECUTED_COUNT)
 
-		gdb.execute('file', to_string=True)
 		bpstr = gdb.execute('break *{0:#x}'.format(INITIAL_INSTRUCTION), to_string=True)
 		while True:
 			gdb.execute('continue', to_string=True)
 			if lockstep.getQemuRegs() == INITIAL_STATE:
 				break
 		gdb.execute('delete {}'.format(bpstr.split(' ')[1][:-1]))
-		gdb.execute('file /proj/leg/kernel/vmlinux')
 
 		print "Current location:"
 		gdb.execute('where')
