@@ -47,53 +47,46 @@ file in the project root directory (assumed in this document to be \texttt{/LEG}
 and the \texttt{dmem.sv} file in \texttt{LEG/leg\_pipelined/dmem.sv}. 
 Note that the path after \texttt{/LEG} is shown, but absolute paths are 
 required for all files and directories.
-\\\\
-\large \textbf{Modifying \texttt{autoSim0.tcl}}
+
+\subsubsection{Modifying \texttt{autoSim0.tcl}}
 
 \begin{enumerate}
-
-\item Create an empty ModelSim project in your favorite directory.
-
-\item Create an unversioned copy of \texttt{autoSim0.tcl} for your own use.
-
-\item Modify the entries in the copy to point to the correct locations:
-
+	\item Create an empty ModelSim project in your favorite directory.
+	\item Create an unversioned copy of \texttt{autoSim0.tcl} for your own use.
+	\item Modify the entries in the copy to point to the correct locations:
 	\begin{itemize}
-
-	\item \texttt{project} should point to your ModelSim project.
-
-	\item On your own computer, \texttt{vlog} should end in \texttt{LEG/leg\_pipelined/*.sv}
-
-	\item \texttt{testPath} should point to \texttt{LEG/tests}
-
-	\item \texttt{testList} should point to \texttt{LEG/tests/tests.list}
-
-	\item In the test for loop, change the location of simTest.dat to a directory 
-	of your choice, e.g. \texttt{LEG/tests/simTest.dat}
-
+		\item \texttt{project} should point to your ModelSim project.
+		\item On your own computer, \texttt{vlog} should end in \texttt{LEG/leg\_pipelined/*.sv}
+		\item \texttt{testPath} should point to \texttt{LEG/tests}
+		\item \texttt{testList} should point to \texttt{LEG/tests/tests.list}
+		\item In the test for loop, change the location of simTest.dat to a directory 
+		of your choice, e.g. \texttt{LEG/tests/simTest.dat}
 	\end{itemize}
-
 \end{enumerate}
 
-\large \textbf{Modifying \texttt{dmem.sv}}
-
-Comment out the other \texttt{\$readmemh} lines, and add your own with 
-the same path to the \texttt{simTest.dat} file. Each time you pull from 
-the repository and want to run tests you will need to uncomment 
-the correct line in this file.
-
-\bigskip
-\textbf{Running tests}
+\subsubsection{Modifying \texttt{dmem.sv}}
 
 \begin{enumerate}
-\item Uncomment the test you want to run in \texttt{LEG/tests/tests.list}.
 
-\item Using Cygwin, navigate to the folder containing your \texttt{autosim.tcl} file. 
+\item Comment out the other \texttt{\$readmemh} lines, and add your own with 
+the same path to the \texttt{simTest.dat} file. Each time you pull from 
+the repository and want to run tests you will need to uncomment 
+the correct line in this file. Alternatively, don't commit this file.
 
-\item run the command \texttt{vsim -c -do autosim.tcl}
+\item In most cases you can also comment out the loop that fills the memory with zeros. 
+This will cause the tests to run faster.
+\end{enumerate}
 
-\item You can open the ModelSim project during or after a run of tests,
-and the waveforms will be available.
+
+\subsubsection{Run tests and view output}
+
+\begin{enumerate}
+	\item Uncomment the test you want to run in \texttt{LEG/tests/tests.list}.
+	\item Using a shell (Cygwin, PowerShell, cmd on Windows), 
+	navigate to the folder containing your \texttt{autosim.tcl} file. 
+	\item run the command \texttt{vsim -c -do autosim.tcl}
+	\item One way to view in ModelSim on your computer is to use the autoSim1.tcl file
+	(modified for your setup). Run this in command prompt and ModelSim will open. Add waves and restart.
 \end{enumerate}
 
 \subsubsection{autosim1.tcl}
