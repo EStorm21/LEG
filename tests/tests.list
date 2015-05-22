@@ -71,3 +71,5 @@ linux
 #ldrb
 #ldrsh
 #ldmfd
+#ldrb2
+#mla2

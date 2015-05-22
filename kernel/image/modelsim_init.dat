@@ -1,0 +1,12 @@
+// Jump to linux code
+EA003FFE 
+
+// Initialize relevant data
+@000DF024         //0x0037c090 
+00000000
+00000000
+00000000
+00000000
+
+/***** BEGIN COMPILED LINUX CODE *****/
+

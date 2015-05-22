@@ -1,76 +1,95 @@
-% TODO
-\section{Name of thing that I made}
+\section{Testing}
 
 \subsection{Brief Overview}
+This section describes the procedure for generating and running tests. 
 
-% TODO
-
-\subsection{Important Diagrams}
-
-% TODO - include images or give path to images in git
 
 \subsection{All Relevant Files and Brief Descriptions}
+\begin{itemize}
+\item \textbf{makeQemuTest.sh} Creates testing files from an assembly source. Results are derived from QEMU. 
+\item \textbf{testManual.sh} Allows the user to single-step assembly in QEMU. 
+\item \textbf{autosim0.tcl} Runs the tests in tests.list against ModelSim. 
+\item \textbf{autoSim1.tcl} Opens a single test in ModelSim with the GUI. 
+\item \textbf{makePiTest.sh} Creates testing files from an assembly source. Results are derived from the raspberry pi. 
+\end{itemize}
 
-% TODO
+\subsection{Creating Tests}
+There are two methods for creating tests, either on tera, verified by QEMU, or on the raspberry pi, verified by GDB on the pi. Both methods currently depend on the Pi for assembly and disassembly. 
+\subsubsection{Creating Tests on Tera}
+Tests can be created on tera in \texttt{/proj/leg/qemu}. 
+First create an assembly file of instructions to test. 
+This test should have appropriate exception handling setup with branches in the base addresses to each exception handler. 
+The results are compared to the integrator board in QEMU. 
+The bootloader in QEMU initializes the flags and puts values in r0 and r1. 
+To ensure consistent results when comparing ModelSim and QEMU, all tests should start by setting r0, r1, and the condition flags. 
+All assembly files should have a \texttt{.s} file extension, for example \texttt{add.s}. To generate the test files, use \texttt{makeQemuTest.sh}. 
+For example \texttt{sh makeQemuTest.sh add}
 
-\subsection{Analysis of Confusing Sections of Code}
+Once the script is started, it will transfer several files to and from the Pi. If you intend to create a lot of tests, you should create a public key for the pi so you don't have to keep typing in the password. Once the files have transferred, QEMU will start. To get the results from QEMU type \texttt{info registers} the \texttt{Ctrl+C} to quit QEMU. This will create the test. 
 
-% TODO
+The results of this process leave you with 6 files. 
+\begin{itemize}
+\item \texttt{.bin} file: The binary file which can be run on the Pi for debugging. 
+\item \texttt{.dat} file: The file that runs on ModelSim. 
+\item \texttt{.dump} file: The objdump file that contains useful human readable information about the test.
+\item \texttt{.flash} file: The QEMU readable file. 
+\item \texttt{.s} file: The assembly source file.
+\item \texttt{.val} file: The state of the registers at the end of the program, for comparison against ModelSim. 
+\end{itemize}
 
+\subsubsection{Creating Tests on the Pi}
+Test creation on the Pi is analagous to tera. 
+The username and password for the pi are pi and strawberry, respectively. Creating tests on the Pi does not generate the QEMU compatible file. Generating tests on the pi does not accomodate mode changes and all instructions are executed in user mode. 
 \subsection{Running Tests}
-%TODO how to create and compile tests
-%TODO running and debugging Linux, locally and on Tera
 
 Running tests requires modification of the default \texttt{autoSim0.tcl} 
 file in the project root directory (assumed in this document to be \texttt{/LEG} )
 and the \texttt{dmem.sv} file in \texttt{LEG/leg\_pipelined/dmem.sv}. 
 Note that the path after \texttt{/LEG} is shown, but absolute paths are 
 required for all files and directories.
-\\\\
-\large \textbf{Modifying \texttt{autoSim0.tcl}}
+
+\subsubsection{Modifying \texttt{autoSim0.tcl}}
+
+\begin{enumerate}
+	\item Create an empty ModelSim project in your favorite directory.
+	\item Create an unversioned copy of \texttt{autoSim0.tcl} for your own use.
+	\item Modify the entries in the copy to point to the correct locations:
+	\begin{itemize}
+		\item \texttt{project} should point to your ModelSim project.
+		\item On your own computer, \texttt{vlog} should end in \texttt{LEG/leg\_pipelined/*.sv}
+		\item \texttt{testPath} should point to \texttt{LEG/tests}
+		\item \texttt{testList} should point to \texttt{LEG/tests/tests.list}
+		\item In the test for loop, change the location of simTest.dat to a directory 
+		of your choice, e.g. \texttt{LEG/tests/simTest.dat}
+	\end{itemize}
+\end{enumerate}
+
+\subsubsection{Modifying \texttt{dmem.sv}}
 
 \begin{enumerate}
 
-\item Create an empty ModelSim project in your favorite directory.
-
-\item Create an unversioned copy of \texttt{autoSim0.tcl} for your own use.
-
-\item Modify the entries in the copy to point to the correct locations:
-
-	\begin{itemize}
-
-	\item \texttt{project} should point to your ModelSim project.
-
-	\item On your own computer, \texttt{vlog} should end in \texttt{LEG/leg\_pipelined/*.sv}
-
-	\item \texttt{testPath} should point to \texttt{LEG/tests}
-
-	\item \texttt{testList} should point to \texttt{LEG/tests/tests.list}
-
-	\item In the test for loop, change the location of simTest.dat to a directory 
-	of your choice, e.g. \texttt{LEG/tests/simTest.dat}
-
-	\end{itemize}
-
-\end{enumerate}
-
-\large \textbf{Modifying \texttt{dmem.sv}}
-
-Comment out the other \texttt{\$readmemh} lines, and add your own with 
+\item Comment out the other \texttt{\$readmemh} lines, and add your own with 
 the same path to the \texttt{simTest.dat} file. Each time you pull from 
 the repository and want to run tests you will need to uncomment 
-the correct line in this file.
+the correct line in this file. Alternatively, don't commit this file.
 
-\bigskip
-\textbf{Running tests}
+\item In most cases you can also comment out the loop that fills the memory with zeros. 
+This will cause the tests to run faster.
+\end{enumerate}
+
+
+\subsubsection{Run tests and view output}
 
 \begin{enumerate}
-\item Uncomment the test you want to run in \texttt{LEG/tests/tests.list}.
-
-\item Using Cygwin, navigate to the folder containing your \texttt{autosim.tcl} file. 
-
-\item run the command \texttt{vsim -c -do autosim.tcl}
-
-\item You can open the ModelSim project during or after a run of tests,
-and the waveforms will be available.
+	\item Uncomment the test you want to run in \texttt{LEG/tests/tests.list}.
+	\item Using a shell (Cygwin, PowerShell, cmd on Windows), 
+	navigate to the folder containing your \texttt{autosim.tcl} file. 
+	\item run the command \texttt{vsim -c -do autosim.tcl}
+	\item One way to view in ModelSim on your computer is to use the autoSim1.tcl file
+	(modified for your setup). Run this in command prompt and ModelSim will open. Add waves and restart.
 \end{enumerate}
+
+\subsubsection{autosim1.tcl}
+autosim1.tcl is a script on tera for manually debugging a single test. 
+The test is loaded into dmem.sv, and the GUI is loaded. 
+The user can then add additional signals and quickly restart the simulation. 
