@@ -20,7 +20,7 @@ module data_writeback_associative_cache
     input  logic [tagbits-1:0] PhysTag,
     output logic [31:0] HWData,
     output logic [31:0] RD, HAddr, ANew,
-    output logic Stall, HRequestM, HWriteM);
+    output logic Stall, HRequestM, HWriteM, RequestPA);
 
     // Cache way outputs
     logic                    W1V, W2V, W1EN, W1WE, W2WE, CWE, W1D, W2D;

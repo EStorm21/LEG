@@ -21,7 +21,7 @@ module top(input  logic        clk, reset,
 
   // ----- MMU Signals -----
   logic        MMUExtInt, DataAccess, CPSR4, SBit, RBit; 
-  logic        SupMode, WordAccess, PAReady;
+  logic        SupMode, WordAccess, PAReady, DRequestPA;
   // logic        SupMode, WordAccess;
   logic [31:0] Dom;
   logic [6:0]  TLBCont, Cont;
@@ -83,7 +83,7 @@ module top(input  logic        clk, reset,
   // D$
   data_writeback_associative_cache #(dBlockSize, dLines)
     data_cache(.clk(clk), .reset(reset), .enable(END), .invalidate(INVD),
-      .clean(CLEAND), .PAReady(PAReadyM), .ANew(DANew),
+      .clean(CLEAND), .PAReady(PAReadyM), .ANew(DANew), .RequestPA(DRequestPA),
       // .clean(CLEAND),
       .MemWriteM(MemWriteM), .MemtoRegM(MemtoRegM), .BusReady(BusReadyM), 
       .IStall(IStall), .PhysTag(HAddr[31:12]), .VirtA(DataAdrM), .WD(WriteDataM), 
@@ -95,6 +95,7 @@ module top(input  logic        clk, reset,
   ahb_arbiter ahb_arb(.HWriteM(HWriteM), .IStall(IStall), .DStall(DStall), .HReady(CPUHReady),
       .HAddrM(HAddrM), .HAddrF(HAddrF), .HRequestF(HRequestF), .HRequestM(HRequestM),
       .PAReady  (PAReady), .PAReadyF (PAReadyF), .PAReadyM (PAReadyM),
+      .DRequestPA(DRequestPA),
       .HReadyF(BusReadyF), .HReadyM(BusReadyM),
       .HAddr(CPUHAddr), .HWrite(CPUHWrite), .HRequest(CPUHRequest));
 

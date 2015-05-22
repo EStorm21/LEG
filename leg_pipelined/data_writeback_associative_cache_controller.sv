@@ -9,7 +9,7 @@ module data_writeback_associative_cache_controller
    input  logic [tagbits-1:0] W1Tag, W2Tag, PhysTag, VirtTag, 
    output logic CWE, Stall, HWriteM, HRequestM, BlockWE, ResetCounter,
    output logic W1WE, W2WE, W1EN, UseWD, UseCacheA, DirtyIn, WaySel, RDSel,
-   output logic cleanCurr,
+   output logic cleanCurr, RequestPA,
    output logic [1:0] CacheRDSel, 
    output logic [3:0] ActiveByteMask, WDSel,
    output logic [tagbits-1:0] CachedTag,
@@ -199,4 +199,7 @@ module data_writeback_associative_cache_controller
                                           NewWordOffset);
   mux2 #(8) BlockNumMux(A[$clog2(lines)-1 + 4:4], 
                    FlushA[$clog2(lines)-1:0], clean, BlockNum);
+
+  // ----------------MMU-------------------
+  assign RequestPA = (state == READY) & (MemtoRegM | MemWriteM) | Stall;
 endmodule
