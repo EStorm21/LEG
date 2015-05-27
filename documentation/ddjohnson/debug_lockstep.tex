@@ -19,7 +19,7 @@ This is a tool I made to enable fast debugging and testing of the Linux kernel b
 \end{itemize}
 
 \subsection{File structure}
-The scripts place all of their output in the \texttt{output} directory. For each run of the script, a new subdirectory within this directory is created, named according to the appropriate timestamp. Within this directory, the \texttt{bugs} directory contains the full debug output of each found bug, and \texttt{runlog} contains an abbreviated summary of all bugs found in the given run. Duplicate bugs are ignored and do not appear in these files.
+The run directory on Tera is currently \texttt{/proj/leg/sim/newDebug}.1 The scripts place all of their output in the \texttt{output} directory. For each run of the script, a new subdirectory within this directory is created, named according to the appropriate timestamp. Within this directory, the \texttt{bugs} directory contains the full debug output of each found bug, and \texttt{runlog} contains an abbreviated summary of all bugs found in the given run. Duplicate bugs are ignored and do not appear in these files.
 
 Created checkpoints appear in \texttt{output/checkpoints/} with the provided name.
 
