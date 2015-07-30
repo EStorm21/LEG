@@ -23,7 +23,7 @@ module data_writeback_associative_cache
     output logic Stall, HRequestM, HWriteM, RequestPA);
 
     // Cache way outputs
-    logic                    W1V, W2V, W1EN, W1WE, W2WE, CWE, W1D, W2D;
+    logic                    W1V, W2V, W1EN, W1WE, W2WE, W1D, W2D;
     logic [tagbits-1:0]      W1Tag, W2Tag, CachedTag;
     logic [blocksize*32-1:0] W1BlockOut, W2BlockOut;  // Way output (4 words)
     logic [31:0]             W1RD, W2RD, CacheOut, CachedAddr, CacheWD;
@@ -36,11 +36,11 @@ module data_writeback_associative_cache
     logic                     UseWD, BlockWE, cleanCurr;
     logic [$clog2(lines)-1:0] BlockNum;
     logic [setbits-1:0]       set;  
-    logic [tagbits-1:0]       Tag, VirtTag;
-    logic [1:0]               Counter, WordOffset, CacheRDSel;   
+    logic [tagbits-1:0]       VirtTag;
+    logic [1:0]               WordOffset, CacheRDSel;   
 
     // Output Control logic
-    logic Hit, CurrLRU, UseCacheA, WaySel, RDSel;
+    logic CurrLRU, UseCacheA, WaySel, RDSel;
 
     // mux2 #(32) CacheWDMux(HRData, WD, UseWD, CacheWD);
     mux2 #(8) CacheWDMux0(HRData[7:0],   WD[7:0],   WDSel[0], CacheWD[7:0]);

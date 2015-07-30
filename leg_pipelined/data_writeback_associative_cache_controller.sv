@@ -7,7 +7,7 @@ module data_writeback_associative_cache_controller
    input  logic [3:0] ByteMask,
    input  logic [31:0] A,
    input  logic [tagbits-1:0] W1Tag, W2Tag, PhysTag, VirtTag, 
-   output logic CWE, Stall, HWriteM, HRequestM, BlockWE, ResetCounter,
+   output logic Stall, HWriteM, HRequestM, BlockWE, ResetCounter,
    output logic W1WE, W2WE, W1EN, UseWD, UseCacheA, DirtyIn, WaySel, RDSel,
    output logic cleanCurr, RequestPA,
    output logic [1:0] CacheRDSel, 
@@ -17,6 +17,7 @@ module data_writeback_associative_cache_controller
    output logic [$clog2(blocksize)-1:0] NewWordOffset);
 
   logic [tagbits-1:0] Tag, PrevPTag;
+  logic CWE;
 
   // Writeback cache states
   typedef enum logic[3:0] {READY, MEMREAD, WRITEBACK, DWRITE, NEXTINSTR, 
@@ -65,8 +66,7 @@ module data_writeback_associative_cache_controller
   logic Hit, W2Hit, W1Hit;
   assign W1Hit = (W1V & (Tag == W1Tag));
   assign W2Hit = (W2V & (Tag == W2Tag));
-  // assign Hit = (W1Hit | W2Hit) & enable & PAReady;
-  assign Hit = (W1Hit | W2Hit) & enable;
+  assign Hit = (W1Hit | W2Hit) & enable & PAReady;
   
   // Write-to logic
   // IN: W1V, W2V, LRU 
@@ -164,19 +164,21 @@ module data_writeback_associative_cache_controller
                   (state == DWRITE) |
                   (state == FLUSH) |
                   (state == WRITEBYTES) |
-                  ( (state == READY) & (MemtoRegM | MemWriteM) & ~Hit );
+                  ( (state == READY) & 
+                    ( clean | (MemtoRegM | MemWriteM) & ~Hit ) 
+                  );
   assign CWE    = ( (state == READY) & ( (MemWriteM & Hit) |  (BusReady & ~Hit & ~Dirty) ) ) |
                   ( (state == MEMREAD) & BusReady );
   assign HWriteM = (state == WRITEBACK) | 
                    (state == DWRITE) |
                    (state == WRITEBYTES) | 
-                   ((state == READY) & ~Hit & Dirty );
+                   ((state == READY) & ~Hit & Dirty & ~clean);
   assign HRequestM  = Stall;
 
   assign RDSel = (state == DWRITE); // Choose write value from bus
 
   assign BlockWE = (state == MEMREAD) | ( (state == NEXTINSTR)  & 
-                   (~MemWriteM || MemWriteM & ~Dirty) ) |
+                   (~MemWriteM | MemWriteM & ~Dirty) ) |
                    ( (state == READY) & ~Hit & ~Dirty );
   assign ResetCounter = ((state == READY) & Hit) | (state == NEXTINSTR) | 
                         (state == FLUSH);

@@ -37,10 +37,10 @@ Disassembly of section .text:
   6c:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
   70:	e3811004 	orr	r1, r1, #4
   74:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
-  78:	e3a00000 	mov	r0, #0 ; # Start of the test
-  7c:	e2804001 	add	r4, r0, #1
-  80:	e2802c01 	add	r2, r0, #256	; 0x100
-  84:	e2833c03 	add	r3, r3, #768	; 0x300
+  78:	e3a00000 	mov	r0, #0 ; # Start of the ldrb test
+  7c:	e2804001 	add	r4, r0, #1 # Place 1 into r4
+  80:	e2802c01 	add	r2, r0, #256	; 0x100 # Place 256 into r2
+  84:	e2833c03 	add	r3, r3, #768	; 0x300 # P
   88:	e5830004 	str	r0, [r3, #4]
   8c:	e7c33104 	strb	r3, [r3, r4, lsl #2]
   90:	e7d31104 	ldrb	r1, [r3, r4, lsl #2]
