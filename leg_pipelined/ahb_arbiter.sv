@@ -13,40 +13,5 @@ module ahb_arbiter( input  logic HWriteM, IStall, DStall, HReady, HRequestF,
     // assign HAddr = DStall ? HAddrM : HAddrF;
     assign HAddr = DRequestPA ? HAddrM : HAddrF;
     assign HRequest = HRequestF | HRequestM;
-    // always_comb
-    // begin
-    //     // Cases:
-    //     // Instruction access only, 
-    //     if (IStall & ~DStall) begin
-    //         // Give instr cache bus
-    //         HAddr = HAddrF;
-    //         HReadyF = HReady;
-    //         HReadyM = 1'b0;
-    //         Hwrite = 1'b0;
-
-    //     // Data access only
-    //     end else if(~IStall & DStall) begin
-    //         // Give bus to data cache
-    //         HAddr = HAddrM;
-    //         HReadyM = HReady;
-    //         HReadyF = 1'b0;
-    //         HWrite = HWriteM;
-
-    //     // Both
-    //     end else if(IStall & DStall) begin
-    //         // Give bus to data cache
-    //         HAddr = HAddrM;
-    //         HReadyM = HReady;
-    //         HReadyF = 1'b0;
-    //         HWrite = HWriteM;
-
-    //     // None
-    //     end else begin
-    //         HReadyF = 1'b0;
-    //         HReadyM = 1'b0;
-    //         HAddr = HAddrM;
-    //         HWrite = 1'b0;
-    //     end
-    // end
 
 endmodule

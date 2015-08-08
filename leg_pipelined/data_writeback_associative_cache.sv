@@ -1,31 +1,29 @@
 // data_writeback_associative_cache.sv
-// mwaugaman@hmc.edu 22 September 2014
-// Data Cache for LEG v4
+// mwaugaman@hmc.edu 8 August 2015
+// Data Cache for LEG v5
 
-//------------------------------------------------------
-//--------------------CACHE-----------------------------
-//------------------------------------------------------
-//------------------------------------------------------
-module data_writeback_associative_cache 
-    #(parameter blocksize = 4, parameter lines = 2, 
-      parameter setbits = $clog2(lines),
-      parameter blockbits = $clog2(blocksize),
-      parameter tagbits = 30-blockbits-setbits )
-    (input  logic clk, reset, enable, MemWriteM, MemtoRegM, 
+module data_writeback_associative_cache #(
+    parameter bsize = 4                   , parameter lines = 2,
+    parameter setbits = $clog2(lines),
+    parameter blockbits = $clog2(bsize),
+    parameter tbits = 30-blockbits-setbits
+) (
+    input  logic             clk, reset, enable, MemWriteM, MemtoRegM,
     BusReady, IStall, invalidate, clean, PAReady,
-    // BusReady, IStall, invalidate, clean, 
-    input  logic [31:0] VirtA, WD,
-    input  logic [31:0] HRData,
-    input  logic [3:0]  ByteMask, 
-    input  logic [tagbits-1:0] PhysTag,
-    output logic [31:0] HWData,
-    output logic [31:0] RD, HAddr, ANew,
-    output logic Stall, HRequestM, HWriteM, RequestPA);
+    // BusReady, IStall, invalidate, clean,
+    input  logic [     31:0] VirtA, WD,
+    input  logic [     31:0] HRData  ,
+    input  logic [      3:0] ByteMask,
+    input  logic [tbits-1:0] PhysTag ,
+    output logic [     31:0] HWData  ,
+    output logic [     31:0] RD, HAddr, ANew,
+    output logic             Stall, HRequestM, HWriteM, RequestPA
+);
 
     // Cache way outputs
     logic                    W1V, W2V, W1EN, W1WE, W2WE, W1D, W2D;
-    logic [tagbits-1:0]      W1Tag, W2Tag, CachedTag;
-    logic [blocksize*32-1:0] W1BlockOut, W2BlockOut;  // Way output (4 words)
+    logic [tbits-1:0]      W1Tag, W2Tag, CachedTag;
+    logic [bsize*32-1:0] W1BlockOut, W2BlockOut;  // Way output (4 words)
     logic [31:0]             W1RD, W2RD, CacheOut, CachedAddr, CacheWD;
 
     // Input Control Logic 
@@ -36,7 +34,7 @@ module data_writeback_associative_cache
     logic                     UseWD, BlockWE, cleanCurr;
     logic [$clog2(lines)-1:0] BlockNum;
     logic [setbits-1:0]       set;  
-    logic [tagbits-1:0]       VirtTag;
+    logic [tbits-1:0]       VirtTag;
     logic [1:0]               WordOffset, CacheRDSel;   
 
     // Output Control logic
@@ -50,25 +48,25 @@ module data_writeback_associative_cache
 
     // Create New Address using the counter as the word offset
     assign A = VirtA;
-    assign VirtTag = VirtA[31:31-tagbits+1];
+    assign VirtTag = VirtA[31:31-tbits+1];
     assign ANew = {VirtTag, BlockNum, NewWordOffset, VirtA[1:0]};
 
     // Create Cache memory. 
     // This module contains both way memories and LRU table
     assign vin = enable;
-    data_writeback_associative_cache_memory #(lines, tagbits, blocksize) dcmem(.*);
+    data_writeback_associative_cache_memory #(lines, tbits, bsize) dcmem(.*);
 
     // Cache Controller
     assign WordOffset = VirtA[3:2]; // Create word offset for cache controller
-    // assign Tag = ANew[31:31-tagbits+1];  // PhysTag;
-    data_writeback_associative_cache_controller #(lines, blocksize, tagbits) dcc(.*);
+    // assign Tag = ANew[31:31-tbits+1];  // PhysTag;
+    data_writeback_associative_cache_controller #(lines, bsize, tbits) dcc(.*);
 
     // HWData Mux
     // mux2 #(32) HWDataMux(W2RD, W1RD, W1EN, HWData);
     assign HWData = RD;
 
     // HAddr Mux's
-    assign CachedAddr = {CachedTag, ANew[31-tagbits:0]};
+    assign CachedAddr = {CachedTag, ANew[31-tbits:0]};
     mux2 #(32) HAddrMux(ANew, CachedAddr, UseCacheA, HAddr);
 
     // Select from the ways

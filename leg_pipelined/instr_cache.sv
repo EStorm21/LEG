@@ -1,65 +1,94 @@
-// leg_cache.v
+// instr_cache.v
 // mwaugaman@hmc.edu 22 September 2014
-// Data and Instruction Cache for LEG v4
+// 2-Way Set Associative Instruction cache for LEG Processor
 
-//--------------------CACHE-----------------------------
-module instr_cache 
-    #(parameter blocksize = 4, parameter lines = 2,
+module instr_cache #(
+    parameter bsize = 4                   , parameter lines = 2,
     parameter setbits = $clog2(lines),
-    parameter blockbits = $clog2(blocksize),
-    parameter tagbits = 30-blockbits-setbits)
-                  (input  logic clk, reset, enable, BusReady, invalidate,
-                   input  logic PAReady, 
-                   input  logic [31:0] A, 
-                   input  logic [tagbits-1:0] PhysTag,
-                   input  logic [31:0] HRData,
-                   output logic [31:0] RD, HAddrF,
-                   output logic IStall, HRequestF);
+    parameter blockbits = $clog2(bsize),
+    parameter tbits = 30-blockbits-setbits
+) (
+    input  logic             clk, reset, enable, BusReady, invalidate,
+    input  logic             PAReady,
+    input  logic [     31:0] A      ,
+    input  logic [tbits-1:0] PhysTag,
+    input  logic [     31:0] HRData ,
+    output logic [     31:0] RD, HAddrF,
+    output logic             IStall, HRequestF
+);
 
-    // W1V:   valid bit for way 1
-    // W1EN:  enable way 1, select way 1 for writeback
-    // W1WE:  way 1 write enable, W1WE = W1EN & CWE
-    // RDSel: Select output from bus or cache
-    // CWE:   Cache Write Enable
-    logic W1V, W2V, W1EN, W2EN, W1WE, W2WE, CWE, ResetCounter, Hit, W1Hit, W2Hit, CurrLRU;        
-    logic [tagbits-1:0] W1Tag, W2Tag;
-    logic [blocksize*32-1:0] W1BlockOut, W2BlockOut;  // Way output (4 words)
-    
-    // W2RD:       Word selected from way 2 output
-    // CacheOut:   Word chosen from way 1 or 2
-    // BlockNum:       Current Block. Used when flushing
-    logic [31:0] W1RD, W2RD, CacheOut, ANew;
-    logic [7:0] BlockNum;
-    logic [1:0] Counter, WordOffset;
-    logic [tagbits-1:0] Tag;   // Current tag
-    logic [blockbits-1:0] NewWordOffset;
-
+    // Signal Declaration
+    logic [         31:0] CacheWD, W1RD, W2RD, CacheOut, ANew;
+    logic [    tbits-1:0] W1Tag, W2Tag; 
+    logic [          3:0] ActiveByteMask;
+    logic [blockbits-1:0] NewWordOffset ;
+    logic [          1:0] CacheRDSel, Counter, WordOffset;
+    logic                 W1V, W2V, W1WE, W2WE, ResetCounter, CurrLRU, DirtyIn, W1D, W2D, vin, WaySel;
 
     // Create New Address using the counter as the word offset
-    assign WordOffset = A[blockbits+1:2];
-    assign ANew = {A[31:4], NewWordOffset, A[1:0]};
-    assign HAddrF = ANew;
+    assign WordOffset     = A[blockbits+1:2];
+    assign ANew           = {A[31:4], NewWordOffset, A[1:0]};
+    assign HAddrF         = ANew;
 
-    // Cache Memory
-    // instr_cache_memory #(lines, tagbits, blocksize) icm(.*);
-    logic [3:0] ActiveByteMask;
-    logic [31:0] CacheWD;
-    logic [1:0] CacheRDSel;
-    logic DirtyIn, W1D, W2D, vin, clean;
+    assign CacheWD        = HRData;
+    assign CacheRDSel     = WordOffset;
+    assign vin            = enable; // Only validate cache lines when enabled
+
+    // Disable writeback behavior (read only cache)
+    assign DirtyIn        = 1'b0;   
+    assign cleanCurr      = 1'b0;   
     assign ActiveByteMask = 4'b1111;
-    assign CacheWD = HRData;
-    assign CacheRDSel = WordOffset;
-    assign DirtyIn = 1'b0; // Disabling writeback functionality
-    assign vin = enable;
-    assign cleanCurr = 1'b0;   // Disabling writeback functionality
-    data_writeback_associative_cache_memory #(lines, tagbits, blocksize) icm(.*);
+
+    data_writeback_associative_cache_memory #(lines,tbits,bsize) icm (
+        .clk           (clk           ),
+        .reset         (reset         ),
+        .W1WE          (W1WE          ),
+        .W2WE          (W2WE          ),
+        .DirtyIn       (DirtyIn       ),
+        .vin           (vin           ),
+        .cleanCurr     (cleanCurr     ),
+        .invalidate    (invalidate    ),
+        .CacheWD       (CacheWD       ),
+        .ANew          (ANew          ),
+        .PhysTag       (PhysTag       ),
+        .ActiveByteMask(ActiveByteMask),
+        .CacheRDSel    (CacheRDSel    ),
+        .W1V           (W1V           ),
+        .W2V           (W2V           ),
+        .W1D           (W1D           ),
+        .W2D           (W2D           ),
+        .CurrLRU       (CurrLRU       ),
+        .W1Tag         (W1Tag         ),
+        .W2Tag         (W2Tag         ),
+        .W1RD          (W1RD          ),
+        .W2RD          (W2RD          )
+    );
 
     // Cache Controller
-    assign Tag = PhysTag;  
-    instr_cache_controller #(tagbits) icc(.*);
+    instr_cache_controller #(tbits) icc (
+        .clk          (clk          ),
+        .reset        (reset        ),
+        .enable       (enable       ),
+        .PAReady      (PAReady      ),
+        .W1V          (W1V          ),
+        .W2V          (W2V          ),
+        .CurrLRU      (CurrLRU      ),
+        .BusReady     (BusReady     ),
+        .WordOffset   (WordOffset   ),
+        .W1Tag        (W1Tag        ),
+        .W2Tag        (W2Tag        ),
+        .PhysTag      (PhysTag      ),
+        .Counter      (Counter      ),
+        .W1WE         (W1WE         ),
+        .W2WE         (W2WE         ),
+        .WaySel       (WaySel       ),
+        .IStall       (IStall       ),
+        .ResetCounter (ResetCounter ),
+        .HRequestF    (HRequestF    ),
+        .NewWordOffset(NewWordOffset)
+    );
 
     // Select from the ways
-    logic WaySel;
     mux2 #(32) CacheOutMux(W2RD, W1RD, WaySel, CacheOut);
 
     // Select from cache or memory
