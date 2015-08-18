@@ -1,22 +1,22 @@
 module data_writeback_associative_cache_controller 
-  #(parameter lines, parameter blocksize, parameter tagbits = 14)
+  #(parameter lines, parameter bsize, parameter tbits = 14)
   (input  logic clk, reset, enable, W1V, W2V, CurrLRU, W1D, W2D, clean,
    input  logic IStall, MemWriteM, MemtoRegM, BusReady, PAReady,
    // input  logic IStall, MemWriteM, MemtoRegM, BusReady, 
    input  logic [1:0] WordOffset,
    input  logic [3:0] ByteMask,
    input  logic [31:0] A,
-   input  logic [tagbits-1:0] W1Tag, W2Tag, PhysTag, VirtTag, 
+   input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag, VirtTag, 
    output logic Stall, HWriteM, HRequestM, BlockWE, ResetCounter,
    output logic W1WE, W2WE, W1EN, UseWD, UseCacheA, DirtyIn, WaySel, RDSel,
    output logic cleanCurr, RequestPA,
    output logic [1:0] CacheRDSel, 
    output logic [3:0] ActiveByteMask, WDSel,
-   output logic [tagbits-1:0] CachedTag,
+   output logic [tbits-1:0] CachedTag,
    output logic [$clog2(lines)-1:0] BlockNum,
-   output logic [$clog2(blocksize)-1:0] NewWordOffset);
+   output logic [$clog2(bsize)-1:0] NewWordOffset);
 
-  logic [tagbits-1:0] Tag, PrevPTag;
+  logic [tbits-1:0] Tag, PrevPTag;
   logic CWE;
 
   // Writeback cache states
@@ -55,8 +55,8 @@ module data_writeback_associative_cache_controller
   assign WordAccess = (ByteMask == 4'b1111);
 
   //-----------------TAG LOGIC--------------------
-  flopenr #(tagbits) tagReg(clk, reset, PAReady, PhysTag, PrevPTag);
-  mux2 #(tagbits) tagMux(PrevPTag, PhysTag, PAReady, Tag);
+  flopenr #(tbits) tagReg(clk, reset, PAReady, PhysTag, PrevPTag);
+  mux2 #(tbits) tagMux(PrevPTag, PhysTag, PAReady, Tag);
 
   //------------HIT, DIRTY, VALID-----------------
   // Create Dirty Signal
@@ -86,7 +86,7 @@ module data_writeback_associative_cache_controller
   // Create Cached Tag
   logic TagSel;
   mux2 #(1) TagSelMux(W1EN, W1D, clean, TagSel);
-  mux2 #(tagbits) CachedTagMux(W2Tag, W1Tag, TagSel, CachedTag);
+  mux2 #(tbits) CachedTagMux(W2Tag, W1Tag, TagSel, CachedTag);
 
   // Dirty Mux
   logic Dirty;
@@ -197,7 +197,7 @@ module data_writeback_associative_cache_controller
   assign cleanCurr = (state == WRITEBACK) & BusReady;
 
   // Create the block offset for the cache
-  mux2 #($clog2(blocksize)) WordOffsetMux(Counter, WordOffset, ResetCounter, 
+  mux2 #($clog2(bsize)) WordOffsetMux(Counter, WordOffset, ResetCounter, 
                                           NewWordOffset);
   mux2 #(8) BlockNumMux(A[$clog2(lines)-1 + 4:4], 
                    FlushA[$clog2(lines)-1:0], clean, BlockNum);

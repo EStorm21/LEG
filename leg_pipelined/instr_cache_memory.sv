@@ -1,24 +1,24 @@
-module instr_cache_memory #(parameter lines = 65536, parameter tagbits = 14, 
-                           parameter blocksize = 4)
+module instr_cache_memory #(parameter lines = 65536, parameter tbits = 14, 
+                           parameter bsize = 4)
                     (input logic clk, reset, W1WE, W2WE, ResetCounter,
                      input logic [1:0] WordOffset,
                      input logic [31:0] HRData, ANew, 
                      output logic W1V, W2V, W1Hit, W2Hit, CurrLRU,
-                     output logic [tagbits-1:0] W1Tag, W2Tag,
+                     output logic [tbits-1:0] W1Tag, W2Tag,
                      output logic [31:0] W1RD, W2RD);
 
   parameter setbits = $clog2(lines);
-  parameter blockoffset = $clog2(blocksize);
+  parameter blockoffset = $clog2(bsize);
 
-  logic [tagbits-1:0] tag[lines-1:0]; // n lines x tagbits
+  logic [tbits-1:0] tag[lines-1:0]; // n lines x tbits
   logic [lines-1:0] v, LRU;                // n lines x 1 bit
   logic [setbits-1:0]  set;           // n lines 16 bit address
   logic [31:0] rd3, rd2, rd1, rd0;    // Four words of instruction cache line
-  logic [tagbits-1:0] Tag;
-  logic [blocksize*32-1:0] W1BlockOut, W2BlockOut;
+  logic [tbits-1:0] Tag;
+  logic [bsize*32-1:0] W1BlockOut, W2BlockOut;
 
   // Create LRU Table
-  assign set = ANew[blocksize+setbits-1:blocksize];
+  assign set = ANew[bsize+setbits-1:bsize];
   always_ff @(posedge clk, posedge reset)
       if(reset) begin
           LRU <= 'b0;
@@ -28,18 +28,18 @@ module instr_cache_memory #(parameter lines = 65536, parameter tagbits = 14,
   assign CurrLRU = LRU[set];
 
   // Create the logic for a Hit.
-  assign Tag = ANew[31:31-tagbits+1];
+  assign Tag = ANew[31:31-tbits+1];
   assign W1Hit = (W1V & (Tag == W1Tag));
   assign W2Hit = (W2V & (Tag == W2Tag));
   assign Hit = W1Hit | W2Hit;
 
   // Way 1
-  instr_cache_way #(lines, tagbits, blocksize) way1(
+  instr_cache_way #(lines, tbits, bsize) way1(
      .clk(clk), .reset(reset), .WD(HRData), .A(ANew), .WE(W1WE),
      .rv(W1V), .RTag(W1Tag), .RD(W1BlockOut));
 
   // Way 2
-  instr_cache_way #(lines, tagbits, blocksize) way2(
+  instr_cache_way #(lines, tbits, bsize) way2(
      .clk(clk), .reset(reset), .WD(HRData), .A(ANew), .WE(W2WE), 
      .rv(W2V), .RTag(W2Tag), .RD(W2BlockOut));
 

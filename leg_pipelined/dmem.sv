@@ -1,9 +1,14 @@
-module dmem
-           (input  logic        clk, we, re, HSEL, 
-            input  logic [31:0] a,
-            input  logic [31:0] wd,
-            output logic [31:0] rd,
-            output logic Valid);
+// dmem.sv
+// mwaugaman@hmc.edu 8 August 2015
+// Byte Addressable Memory simulation for LEG v5
+
+module dmem (
+  input  logic        clk, we, re, HSEL,
+  input  logic [31:0] a    , wd,
+  input  logic [ 2:0] HSIZE,
+  output logic [31:0] rd   ,
+  output logic        Valid
+);
 
   parameter MEM_SIZE = 67108864;
   logic [31:0] RAM[MEM_SIZE:0];
@@ -12,25 +17,49 @@ module dmem
   // ------------------ Actual Memory ----------------------
   integer i;
   initial
-  begin
-  // for(i = 0; i < MEM_SIZE; i = i + 1) begin
-  //   RAM[i] = 32'b0;
-  // end
+    begin
+      // Initialize RAM to 0
+      // for(i = 0; i < MEM_SIZE; i = i + 1) begin
+      //   RAM[i] = 32'b0;
+      // end
       $readmemh("C:/Users/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
+      // $readmemh("C:/Users/Max/Google Drive/Clay-Wolkin/SourceTree2/Tests/ldm.dat",RAM);
       // $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
-     // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/LEG/tests/simTest.dat",RAM); //teqrs
-       // $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
+      // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/LEG/tests/simTest.dat",RAM); //teqrs
+      // $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
       //$readmemh("C:/Users/Sam/Documents/CW/LEG/LEG/tests/simTest.dat", RAM);
-      end
+    end
   assign rd = RAM[a[$clog2(MEM_SIZE)+1:2]];
 
-  // Write a word
-  always_ff @(posedge clk) 
-  begin
-    if (we & HSEL) begin 
-       RAM[a[$clog2(MEM_SIZE)+1:2]] <= wd; 
+  // Write a byte, halfword, or word
+  always_ff @(posedge clk)
+    begin
+      if (we & HSEL) begin
+        case (HSIZE[1:0])
+
+          // Byte Write
+          2'b00:begin
+            case (a[1:0])
+              2'b00: RAM[a[$clog2(MEM_SIZE)+1:2]] <= {rd[31:8], wd[7:0]};
+              2'b01: RAM[a[$clog2(MEM_SIZE)+1:2]] <= {rd[31:16], wd[15:8], rd[7:0]};
+              2'b10: RAM[a[$clog2(MEM_SIZE)+1:2]] <= {rd[31:24], wd[23:16], rd[15:0]};
+              2'b11: RAM[a[$clog2(MEM_SIZE)+1:2]] <= {wd[31:24], rd[23:0]};
+            endcase // a[1:0]
+          end
+
+          // Halfword Write
+          2'b01: begin
+            case (a[1])
+              1'b0: RAM[a[$clog2(MEM_SIZE)+1:2]] <= {rd[31:16], wd[15:0]};
+              1'b1: RAM[a[$clog2(MEM_SIZE)+1:2]] <= {wd[31:16], rd[15:0]};
+            endcase // a[1]
+          end
+
+          // Word Write
+          2'b10: RAM[a[$clog2(MEM_SIZE)+1:2]] <= wd;
+        endcase
+      end
     end
-  end   
 
 
- endmodule
+endmodule
