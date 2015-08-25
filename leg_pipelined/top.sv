@@ -154,9 +154,9 @@ module top (
     .DRequestPA(DRequestPA ),
     .HReadyF   (BusReadyF  ),
     .HReadyM   (BusReadyM  ),
-    .HAddr     (CPUHAddr   ),
-    .HWrite    (CPUHWrite  ),
-    .HRequest  (CPUHRequest)
+    .CPUHAddr     (CPUHAddr   ),
+    .CPUHWrite    (CPUHWrite  ),
+    .CPUHRequest  (CPUHRequest)
   );
 
   // Create an ahb memory

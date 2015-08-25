@@ -1,6 +1,6 @@
 module mask_to_hsize (
 	input logic [3:0] ByteMask,
-	input logic [2:0] HSIZE,
+	output logic [2:0] HSIZE
 );
 
 // FIXME: Remove this file - Extract byteOrWord from controller.sv to top.sv
@@ -29,6 +29,7 @@ module mask_to_hsize (
  	4'b1111: HSIZE = 3'b011;
  	default: begin
  		HSIZE = 3'b111;
+ 		// FIXME: Remove debugging statement
  		$display("HSIZE set to 3'b111. ByteMask = %h", ByteMask);
  	end
  endcase // ByteMask
