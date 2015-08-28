@@ -1,6 +1,6 @@
 module instr_cache_memory #(parameter lines = 65536, parameter tbits = 14, 
                            parameter bsize = 4)
-                    (input logic clk, reset, W1WE, W2WE, ResetCounter,
+                    (input logic clk, reset, W1WE, W2WE, ResetBlockOff,
                      input logic [1:0] WordOffset,
                      input logic [31:0] HRData, ANew, 
                      output logic W1V, W2V, W1Hit, W2Hit, CurrLRU,

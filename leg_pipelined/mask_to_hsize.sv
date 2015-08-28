@@ -20,17 +20,17 @@ module mask_to_hsize (
  // HSIZE = 3'b111 : Undefined behavior
  always_comb
  case(ByteMask)
- 	4'b0001: HSIZE = 3'b001;
- 	4'b0010: HSIZE = 3'b001;
- 	4'b0100: HSIZE = 3'b001;
- 	4'b1000: HSIZE = 3'b001;
- 	4'b0011: HSIZE = 3'b010;
- 	4'b1100: HSIZE = 3'b010;
- 	4'b1111: HSIZE = 3'b011;
+ 	4'b0001: HSIZE = 3'b000;
+ 	4'b0010: HSIZE = 3'b000;
+ 	4'b0100: HSIZE = 3'b000;
+ 	4'b1000: HSIZE = 3'b000;
+ 	4'b0011: HSIZE = 3'b001;
+ 	4'b1100: HSIZE = 3'b001;
+ 	4'b1111: HSIZE = 3'b010;
  	default: begin
  		HSIZE = 3'b111;
  		// FIXME: Remove debugging statement
- 		$display("HSIZE set to 3'b111. ByteMask = %h", ByteMask);
+ 		$display("HSIZE set to 3'b111. ByteMask = %h at time %d", ByteMask, $time);
  	end
  endcase // ByteMask
 

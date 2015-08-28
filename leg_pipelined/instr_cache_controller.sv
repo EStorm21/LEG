@@ -8,7 +8,7 @@ module instr_cache_controller #(parameter tbits = 14) (
   input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag,
   output logic [      1:0] Counter      ,
   output logic             W1WE, W2WE, WaySel,
-  output logic             IStall, ResetCounter, HRequestF,
+  output logic             IStall, ResetBlockOff, HRequestF,
   output logic [      1:0] NewWordOffset
 );
 
@@ -52,11 +52,11 @@ module instr_cache_controller #(parameter tbits = 14) (
   assign IStall =  (state == MEMREAD) | ((state == READY) & ~Hit);
   assign CWE    = ( (state == MEMREAD) & BusReady | ( (state == READY) & ~Hit & BusReady) );
   assign HRequestF  = (state == MEMREAD) | ((state == READY) & ~Hit);
-  assign ResetCounter = ( (state == READY) & Hit ) | ( state == NEXTINSTR );
+  assign ResetBlockOff = ( (state == READY) & Hit ) | ( state == NEXTINSTR );
 
   // Create Counter for sequential bus access
   always_ff @(posedge clk, posedge reset)
-    if(reset | ResetCounter) begin
+    if(reset | ResetBlockOff) begin
       CounterMid <= 0;
     end else begin
       if (BusReady) begin
@@ -81,6 +81,6 @@ module instr_cache_controller #(parameter tbits = 14) (
   assign W2WE = W2EN & CWE;
 
    // Create the block offset for the cache
-  mux2 #(2) WordOffsetMux(Counter, WordOffset, ResetCounter, NewWordOffset);
+  mux2 #(2) WordOffsetMux(Counter, WordOffset, ResetBlockOff, NewWordOffset);
 
 endmodule

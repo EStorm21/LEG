@@ -415,7 +415,8 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
                     (state == TINYTRANS) ) & CPUHWrite;
   
   // PAReady logic
-  assign PAReady = (state == SECTIONTRANS) |
+  assign PAReady = MMUEn |
+                  (state == SECTIONTRANS) |
                   (state == LARGETRANS)   |
                   (state == SMALLTRANS) |
                   (state == TINYTRANS);

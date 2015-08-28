@@ -30,7 +30,7 @@ module data_writeback_associative_cache #(
     logic [         31:0] A             ;
     logic [          3:0] ActiveByteMask, WDSel;
     logic [blockbits-1:0] NewWordOffset ;
-    logic                 ResetCounter, DirtyIn, vin;
+    logic                 ResetBlockOff, DirtyIn, vin;
     logic                 UseWD, BlockWE, cleanCurr;
     logic [$clog2(lines)-1:0] BlockNum;
     logic [setbits-1:0] set       ;

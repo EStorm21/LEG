@@ -108,7 +108,7 @@ module top (
   );
 
   parameter dLines = 256;   // Number of lines in D$
-  parameter dbsize = 4; // bsize of the D$
+  parameter dbsize = 4;     // block size of the D$
 
   // D$
   data_writeback_associative_cache #(dbsize,dLines) data_cache (
@@ -176,6 +176,10 @@ module top (
 
   // Create the mmu
   mmu mmuInst(.*);
+
+  // Set HSIZE from bytemask
+  // FIXME: Use signals from control unit
+  mask_to_hsize mth(ByteMaskM, HSIZE);
 
   assign WordAccess = 1'b0;   // Assuming byte or halfword accesses
   assign SupMode    = 1'b1;      // in supervisor mode

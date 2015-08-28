@@ -57,6 +57,7 @@ module dmem (
 
           // Word Write
           2'b10: RAM[a[$clog2(MEM_SIZE)+1:2]] <= wd;
+          default: $display("dmem unknown HSIZE[1:0] = %b, at %d", HSIZE[1:0], $time);
         endcase
       end
     end

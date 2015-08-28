@@ -23,7 +23,7 @@ module instr_cache #(
     logic [          3:0] ActiveByteMask;
     logic [blockbits-1:0] NewWordOffset ;
     logic [          1:0] CacheRDSel, Counter, WordOffset;
-    logic                 W1V, W2V, W1WE, W2WE, ResetCounter, CurrLRU, DirtyIn, W1D, W2D, vin, WaySel;
+    logic                 W1V, W2V, W1WE, W2WE, ResetBlockOff, CurrLRU, DirtyIn, W1D, W2D, vin, WaySel;
 
     // Create New Address using the counter as the word offset
     assign WordOffset     = A[blockbits+1:2];
@@ -83,7 +83,7 @@ module instr_cache #(
         .W2WE         (W2WE         ),
         .WaySel       (WaySel       ),
         .IStall       (IStall       ),
-        .ResetCounter (ResetCounter ),
+        .ResetBlockOff (ResetBlockOff ),
         .HRequestF    (HRequestF    ),
         .NewWordOffset(NewWordOffset)
     );
