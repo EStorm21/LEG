@@ -3,7 +3,7 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
            input  logic SupMode, WordAccess, DStall, IStall,
            input  logic StallD, FlushD, FlushE,
            input  logic [31:0] DANew, HAddrF, HRData,
-           input  logic [31:0] control, CP15rd_M, // Cont[0] is the enable bit
+           input  logic [31:0] control, CP15rd_M, // control[0] is the enable bit
            input  logic [17:0] TBase,
            output logic [31:0] HAddr, MMUWriteData, 
            output logic [3:0]  CP15A,
@@ -46,6 +46,8 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   logic        InstrCancelled;
   logic        instr_abort;
   
+  // Address selection for D$ and I$
+  // FIXME: Why not use CPUHAddr from ahb_arbiter?
   mux2 #(32) addrMux(HAddrF, DANew, DStall, CPUHAddr);
   assign FSR[7:4] = Domain;    // Define the location of the domain
   assign FAR = CPUHAddr;       // Set the FAR
@@ -64,14 +66,29 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   // Save last translated address
   //    The caches expect the value on the bus to remain constant for 
   //    one cycle after the stall.
-  // TODO: Can this register and mux be removed?
+  // FIXME: Can this register and mux be removed?
   flopr #(32) HAddrFlop(clk, reset, HAddr, PHAddr);
   mux2 #(32) HAddrMidMux(HAddrMid, PHAddr, SelPrevAddr, HAdderOut);
   flopr #(1) StallFlop(clk, reset, (DStall | IStall), PStall);
 
   // MMUWriteData Mux
   mux2 #(32) WDMux(FAR, FSR, WDSel, MMUWriteData);
-  
+
+  // Domain flop: Hold onto the translation domain for faults. 
+  // Update when domain is read
+  flopenr #(4) DomainFlop(clk, reset, 
+    (state == SECTIONTRANS | state == SECONDFETCH), PHRData[8:5], Domain);
+
+  // Instruction Tracker
+  // --- Track whether an instruction was executed.
+  // --- If an instruction that causes a memory fault is executed, 
+  // --- raise a prefetch abort
+  instr_tracker it(.*);
+
+  // ====================================================================================
+  // ========================= Translation State Machine ================================
+  // ====================================================================================
+
   typedef enum logic [3:0] {READY, SECTIONTRANS, COARSEFETCH, FINEFETCH, 
       SMALLTRANS, LARGETRANS, TINYTRANS, INSTRFAULT, FAULTFSR, FAULTFAR} statetype;
   statetype state, nextstate;
@@ -143,12 +160,9 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
     default:        nextstate <= READY;
     endcase
 
-  // Domain flop: Hold onto the translation domain for faults. 
-  // Update when domain is read
-  flopenr #(4) DomainFlop(clk, reset, 
-    (state == SECTIONTRANS | state == SECONDFETCH), PHRData[8:5], Domain);
-
-  // Output Logic
+  // ====================================================================================
+  // ========================= Translation Output Logic =================================
+  // ====================================================================================
 
   // HAddrMid logic
   // TODO: Make this structural
@@ -164,7 +178,41 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
       default: HAddrMid = 32'h9999_9999;
     endcase
 
-  // Fault and FaultCode output logic
+  // SelPrevAddr 
+  assign SelPrevAddr = (state == READY) & (PStall & ~IStall & ~DStall);
+  
+  // HRequestMid Logic
+  assign HRequestMid = (state == COARSEFETCH) |
+                    (state == FINEFETCH)    & CPUHRequest |
+                    (state == SMALLTRANS)   & CPUHRequest |
+                    (state == TINYTRANS)    & CPUHRequest |
+                    (state == LARGETRANS)   & CPUHRequest |
+                    (state == SECTIONTRANS) & CPUHRequest | 
+                    ( (state == READY) & CPUHRequest );
+  
+  // CPUHReady Logic  
+  assign CPUHReadyMid = (state == SECTIONTRANS) & HReady | 
+                        (state == LARGETRANS)   & HReady |
+                        (state == TINYTRANS)    & HReady |
+                        (state == SMALLTRANS)   & HReady;
+  
+  // HWriteMid Logic
+  assign HWriteMid = ( (state == SECTIONTRANS) |
+                    (state == LARGETRANS)   |
+                    (state == SMALLTRANS) |
+                    (state == TINYTRANS) ) & CPUHWrite;
+  
+  // PAReady logic
+  assign PAReady = MMUEn |
+                  (state == SECTIONTRANS) |
+                  (state == LARGETRANS)   |
+                  (state == SMALLTRANS) |
+                  (state == TINYTRANS);
+
+  // ====================================================================================
+  // ============================== Fault Output Logic ==================================
+  // ====================================================================================
+  
   always_comb
     case (state)
       READY: 
@@ -275,7 +323,6 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   assign vectorRegion = HAddrMid < 32'h0000_001f;
   assign VectorException = (CPSR4 == 1'b0) & DataAccess & vectorRegion;
 
-
   // terminal and vector exception Logic
   // TODO: Separate behavior for instruction and data fault
   always_comb
@@ -357,7 +404,6 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   // --- If an instruction that causes a memory fault is executed, 
   // --- raise a prefetch abort
   assign instr_abort = (Fault & ~DataAccess) & ~(state == INSTRFAULT);
-  instr_tracker it(.*);
 
   // Instruction Fault
   assign PrefetchAbort = (state == INSTRFAULT) & InstrExecuting;
@@ -390,35 +436,6 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
       FSR[3:0] <= FaultCode;
     end
 
-  // SelPrevAddr 
-  assign SelPrevAddr = (state == READY) & (PStall & ~IStall & ~DStall);
   
-  // HRequestMid Logic
-  assign HRequestMid = (state == COARSEFETCH) |
-                    (state == FINEFETCH)    & CPUHRequest |
-                    (state == SMALLTRANS)   & CPUHRequest |
-                    (state == TINYTRANS)    & CPUHRequest |
-                    (state == LARGETRANS)   & CPUHRequest |
-                    (state == SECTIONTRANS) & CPUHRequest | 
-                    ( (state == READY) & CPUHRequest );
-  
-  // CPUHReady Logic  
-  assign CPUHReadyMid = (state == SECTIONTRANS) & HReady | 
-                        (state == LARGETRANS)   & HReady |
-                        (state == TINYTRANS)    & HReady |
-                        (state == SMALLTRANS)   & HReady;
-  
-  // HWriteMid Logic
-  assign HWriteMid = ( (state == SECTIONTRANS) |
-                    (state == LARGETRANS)   |
-                    (state == SMALLTRANS) |
-                    (state == TINYTRANS) ) & CPUHWrite;
-  
-  // PAReady logic
-  assign PAReady = MMUEn |
-                  (state == SECTIONTRANS) |
-                  (state == LARGETRANS)   |
-                  (state == SMALLTRANS) |
-                  (state == TINYTRANS);
 
 endmodule
