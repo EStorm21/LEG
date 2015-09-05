@@ -4,6 +4,7 @@ module data_writeback_associative_cache_way
     (input logic clk, reset, WE, DirtyIn, vin, invalidate, cleanCurr,
      input logic [31:0] WD, 
      input logic [31:0] A, // TODO: Make a capitalized
+     input logic [tagbits-1:0] PhysTag,
      input logic [3:0]  ByteMask,
      output logic RV, Dirty,
      output logic [tagbits-1:0] RTag,
@@ -43,7 +44,7 @@ module data_writeback_associative_cache_way
       v         <= 'b0;
       DirtyBits <= 'b0;
     end else if (WE) begin
-      tag[set]      <= A[31:31-tagbits+1]; // Write the tag
+      tag[set]      <= PhysTag; // Write the tag
       v[set]        <= vin;               // write the valid bit
       
       // Clean the block if writing an entire block

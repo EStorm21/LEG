@@ -1,16 +1,20 @@
 // Cache controller works according to schematic
 module instr_cache_controller #(parameter tagbits = 14)
-  (input  logic clk, reset, enable,
-   input  logic W1V, W2V, CurrLRU,
-   input  logic BusReady,
+  (input  logic clk, reset, enable, PAReady, W1V, W2V, CurrLRU, BusReady,
    input  logic [1:0] WordOffset,
-   input  logic [tagbits-1:0] W1Tag, W2Tag, Tag,
+   input  logic [tagbits-1:0] W1Tag, W2Tag, PhysTag,
    output logic [1:0] Counter,
    output logic W1WE, W2WE, WaySel,
    output logic IStall, ResetCounter, HRequestF,
    output logic [1:0] NewWordOffset);
 
   logic W1EN, W2EN, Hit, W2Hit;
+  logic [tagbits-1:0] Tag, PrevPTag;
+
+  //-----------------TAG LOGIC--------------------
+  flopenr #(tagbits) tagReg(clk, reset, PAReady, PhysTag, PrevPTag);
+  mux2 #(tagbits) tagMux(PrevPTag, PhysTag, PAReady, Tag);
+
   // Create Hit signal 
   assign W1Hit = (W1V & (Tag == W1Tag));
   assign W2Hit = (W2V & (Tag == W2Tag));
@@ -30,7 +34,7 @@ module instr_cache_controller #(parameter tagbits = 14)
   // next state logic
   always_comb
     case (state)
-      READY:      nextstate <= Hit ? READY : MEMREAD;
+      READY:      nextstate <= (Hit | ~PAReady & enable) ? READY : MEMREAD;
       NEXTINSTR:  nextstate <= READY;
       MEMREAD:    nextstate <= ( BusReady & ( (Counter == 3) | ~enable ) ) ? NEXTINSTR : MEMREAD;
       default: nextstate <= READY;

@@ -3,17 +3,18 @@
 // Data and Instruction Cache for LEG v4
 
 //--------------------CACHE-----------------------------
-module instr_cache #(parameter blocksize = 4, parameter lines = 2)
+module instr_cache 
+    #(parameter blocksize = 4, parameter lines = 2,
+    parameter setbits = $clog2(lines),
+    parameter blockbits = $clog2(blocksize),
+    parameter tagbits = 30-blockbits-setbits)
                   (input  logic clk, reset, enable, BusReady, invalidate,
+                   input  logic PAReady, 
                    input  logic [31:0] A, 
+                   input  logic [tagbits-1:0] PhysTag,
                    input  logic [31:0] HRData,
                    output logic [31:0] RD, HAddrF,
                    output logic IStall, HRequestF);
-
-    parameter setbits = $clog2(lines);
-    parameter blockbits = $clog2(blocksize);
-    // tagbits = 32 - byte offset - block offset - set bits
-    parameter tagbits = 30-blockbits-setbits;
 
     // W1V:   valid bit for way 1
     // W1EN:  enable way 1, select way 1 for writeback
@@ -54,7 +55,7 @@ module instr_cache #(parameter blocksize = 4, parameter lines = 2)
     data_writeback_associative_cache_memory #(lines, tagbits, blocksize) icm(.*);
 
     // Cache Controller
-    assign Tag = ANew[31:31-tagbits+1];  
+    assign Tag = PhysTag;  
     instr_cache_controller #(tagbits) icc(.*);
 
     // Select from the ways
