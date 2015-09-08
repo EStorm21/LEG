@@ -230,9 +230,7 @@ def makeMemInstr(instruction, counter):
 
 
 def makeNopInstr(counter):
-	program = "l"+str(counter)+": "			# Line number
-	program += "nop"
-	program += "\n"
+	program = "l{}: nop\n".format(counter)
 	return program
 
 
@@ -254,23 +252,23 @@ def initializeProgram():
 	program += "\n"
 	program += "next: "
 	for i in range(1,13): 							# Initializing registers
-		program += "ldr R" + str(i) + ", val"+ str(i) + "\n"
-		program += "b next" + str(i) + "\n"
-		program += "val" + str(i) + ": .word " + str(randint(1,4294967295)) + "\n"
-		program += "next" + str(i) + ": "
+		program += "ldr R{0}, val{0}\n".format(i)
+		program += "b next{}\n".format(i)
+		program += "val{}: .word {}\n".format(i, randint(1,4294967295))
+		program += "next{}:".format(i)
 	program += "ldr R14, val14\n"
 	program += "b next14\n"
-	program += "val14: .word " + str(randint(1,4294967295)) + "\n"
+	program += "val14: .word {}\n".format(randint(1,4294967295))
 	program += "\n"
 	program += "# INITIALIZING STACK\n"
 	program += "\n"
 	program += "next14: "
 	for i in range(11): 							# Aribtrarily initializing stack so we can compare exact values
-		program += "ldr R1, val"+ str(i+15) + "\n"
-		program += "b next" + str(i+15) + "\n"
-		program += "val" + str(i+15) + ": .word " + str(randint(1,4294967295)) + "\n"
-		program += "next" + str(i+15) + ": "
-		program += "str R1, [sp, #-" + str(i*4) + "]\n"
+		program += "ldr R1, val{}\n".format(i+15)
+		program += "b next{}\n".format(i+15)
+		program += "val{}: .word {}\n".format(i+15, randint(1,4294967295))
+		program += "next{}:".format(i+15)
+		program += "str R1, [sp, #-{}]\n".format(i*4)
 	program += "\n"
 	return program
 
