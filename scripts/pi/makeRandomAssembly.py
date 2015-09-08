@@ -155,24 +155,30 @@ def makeDataProcInstr(instruction, counter):
 	else:
 		imm = "#{}".format(randint(1,10)*4)
 		program += choice([Rm, imm]) + "\n"
-		
+
 	return program
 
 
 def makeBBranchInstr(counter):
-	program = "l"+str(counter)+": "			# Line number
 	instrBlock = randint(1,6)				# get random integer to represent number of instructions in the backward branch
-	program += "b" + choice(Conditions) + " l" + str(counter+instrBlock+3) + "\n"
+	cond = choice(Conditions)
+	# branch past the instruction block to the backwards branch
+	program = "l:{} b{} l{}\n".format(counter, cond, counter+instrBlock+3)
 	counter += 1
-	program += "l" + str(counter) + ": add R1, R0, #" + str(randint(1,255)) + "\n"
+	program += "l{}: add R1, R0, #{}\n".format(counter, randint(1,255))
 	counter += 1
+
+	# fill in the instruction block with arithmetic
 	for i in range(instrBlock):				# adding random arithmetic instructions in backward branch section
-		instrChoice = choice(arithmetic)
-		program += makeDataProcInstr(instrChoice, counter)
+		instrChoice = choice(arithmetic+logicOps)
+		program += makeDataProcInstr(choice(instrChoice, counter)
 		counter += 1
-	program += "l" + str(counter) + ": b l" + str(counter+2) + "\n"
+		
+	# branch past the backwards branch
+	program += "l{}: b l{}\n".format(counter, counter+2)
 	counter += 1
-	program += "l" + str(counter) + ": b l" + str(counter-instrBlock-1) + "\n"
+	# branch to the start of the instruction block
+	program += "l{}: b l{}\n".format(counter, counter-instrBlock-1)
 	return program, counter
 
 
