@@ -163,17 +163,18 @@ def makeBBranchInstr(counter):
 	instrBlock = randint(1,6)				# get random integer to represent number of instructions in the backward branch
 	cond = choice(Conditions)
 	# branch past the instruction block to the backwards branch
-	program = "l:{} b{} l{}\n".format(counter, cond, counter+instrBlock+3)
+	program = "l{}: b{} l{}\n".format(counter, cond, counter+instrBlock+3)
 	counter += 1
+	# This instruction is skipped by the bbranch
 	program += "l{}: add R1, R0, #{}\n".format(counter, randint(1,255))
 	counter += 1
 
 	# fill in the instruction block with arithmetic
 	for i in range(instrBlock):				# adding random arithmetic instructions in backward branch section
 		instrChoice = choice(arithmetic+logicOps)
-		program += makeDataProcInstr(choice(instrChoice, counter)
+		program += makeDataProcInstr(instrChoice, counter)
 		counter += 1
-		
+
 	# branch past the backwards branch
 	program += "l{}: b l{}\n".format(counter, counter+2)
 	counter += 1
@@ -183,10 +184,9 @@ def makeBBranchInstr(counter):
 
 
 def makeFBranchInstr(counter):
-	program = "l"+str(counter)+": "			# Line number
 	forwardAmt = randint(1,10)
-	program += "b" + choice(Conditions)
-	program += " " + "l"+str(counter+forwardAmt) + "\n"
+	cond = choice(Conditions)
+	program = "l{}: b{} l{}\n".format(counter, cond, counter+forwardAmt)
 	return program
 
 
@@ -276,4 +276,4 @@ def initializeProgram():
 
 
 if __name__ == "__main__":
-	makeProgram(10000)
+	makeProgram(100)
