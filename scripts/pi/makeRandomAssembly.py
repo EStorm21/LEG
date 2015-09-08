@@ -1,5 +1,14 @@
 # Date: 9/07/15
 # Version 4
+#
+# Limitations:
+#  - Does not test write to PC
+#  - Only tests user mode (no interrupts, SR operations)
+#  - does not test coprocessor
+#  - does not test BL
+#  - limited set of DP immediates
+#  - DP immed shifts of 0 or 32
+
 from random import *
 from time import *
 
@@ -10,8 +19,10 @@ Conditions = ["EQ","NE","CS","CC","MI","PL","VS","VC","HI","LS","GE","LT","GT","
 setConditions = Conditions + [c+"s" for c in Conditions]
 
 # Data processing
-shortDataProcessing = ["mov", "mvn", "tst", "teq", "cmn", "cmp"]
-arithmetic = [ "adc", "add", "bic", "clz", "sub", "rsb", "rsc", "sbc", "sub"] + shortDataProcessing
+DPnoS = ["clz", "cmn", "cmp", "teq", "tst"]
+DPnoRd = ["cmn", "cmp", "teq", "tst"]
+DPnoRn = ["clz", "mov", "mvn"]
+arithmetic = [ "adc", "add", "bic", "clz", "sub", "rsb", "rsc", "sbc", "sub", "mov", "mvn", "tst", "teq", "cmn", "cmp"]
 logicOps = ["and","orr", "eor"]
 
 # Branch
@@ -31,20 +42,15 @@ mem = wbmem + hmem
 multiply = ["mul", "mla", "umull", "umlal", "smull", "smlal"]
 
 instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[mem]*5+[multiply]*5
-shifters = ["ASR", "LSL", "LSR", "ROR", "RRX"]
+shifters = ["ASR", "LSL", "LSR", "ROR", "RRX"] + [None]*5
 
 
 regList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]
 RegsWithPC = regList + ["R15"]
 
 SrcRegList = list(regList)
-regOrImmList = list(regList)
-for i in range(16):
-	regOrImmList += ["#" + str(randint(1,10)*4)]
 
-shiftRegOrImmList = list(regList)
-for i in range(16):
-	shiftRegOrImmList += ["#" + str(randint(1,31))]
+
 
 
 def makeProgram(numInstru):
@@ -80,10 +86,13 @@ def makeProgram(numInstru):
 			prog, counter = makeMultiplyInstr(instrChoice, counter)
 			program += prog
 
-		else:										# ldr & str instructions
-			program += choice(wbmem) + choice(Conditions)
-			program += " " + choice(regList) + ", "
-			program += " " + "[sp, #-"+str(randint(1,10)*4) + "]\n"
+		# memory instructions
+		elif instrList == mem:										# ldr & str instructions
+			program += makeMemInstr(instrChoice, counter)
+
+		# leftover case (branch graveyard)
+		else:
+			program += makeNopInstr(counter)
 
 		counter += 1
 	program += "end: b end\n"
@@ -93,29 +102,58 @@ def makeProgram(numInstru):
 
 def makeDataProcInstr(instruction, counter):
 	program = "l"+str(counter)+": "			# Line number
-	regChoice = choice(regList)
-	# Note that regChoice will never be R15 if not in regList
-	if regChoice == "R15" and (counter < 11 or counter > numInstru-11): #Check if PC counter operation is near beginning or end
-		program += instruction + choice(Conditions)
-		program += " R15, R15, "
-		program += " #0" + "\n"
-	elif regChoice == "R15":	# Check if PC with anything but sub (add)
-		program += "add" + choice(Conditions)
-		program += " R15, R15, "
-		program += " #" + str(randint(1,5)*4) + "\n"
-	else:	# All other cases (without PC counter)
-		program += instruction + choice(setConditions)
-		program += " " + regChoice 
-		if instruction not in shortDataProcessing:
-			program += ", " + choice(regList) 
-		if (choice(range(2))): #do a shift sometimes
-			shifter = choice(shifters)
-			program += ", " + choice(regList) + ", " + shifter
-			if (shifter != "RRX"):
-				program += " " + choice(shiftRegOrImmList)
-			program += "\n"
+
+	# choose shift
+	shifter = choice(shifters)
+	RSR = None
+	if shifter not in [None,"RRX"]:
+		RSR = choice([0,1])
+
+	# choose registers. Can't use PC in RSR
+	Rd = choice(regList)
+	Rn = choice(RegsWithPC)
+	Rm = choice(RegsWithPC)
+	Rs = None
+	if RSR:
+		Rn = choice(regList)
+		Rm = choice(regList)
+		Rs = choice(regList)
+	if instruction == "clz":
+		Rm = choice(regList)
+
+	program += instruction
+
+	# choose conditions
+	if instruction in DPnoS:
+		program += choice(Conditions)
+	else:
+		program += choice(setConditions)
+
+	# add registers
+	if instruction not in DPnoRd:
+		program += " " + Rd 
+	if instruction not in DPnoRn:
+		program += ", " + Rn
+
+	if instruction == "clz":
+		program += ", " + Rm + "\n"
+		return program
+
+	# add shift operand
+	if shifter is not None:
+		program += ", " + Rm + ", " + shifter
+
+		if shifter == "RRX":
+			pass
+		elif RSR:
+			program += ", " + Rs
 		else:
-			program += ", " + choice(regOrImmList) + "\n"
+			program += ", " + "#" + str(randint(1,31))
+
+		program += "\n"
+	else:
+		imm = "#" + str(randint(1,10)*4)
+		program += ", " + choice([Rm, imm]) + "\n"
 	return program
 
 
@@ -182,6 +220,21 @@ def makeMultiplyInstr(instruction, counter):
 	program += "l"+str(counter)+": "			# Line number
 	program += "adds r0, r0, r0\n"
 	return program, counter
+
+
+def makeMemInstr(instruction, counter):
+	program = "l"+str(counter)+": "			# Line number
+	program += instruction + choice(Conditions)
+	program += " " + choice(regList) + ", "
+	program += " " + "[sp, #-"+str(randint(1,10)*4) + "]\n"
+	return program
+
+
+def makeNopInstr(counter):
+	program = "l"+str(counter)+": "			# Line number
+	program += "nop"
+	program += "\n"
+	return program
 
 
 # Set up the stack and registers. The instruction sequence looks strange,
