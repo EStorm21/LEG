@@ -11,32 +11,47 @@ from time import *
 
 seed(time())
 
-arithmetic = [ "adc", "add", "bic", "sub", "rsb", "sbc", "mov", "mvn", "tst", "teq", "cmn", "cmp"]
-shortDataProcessing = ["mov", "mvn", "tst", "teq", "cmn", "cmp"]
-setConditions = ["EQ","NE","CS","CC","MI","PL","VS","VC","HI","LS","GE","LT","GT","LE","EQs","NEs","CSs","CCs","MIs","PLs","VSs","VCs","HIs","LSs","GEs","LTs","GTs","LEs"]+[""]*5
+# Condition codes
 Conditions = ["EQ","NE","CS","CC","MI","PL","VS","VC","HI","LS","GE","LT","GT","LE"]+[""]*5
+setConditions = Conditions + [c+"s" for c in Conditions]
+
+# Data processing
+shortDataProcessing = ["mov", "mvn", "tst", "teq", "cmn", "cmp"]
+arithmetic = [ "adc", "add", "bic", "clz", "sub", "rsb", "rsc", "sbc", "sub"] + shortDataProcessing
 logicOps = ["and","orr", "eor"]
+
+# Branch
 fbranch = ["fb"]
 bbranch = ["bb"]
-memory = ["str","ldr"]
-multiply = ["mul", "mla", "umull", "smull"]
-instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[memory]*5+[multiply]*5
+
+# Load/store word and unsigned byte
+wbmem = ["str","ldr", "ldrb", "strb"]
+wbmem += [i+"t" for i in wbmem]
+
+# Load/store halfword and load signed byte
+hmem = ["ldrh", "ldrsb", "ldrsh", "strh"]
+
+mem = wbmem + hmem
+
+# multiply
+multiply = ["mul", "mla", "umull", "umlal", "smull", "smlal"]
+
+instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[wbmem]*5+[multiply]*5
 shifters = ["ASR", "LSL", "LSR", "ROR", "RRX"]
 
 
-SrcRegList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]
-
-#arithRegList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]
-#arithRegList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14","R15"]
-
 regList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]
-regOrImmList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]
+RegsWithPC = SrcRegList + ["R15"]
+
+SrcRegList = regList
+regOrImmList = regList
 for i in range(16):
 	regOrImmList += ["#" + str(randint(1,10)*4)]
 
-shiftRegOrImmList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]
+shiftRegOrImmList = regList
 for i in range(16):
 	shiftRegOrImmList += ["#" + str(randint(1,31))]
+
 
 def makeProgram(numInstru):
 	program = initializeProgram() #initializes registers to random values
@@ -80,7 +95,7 @@ def makeProgram(numInstru):
 			instrChoice = choice(multiply)
 			program, counter = makeMultiplyInstr(program, instrChoice, counter)
 		else:										# ldr & str instructions
-			program += choice(memory) + choice(Conditions)
+			program += choice(wbmem) + choice(Conditions)
 			program += " " + choice(regList) + ", "
 			program += " " + "[sp, #-"+str(randint(1,10)*4) + "]\n"
 		counter += 1
