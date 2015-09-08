@@ -65,12 +65,8 @@ def makeProgram(numInstru):
 		#print "instr is ", counter, instrChoice		## Uncomment to track instructions used
 
 		# arithmetic ("add/sub") with or without conditions
-		if instrList == arithmetic:					
+		if instrList == arithmetic or instrList == logicOps:					
 			program += makeDataProcInstr(instrChoice, counter)
-
-		# Logic Operations ("and/orr") with or without conditions
-		elif instrList == logicOps:					
-			program += makeLogicOpsInstr(instrChoice, counter)
 
 		# Backward branch operations
 		elif instrList == bbranch and counter < numInstru-11:	
@@ -154,15 +150,6 @@ def makeDataProcInstr(instruction, counter):
 	else:
 		imm = "#" + str(randint(1,10)*4)
 		program += ", " + choice([Rm, imm]) + "\n"
-	return program
-
-
-def makeLogicOpsInstr(instruction, counter):
-	program = "l"+str(counter)+": "			# Line number
-	program += instruction + choice(setConditions) 
-	program += " " + choice(regList) + ", "
-	program += " " + choice(SrcRegList) + ", "
-	program += " " + choice(SrcRegList) + "\n"
 	return program
 
 
