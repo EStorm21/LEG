@@ -1,11 +1,5 @@
-# Date: 4/23/13
-# Version 3
-# Revisions:
-# 	- Added R15 to source registers
-#	- Changed first sub to 'subs'
-#	- Added conditions to adds, subs, ands, orrs
-#	- R15 is also changed
-#	- R15 immediate adjusted for block size (4 bytes) and PC + 8
+# Date: 9/07/15
+# Version 4
 from random import *
 from time import *
 
@@ -36,73 +30,69 @@ mem = wbmem + hmem
 # multiply
 multiply = ["mul", "mla", "umull", "umlal", "smull", "smlal"]
 
-instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[wbmem]*5+[multiply]*5
+instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[mem]*5+[multiply]*5
 shifters = ["ASR", "LSL", "LSR", "ROR", "RRX"]
 
 
 regList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]
-RegsWithPC = SrcRegList + ["R15"]
+RegsWithPC = regList + ["R15"]
 
-SrcRegList = regList
-regOrImmList = regList
+SrcRegList = list(regList)
+regOrImmList = list(regList)
 for i in range(16):
 	regOrImmList += ["#" + str(randint(1,10)*4)]
 
-shiftRegOrImmList = regList
+shiftRegOrImmList = list(regList)
 for i in range(16):
 	shiftRegOrImmList += ["#" + str(randint(1,31))]
 
 
 def makeProgram(numInstru):
-	program = initializeProgram() #initializes registers to random values
+	program = initializeProgram() #initializes  and stack to random values
 	counter = 1
 	program += "# MAIN PROGRAM\n"
 	program += "\n"
-	while counter <= numInstru:
-		#arithList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]+["#"+str(randint(1,9)*4)]*3
-		
 
-		program += "l"+str(counter)+": "			# Line number
+	while counter <= numInstru:
 		instrList = choice(instrs)
-		#print "instr is ", counter, instrList		## Uncomment to track instructions used
-		if instrList == arithmetic:					# arithmetic ("add/sub") with or without conditions
-			instrChoice = choice(instrList)
-			program = makeDataProcInstr(program, instrChoice, counter)
-		elif instrList == logicOps:					# Logic Operations ("add/orr") with or without conditions
-			program += choice(instrList) + choice(setConditions) 
-			program += " " + choice(regList) + ", "
-			program += " " + choice(SrcRegList) + ", "
-			program += " " + choice(SrcRegList) + "\n"
-		elif instrList == bbranch and counter < numInstru-11:	# Backward branch operations
-			instrBlock = randint(1,6)				# get random integer to represent number of instructions in the backward branch
-			program += "b" + choice(Conditions) + " l" + str(counter+instrBlock+3) + "\n"
-			counter += 1
-			program += "l" + str(counter) + ": add R1, R0, #" + str(randint(1,255)) + "\n"
-			counter += 1
-			for i in range(instrBlock):				# adding random arithmetic instructions in backward branch section
-				instrChoice = choice(arithmetic)
-				program += "l"+str(counter)+": "			# Line number
-				program = makeDataProcInstr(program, instrChoice, counter)
-				counter += 1
-			program += "l" + str(counter) + ": b l" + str(counter+2) + "\n"
-			counter += 1
-			program += "l" + str(counter) + ": b l" + str(counter-instrBlock-1) + "\n"
-		elif instrList == fbranch and counter < numInstru-11:	# forward branch operations
-			forwardAmt = randint(1,10)
-			program += "b" + choice(Conditions)
-			program += " " + "l"+str(counter+forwardAmt) + "\n"
+		instrChoice = choice(instrList)
+		#print "instr is ", counter, instrChoice		## Uncomment to track instructions used
+
+		# arithmetic ("add/sub") with or without conditions
+		if instrList == arithmetic:					
+			program += makeDataProcInstr(instrChoice, counter)
+
+		# Logic Operations ("and/orr") with or without conditions
+		elif instrList == logicOps:					
+			program += makeLogicOpsInstr(instrChoice, counter)
+
+		# Backward branch operations
+		elif instrList == bbranch and counter < numInstru-11:	
+			prog, counter = makeBBranchInstr(counter)
+			program += prog
+
+		# forward branch operations
+		elif instrList == fbranch and counter < numInstru-11:	
+			program += makeFBranchInstr(counter)
+
+		# multiply operations
 		elif instrList == multiply:
-			instrChoice = choice(multiply)
-			program, counter = makeMultiplyInstr(program, instrChoice, counter)
+			prog, counter = makeMultiplyInstr(instrChoice, counter)
+			program += prog
+
 		else:										# ldr & str instructions
 			program += choice(wbmem) + choice(Conditions)
 			program += " " + choice(regList) + ", "
 			program += " " + "[sp, #-"+str(randint(1,10)*4) + "]\n"
+
 		counter += 1
 	program += "end: b end\n"
 	print program
 
-def makeDataProcInstr(program, instruction, counter):
+
+
+def makeDataProcInstr(instruction, counter):
+	program = "l"+str(counter)+": "			# Line number
 	regChoice = choice(regList)
 	# Note that regChoice will never be R15 if not in regList
 	if regChoice == "R15" and (counter < 11 or counter > numInstru-11): #Check if PC counter operation is near beginning or end
@@ -128,7 +118,43 @@ def makeDataProcInstr(program, instruction, counter):
 			program += ", " + choice(regOrImmList) + "\n"
 	return program
 
-def makeMultiplyInstr(program, instruction, counter):
+
+def makeLogicOpsInstr(instruction, counter):
+	program = "l"+str(counter)+": "			# Line number
+	program += instruction + choice(setConditions) 
+	program += " " + choice(regList) + ", "
+	program += " " + choice(SrcRegList) + ", "
+	program += " " + choice(SrcRegList) + "\n"
+	return program
+
+
+def makeBBranchInstr(counter):
+	program = "l"+str(counter)+": "			# Line number
+	instrBlock = randint(1,6)				# get random integer to represent number of instructions in the backward branch
+	program += "b" + choice(Conditions) + " l" + str(counter+instrBlock+3) + "\n"
+	counter += 1
+	program += "l" + str(counter) + ": add R1, R0, #" + str(randint(1,255)) + "\n"
+	counter += 1
+	for i in range(instrBlock):				# adding random arithmetic instructions in backward branch section
+		instrChoice = choice(arithmetic)
+		program += makeDataProcInstr(instrChoice, counter)
+		counter += 1
+	program += "l" + str(counter) + ": b l" + str(counter+2) + "\n"
+	counter += 1
+	program += "l" + str(counter) + ": b l" + str(counter-instrBlock-1) + "\n"
+	return program, counter
+
+
+def makeFBranchInstr(counter):
+	program = "l"+str(counter)+": "			# Line number
+	forwardAmt = randint(1,10)
+	program += "b" + choice(Conditions)
+	program += " " + "l"+str(counter+forwardAmt) + "\n"
+	return program
+
+
+def makeMultiplyInstr(instruction, counter):
+	program = "l"+str(counter)+": "			# Line number
 	regChoice = choice(regList)
 	program += instruction + choice(setConditions)
 	if (instruction == "mla"):
@@ -157,6 +183,9 @@ def makeMultiplyInstr(program, instruction, counter):
 	program += "adds r0, r0, r0\n"
 	return program, counter
 
+
+# Set up the stack and registers. The instruction sequence looks strange,
+# but lets us ldr [pc] for each val
 def initializeProgram():
 	program = ""
 	program += ".global main\n"
@@ -193,5 +222,6 @@ def initializeProgram():
 	program += "\n"
 	return program
 
+
 if __name__ == "__main__":
-	makeProgram(1000)
+	makeProgram(100)
