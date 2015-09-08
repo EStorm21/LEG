@@ -42,7 +42,7 @@ mem = wbmem + hmem
 multiply = ["mul", "mla", "umull", "umlal", "smull", "smlal"]
 
 instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[mem]*5+[multiply]*5
-shifters = ["ASR", "LSL", "LSR", "ROR", "RRX"] + [None]*5
+shifters = ["ASR", "LSL", "LSR", "ROR", "RRX"] + [""]*5
 
 
 regList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]
@@ -97,59 +97,65 @@ def makeProgram(numInstru):
 
 
 def makeDataProcInstr(instruction, counter):
-	program = "l"+str(counter)+": "			# Line number
 
 	# choose shift
 	shifter = choice(shifters)
 	RSR = None
-	if shifter not in [None,"RRX"]:
+	# half RSR, half ISR
+	if shifter not in ["","RRX"]:
 		RSR = choice([0,1])
 
-	# choose registers. Can't use PC in RSR
+	# choose registers. 
 	Rd = choice(regList)
 	Rn = choice(RegsWithPC)
 	Rm = choice(RegsWithPC)
 	Rs = None
+	# Can't use PC in RSR or clz
 	if RSR:
 		Rn = choice(regList)
 		Rm = choice(regList)
+		# Only RSR needs Rs
 		Rs = choice(regList)
 	if instruction == "clz":
 		Rm = choice(regList)
 
-	program += instruction
-
 	# choose conditions
+	cond = None
 	if instruction in DPnoS:
-		program += choice(Conditions)
+		cond = choice(Conditions)
 	else:
-		program += choice(setConditions)
+		cond = choice(setConditions)
+
+	# add instruction base 
+	program = "l{}: {}{} ".format(counter, instruction, cond)
 
 	# add registers
 	if instruction not in DPnoRd:
-		program += " " + Rd 
+		program += "{}, ".format(Rd)
 	if instruction not in DPnoRn:
-		program += ", " + Rn
+		program += "{}, ".format(Rn)
 
+	# clz special case
 	if instruction == "clz":
-		program += ", " + Rm + "\n"
+		program += Rm + "\n"
 		return program
 
 	# add shift operand
-	if shifter is not None:
-		program += ", " + Rm + ", " + shifter
+	if shifter != "":
+		program += "{}, {} ".format(Rm, shifter)
 
 		if shifter == "RRX":
 			pass
 		elif RSR:
-			program += ", " + Rs
+			program += Rs
 		else:
-			program += ", " + "#" + str(randint(1,31))
+			program += "#{}".format(randint(1,31))
 
 		program += "\n"
 	else:
-		imm = "#" + str(randint(1,10)*4)
-		program += ", " + choice([Rm, imm]) + "\n"
+		imm = "#{}".format(randint(1,10)*4)
+		program += choice([Rm, imm]) + "\n"
+		
 	return program
 
 
@@ -264,4 +270,4 @@ def initializeProgram():
 
 
 if __name__ == "__main__":
-	makeProgram(100)
+	makeProgram(10000)
