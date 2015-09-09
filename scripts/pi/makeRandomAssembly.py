@@ -8,6 +8,7 @@
 #  - does not test BL
 #  - limited set of DP immediates
 #  - DP immed shifts of 0 or 32
+#  - mem tests are only sp relative with small offsets (forced to land in premade stack), no ISR
 
 from random import *
 from time import *
@@ -15,7 +16,7 @@ from time import *
 seed(time())
 
 # Condition codes
-Conditions = ["EQ","NE","CS","CC","MI","PL","VS","VC","HI","LS","GE","LT","GT","LE"]+[""]*5
+Conditions = ["EQ","NE","CS","CC","MI","PL","VS","VC","HI","LS","GE","LT","GT","LE"]+[""]*10
 setConditions = Conditions + [c+"s" for c in Conditions]
 
 # Data processing
@@ -30,27 +31,33 @@ fbranch = ["fb"]
 bbranch = ["bb"]
 
 # Load/store word and unsigned byte
-wbmem = ["str","ldr", "ldrb", "strb"]
-wbmem += [i+"t" for i in wbmem]
+wbmem = ["str","ldr"]
 
 # Load/store halfword and load signed byte
 hmem = ["ldrh", "ldrsb", "ldrsh", "strh"]
+mmem = ["ldm", "stm"]
 
-mem = wbmem + hmem
+mode3Types = ["imm", "reg"]
+mode2Types = mode3Types + ["ISR"]
+addrRegs = ["sp"]
+writebacks = ["offset", "pre", "post"]
 
 # multiply
 multiply = ["mul", "mla", "umull", "umlal", "smull", "smlal"]
 
-instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[mem]*5+[multiply]*5
+instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[wbmem]*5+[hmem]*5+[mmem]*5+[multiply]*5
 shifters = ["ASR", "LSL", "LSR", "ROR", "RRX"] + [""]*5
+
 
 
 regList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]
 RegsWithPC = regList + ["R15"]
 
-SrcRegList = list(regList)
-
-
+# SP and stack addresses with known values
+sp = 0
+upper = 0
+lower = 0
+addresses = set()
 
 
 def makeProgram(numInstru):
@@ -83,8 +90,13 @@ def makeProgram(numInstru):
 			program += prog
 
 		# memory instructions
-		elif instrList == mem:										# ldr & str instructions
-			program += makeMemInstr(instrChoice, counter)
+		elif instrList == wbmem:									
+			prog, counter = makeWBMemInstr(instrChoice, counter)
+			program += prog
+		elif instrList == hmem:									
+			program += makeHMemInstr(instrChoice, counter)
+		elif instrList == mmem:									
+			program += makeMMemInstr(instrChoice, counter)
 
 		# leftover case (branch graveyard)
 		else:
@@ -221,12 +233,89 @@ def makeMultiplyInstr(instruction, counter):
 	return program, counter
 
 
-def makeMemInstr(instruction, counter):
+def makeWBMemInstr(instruction, counter):
+	global sp
+	# choose byte 1/5 of time
+	B = "B" if choice(range(5)) == 0 else ""
+	# choose Rd
+	Rd = choice(RegsWithPC)
+	# can't use PC with B, don't modify PC
+	if B=="B" or instruction == "ldr":
+		Rd = choice(regList)
+	# choose cond
+	cond = choice(Conditions)
+
+	# pick type of offset
+	typ = choice(mode3Types) # no ISR yet
+	# pick type of writeback
+	wb = choice(writebacks)
+	if B == "B":
+		wb = "offset"
+	first_bracket = ""
+	second_bracket = "]"
+	exclamation = ""
+
+	# pick address registers
+	Rn = choice(addrRegs) # currently only sp
+	Rms = [i for i in regList if i != Rn]
+	Rm = choice(Rms)
+
+	# pick an offset
+	offset = choice([i for i in range(lower-sp, upper-sp, 4) if sp+i in addresses])
+	assert(sp+offset in addresses)
+	# but ok to store anywhere in range
+	sign = "+" if offset >= 0 else "-"
+	# use any valid byte-aligned
+	if B=="B":
+		offset += choice([0,1,2,3])
+	print "offset {}, sp {}->{}".format(offset, sp, sp if wb == "offset" else sp+offset)
+
+	# set up the operand for the correct type
+	program = ""
+	if typ == "imm":
+		operand = "#{}{}".format(sign,abs(offset))
+	# if register offset, set up the register with the offset
+	elif typ == "reg":
+		program = "l{}: mov {}, #{}\n".format(counter, Rm, abs(offset)) # small enough for immed right now (within 200)
+		counter += 1
+		operand = "{}{}".format(sign,Rm)
+	elif typ == "ISR":
+		print "No ISR memory yet!"
+		assert(False)
+
+	# modify sp and instr format with writeback
+	if wb == "pre":
+		sp += offset
+		exclamation = "!"
+	elif wb == "post":
+		sp += offset
+		first_bracket = "]"
+		second_bracket = ""
+
+	# build instruction
+	program += "l{}: {}{}{} {}, [{}{}, {}{}{}\n".format(counter, instruction, cond, B, Rd, Rn, first_bracket, operand, second_bracket, exclamation)
+	print program
+	return program, counter
+
+
+
+
 	program = "l"+str(counter)+": "			# Line number
 	program += instruction + choice(Conditions)
 	program += " " + choice(regList) + ", "
 	program += " " + "[sp, #-"+str(randint(1,10)*4) + "]\n"
 	return program
+
+
+def makeHMemInstr(instruction, counter):
+	program = "HMEM here\n"
+	return program
+
+
+def makeMMemInstr(instruction, counter):
+	program = "MMEM here\n"
+	return program
+
 
 
 def makeNopInstr(counter):
@@ -237,6 +326,7 @@ def makeNopInstr(counter):
 # Set up the stack and registers. The instruction sequence looks strange,
 # but lets us ldr [pc] for each val
 def initializeProgram():
+	global lower, upper, sp
 	program = ""
 	program += ".global main\n"
 	program += "main:\n"
@@ -246,6 +336,9 @@ def initializeProgram():
 	program += "subs R0, R15, R15\n"				# Initializing R0 to 0
 	program += "ldr sp, val\n"						# Initializing stack pointer
 	program += "b next\n"
+	sp = 0xbefffae8
+	upper = sp + 100
+	lower = sp - 100
 	program += "val: .word 0xbefffae8\n"
 	program += "\n"
 	program += "# INITIALIZING REGISTERS\n"
@@ -266,9 +359,13 @@ def initializeProgram():
 	for i in range(11): 							# Aribtrarily initializing stack so we can compare exact values
 		program += "ldr R1, val{}\n".format(i+15)
 		program += "b next{}\n".format(i+15)
-		program += "val{}: .word {}\n".format(i+15, randint(1,4294967295))
+		item = randint(1,4294967295)
+		address = sp - i * 4
+		spOffset = address - sp # should be -i*4
+		addresses.update(set([address]))
+		program += "val{}: .word {}\n".format(i+15, item)
 		program += "next{}:".format(i+15)
-		program += "str R1, [sp, #-{}]\n".format(i*4)
+		program += "str R1, [sp, #{}]\n".format(spOffset)
 	program += "\n"
 	return program
 
