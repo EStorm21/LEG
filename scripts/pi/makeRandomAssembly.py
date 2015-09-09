@@ -8,7 +8,8 @@
 #  - does not test BL
 #  - limited set of DP immediates
 #  - DP immed shifts of 0 or 32
-#  - mem tests are only sp relative with small offsets (forced to land in premade stack), no ISR
+#  - w / ub mem tests are only sp relative with small offsets (forced to land in premade stack), no ISR
+#  - hw / sb tests only use offset so we don't mess up sp, are sp relative with small offsets
 
 from random import *
 from time import *
@@ -94,7 +95,8 @@ def makeProgram(numInstru):
 			prog, counter = makeWBMemInstr(instrChoice, counter)
 			program += prog
 		elif instrList == hmem:									
-			program += makeHMemInstr(instrChoice, counter)
+			prog, counter = makeHMemInstr(instrChoice, counter)
+			program += prog
 		elif instrList == mmem:									
 			program += makeMMemInstr(instrChoice, counter)
 
@@ -256,9 +258,11 @@ def makeWBMemInstr(instruction, counter):
 	exclamation = ""
 
 	# pick address registers
-	Rn = choice(addrRegs) # currently only sp
-	Rms = [i for i in regList if i != Rn]
-	Rm = choice(Rms)
+	if wb == "offset":
+		Rn = choice(addrRegs) # currently only sp
+	else:
+		Rn = choice([i for i in addrRegs if i != Rd]) # cannot have writeback and Rd == Rn
+	Rm = choice([i for i in regList if i != Rn]) # we change Rm currently, so don't use Rn.
 
 	# pick an offset
 	offset = choice([i for i in range(lower-sp, upper-sp, 4) if sp+i in addresses])
@@ -268,7 +272,7 @@ def makeWBMemInstr(instruction, counter):
 	# use any valid byte-aligned
 	if B=="B":
 		offset += choice([0,1,2,3])
-	print "offset {}, sp {}->{}".format(offset, sp, sp if wb == "offset" else sp+offset)
+	#print "offset {}, sp {}->{}".format(offset, sp, sp if wb == "offset" else sp+offset)
 
 	# set up the operand for the correct type
 	program = ""
@@ -294,7 +298,7 @@ def makeWBMemInstr(instruction, counter):
 
 	# build instruction
 	program += "l{}: {}{}{} {}, [{}{}, {}{}{}\n".format(counter, instruction, cond, B, Rd, Rn, first_bracket, operand, second_bracket, exclamation)
-	print program
+	#print program
 	return program, counter
 
 
@@ -308,8 +312,67 @@ def makeWBMemInstr(instruction, counter):
 
 
 def makeHMemInstr(instruction, counter):
-	program = "HMEM here\n"
-	return program
+	global sp
+	# choose Rd
+	Rd = choice(RegsWithPC)
+	# don't modify PC
+	if "ldr" in instruction:
+		Rd = choice(regList)
+	# choose cond
+	cond = choice(Conditions)
+
+	# pick type of offset
+	typ = choice(mode3Types)
+	# pick type of writeback
+	#wb = choice(writebacks)
+	# can't deal with non-word aligned yet
+	wb = "offset"
+	first_bracket = ""
+	second_bracket = "]"
+	exclamation = ""
+
+	# pick address registers
+	if wb == "offset":
+		Rn = choice(addrRegs) # currently only sp
+	else:
+		Rn = choice([i for i in addrRegs if i != Rd]) # cannot have writeback and Rd == Rn
+	Rm = choice([i for i in regList if i != Rn]) # we change Rm currently, so don't use Rn.
+
+	# pick an offset
+	offset = choice([i for i in range(lower-sp, upper-sp, 4) if sp+i in addresses])
+	assert(sp+offset in addresses)
+	# but ok to store anywhere in range
+	sign = "+" if offset >= 0 else "-"
+	# use any valid byte-aligned or halfword aligned
+	if "b" in instruction:
+		offset += choice([0,1,2,3])
+	if "h" in instruction:
+		offset += choice([0,2])
+	#print "offset {}, sp {}->{}".format(offset, sp, sp if wb == "offset" else sp+offset)
+
+	# set up the operand for the correct type
+	program = ""
+	if typ == "imm":
+		operand = "#{}{}".format(sign,abs(offset))
+	# if register offset, set up the register with the offset
+	elif typ == "reg":
+		program = "l{}: mov {}, #{}\n".format(counter, Rm, abs(offset)) # small enough for immed right now (within 200)
+		counter += 1
+		operand = "{}{}".format(sign,Rm)
+
+	# modify sp and instr format with writeback
+	if wb == "pre":
+		sp += offset
+		exclamation = "!"
+	elif wb == "post":
+		sp += offset
+		first_bracket = "]"
+		second_bracket = ""
+
+	# build instruction
+	program += "l{}: {}{}{} {}, [{}{}, {}{}{}\n".format(counter, instruction[:3], cond, instruction[3:], Rd, Rn, first_bracket, operand, second_bracket, exclamation)
+	#print program
+	return program, counter
 
 
 def makeMMemInstr(instruction, counter):
