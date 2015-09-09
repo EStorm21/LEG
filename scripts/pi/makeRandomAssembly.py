@@ -8,8 +8,8 @@
 #  - does not test BL
 #  - limited set of DP immediates
 #  - DP immed shifts of 0 or 32
-#  - w / ub mem tests are only sp relative with small offsets (forced to land in premade stack), no ISR
-#  - hw / sb tests only use offset so we don't mess up sp, are sp relative with small offsets
+#  - w / ub mem tests are only sp relative with small offsets (forced to land in premade stack), no ISR, no cond with wb
+#  - hw / sb tests only use offset so we don't mess up sp, are sp relative with small offsets (forced to land in premade stack)
 
 from random import *
 from time import *
@@ -87,8 +87,7 @@ def makeProgram(numInstru):
 
 		# multiply operations
 		elif instrList == multiply:
-			prog, counter = makeMultiplyInstr(instrChoice, counter)
-			program += prog
+			program += makeMultiplyInstr(instrChoice, counter)
 
 		# memory instructions
 		elif instrList == wbmem:									
@@ -134,7 +133,6 @@ def makeDataProcInstr(instruction, counter):
 		Rm = choice(regList)
 
 	# choose conditions
-	cond = None
 	if instruction in DPnoS:
 		cond = choice(Conditions)
 	else:
@@ -205,34 +203,27 @@ def makeFBranchInstr(counter):
 
 
 def makeMultiplyInstr(instruction, counter):
-	program = "l"+str(counter)+": "			# Line number
-	regChoice = choice(regList)
-	program += instruction + choice(setConditions)
-	if (instruction == "mla"):
-		#rd can't be rm
-		secondR = choice(regList)
-		while (regChoice == secondR):
-			secondR = choice(regList)
-		program += " " + regChoice + ", " + secondR + ", " + choice(regList) + ", " + choice(regList)
-	elif (instruction in ["umull", "smull", "smlal", "umlal"]):
-		# rdHi != rdLo != rm
-		rdHi = choice(regList)
-		rdLo = choice(regList)
-		while (rdLo == rdHi):
-			rdLo = choice(regList)
-		rm = choice(regList)
-		while (rm == rdHi or rm == rdLo):
-			rm = choice(regList)
-		rs = choice(regList)
-		program += " " + rdHi + ", " + rdLo + ", " + rm + ", " + rs
+	# choose condition
+	cond = choice(setConditions)
+
+	# choose registers
+	if "u" in instruction or "s" in instruction:
+		RdHi = choice(regList)
+		used = [RdHi]
+		RdLo = choice([i for i in regList if i not in used])
+		used += [RdLo]
+		Rm = choice([i for i in regList if i not in used])
+		# Rs can be anything
+		Rs = choice(regList)
+		program = "l{}: {}{} {}, {}, {}, {}\n".format(counter, instruction, cond, RdLo, RdHi, Rm, Rs)
 	else:
-		program += " " + regChoice + ", " + choice(regList) + ", " + choice(regList)
-	program += "\n"
-	counter += 1
-	#add another instruction to set the carry flag
-	program += "l"+str(counter)+": "			# Line number
-	program += "adds r0, r0, r0\n"
-	return program, counter
+		Rd = choice(regList)
+		Rm = choice([i for i in regList if i != Rd])
+		Rn = choice(regList) if instruction == "mla" else ""
+		Rs = choice(regList)
+		program = "l{}: {}{} {}, {}, {}, {}\n".format(counter, instruction, cond, Rd, Rm, Rs, Rn)
+
+	return program
 
 
 def makeWBMemInstr(instruction, counter):
@@ -260,8 +251,11 @@ def makeWBMemInstr(instruction, counter):
 	# pick address registers
 	if wb == "offset":
 		Rn = choice(addrRegs) # currently only sp
+	# writeback
 	else:
 		Rn = choice([i for i in addrRegs if i != Rd]) # cannot have writeback and Rd == Rn
+		# don't mess up our record of sp
+		cond = ""
 	Rm = choice([i for i in regList if i != Rn]) # we change Rm currently, so don't use Rn.
 
 	# pick an offset
