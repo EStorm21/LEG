@@ -6,14 +6,13 @@
 #  - Only tests user mode (no interrupts, SR operations)
 #  - does not test coprocessor
 #  - does not test BL
-#  - limited set of DP immediates
-#  - DP immed shifts of 0 or 32
 #  - w / ub mem tests are only sp relative with small offsets (forced to land in premade stack), no ISR, no cond with wb
 #  - hw / sb tests only use offset so we don't mess up sp, are sp relative with small offsets (forced to land in premade stack)
-#  - ldm / stm does not test ^
+#  - ldm / stm does not test ^, does not load pc, sp relative
 
 from random import *
 from time import *
+import ctypes
 
 seed(time())
 
@@ -47,8 +46,7 @@ writebacks = ["offset", "pre", "post"]
 # multiply
 multiply = ["mul", "mla", "umull", "umlal", "smull", "smlal"]
 
-#instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[wbmem]*5+[hmem]*5+[mmem]*5+[multiply]*5
-instrs = [mmem]
+instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[wbmem]*5+[hmem]*5+[mmem]*5+[multiply]*5
 shifters = ["ASR", "LSL", "LSR", "ROR", "RRX"] + [""]*5
 
 
@@ -118,7 +116,7 @@ def makeDataProcInstr(instruction, counter):
 	RSR = None
 	# half RSR, half ISR
 	if shifter not in ["","RRX"]:
-		RSR = choice([0,1])
+		RSR = choice([False, True])
 
 	# choose registers. 
 	Rd = choice(regList)
@@ -163,11 +161,11 @@ def makeDataProcInstr(instruction, counter):
 		elif RSR:
 			program += Rs
 		else:
-			program += "#{}".format(randint(1,31))
+			program += "#{}".format(makeAddr1ShiftImm(shifter))
 
 		program += "\n"
 	else:
-		imm = "#{}".format(randint(1,10)*4)
+		imm = "#{}".format(makeAddr1Immed())
 		program += choice([Rm, imm]) + "\n"
 
 	return program
@@ -375,7 +373,8 @@ def makeMMemInstr(instruction, counter):
 	global sp
 
 	# choose Rn and figure out how many regs we can use
-	Rn = choice(regList)
+	#Rn = choice(regList)
+	Rn = "R13"
 	max_ascending_regs = max(0, (upper - sp) / 4)
 	max_descending_regs = max(0, (sp - lower) / 4)
 
@@ -402,6 +401,7 @@ def makeMMemInstr(instruction, counter):
 	# choose the registers to store
 	if instruction == "stm":
 		regOptions = set(RegsWithPC)
+		regOptions.update(["R13"])
 	else:
 		regOptions = set(regList)
 	instrRegs = []
@@ -434,18 +434,29 @@ def makeMMemInstr(instruction, counter):
 	else:
 		sp -= len(instrRegs) * 4
 
-	program = "l{}: {}{}{} {}{} {{{}}}\n".format(counter, instruction, cond, mode, Rn, "!" if wb else "", ", ".join(instrRegs))
+	program = "l{}: {}{}{} {}{}, {{{}}}\n".format(counter, instruction, cond, mode, Rn, "!" if wb else "", ", ".join(instrRegs))
 	return program
-
-
-
-
 
 
 def makeNopInstr(counter):
 	program = "l{}: nop\n".format(counter)
 	return program
 
+
+def makeAddr1ShiftImm(shifter):
+	if shifter == "ROR":
+		return randint(1,31)
+	return randint(0,31)
+
+
+def makeAddr1Immed():
+	immed_8 = randint(0,2**8-1)
+	rotate_imm = randrange(0,32, 2)
+	return ror(immed_8, rotate_imm)
+
+def ror(value, amt, bits = 32):
+	result = ((value & (2**bits-1)) >> amt%bits) | (value << (bits - (amt%bits)) & (2**bits-1))
+	return ctypes.c_long(result).value
 
 # Set up the stack and registers. The instruction sequence looks strange,
 # but lets us ldr [pc] for each val
@@ -497,4 +508,4 @@ def initializeProgram():
 
 
 if __name__ == "__main__":
-	makeProgram(100)
+	makeProgram(1000)
