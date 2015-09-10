@@ -10,6 +10,7 @@
 #  - DP immed shifts of 0 or 32
 #  - w / ub mem tests are only sp relative with small offsets (forced to land in premade stack), no ISR, no cond with wb
 #  - hw / sb tests only use offset so we don't mess up sp, are sp relative with small offsets (forced to land in premade stack)
+#  - ldm / stm does not test ^
 
 from random import *
 from time import *
@@ -46,7 +47,8 @@ writebacks = ["offset", "pre", "post"]
 # multiply
 multiply = ["mul", "mla", "umull", "umlal", "smull", "smlal"]
 
-instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[wbmem]*5+[hmem]*5+[mmem]*5+[multiply]*5
+#instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[wbmem]*5+[hmem]*5+[mmem]*5+[multiply]*5
+instrs = [mmem]
 shifters = ["ASR", "LSL", "LSR", "ROR", "RRX"] + [""]*5
 
 
@@ -370,8 +372,73 @@ def makeHMemInstr(instruction, counter):
 
 
 def makeMMemInstr(instruction, counter):
-	program = "MMEM here\n"
+	global sp
+
+	# choose Rn and figure out how many regs we can use
+	Rn = choice(regList)
+	max_ascending_regs = max(0, (upper - sp) / 4)
+	max_descending_regs = max(0, (sp - lower) / 4)
+
+	# choose cond
+	cond = choice(Conditions)
+
+	# choose writeback
+	wb = choice([False, True])
+	# don't mess up sp
+	if wb:
+		cond = ""
+
+	# possible modes. Cases for F and E are the same since we 
+	#  don't want to point to unset memory
+	modes = []
+	if max_ascending_regs > 0:
+		modes += ["IA", "IB"]
+	if max_descending_regs > 0:
+		modes += ["DA", "DB"]
+	assert len(modes) > 0
+
+	mode = choice(modes)
+
+	# choose the registers to store
+	if instruction == "stm":
+		regOptions = set(RegsWithPC)
+	else:
+		regOptions = set(regList)
+	instrRegs = []
+	if "I" in mode:
+		numRegs = choice( range(1, min(len(regOptions), max_ascending_regs) + 1) )
+	else:
+		numRegs = choice( range(1, min(len(regOptions), max_descending_regs) + 1) )
+
+	for _ in range(numRegs):
+		r = choice(list(regOptions))
+		instrRegs += [r]
+		regOptions.remove(r)
+
+	# remove impossible register
+	# can't load Rn if writeback
+	if instruction == "ldm" and wb and Rn in instrRegs:
+		instrRegs.remove(Rn)
+	# Rn must be lowest register if store Rn and wb
+	if instruction == "stm" and wb and Rn in instrRegs:
+		for r in range(int(Rn[1:])):
+			rmReg = "R{}".format(r)
+			if rmReg in instrRegs:
+				instrRegs.remove(rmReg)
+	# if we removed everything then give up
+	if len(instrRegs) == 0:
+		return makeNopInstr(counter)
+
+	if "I" in mode:
+		sp += len(instrRegs) * 4
+	else:
+		sp -= len(instrRegs) * 4
+
+	program = "l{}: {}{}{} {}{} {{{}}}\n".format(counter, instruction, cond, mode, Rn, "!" if wb else "", ", ".join(instrRegs))
 	return program
+
+
+
 
 
 
@@ -384,6 +451,8 @@ def makeNopInstr(counter):
 # but lets us ldr [pc] for each val
 def initializeProgram():
 	global lower, upper, sp
+	stackSize = 21
+
 	program = ""
 	program += ".global main\n"
 	program += "main:\n"
@@ -394,8 +463,8 @@ def initializeProgram():
 	program += "ldr sp, val\n"						# Initializing stack pointer
 	program += "b next\n"
 	sp = 0xbefffae8
-	upper = sp + 100
-	lower = sp - 100
+	upper = sp + 0
+	lower = sp - (stackSize - 1) * 4
 	program += "val: .word 0xbefffae8\n"
 	program += "\n"
 	program += "# INITIALIZING REGISTERS\n"
@@ -413,7 +482,7 @@ def initializeProgram():
 	program += "# INITIALIZING STACK\n"
 	program += "\n"
 	program += "next14: "
-	for i in range(11): 							# Aribtrarily initializing stack so we can compare exact values
+	for i in range(stackSize): 							# Aribtrarily initializing stack so we can compare exact values
 		program += "ldr R1, val{}\n".format(i+15)
 		program += "b next{}\n".format(i+15)
 		item = randint(1,4294967295)
