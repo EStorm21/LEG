@@ -1,6 +1,16 @@
 import gdb, re, os, ast, math, tempfile, shutil, subprocess, sys, select, signal
 import qemuDump
 
+PASSED_MSG="""
+
+******************************
+****                      ****
+****        PASSED        ****
+****                      ****
+******************************
+
+"""
+
 regParser = re.compile("\\w+\\s+(\\w+)\\s+")
 def parseQemuRegs(regs):
 	lines = regs.split('\n');
@@ -167,7 +177,7 @@ def preex_fn_stop_interrupt():
     # signal handler SIG_IGN.
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-def doLockstep(toMSFifo, fromMSFifo, run_dir, found_bugs):
+def doLockstep(toMSFifo, fromMSFifo, run_dir, found_bugs, is_linux):
 	gdb.execute('set pagination off')
 	
 	state = getQemuRegs()
@@ -178,8 +188,9 @@ def doLockstep(toMSFifo, fromMSFifo, run_dir, found_bugs):
 
 	
 	def logInstr(c, lastLoggedCt = [execCount]):
-		#sys.stdout.write(c)
-		#sys.stdout.flush()
+		if not is_linux:
+			sys.stdout.write(c)
+			sys.stdout.flush()
 		if(execCount - lastLoggedCt[0] > 500):
 			print "Executed {} instructions (currently at {:#x})".format(
 				execCount, getQemuInstr())
@@ -201,9 +212,17 @@ def doLockstep(toMSFifo, fromMSFifo, run_dir, found_bugs):
 		else:
 			changes = []
 			matching = True
+			prev_instrs = [None]*10
 
 			while matching:
 				gdb.execute('stepi', to_string=True)
+				if not is_linux:
+					prev_instrs = prev_instrs[1:] + [getQemuInstr()]
+					if all(x==prev_instrs[-1] for x in prev_instrs):
+						print "\nRecursive branch detected!"
+						print PASSED_MSG
+						return True
+
 				newState = getQemuRegs()
 				if newState == state:
 					execCount = getQemuInstrCt()
@@ -265,10 +284,10 @@ def doLockstep(toMSFifo, fromMSFifo, run_dir, found_bugs):
 		return True
 	return False
 
-def debugFromHere(run_dir, found_bugs):
+def debugFromHere(run_dir, found_bugs, is_linux):
 	print "Preparing to lockstep with ModelSim..."
 
-	wasInterrupted = False
+	preventRestart = False
 
 	try:
 		# Initialize our temp directory
@@ -300,7 +319,7 @@ def debugFromHere(run_dir, found_bugs):
 		try:
 			with open(toMSFifoFile, 'w+',0) as toMSFifo:
 				with open(fromMSFifoFile, 'r') as fromMSFifo:
-					wasInterrupted = doLockstep(toMSFifo, fromMSFifo, run_dir, found_bugs)
+					preventRestart = doLockstep(toMSFifo, fromMSFifo, run_dir, found_bugs, is_linux)
 
 		except IOError, e:
 			print "Failed to open FIFOS:", e
@@ -312,4 +331,4 @@ def debugFromHere(run_dir, found_bugs):
 	# Clean up files
 	shutil.rmtree(tmpdir)
 
-	return wasInterrupted
+	return preventRestart
