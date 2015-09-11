@@ -216,12 +216,17 @@ def makeMultiplyInstr(instruction, counter):
 		# Rs can be anything
 		Rs = choice(regList)
 		program = "l{}: {}{} {}, {}, {}, {}\n".format(counter, instruction, cond, RdLo, RdHi, Rm, Rs)
-	else:
+	elif instruction == 'mla':
 		Rd = choice(regList)
 		Rm = choice([i for i in regList if i != Rd])
-		Rn = choice(regList) if instruction == "mla" else ""
+		Rn = choice(regList)
 		Rs = choice(regList)
 		program = "l{}: {}{} {}, {}, {}, {}\n".format(counter, instruction, cond, Rd, Rm, Rs, Rn)
+	elif instruction == 'mul':
+		Rd = choice(regList)
+		Rm = choice([i for i in regList if i != Rd])
+		Rs = choice(regList)
+		program = "l{}: {}{} {}, {}, {}\n".format(counter, instruction, cond, Rd, Rm, Rs)
 
 	return program
 
