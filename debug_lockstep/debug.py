@@ -1,3 +1,9 @@
+# Note: By the time this script is run, we expect the variable
+# TEST_FILE to be set either to "", if we are debugging Linux,
+# or to the name of a test (.bin), relative to the current
+# directory. If TEST_FILE is set, we also expect RUN_TESTS to
+# be True or False. If True, we should run the test noninteractively.
+
 import gdb
 import re
 import os
@@ -9,6 +15,7 @@ import traceback
 import signal
 import time
 import datetime
+import atexit
 
 import lockstep, checkpoint
 
@@ -46,40 +53,33 @@ def preex_fn_stop_interrupt():
     # signal handler SIG_IGN.
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
-setup()
+def initialize_qemu():
+	openport = get_open_port()
 
-openport = get_open_port()
-print "Starting qemu with port {}".format(openport)
-qemu = subprocess.Popen(['qemu-system-arm', '-M', 'integratorcp', '-m', '256M', '-nographic', '-icount', '0', '-kernel', '/proj/leg/kernel/system.bin', '-S', '-gdb', 'tcp::{}'.format(openport)], stdin=open(os.devnull), preexec_fn = os.setpgrp)
+	qemu_cmd = ['qemu-system-arm', '-M', 'integratorcp', '-m', '256M', '-nographic', '-icount', '0', '-S', '-gdb', 'tcp::{}'.format(openport)]
+	
+	if TEST_FILE is "":
+		qemu_cmd += ['-kernel', '/proj/leg/kernel/system.bin']
+	
+	print "Starting qemu with port {}".format(openport)
+	qemu = subprocess.Popen(qemu_cmd, stdin=open(os.devnull), preexec_fn = os.setpgrp)
 
+	print "Connecting to qemu..."
+	gdb.execute('target remote localhost:{}'.format(openport))
+	if TEST_FILE is "":
+		gdb.execute('file /proj/leg/kernel/vmlinux')
+	else:
+		print "Loading script {}".format(TEST_FILE)
+		gdb.execute('restore {} binary'.format(TEST_FILE))
 
-print "Connecting to qemu..."
-gdb.execute('file /proj/leg/kernel/vmlinux')
-gdb.execute('target remote localhost:{}'.format(openport))
+	return qemu
 
-gdb.execute('set pagination off')
-
-print "Connected!"
-print ""
-print "Welcome to the interactive LEG debugger!"
-print "You can run:"
-print "    leg-lockstep: Start lockstepping from here"
-print "    leg-lockstep-auto: Repeatedly lockstep and restart after bugs"
-print "    leg-jump BREAK_LOC: Shortcut to skip to a function or address using breakpoints"
-print "    leg-frombug BUGFILE: Jump to the last matching state before a bug "
-print "    leg-count: Print the current instruction count"
-print "    leg-checkpoint NAME: Create a ModelSim checkpoint corresponding to the current state"
-print "    leg-restart: Restart qemu"
-print "    leg-stop: Shut down the debug session gracefully"
-print ""
-print "You can also run any GDB command to step through the kernel normally."
-
-
-run_dir = get_run_directory()
-print ""
-print "All output from this session will be collected in {}".format(run_dir)
-
-found_bugs = set()
+def cleanup():
+	print "Shutting down qemu"
+	qemu.terminate()
+	if not os.path.isfile(os.path.join(run_dir, "runlog")):
+		print "Cleaning up empty output directory"
+		shutil.rmtree(run_dir)
 
 class LegLockstepCommand (gdb.Command):
 	""" Start lockstepping from here """
@@ -90,7 +90,7 @@ class LegLockstepCommand (gdb.Command):
 	def invoke (self, arg, from_tty):
 		print "Starting lockstep from here"
 		try:
-			lockstep.debugFromHere(run_dir, found_bugs)
+			lockstep.debugFromHere(run_dir, found_bugs, TEST_FILE=="")
 		except:
 			print traceback.format_exc()
 
@@ -107,8 +107,8 @@ class LegAutoCommand (gdb.Command):
 		while True:
 			print "Starting lockstep from:"
 			gdb.execute("where")
-			interrupted = lockstep.debugFromHere(run_dir, found_bugs)
-			if interrupted:
+			preventRestart = lockstep.debugFromHere(run_dir, found_bugs, TEST_FILE=="")
+			if preventRestart:
 				print "Stopping automatic lockstep (run leg-lockstep-auto again to resume)"
 				break
 			print "Got a bug. Skipping over it"
@@ -142,10 +142,6 @@ class LegStopCommand (gdb.Command):
 	def invoke (self, arg, from_tty):
 		print "Stopping the debug session"
 		gdb.execute('detach')
-		qemu.terminate()
-		if not os.path.isfile(os.path.join(run_dir, "runlog")):
-			print "Cleaning up empty output directory"
-			shutil.rmtree(run_dir)
 		gdb.execute('quit')
 
 LegStopCommand()
@@ -189,11 +185,7 @@ class LegRestartCommand (gdb.Command):
 		qemu.terminate()
 		qemu.wait()
 		print "Qemu stopped"
-		# time.sleep(1)
-		print "Restarting qemu with port {}".format(openport)
-		qemu = subprocess.Popen(['qemu-system-arm', '-M', 'integratorcp', '-m', '256M', '-nographic', '-icount', '0', '-kernel', '/proj/leg/kernel/system.bin', '-S', '-gdb', 'tcp::{}'.format(openport)], stdin=open(os.devnull), preexec_fn = os.setpgrp)
-		print "Connecting to qemu..."
-		gdb.execute('target remote localhost:{}'.format(openport))
+		qemu = initialize_qemu();
 		print "Reattached to qemu"
 
 LegRestartCommand()
@@ -237,3 +229,40 @@ class LegFromBugCommand (gdb.Command):
 
 LegFromBugCommand()
 
+### Things to run ###
+
+atexit.register(cleanup)
+
+setup()
+
+qemu = initialize_qemu()
+
+gdb.execute('set pagination off')
+
+run_dir = get_run_directory()
+
+found_bugs = set()
+
+print "Connected!"
+if TEST_FILE and RUN_TESTS:
+	# Non-interactive mode!
+	print "Automatically starting lockstepping"
+	gdb.execute("leg-lockstep");
+	print "Output saved in {}".format(run_dir)
+	gdb.execute("leg-stop");
+else:
+	print ""
+	print "Welcome to the interactive LEG debugger!"
+	print "You can run:"
+	print "    leg-lockstep: Start lockstepping from here"
+	print "    leg-lockstep-auto: Repeatedly lockstep and restart after bugs"
+	print "    leg-jump BREAK_LOC: Shortcut to skip to a function or address using breakpoints"
+	print "    leg-frombug BUGFILE: Jump to the last matching state before a bug "
+	print "    leg-count: Print the current instruction count"
+	print "    leg-checkpoint NAME: Create a ModelSim checkpoint corresponding to the current state"
+	print "    leg-restart: Restart qemu"
+	print "    leg-stop: Shut down the debug session gracefully"
+	print ""
+	print "You can also run any GDB command to step through the kernel normally."
+	print ""
+	print "All output from this session will be collected in {}".format(run_dir)
