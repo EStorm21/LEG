@@ -13,11 +13,63 @@
 from random import *
 from time import *
 import ctypes
+from argparse import ArgumentParser
 
 seed(time())
 
+# SP and stack addresses with known values
+sp = 0
+upper = 0
+lower = 0
+addresses = set()
+
+
+
+if __name__ == "__main__":
+	parser = ArgumentParser()
+	parser.add_argument("-i", 
+						nargs="*",
+						dest="include",
+						help="all the instructions to use in tests. Don't use with ex. Uses everything if not specified",
+						default=[])
+
+	parser.add_argument("-e", 
+						nargs="*",
+						dest="exclude",
+						help="all the instructions to not use in tests. Don't use with in",
+						default=[])
+
+	parser.add_argument("--nowb", 
+						help="Don't allow writeback",
+						action="store_true")
+
+	parser.add_argument("--conds", 
+						nargs="*",
+						help="All the conds to use. Use any if not specified.",
+						default=[])
+
+	parser.add_argument("-n", 
+						dest="count",
+						type=int,
+						help="Number of instructions to generate",
+						default=100)
+
+
+	args = vars(parser.parse_args())
+	assert not (len(args["include"]) > 0 and len(args["exclude"]) > 0)
+
+	inc = args["include"]
+	exc = args["exclude"]
+	nowb = args["nowb"]
+	conds = args["conds"]
+	numInstru = args["count"]
+
 # Condition codes
 Conditions = ["EQ","NE","CS","CC","MI","PL","VS","VC","HI","LS","GE","LT","GT","LE"]+[""]*10
+if conds != []:
+	Conditions = [c for c in Conditions if c in conds]
+if conds == ["AL"]:
+	Conditions = [""]
 setConditions = Conditions + [c+"s" for c in Conditions]
 
 # Data processing
@@ -42,23 +94,44 @@ mode3Types = ["imm", "reg"]
 mode2Types = mode3Types + ["ISR"]
 addrRegs = ["sp"]
 writebacks = ["offset", "pre", "post"]
+if nowb:
+	writebacks = ["offset"]
 
 # multiply
 multiply = ["mul", "mla", "umull", "umlal", "smull", "smlal"]
 
-instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[wbmem]*5+[hmem]*5+[mmem]*5+[multiply]*5
 shifters = ["ASR", "LSL", "LSR", "ROR", "RRX"] + [""]*5
-
-
 
 regList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]
 RegsWithPC = regList + ["R15"]
 
-# SP and stack addresses with known values
-sp = 0
-upper = 0
-lower = 0
-addresses = set()
+
+# modify lists with options
+if inc != []:
+	arithmetic = [i for i in arithmetic if i in inc]
+	logicOps = [i for i in logicOps if i in inc]
+	fbranch = [i for i in fbranch if i in inc]
+	bbranch = [i for i in bbranch if i in inc]
+	wbmem = [i for i in wbmem if i in inc]
+	hmem = [i for i in hmem if i in inc]
+	mmem = [i for i in mmem if i in inc]
+	multiply = [i for i in multiply if i in inc]
+
+if exc != []:
+	arithmetic = [i for i in arithmetic if i not in exc]
+	logicOps = [i for i in logicOps if i not in exc]
+	fbranch = [i for i in fbranch if i not in exc]
+	bbranch = [i for i in bbranch if i not in exc]
+	wbmem = [i for i in wbmem if i not in exc]
+	hmem = [i for i in hmem if i not in exc]
+	mmem = [i for i in mmem if i not in exc]
+	multiply = [i for i in multiply if i not in exc]
+
+
+
+instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[wbmem]*5+[hmem]*5+[mmem]*5+[multiply]*5
+instrs = [subl for subl in instrs if len(subl) > 0]
+
 
 
 def makeProgram(numInstru):
@@ -387,7 +460,11 @@ def makeMMemInstr(instruction, counter):
 	cond = choice(Conditions)
 
 	# choose writeback
-	wb = choice([False, True])
+	wb = choice(writebacks)
+	if wb == "offset":
+		wb = False
+	else:
+		wb = True
 	# don't mess up sp
 	if wb:
 		cond = ""
@@ -515,4 +592,4 @@ def initializeProgram():
 
 
 if __name__ == "__main__":
-	makeProgram(1000)
+	makeProgram(numInstru)
