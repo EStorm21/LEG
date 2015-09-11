@@ -207,7 +207,7 @@ def makeMultiplyInstr(instruction, counter):
 	cond = choice(setConditions)
 
 	# choose registers
-	if "u" in instruction or "s" in instruction:
+	if instruction[0] == "u" or instruction[0] == "s":
 		RdHi = choice(regList)
 		used = [RdHi]
 		RdLo = choice([i for i in regList if i not in used])
@@ -308,7 +308,7 @@ def makeWBMemInstr(instruction, counter):
 def makeHMemInstr(instruction, counter):
 	global sp
 	# choose Rd
-	Rd = choice(RegsWithPC)
+	Rd = choice(regList)
 	# don't modify PC
 	if "ldr" in instruction:
 		Rd = choice(regList)
