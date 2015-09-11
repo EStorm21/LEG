@@ -175,40 +175,7 @@ module top (
   );
 
   // Create the mmu
-  mmu mmuInst (
-    .clk          (clk          ),
-    .reset        (reset        ),
-    .MMUExtInt    (MMUExtInt    ),
-    .CPUHRequest  (CPUHRequest  ),
-    .CPUHWrite    (CPUHWrite    ),
-    .HReady       (HReady       ),
-    .DataAccess   (DataAccess   ),
-    .CPSR4        (CPSR4        ),
-    .SupMode      (SupMode      ),
-    .WordAccess   (WordAccess   ),
-    .DStall       (DStall       ),
-    .IStall       (IStall       ),
-    .StallD       (StallD       ),
-    .FlushD       (FlushD       ),
-    .FlushE       (FlushE       ),
-    .DANew        (DANew        ),
-    .HAddrF       (HAddrF       ),
-    .HRData       (HRData       ),
-    .control      (control      ),
-    .CP15rd_M     (CP15rd_M     ),
-    .TBase        (TBase        ),
-    .HAddr        (HAddr        ),
-    .MMUWriteData (MMUWriteData ),
-    .CP15A        (CP15A        ),
-    .HRequest     (HRequest     ),
-    .HWrite       (HWrite       ),
-    .CPUHReady    (CPUHReady    ),
-    .MMUWriteEn   (MMUWriteEn   ),
-    .PrefetchAbort(PrefetchAbort),
-    .DataAbort    (DataAbort    ),
-    .MMUEn        (MMUEn        ),
-    .PAReady      (PAReady      )
-  );
+  mmu mmuInst (.*);
 
   // Set HSIZE from bytemask
   // FIXME: Use signals from control unit
