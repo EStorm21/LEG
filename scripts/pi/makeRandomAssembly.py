@@ -1,148 +1,476 @@
-# Date: 4/23/13
-# Version 3
-# Revisions:
-# 	- Added R15 to source registers
-#	- Changed first sub to 'subs'
-#	- Added conditions to adds, subs, ands, orrs
-#	- R15 is also changed
-#	- R15 immediate adjusted for block size (4 bytes) and PC + 8
+# Date: 9/07/15
+# Version 4
+#
+# Limitations:
+#  - Does not test write to PC
+#  - Only tests user mode (no interrupts, SR operations)
+#  - does not test coprocessor
+#  - does not test BL
+#  - w / ub mem tests are only sp relative with small offsets (forced to land in premade stack), no ISR, no cond with wb
+#  - hw / sb tests only use offset so we don't mess up sp, are sp relative with small offsets (forced to land in premade stack)
+#  - ldm / stm does not test ^, does not load pc, sp relative
+
 from random import *
 from time import *
+import ctypes
 
 seed(time())
 
-arithmetic = [ "adc", "add", "bic", "sub", "rsb", "sbc", "mov", "mvn", "tst", "teq", "cmn", "cmp"]
-shortDataProcessing = ["mov", "mvn", "tst", "teq", "cmn", "cmp"]
-setConditions = ["EQ","NE","CS","CC","MI","PL","VS","VC","HI","LS","GE","LT","GT","LE","EQs","NEs","CSs","CCs","MIs","PLs","VSs","VCs","HIs","LSs","GEs","LTs","GTs","LEs"]+[""]*5
-Conditions = ["EQ","NE","CS","CC","MI","PL","VS","VC","HI","LS","GE","LT","GT","LE"]+[""]*5
+# Condition codes
+Conditions = ["EQ","NE","CS","CC","MI","PL","VS","VC","HI","LS","GE","LT","GT","LE"]+[""]*10
+setConditions = Conditions + [c+"s" for c in Conditions]
+
+# Data processing
+DPnoS = ["clz", "cmn", "cmp", "teq", "tst"]
+DPnoRd = ["cmn", "cmp", "teq", "tst"]
+DPnoRn = ["clz", "mov", "mvn"]
+arithmetic = [ "adc", "add", "bic", "clz", "sub", "rsb", "rsc", "sbc", "sub", "mov", "mvn", "tst", "teq", "cmn", "cmp"]
 logicOps = ["and","orr", "eor"]
+
+# Branch
 fbranch = ["fb"]
 bbranch = ["bb"]
-memory = ["str","ldr"]
-multiply = ["mul", "mla", "umull", "smull"]
-instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[memory]*5+[multiply]*5
-shifters = ["ASR", "LSL", "LSR", "ROR", "RRX"]
+
+# Load/store word and unsigned byte
+wbmem = ["str","ldr"]
+
+# Load/store halfword and load signed byte
+hmem = ["ldrh", "ldrsb", "ldrsh", "strh"]
+mmem = ["ldm", "stm"]
+
+mode3Types = ["imm", "reg"]
+mode2Types = mode3Types + ["ISR"]
+addrRegs = ["sp"]
+writebacks = ["offset", "pre", "post"]
+
+# multiply
+multiply = ["mul", "mla", "umull", "umlal", "smull", "smlal"]
+
+instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[wbmem]*5+[hmem]*5+[mmem]*5+[multiply]*5
+shifters = ["ASR", "LSL", "LSR", "ROR", "RRX"] + [""]*5
 
 
-SrcRegList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]
-
-#arithRegList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]
-#arithRegList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14","R15"]
 
 regList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]
-regOrImmList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]
-for i in range(16):
-	regOrImmList += ["#" + str(randint(1,10)*4)]
+RegsWithPC = regList + ["R15"]
 
-shiftRegOrImmList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]
-for i in range(16):
-	shiftRegOrImmList += ["#" + str(randint(1,31))]
+# SP and stack addresses with known values
+sp = 0
+upper = 0
+lower = 0
+addresses = set()
+
 
 def makeProgram(numInstru):
-	program = initializeProgram() #initializes registers to random values
+	program = initializeProgram() #initializes  and stack to random values
 	counter = 1
 	program += "# MAIN PROGRAM\n"
 	program += "\n"
-	while counter <= numInstru:
-		#arithList = ["R0","R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12","R14"]+["#"+str(randint(1,9)*4)]*3
-		
 
-		program += "l"+str(counter)+": "			# Line number
+	while counter <= numInstru:
 		instrList = choice(instrs)
-		#print "instr is ", counter, instrList		## Uncomment to track instructions used
-		if instrList == arithmetic:					# arithmetic ("add/sub") with or without conditions
-			instrChoice = choice(instrList)
-			program = makeDataProcInstr(program, instrChoice, counter)
-		elif instrList == logicOps:					# Logic Operations ("add/orr") with or without conditions
-			program += choice(instrList) + choice(setConditions) 
-			program += " " + choice(regList) + ", "
-			program += " " + choice(SrcRegList) + ", "
-			program += " " + choice(SrcRegList) + "\n"
-		elif instrList == bbranch and counter < numInstru-11:	# Backward branch operations
-			instrBlock = randint(1,6)				# get random integer to represent number of instructions in the backward branch
-			program += "b" + choice(Conditions) + " l" + str(counter+instrBlock+3) + "\n"
-			counter += 1
-			program += "l" + str(counter) + ": add R1, R0, #" + str(randint(1,255)) + "\n"
-			counter += 1
-			for i in range(instrBlock):				# adding random arithmetic instructions in backward branch section
-				instrChoice = choice(arithmetic)
-				program += "l"+str(counter)+": "			# Line number
-				program = makeDataProcInstr(program, instrChoice, counter)
-				counter += 1
-			program += "l" + str(counter) + ": b l" + str(counter+2) + "\n"
-			counter += 1
-			program += "l" + str(counter) + ": b l" + str(counter-instrBlock-1) + "\n"
-		elif instrList == fbranch and counter < numInstru-11:	# forward branch operations
-			forwardAmt = randint(1,10)
-			program += "b" + choice(Conditions)
-			program += " " + "l"+str(counter+forwardAmt) + "\n"
+		instrChoice = choice(instrList)
+		#print "instr is ", counter, instrChoice		## Uncomment to track instructions used
+
+		# arithmetic ("add/sub") with or without conditions
+		if instrList == arithmetic or instrList == logicOps:					
+			program += makeDataProcInstr(instrChoice, counter)
+
+		# Backward branch operations
+		elif instrList == bbranch and counter < numInstru-11:	
+			prog, counter = makeBBranchInstr(counter)
+			program += prog
+
+		# forward branch operations
+		elif instrList == fbranch and counter < numInstru-11:	
+			program += makeFBranchInstr(counter)
+
+		# multiply operations
 		elif instrList == multiply:
-			instrChoice = choice(multiply)
-			program, counter = makeMultiplyInstr(program, instrChoice, counter)
-		else:										# ldr & str instructions
-			program += choice(memory) + choice(Conditions)
-			program += " " + choice(regList) + ", "
-			program += " " + "[sp, #-"+str(randint(1,10)*4) + "]\n"
+			program += makeMultiplyInstr(instrChoice, counter)
+
+		# memory instructions
+		elif instrList == wbmem:									
+			prog, counter = makeWBMemInstr(instrChoice, counter)
+			program += prog
+		elif instrList == hmem:									
+			prog, counter = makeHMemInstr(instrChoice, counter)
+			program += prog
+		elif instrList == mmem:									
+			program += makeMMemInstr(instrChoice, counter)
+
+		# leftover case (branch graveyard)
+		else:
+			program += makeNopInstr(counter)
+
 		counter += 1
 	program += "end: b end\n"
 	print program
 
-def makeDataProcInstr(program, instruction, counter):
-	regChoice = choice(regList)
-	# Note that regChoice will never be R15 if not in regList
-	if regChoice == "R15" and (counter < 11 or counter > numInstru-11): #Check if PC counter operation is near beginning or end
-		program += instruction + choice(Conditions)
-		program += " R15, R15, "
-		program += " #0" + "\n"
-	elif regChoice == "R15":	# Check if PC with anything but sub (add)
-		program += "add" + choice(Conditions)
-		program += " R15, R15, "
-		program += " #" + str(randint(1,5)*4) + "\n"
-	else:	# All other cases (without PC counter)
-		program += instruction + choice(setConditions)
-		program += " " + regChoice 
-		if instruction not in shortDataProcessing:
-			program += ", " + choice(regList) 
-		if (choice(range(2))): #do a shift sometimes
-			shifter = choice(shifters)
-			program += ", " + choice(regList) + ", " + shifter
-			if (shifter != "RRX"):
-				program += " " + choice(shiftRegOrImmList)
-			program += "\n"
+
+
+def makeDataProcInstr(instruction, counter):
+
+	# choose shift
+	shifter = choice(shifters)
+	RSR = None
+	# half RSR, half ISR
+	if shifter not in ["","RRX"]:
+		RSR = choice([False, True])
+
+	# choose registers. 
+	Rd = choice(regList)
+	Rn = choice(RegsWithPC)
+	Rm = choice(RegsWithPC)
+	Rs = None
+	# Can't use PC in RSR or clz
+	if RSR:
+		Rn = choice(regList)
+		Rm = choice(regList)
+		# Only RSR needs Rs
+		Rs = choice(regList)
+	if instruction == "clz":
+		Rm = choice(regList)
+
+	# choose conditions
+	if instruction in DPnoS:
+		cond = choice(Conditions)
+	else:
+		cond = choice(setConditions)
+
+	# add instruction base 
+	program = "l{}: {}{} ".format(counter, instruction, cond)
+
+	# add registers
+	if instruction not in DPnoRd:
+		program += "{}, ".format(Rd)
+	if instruction not in DPnoRn:
+		program += "{}, ".format(Rn)
+
+	# clz special case
+	if instruction == "clz":
+		program += Rm + "\n"
+		return program
+
+	# add shift operand
+	if shifter != "":
+		program += "{}, {} ".format(Rm, shifter)
+
+		if shifter == "RRX":
+			pass
+		elif RSR:
+			program += Rs
 		else:
-			program += ", " + choice(regOrImmList) + "\n"
+			program += "#{}".format(makeAddr1ShiftImm(shifter))
+
+		program += "\n"
+	else:
+		imm = "#{}".format(makeAddr1Immed())
+		program += choice([Rm, imm]) + "\n"
+
 	return program
 
-def makeMultiplyInstr(program, instruction, counter):
-	regChoice = choice(regList)
-	program += instruction + choice(setConditions)
-	if (instruction == "mla"):
-		#rd can't be rm
-		secondR = choice(regList)
-		while (regChoice == secondR):
-			secondR = choice(regList)
-		program += " " + regChoice + ", " + secondR + ", " + choice(regList) + ", " + choice(regList)
-	elif (instruction in ["umull", "smull", "smlal", "umlal"]):
-		# rdHi != rdLo != rm
-		rdHi = choice(regList)
-		rdLo = choice(regList)
-		while (rdLo == rdHi):
-			rdLo = choice(regList)
-		rm = choice(regList)
-		while (rm == rdHi or rm == rdLo):
-			rm = choice(regList)
-		rs = choice(regList)
-		program += " " + rdHi + ", " + rdLo + ", " + rm + ", " + rs
-	else:
-		program += " " + regChoice + ", " + choice(regList) + ", " + choice(regList)
-	program += "\n"
+
+def makeBBranchInstr(counter):
+	instrBlock = randint(1,6)				# get random integer to represent number of instructions in the backward branch
+	cond = choice(Conditions)
+	# branch past the instruction block to the backwards branch
+	program = "l{}: b{} l{}\n".format(counter, cond, counter+instrBlock+3)
 	counter += 1
-	#add another instruction to set the carry flag
-	program += "l"+str(counter)+": "			# Line number
-	program += "adds r0, r0, r0\n"
+	# This instruction is skipped by the bbranch
+	program += "l{}: add R1, R0, #{}\n".format(counter, randint(1,255))
+	counter += 1
+
+	# fill in the instruction block with arithmetic
+	for i in range(instrBlock):				# adding random arithmetic instructions in backward branch section
+		instrChoice = choice(arithmetic+logicOps)
+		program += makeDataProcInstr(instrChoice, counter)
+		counter += 1
+
+	# branch past the backwards branch
+	program += "l{}: b l{}\n".format(counter, counter+2)
+	counter += 1
+	# branch to the start of the instruction block
+	program += "l{}: b l{}\n".format(counter, counter-instrBlock-1)
 	return program, counter
 
+
+def makeFBranchInstr(counter):
+	forwardAmt = randint(1,10)
+	cond = choice(Conditions)
+	program = "l{}: b{} l{}\n".format(counter, cond, counter+forwardAmt)
+	return program
+
+
+def makeMultiplyInstr(instruction, counter):
+	# choose condition
+	cond = choice(setConditions)
+
+	# choose registers
+	if instruction[0] == "u" or instruction[0] == "s":
+		RdHi = choice(regList)
+		used = [RdHi]
+		RdLo = choice([i for i in regList if i not in used])
+		used += [RdLo]
+		Rm = choice([i for i in regList if i not in used])
+		# Rs can be anything
+		Rs = choice(regList)
+		program = "l{}: {}{} {}, {}, {}, {}\n".format(counter, instruction, cond, RdLo, RdHi, Rm, Rs)
+	elif instruction == 'mla':
+		Rd = choice(regList)
+		Rm = choice([i for i in regList if i != Rd])
+		Rn = choice(regList)
+		Rs = choice(regList)
+		program = "l{}: {}{} {}, {}, {}, {}\n".format(counter, instruction, cond, Rd, Rm, Rs, Rn)
+	elif instruction == 'mul':
+		Rd = choice(regList)
+		Rm = choice([i for i in regList if i != Rd])
+		Rs = choice(regList)
+		program = "l{}: {}{} {}, {}, {}\n".format(counter, instruction, cond, Rd, Rm, Rs)
+
+	return program
+
+
+def makeWBMemInstr(instruction, counter):
+	global sp
+	# choose byte 1/5 of time
+	B = "B" if choice(range(5)) == 0 else ""
+	# choose Rd
+	Rd = choice(RegsWithPC)
+	# can't use PC with B, don't modify PC
+	if B=="B" or instruction == "ldr":
+		Rd = choice(regList)
+	# choose cond
+	cond = choice(Conditions)
+
+	# pick type of offset
+	typ = choice(mode3Types) # no ISR yet
+	# pick type of writeback
+	wb = choice(writebacks)
+	if B == "B":
+		wb = "offset"
+	first_bracket = ""
+	second_bracket = "]"
+	exclamation = ""
+
+	# pick address registers
+	if wb == "offset":
+		Rn = choice(addrRegs) # currently only sp
+	# writeback
+	else:
+		Rn = choice([i for i in addrRegs if i != Rd]) # cannot have writeback and Rd == Rn
+		# don't mess up our record of sp
+		cond = ""
+	Rm = choice([i for i in regList if i != Rn]) # we change Rm currently, so don't use Rn.
+
+	# pick an offset
+	offset = choice([i for i in range(lower-sp, upper-sp, 4) if sp+i in addresses])
+	assert(sp+offset in addresses)
+	# but ok to store anywhere in range
+	sign = "+" if offset >= 0 else "-"
+	# use any valid byte-aligned
+	if B=="B":
+		offset += choice([0,1,2,3])
+	#print "offset {}, sp {}->{}".format(offset, sp, sp if wb == "offset" else sp+offset)
+
+	# set up the operand for the correct type
+	program = ""
+	if typ == "imm":
+		operand = "#{}{}".format(sign,abs(offset))
+	# if register offset, set up the register with the offset
+	elif typ == "reg":
+		program = "l{}: mov {}, #{}\n".format(counter, Rm, abs(offset)) # small enough for immed right now (within 200)
+		counter += 1
+		operand = "{}{}".format(sign,Rm)
+	elif typ == "ISR":
+		print "No ISR memory yet!"
+		assert(False)
+
+	# modify sp and instr format with writeback
+	if wb == "pre":
+		sp += offset
+		exclamation = "!"
+	elif wb == "post":
+		sp += offset
+		first_bracket = "]"
+		second_bracket = ""
+
+	# build instruction
+	program += "l{}: {}{}{} {}, [{}{}, {}{}{}\n".format(counter, instruction, cond, B, Rd, Rn, first_bracket, operand, second_bracket, exclamation)
+	#print program
+	return program, counter
+
+
+
+
+	program = "l"+str(counter)+": "			# Line number
+	program += instruction + choice(Conditions)
+	program += " " + choice(regList) + ", "
+	program += " " + "[sp, #-"+str(randint(1,10)*4) + "]\n"
+	return program
+
+
+def makeHMemInstr(instruction, counter):
+	global sp
+	# choose Rd
+	Rd = choice(regList)
+	# don't modify PC
+	if "ldr" in instruction:
+		Rd = choice(regList)
+	# choose cond
+	cond = choice(Conditions)
+
+	# pick type of offset
+	typ = choice(mode3Types)
+	# pick type of writeback
+	#wb = choice(writebacks)
+	# can't deal with non-word aligned yet
+	wb = "offset"
+	first_bracket = ""
+	second_bracket = "]"
+	exclamation = ""
+
+	# pick address registers
+	if wb == "offset":
+		Rn = choice(addrRegs) # currently only sp
+	else:
+		Rn = choice([i for i in addrRegs if i != Rd]) # cannot have writeback and Rd == Rn
+	Rm = choice([i for i in regList if i != Rn]) # we change Rm currently, so don't use Rn.
+
+	# pick an offset
+	offset = choice([i for i in range(lower-sp, upper-sp, 4) if sp+i in addresses])
+	assert(sp+offset in addresses)
+	# but ok to store anywhere in range
+	sign = "+" if offset >= 0 else "-"
+	# use any valid byte-aligned or halfword aligned
+	if "b" in instruction:
+		offset += choice([0,1,2,3])
+	if "h" in instruction:
+		offset += choice([0,2])
+	#print "offset {}, sp {}->{}".format(offset, sp, sp if wb == "offset" else sp+offset)
+
+	# set up the operand for the correct type
+	program = ""
+	if typ == "imm":
+		operand = "#{}{}".format(sign,abs(offset))
+	# if register offset, set up the register with the offset
+	elif typ == "reg":
+		program = "l{}: mov {}, #{}\n".format(counter, Rm, abs(offset)) # small enough for immed right now (within 200)
+		counter += 1
+		operand = "{}{}".format(sign,Rm)
+
+	# modify sp and instr format with writeback
+	if wb == "pre":
+		sp += offset
+		exclamation = "!"
+	elif wb == "post":
+		sp += offset
+		first_bracket = "]"
+		second_bracket = ""
+
+	# build instruction
+	program += "l{}: {}{}{} {}, [{}{}, {}{}{}\n".format(counter, instruction[:3], cond, instruction[3:], Rd, Rn, first_bracket, operand, second_bracket, exclamation)
+	#print program
+	return program, counter
+
+
+def makeMMemInstr(instruction, counter):
+	global sp
+
+	# choose Rn and figure out how many regs we can use
+	#Rn = choice(regList)
+	Rn = "R13"
+	max_ascending_regs = max(0, (upper - sp) / 4)
+	max_descending_regs = max(0, (sp - lower) / 4)
+
+	# choose cond
+	cond = choice(Conditions)
+
+	# choose writeback
+	wb = choice([False, True])
+	# don't mess up sp
+	if wb:
+		cond = ""
+
+	# possible modes. Cases for F and E are the same since we 
+	#  don't want to point to unset memory
+	modes = []
+	if max_ascending_regs > 0:
+		modes += ["IA", "IB"]
+	if max_descending_regs > 0:
+		modes += ["DA", "DB"]
+	assert len(modes) > 0
+
+	mode = choice(modes)
+
+	# choose the registers to store
+	if instruction == "stm":
+		regOptions = set(RegsWithPC)
+		regOptions.update(["R13"])
+	else:
+		regOptions = set(regList)
+	instrRegs = []
+	if "I" in mode:
+		numRegs = choice( range(1, min(len(regOptions), max_ascending_regs) + 1) )
+	else:
+		numRegs = choice( range(1, min(len(regOptions), max_descending_regs) + 1) )
+
+	for _ in range(numRegs):
+		r = choice(list(regOptions))
+		instrRegs += [r]
+		regOptions.remove(r)
+
+	# remove impossible register
+	# can't load Rn if writeback
+	if instruction == "ldm" and wb and Rn in instrRegs:
+		instrRegs.remove(Rn)
+	# Rn must be lowest register if store Rn and wb
+	if instruction == "stm" and wb and Rn in instrRegs:
+		for r in range(int(Rn[1:])):
+			rmReg = "R{}".format(r)
+			if rmReg in instrRegs:
+				instrRegs.remove(rmReg)
+	# if we removed everything then give up
+	if len(instrRegs) == 0:
+		return makeNopInstr(counter)
+
+	if "I" in mode:
+		sp += len(instrRegs) * 4
+	else:
+		sp -= len(instrRegs) * 4
+
+	instrRegs.sort(key=lambda r: int(r[1:]))
+
+	program = "l{}: {}{}{} {}{}, {{{}}}\n".format(counter, instruction, cond, mode, Rn, "!" if wb else "", ", ".join(instrRegs))
+	return program
+
+
+def makeNopInstr(counter):
+	program = "l{}: nop\n".format(counter)
+	return program
+
+
+def makeAddr1ShiftImm(shifter):
+	if shifter == "ROR":
+		return randint(1,31)
+	return randint(0,31)
+
+
+def makeAddr1Immed():
+	immed_8 = randint(0,2**8-1)
+	rotate_imm = randrange(0,32, 2)
+	return ror(immed_8, rotate_imm)
+
+def ror(value, amt, bits = 32):
+	result = ((value & (2**bits-1)) >> amt%bits) | (value << (bits - (amt%bits)) & (2**bits-1))
+	return ctypes.c_long(result).value
+
+# Set up the stack and registers. The instruction sequence looks strange,
+# but lets us ldr [pc] for each val
 def initializeProgram():
+	global lower, upper, sp
+	stackSize = 21
+
 	program = ""
 	program += ".global main\n"
 	program += "main:\n"
@@ -152,31 +480,39 @@ def initializeProgram():
 	program += "subs R0, R15, R15\n"				# Initializing R0 to 0
 	program += "ldr sp, val\n"						# Initializing stack pointer
 	program += "b next\n"
+	sp = 0xbefffae8
+	upper = sp + 0
+	lower = sp - (stackSize - 1) * 4
 	program += "val: .word 0xbefffae8\n"
 	program += "\n"
 	program += "# INITIALIZING REGISTERS\n"
 	program += "\n"
 	program += "next: "
 	for i in range(1,13): 							# Initializing registers
-		program += "ldr R" + str(i) + ", val"+ str(i) + "\n"
-		program += "b next" + str(i) + "\n"
-		program += "val" + str(i) + ": .word " + str(randint(1,4294967295)) + "\n"
-		program += "next" + str(i) + ": "
+		program += "ldr R{0}, val{0}\n".format(i)
+		program += "b next{}\n".format(i)
+		program += "val{}: .word {}\n".format(i, randint(1,4294967295))
+		program += "next{}:".format(i)
 	program += "ldr R14, val14\n"
 	program += "b next14\n"
-	program += "val14: .word " + str(randint(1,4294967295)) + "\n"
+	program += "val14: .word {}\n".format(randint(1,4294967295))
 	program += "\n"
 	program += "# INITIALIZING STACK\n"
 	program += "\n"
 	program += "next14: "
-	for i in range(11): 							# Aribtrarily initializing stack so we can compare exact values
-		program += "ldr R1, val"+ str(i+15) + "\n"
-		program += "b next" + str(i+15) + "\n"
-		program += "val" + str(i+15) + ": .word " + str(randint(1,4294967295)) + "\n"
-		program += "next" + str(i+15) + ": "
-		program += "str R1, [sp, #-" + str(i*4) + "]\n"
+	for i in range(stackSize): 							# Aribtrarily initializing stack so we can compare exact values
+		program += "ldr R1, val{}\n".format(i+15)
+		program += "b next{}\n".format(i+15)
+		item = randint(1,4294967295)
+		address = sp - i * 4
+		spOffset = address - sp # should be -i*4
+		addresses.update(set([address]))
+		program += "val{}: .word {}\n".format(i+15, item)
+		program += "next{}:".format(i+15)
+		program += "str R1, [sp, #{}]\n".format(spOffset)
 	program += "\n"
 	return program
+
 
 if __name__ == "__main__":
 	makeProgram(1000)
