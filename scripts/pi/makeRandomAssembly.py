@@ -434,6 +434,8 @@ def makeMMemInstr(instruction, counter):
 	else:
 		sp -= len(instrRegs) * 4
 
+	instrRegs.sort(key=lambda r: int(r[1:]))
+
 	program = "l{}: {}{}{} {}{}, {{{}}}\n".format(counter, instruction, cond, mode, Rn, "!" if wb else "", ", ".join(instrRegs))
 	return program
 
