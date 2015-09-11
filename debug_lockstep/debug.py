@@ -69,8 +69,8 @@ def initialize_qemu():
 	if TEST_FILE is "":
 		gdb.execute('file /proj/leg/kernel/vmlinux')
 	else:
-		print "Loading script /proj/leg/qemu/{}.bin".format(TEST_FILE)
-		gdb.execute('restore /proj/leg/qemu/{}.bin binary'.format(TEST_FILE))
+		print "Loading script {}".format(TEST_FILE)
+		gdb.execute('restore {} binary'.format(TEST_FILE))
 
 	return qemu
 
