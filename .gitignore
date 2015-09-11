@@ -12,6 +12,9 @@
 ## Memory file
 *.flash
 
+## Python compiled files
+*.pyc
+
 ## Always ignore the pdf for documentation
 documentation/main.pdf
 /autoSimSD.tcl

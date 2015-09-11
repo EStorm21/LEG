@@ -1,0 +1,4 @@
+
+# Ignore runtime ModelSim files
+work/
+simTest.dat

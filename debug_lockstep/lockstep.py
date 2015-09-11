@@ -314,6 +314,8 @@ def debugFromHere(run_dir, found_bugs, is_linux):
 
 		# Start ModelSim and sync it
 		print "Starting ModelSim..."
+		if not os.path.isdir('../sim/work'):
+			subprocess.call(['vlib','../sim/work'])
 		modelsim = subprocess.Popen(['vsim', '-do', 'do debug.tcl {}'.format(os.path.abspath(tmpdir))], stdin=open(os.devnull), preexec_fn = os.setpgrp)
 
 		try:

@@ -14,6 +14,8 @@ def makeCheckpointHere(name):
 
 	# Start ModelSim and make the checkpoint
 	print "Starting ModelSim..."
+	if not os.path.isdir('../sim/work'):
+		subprocess.call(['vlib','../sim/work'])
 	modelsim = subprocess.Popen(['vsim', '-do', 'do checkpoint.tcl {} {}'.format(os.path.abspath(tmpdir), os.path.abspath("output/checkpoints/{}.checkpoint".format(name)))], stdin=open(os.devnull), preexec_fn = os.setpgrp)
 	modelsim.wait()
 
