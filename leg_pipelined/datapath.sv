@@ -64,6 +64,9 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   logic [31:0] ReadDataRawW, ReadDataW, Result1_W, ResultW;
   logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
   logic [31:0] ALUorCP15_M;
+  // Keep PC and instruction in each stage for debugging
+  logic [31:0] PCD, PCE, PCM, PCW;
+  logic [31:0] instrEdebug, instrMdebug, instrWdebug;
   
 /***** Brief Description *******
  * Modified by Ivan Wong for Clay Wolkin 2014-2015 
@@ -91,6 +94,9 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   flopenrc #(32) pcplus4(clk, reset, ~StallD, FlushD, PCPlus4F, PCPlus4D);
   flopenrc #(32) pcplus0(clk, reset, ~StallD, FlushD, PCPlus4D, PCPlus0D);
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
+  // pass on PC for debugging
+  flopenrc #(32) pcdreg(clk, reset, ~StallD, FlushD, PCF, PCD);
+
   mux3 #(32)  exceptionPC(PCPlus8D, PCPlus4D, PCPlus0D, PCInSelect, PC_in);
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   
@@ -108,6 +114,9 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   flopenrc #(32) rd1reg(clk, reset, ~StallE, FlushE, Rd1D, Rd1E);
   flopenrc #(32) rd2reg(clk, reset, ~StallE, FlushE, Rd2D, Rd2E);
   flopenrc #(32) immreg(clk, reset, ~StallE, FlushE, RotImmD, ExtImmE);
+  // pass on PC for debugging
+  flopenrc #(32) pcereg(clk, reset, ~StallE, FlushE, PCD, PCE);
+  flopenrc #(32) instrereg(clk, reset, ~StallE, FlushE, DefaultInstrD, instrEdebug);
 
   mux3 #(32)  byp1mux(Rd1E, ResultW, ALUorCP15_M, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(Rd2E, ResultW, ALUorCP15_M, ForwardBE, WriteDataE);
@@ -136,6 +145,10 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // =============================== Memory Stage =======================================
   // ====================================================================================
   flopenr #(32) aluresreg(clk, reset, ~StallM, ALUResultE, ALUOutM);
+  // pass on PC for debugging
+  flopenr #(32) pcmreg(clk, reset, ~StallM, PCE, PCM);
+  flopenr #(32) instrmreg(clk, reset, ~StallM, instrEdebug, instrMdebug);
+
   mux2 #(32) CP15_ALU_mux(ALUOutM, CP15rd_M, CoProc_EnM, ALUorCP15_M);
   flopenr #(32) wdreg(clk, reset, ~StallM, WriteDataReplE, WriteDataM);
   
@@ -144,6 +157,10 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // ====================================================================================
   flopenrc #(32) aluoutreg(clk, reset, ~StallW, FlushW, ALUorCP15_M, ALUOutW);
   flopenrc #(32) rdreg(clk, reset, ~StallW, FlushW, ReadDataM, ReadDataRawW);
+  // pass on PC for debugging
+  flopenrc #(32) pcwreg(clk, reset, ~StallW, FlushW, PCM, PCW);
+  flopenrc #(32) instrwreg(clk, reset, ~StallW, FlushW, instrMdebug, instrWdebug);
+
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, Result1_W);
   mux2 #(32)  msr_mrs_mux(Result1_W, PSR_W, CPSRtoRegW, ResultW);
   //TODO: Think about how we want to implement this - should it be in the 32bit datapath?
