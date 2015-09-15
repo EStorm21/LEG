@@ -54,7 +54,7 @@ module top(input  logic        clk, reset,
   // assign INVI = 1'b0;
   // assign INVD = 1'b0;
   // assign ENI = 1'b0;
-  // assign END = 1'b0;
+  //assign END = 1'b1;
   assign ENI = control[12];
   assign END = control[2];
   assign CLEAND = 1'b0;
