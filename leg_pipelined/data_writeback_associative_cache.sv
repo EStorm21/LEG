@@ -76,5 +76,5 @@ module data_writeback_associative_cache
 
     // Select from cache or memory
     mux2 #(32) RDMux(CacheOut, WD, RDSel, RD);
-
+	//assign RD = 32'hdeadbeef;
 endmodule
