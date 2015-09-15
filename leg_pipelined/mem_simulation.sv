@@ -1,10 +1,10 @@
-module mem_simulation
-            #(parameter waitCycles = 1, blocksize = 4)
-           (input  logic clk, we, re,
-            input  logic [31:0] a,
-            input  logic [31:0] wd,
-            output logic [31:0] rd,
-            output logic Valid);
+module mem_simulation #(parameter waitCycles = 1, bsize = 4) (
+  input  logic        clk, we, re,
+  input  logic [31:0] a    ,
+  input  logic [31:0] wd   ,
+  output logic [31:0] rd   ,
+  output logic        Valid
+);
 
   parameter countBits = $clog2(waitCycles) + 1;
   logic [10:0] count;

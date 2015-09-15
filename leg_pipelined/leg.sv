@@ -69,10 +69,8 @@ module leg(input  logic        clk, reset,
   logic       RegtoCPSR, CPSRtoReg;
   logic [1:0] PCInSelect;
 
-  
-
-  controller c(.*);
-  datapath dp(.*); 
+  controller c (.*);
+  datapath dp (.*); 
   hazard h(.*);
   addresspath ap(.*);
 

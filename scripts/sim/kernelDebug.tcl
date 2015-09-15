@@ -19,7 +19,6 @@ add wave -position insertpoint  sim:/testbench/dut/leg/dp/rf/rf; list
 add wave -position insertpoint  sim:/testbench/dut/leg/c/CPSRW; list
 add wave -position insertpoint  sim:/testbench/dut/leg/dp/PCF; list
 
-
 set inFifo [open "kernelDebugIn.fifo" r]
 fconfigure $inFifo -blocking 1
 set outFifo [open "kernelDebugOut.fifo" w]
