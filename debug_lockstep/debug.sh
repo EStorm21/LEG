@@ -16,7 +16,7 @@ case $key in
 	;;
 	-h|--help)
 	echo "Usage:"
-	echo "  -t TEST, --test TEST             Load a test from /proj/leg/qemu/TEST.bin"
+	echo "  -t TEST, --test TEST             Load a test (.bin) from the given path"
 	echo "  -a, --auto                       Automatically run the test noninteractively"
 	exit 0
 	;;
@@ -35,3 +35,5 @@ PYTHONPATH=./:/proj/leg/debugutils/python2.7/install/lib/ \
 	-ex "python TEST_FILE=\"$TESTFILE\"" \
 	-ex "python RUN_TESTS=$RUNTEST" \
 	-x debug.py
+
+mv transcript output/transcript

@@ -19,12 +19,20 @@ This is a tool I made to enable fast debugging and testing of the Linux kernel b
 \end{itemize}
 
 \subsection{File structure}
-The run directory on Tera is currently \texttt{/proj/leg/sim/newDebug}.1 The scripts place all of their output in the \texttt{output} directory. For each run of the script, a new subdirectory within this directory is created, named according to the appropriate timestamp. Within this directory, the \texttt{bugs} directory contains the full debug output of each found bug, and \texttt{runlog} contains an abbreviated summary of all bugs found in the given run. Duplicate bugs are ignored and do not appear in these files.
+The run directory on Tera is currently in the Git repo at \texttt{debug_lockstep}.1 The scripts place all of their output in the \texttt{debug_lockstep/output} directory. For each run of the script, a new subdirectory within this directory is created, named according to the appropriate timestamp. Within this directory, the \texttt{bugs} directory contains the full debug output of each found bug, and \texttt{runlog} contains an abbreviated summary of all bugs found in the given run. Duplicate bugs are ignored and do not appear in these files.
 
 Created checkpoints appear in \texttt{output/checkpoints/} with the provided name.
 
 \subsection{How to Use}
-First, start the debug script using \texttt{./debug.sh} in your shell on tera. (For now, this only works on tera.) You will be dropped into a GDB prompt, which is connected to a qemu process that runs the kernel. You can run arbitrary GDB commands in this prompt, but additional commands are enabled:
+There are two ways to use the debug_lockstep script: to debug Linux, and to debug a test. To debug linux, simply start the debug script using \texttt{./debug.sh} in your shell on tera. (For now, this only works on tera.) You will be dropped into a GDB prompt, which is connected to a qemu process that runs the kernel. To debug a specific test, run
+
+\begin{verbatim}
+./debug.sh -t path/to/test.bin
+\end{verbatim}
+
+You can also pass the flag \texttt{-a} to make it automatically begin lockstepping instead of using an interactive prompt.
+
+When you are at the GDB prompt, you can run arbitrary GDB commands, but additional commands are enabled:
 
 \begin{itemize}
 \item \texttt{leg-lockstep}: Starts lockstepping at the current instruction. This dumps the current qemu state to a file, and then starts ModelSim initialized with the current state of qemu. It then begins to single step in qemu and advance time in ModelSim, ensuring that all register changes match between the two. As soon as there is a mismatch, or a ModelSim change takes too long to occur, it outputs bug information and returns control to the GDB prompt.

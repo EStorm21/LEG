@@ -1,19 +1,26 @@
-// Cache controller works according to schematic
-module instr_cache_controller #(parameter tagbits = 14)
-  (input  logic clk, reset, enable, PAReady, W1V, W2V, CurrLRU, BusReady,
-   input  logic [1:0] WordOffset,
-   input  logic [tagbits-1:0] W1Tag, W2Tag, PhysTag,
-   output logic [1:0] Counter,
-   output logic W1WE, W2WE, WaySel,
-   output logic IStall, ResetCounter, HRequestF,
-   output logic [1:0] NewWordOffset);
+// instr_cache_controller.sv
+// mwaugaman@hmc.edu 8 August 2015
+// Instruction Cache Controller for LEG Processor
 
-  logic W1EN, W2EN, Hit, W2Hit;
-  logic [tagbits-1:0] Tag, PrevPTag;
+module instr_cache_controller #(parameter tbits = 14) (
+  input  logic             clk, reset, enable, PAReady, W1V, W2V, CurrLRU, BusReady,
+  input  logic [      1:0] WordOffset   ,
+  input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag,
+  output logic [      1:0] Counter      ,
+  output logic             W1WE, W2WE, WaySel,
+  output logic             IStall, ResetBlockOff, HRequestF,
+  output logic [      1:0] NewWordOffset
+);
 
-  //-----------------TAG LOGIC--------------------
-  flopenr #(tagbits) tagReg(clk, reset, PAReady, PhysTag, PrevPTag);
-  mux2 #(tagbits) tagMux(PrevPTag, PhysTag, PAReady, Tag);
+  logic             W1EN, W2EN, Hit, W2Hit;
+  logic [tbits-1:0] Tag, PrevPTag;
+  logic [      1:0] CounterMid;
+
+  // Store the most recent valid physical tag
+  flopenr #(tbits) tagReg (clk,reset,PAReady,PhysTag,PrevPTag);
+
+  // If the current tag is valid, use it instead of the stored value
+  mux2 #(tbits) tagMux(PrevPTag, PhysTag, PAReady, Tag);
 
   // Create Hit signal 
   assign W1Hit = (W1V & (Tag == W1Tag));
@@ -23,6 +30,7 @@ module instr_cache_controller #(parameter tagbits = 14)
   // Select output from Way 1 or Way 2
   assign WaySel = enable & W1Hit | ~enable;
 
+  // FSM States
   typedef enum logic [1:0] {READY, MEMREAD, NEXTINSTR} statetype;
   statetype state, nextstate;
 
@@ -43,20 +51,18 @@ module instr_cache_controller #(parameter tagbits = 14)
   // output logic
   assign IStall =  (state == MEMREAD) | ((state == READY) & ~Hit);
   assign CWE    = ( (state == MEMREAD) & BusReady | ( (state == READY) & ~Hit & BusReady) );
-  // assign RDSel  = ( (state == NEXTINSTR) & (WordOffset == 2'b11) ) & enable;
   assign HRequestF  = (state == MEMREAD) | ((state == READY) & ~Hit);
-  assign ResetCounter = ( (state == READY) & Hit ) | ( state == NEXTINSTR );
+  assign ResetBlockOff = ( (state == READY) & Hit ) | ( state == NEXTINSTR );
 
-  logic [1:0] CounterMid;
   // Create Counter for sequential bus access
   always_ff @(posedge clk, posedge reset)
-    if(reset | ResetCounter) begin
-        CounterMid <= 0;
+    if(reset | ResetBlockOff) begin
+      CounterMid <= 0;
     end else begin
       if (BusReady) begin
-          CounterMid <= CounterMid + 1;
+        CounterMid <= CounterMid + 1;
       end else begin
-          CounterMid <= CounterMid;
+        CounterMid <= CounterMid;
       end
     end
 
@@ -75,6 +81,6 @@ module instr_cache_controller #(parameter tagbits = 14)
   assign W2WE = W2EN & CWE;
 
    // Create the block offset for the cache
-  mux2 #(2) WordOffsetMux(Counter, WordOffset, ResetCounter, NewWordOffset);
+  mux2 #(2) WordOffsetMux(Counter, WordOffset, ResetBlockOff, NewWordOffset);
 
 endmodule

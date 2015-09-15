@@ -6,10 +6,10 @@ module word_memory #(parameter lines = 16, parameter setbits = $clog2(lines))
     output logic [31:0] rd);
 
   // Create 4 byte memories
-  logic [7:0] BYTE0[lines-1:0];  // n lines x blocksize bits
-  logic [7:0] BYTE1[lines-1:0];  // n lines x blocksize bits
-  logic [7:0] BYTE2[lines-1:0];  // n lines x blocksize bits
-  logic [7:0] BYTE3[lines-1:0];  // n lines x blocksize bits
+  logic [7:0] BYTE0[lines-1:0];  // n lines x bsize bits
+  logic [7:0] BYTE1[lines-1:0];  // n lines x bsize bits
+  logic [7:0] BYTE2[lines-1:0];  // n lines x bsize bits
+  logic [7:0] BYTE3[lines-1:0];  // n lines x bsize bits
 
   assign rd = {BYTE3[set], 
                BYTE2[set],

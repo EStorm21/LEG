@@ -1,52 +1,18 @@
 module ahb_arbiter( input  logic HWriteM, IStall, DStall, HReady, HRequestF, 
                     input  logic HRequestM, PAReady, DRequestPA,
                     input  logic [31:0] HAddrF, HAddrM,
-                    output logic HReadyF, HReadyM, HWrite, HRequest,
+                    output logic HReadyF, HReadyM, CPUHWrite, CPUHRequest,
                     output logic PAReadyF, PAReadyM,
-                    output logic [31:0] HAddr);
+                    output logic [31:0] CPUHAddr);
     
-    assign HWrite = HWriteM & DStall;
+    assign CPUHWrite = HWriteM & DStall;
     assign HReadyF = IStall & ~DStall & HReady;
     assign HReadyM = DStall & HReady;
     assign PAReadyF = IStall & ~DRequestPA & PAReady;
     assign PAReadyM = DRequestPA & PAReady;
-    // assign HAddr = DStall ? HAddrM : HAddrF;
-    assign HAddr = DRequestPA ? HAddrM : HAddrF;
-    assign HRequest = HRequestF | HRequestM;
-    // always_comb
-    // begin
-    //     // Cases:
-    //     // Instruction access only, 
-    //     if (IStall & ~DStall) begin
-    //         // Give instr cache bus
-    //         HAddr = HAddrF;
-    //         HReadyF = HReady;
-    //         HReadyM = 1'b0;
-    //         Hwrite = 1'b0;
-
-    //     // Data access only
-    //     end else if(~IStall & DStall) begin
-    //         // Give bus to data cache
-    //         HAddr = HAddrM;
-    //         HReadyM = HReady;
-    //         HReadyF = 1'b0;
-    //         HWrite = HWriteM;
-
-    //     // Both
-    //     end else if(IStall & DStall) begin
-    //         // Give bus to data cache
-    //         HAddr = HAddrM;
-    //         HReadyM = HReady;
-    //         HReadyF = 1'b0;
-    //         HWrite = HWriteM;
-
-    //     // None
-    //     end else begin
-    //         HReadyF = 1'b0;
-    //         HReadyM = 1'b0;
-    //         HAddr = HAddrM;
-    //         HWrite = 1'b0;
-    //     end
-    // end
+    // assign CPUHAddr = DStall ? HAddrM : HAddrF;
+    // assign CPUHAddr = DRequestPA ? HAddrM : HAddrF;
+    assign CPUHRequest = HRequestF | HRequestM;
+    mux2 #(32) HAddrArbMux(HAddrF, HAddrM, DRequestPA, CPUHAddr);
 
 endmodule

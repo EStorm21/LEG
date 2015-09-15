@@ -1,9 +1,11 @@
 #simulate and retrieve register values
 
-project open "/proj/leg/sim/pipelined_processor.mpf"; list
+transcript off
+
+project open "../sim/pipelined_processor.mpf"; list
 #compile project
 
-vlog +acc /proj/leg/LEG/leg_pipelined/*.sv ; list
+vlog +acc ../leg_pipelined/*.sv ; list
 
 # set dumpDir $1 (essentialy)
 set dumpDataName "qemu_mem_dump"
@@ -14,11 +16,10 @@ set dumpStateFile $dumpDir$dumpStateName
 set ignoredLogName "wlffile.wlf"
 set ignoredLogFile $dumpDir$ignoredLogName
 
-file copy -force $dumpDataFile "/proj/leg/sim/simTest.dat"; list
+file copy -force $dumpDataFile "../sim/simTest.dat"; list
 vsim -quiet -wlf "$ignoredLogFile" -wlftlim {1 ns} work.testbench; list
 
 nolog -all
-transcript off
 set temp_t 0
 
 add wave -position insertpoint  sim:/testbench/dut/leg/dp/rf/rf; list
