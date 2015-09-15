@@ -182,7 +182,7 @@ module top (
   mask_to_hsize mth(ByteMaskM, HSIZE);
 
   assign WordAccess = 1'b0;   // Assuming byte or halfword accesses
-  assign SupMode    = 1'b1;      // in supervisor mode
+  assign SupMode    = 1'b1;   // in supervisor mode
   // assign SBit = control[7];         // Give the most permissions with S and R
   // assign RBit = control[9];
   // assign control = 32'h0000_0000; // Fake Control signal

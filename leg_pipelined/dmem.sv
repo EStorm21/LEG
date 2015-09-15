@@ -22,7 +22,8 @@ module dmem (
       // for(i = 0; i < MEM_SIZE; i = i + 1) begin
       //   RAM[i] = 32'b0;
       // end
-      $readmemh("C:/Users/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
+      // $readmemh("C:/Users/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
+      $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
       // $readmemh("C:/Users/Max/Google Drive/Clay-Wolkin/SourceTree2/Tests/ldm.dat",RAM);
       // $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
       // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/LEG/tests/simTest.dat",RAM); //teqrs

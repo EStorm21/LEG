@@ -32,10 +32,10 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   faulttype FaultCode, FaultCodeMid;
 
   // Fault Signals
-  logic        Enable, SubAPFault, APFault, DomainFault, TerminalException;
+  logic        Enable, APFault, DomainFault, TerminalException;
   logic        VectorException, APMidFault, FaultMid, Fault, SelPrevAddr;
   logic        PStall;
-  logic [3:0]  Domain, StoredDomain;
+  logic [3:0]  Domain;
   logic [1:0]  CurrAP, dPerm;
   logic [31:0] FSR, FAR, Dom;
   // Translation Signals
@@ -73,11 +73,6 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
 
   // MMUWriteData Mux
   mux2 #(32) WDMux(FAR, FSR, WDSel, MMUWriteData);
-
-  // Domain flop: Hold onto the translation domain for faults. 
-  // Update when domain is read
-  flopenr #(4) DomainFlop(clk, reset, 
-    (state == SECTIONTRANS | state == SECONDFETCH), PHRData[8:5], Domain);
 
   // Instruction Tracker
   // --- Track whether an instruction was executed.
@@ -212,6 +207,11 @@ module mmu(input  logic clk, reset, MMUExtInt, CPUHRequest,
   // ====================================================================================
   // ============================== Fault Output Logic ==================================
   // ====================================================================================
+
+  // Domain flop: Hold onto the translation domain for faults. 
+  // Update when domain is read
+  flopenr #(4) DomainFlop(clk, reset, 
+    (state == SECTIONTRANS | state == SECONDFETCH), PHRData[8:5], Domain);
   
   always_comb
     case (state)
