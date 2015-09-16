@@ -1,4 +1,5 @@
 # Date: 9/07/15
+# Last modified by Sam Dietrich sdietrich@hmc.edu
 # Version 4
 #
 # Limitations:
@@ -108,8 +109,17 @@ RegsWithPC = regList + ["R15"]
 
 # modify lists with options
 if inc != []:
-	arithmetic = [i for i in arithmetic if i in inc]
-	logicOps = [i for i in logicOps if i in inc]
+	arithmetic_new = [i for i in arithmetic if i in inc]
+	logicOps_new = [i for i in logicOps if i in inc]
+
+	# Need some arithmetic or logic ops to use branches
+	if (len(arithmetic_new) == 0 and len(logicOps_new) == 0) \
+	   and ('fb' in inc or 'bb' in inc):
+	   pass
+	else:
+		arithmetic = arithmetic_new
+		logicOps = logicOps_new
+
 	fbranch = [i for i in fbranch if i in inc]
 	bbranch = [i for i in bbranch if i in inc]
 	wbmem = [i for i in wbmem if i in inc]
@@ -156,7 +166,8 @@ def makeProgram(numInstru):
 
 		# forward branch operations
 		elif instrList == fbranch and counter < numInstru-11:	
-			program += makeFBranchInstr(counter)
+			prog, counter = makeFBranchInstr(counter)
+			program += prog
 
 		# multiply operations
 		elif instrList == multiply:
@@ -272,7 +283,13 @@ def makeFBranchInstr(counter):
 	forwardAmt = randint(1,10)
 	cond = choice(Conditions)
 	program = "l{}: b{} l{}\n".format(counter, cond, counter+forwardAmt)
-	return program
+	# ensure we can't put any mem instructions in here
+	for i in range(forwardAmt):				# adding random arithmetic instructions in backward branch section
+		counter += 1
+		instrChoice = choice(arithmetic+logicOps)
+		program += makeDataProcInstr(instrChoice, counter)
+		
+	return program, counter
 
 
 def makeMultiplyInstr(instruction, counter):
