@@ -203,7 +203,7 @@ module data_writeback_associative_cache_controller
   mux2 #($clog2(bsize)) WordOffsetMux(Counter, WordOffset, ResetBlockOff, 
                                           NewWordOffset);
   // Flushing MUX
-  mux2 #(8) BlockNumMux(A[$clog2(lines)-1 + 4:4], 
+  mux2 #($clog2(lines)) BlockNumMux(A[$clog2(lines)-1 + 4:4], 
                    FlushA[$clog2(lines)-1:0], clean, BlockNum);
 
   // ----------------MMU-------------------

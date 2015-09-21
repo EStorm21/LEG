@@ -7,6 +7,7 @@ module mmu #(parameter tbits = 22) (
   input  logic [31:0] control, CP15rd_M, // control[0] is the enable bit
   input  logic [17:0] TBase    ,
   output logic [31:0] HAddr, MMUWriteData,
+  output logic [tbits-1:0] PhysTag,
   output logic [ 3:0] CP15A    ,
   output logic        HRequest, HWrite, CPUHReady, MMUWriteEn,
   PrefetchAbort, DataAbort, MMUEn, PAReady
@@ -37,7 +38,7 @@ module mmu #(parameter tbits = 22) (
   // Fault Signals
   logic        Enable;
   logic        Fault, SelPrevAddr;
-  logic        PStall;
+  //logic        PStall;
   logic [3:0]  Domain;
   logic [31:0] FSR, FAR, Dom;
   // Translation Signals
@@ -52,7 +53,7 @@ module mmu #(parameter tbits = 22) (
   // TLB Signals
   logic TLBwe;
   logic TLBMiss;
-  tri [tbits+7:0] TableEntry;
+  tri [tbits+8:0] TableEntry;
 
   // PHRData flop: Hold onto the previous bus value for current translation
   flopenr #(32) HRDataFlop(clk, reset, HReady, HRData, PHRData);
@@ -74,6 +75,7 @@ module mmu #(parameter tbits = 22) (
   // FIXME: Can this register and mux be removed?
   //flopr #(32) HAddrFlop(clk, reset, HAddr, PHAddr);
   assign HAddrOut = HAddrMid;
+  assign PhysTag = TableEntry[tbits+8:8];
   //mux2 #(32) HAddrMidMux(HAddrMid, PHAddr, SelPrevAddr, HAddrOut);
   //flopr #(1) StallFlop(clk, reset, (DStall | IStall), PStall);
 
@@ -95,7 +97,8 @@ module mmu #(parameter tbits = 22) (
     .we        (TLBwe ),
     .VirtTag   (CPUHAddr[31:32-tbits]),
     .TableEntry(TableEntry), 
-    .Miss      (TLBMiss      )
+    .Miss      (TLBMiss      ),
+    .PAReady   (PAReady)
   );
 
   twh #(tbits) translation_walk_hardware (.*);
