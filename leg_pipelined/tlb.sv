@@ -1,15 +1,15 @@
-module tlb #(parameter tagbits = 16, parameter size = 16) (
+module tlb #(parameter tbits = 16, parameter size = 16, 
+parameter tlb_word_size = tbits   + 1        + 1          + 2  + 4)
+//                        phystag + cachable + bufferable + AP + Domain
+(
     input logic clk, reset, enable, we, // Clock
-    input logic [tagbits-1:0] VirtTag,
-    inout logic C, B,               // Cacheable and bufferable bits
-    inout logic [1:0] AP,             // Access permission bits
-    inout logic [3:0] Domain,         // Domain bits
-    inout logic [tagbits-1:0] PhysTag, // Physical Tag to write data into TLB
+    input logic [tbits-1:0] VirtTag,
+    inout logic [tlb_word_size-1:0] TableEntry, // Physical Tag to write data into TLB
     output logic Miss 
 );
 
 //                        phystag + cachable + bufferable + AP + Domain
-parameter tlb_word_size = tagbits + 1        + 1          + 2  + 4;
+// parameter tlb_word_size = tbits + 1        + 1          + 2  + 4;
 
 // SRAM signals
 tri [tlb_word_size-1:0] RData;
@@ -23,17 +23,19 @@ logic                        CRead ;
 // Shared Signals
 logic [size - 1:0] Match;
 
-cam #(tagbits, size) 
+cam #(tbits, size) 
 tlb_cam(clk, reset, enable, CRead, we, CAdr, CData, Match);
 
 match_ram #(tlb_word_size, size) 
 tlb_ram(clk, reset, enable, RRead, we, Match, RData);
 
-tlb_controller #(size, tagbits) tc(.*);
+tlb_controller #(size, tbits) tc(.*);
 
-assign RData = we ? {PhysTag, C, B, AP, Domain} : 'bz;
+// assign RData = we ? {PhysTag, C, B, AP, Domain} : 'bz;
+assign RData = we ? TableEntry : 'bz;
 assign CData = VirtTag;
-assign {PhysTag, C, B, AP, Domain} = !we ? RData : 'bz;
+// assign {PhysTag, C, B, AP, Domain} = !we ? RData : 'bz;
+assign TableEntry = !we ? RData : 'bz;
 assign Miss = ~(|Match);
 
 endmodule
