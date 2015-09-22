@@ -1,5 +1,4 @@
-module multiplier(input logic clk, reset, 
-           input  logic [31:0] AIn, BIn,
+module multiplier(input  logic [31:0] AIn, BIn,
            input logic [1:0] MultControlE,
            output logic [31:0] Result,
            output logic [3:0]  Flags,

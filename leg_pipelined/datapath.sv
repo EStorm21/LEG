@@ -138,7 +138,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // TODO: Use a signle multiplier for both signed and unsigned
   // - Turn this into structural block
   // - Move relevant signals to controller
-  multiplier  mult(clk, reset, SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, FlagsE[1:0], ZFlagKeptE, CarryHiddenE);
+  multiplier  mult(SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, FlagsE[1:0], ZFlagKeptE, CarryHiddenE);
   
   mux3 #(32)  aluoutputmux(ALUOutputE, ShiftBE, MultOutputE, ResultSelectE, ALUResultE); 
   data_replicator memReplicate(WriteByteE, StrHalfwordE, WriteDataE, WriteDataReplE);
