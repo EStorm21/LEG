@@ -85,7 +85,7 @@ fbranch = ["fb"]
 bbranch = ["bb"]
 
 # Load/store word and unsigned byte
-wbmem = ["str","ldr"]
+wbmem = ["str","ldr", "strb", "ldrb"]
 
 # Load/store halfword and load signed byte
 hmem = ["ldrh", "ldrsb", "ldrsh", "strh"]
@@ -324,7 +324,7 @@ def makeMultiplyInstr(instruction, counter):
 def makeWBMemInstr(instruction, counter):
 	global sp
 	# choose byte 1/5 of time
-	B = "B" if choice(range(5)) == 0 else ""
+	B = "B" if "b" in instruction else ""
 	# choose Rd
 	Rd = choice(RegsWithPC)
 	# can't use PC with B, don't modify PC
