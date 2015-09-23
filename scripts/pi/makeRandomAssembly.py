@@ -386,7 +386,7 @@ def makeWBMemInstr(instruction, counter):
 		second_bracket = ""
 
 	# build instruction
-	program += "l{}: {}{}{} {}, [{}{}, {}{}{}\n".format(counter, instruction, cond, B, Rd, Rn, first_bracket, operand, second_bracket, exclamation)
+	program += "l{}: {}{}{} {}, [{}{}, {}{}{}\n".format(counter, instruction[0:3], cond, B, Rd, Rn, first_bracket, operand, second_bracket, exclamation)
 	#print program
 	return program, counter
 
