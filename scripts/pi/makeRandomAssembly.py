@@ -574,10 +574,10 @@ def initializeProgram():
 	program += "subs R0, R15, R15\n"				# Initializing R0 to 0
 	program += "ldr sp, val\n"						# Initializing stack pointer
 	program += "b next\n"
-	sp = 0xbefffae8
+	sp = 0xffff0
 	upper = sp + 0
 	lower = sp - (stackSize - 1) * 4
-	program += "val: .word 0xbefffae8\n"
+	program += "val: .word 0xffff0\n"
 	program += "\n"
 	program += "# INITIALIZING REGISTERS\n"
 	program += "\n"
