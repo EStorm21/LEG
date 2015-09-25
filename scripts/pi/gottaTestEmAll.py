@@ -66,7 +66,7 @@ if __name__ == "__main__":
   N1=str(3000)
   arithmetic.remove("clz")
   working = arithmetic + logicOps + fbranch + bbranch + ["mul", "ldr", "str"]
-  print "making {} random tests of everything".format(N1)
+  print "making {} random tests of working instructions".format(N1)
   with open("working_{}.s".format(N1), "w+") as f:
     code = Popen(['python', 'makeRandomAssembly.py', '-n', N1 ],
                    stdout=f)

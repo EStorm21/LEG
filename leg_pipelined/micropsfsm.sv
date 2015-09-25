@@ -496,7 +496,29 @@ always_comb
 						defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + scaled(Rm) 
 						defaultInstrD[11:0] // add scaled(Rm)
 						};
-				// post indexed ldrb/strb
+				// post indexed ldrb/strb where Rd == Rm. Else Rd gets changed, then update Rn with new Rd. Sad.
+				// see note below
+				// post indexed and Register / scaled register type and Rd == Rm
+				end else if (~defaultInstrD[24] & ~defaultInstrD[21] & defaultInstrD[25] & (defaultInstrD[15:12] == defaultInstrD[3:0])) begin
+					nextState = ls_word_byte;
+					InstrMuxD = 1;
+					ldrstrRtype = 0;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 1;
+					noRotate = 1;
+					addCarry = 0;
+					keepZ = 0;
+					addZero = 0;
+					SignExtend = 2'b0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b100}; // 5th bit of WA3, RA2D and RA1D
+					// Rz = Rn + <shift operand>
+					uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
+						1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
+						defaultInstrD[19:16], 4'b1111, // Rz = Rn + <shift operand> 
+						defaultInstrD[11:0] // add <shift operand>
+						};
+				// post indexed ldrb/strb where Rd != Rm
 				// 	SD 5/6/2015 Maybe should not check [21]. Still valid post-indexed, just privilege change
 				end else if (~defaultInstrD[24] & ~defaultInstrD[21]) begin
 					debugText = "ldr/str/ldrb/strb post indexed";
@@ -623,7 +645,28 @@ always_comb
 						defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + imm 
 						defaultInstrD[11:0] // Immediate
 						};
-			// (scaled) register post indexed
+			// (scaled) register post indexed, Rd == Rm
+			// see note below
+			end else if (defaultInstrD[25:24] == 2'b10 & (defaultInstrD[15:12] == defaultInstrD[3:0])) begin
+					debugText = "ldr/str/ldrb/strb post indexed in ls_word_byte";
+					nextState = ls_word_byte_wb;
+					InstrMuxD = 1;
+					ldrstrRtype = 0;
+					doNotUpdateFlagD = 1;
+					uOpStallD = 1;
+					keepZ = 0;
+					addZero = 0;
+					SignExtend = 2'b0;
+					addCarry = 0;
+					regFileRz = {1'b0, // Control inital mux for RA1D
+								3'b000}; // 5th bit of WA3, RA2D and RA1D
+					// Load immedate byte/word
+					uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
+							defaultInstrD[23:22], 1'b0, 	// 
+							defaultInstrD[20], defaultInstrD[19:16],  // Load from saved register
+							defaultInstrD[15:12], 		   // Store into Rd
+							12'b0};	
+			// (scaled) register post indexed, Rd != Rm
 			// SD 5/6/2015 maybe can combine with above
 			end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
 				debugText = "ldr/str/ldrb/strb cycle 2 (scaled) register post index";
@@ -641,7 +684,7 @@ always_comb
 				uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
 						1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
 						defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + Rm 
-						8'b0, defaultInstrD[3:0] // add Rm
+						defaultInstrD[11:0] // add Rm
 						};
 			end else begin // NOT POST-INCREMENT OR !
 					debugText = "ldr/str/ldrb/strb cycle 2 else case";
@@ -663,6 +706,26 @@ always_comb
 					STR_cycle = 2'b0;
 					ldrstrRtype = 0;
 			end 
+		end
+
+		ls_word_byte_wb: begin
+			// only one case gets us here
+			debugText = "ldr/str/ldrb/strb post-indexed actual writeback";
+			nextState = ready;
+			InstrMuxD = 1;
+			ldrstrRtype = 0;
+			addCarry = 0;
+			doNotUpdateFlagD = 1;
+			keepZ = 0;
+			addZero = 0;
+			uOpStallD = 0;
+			regFileRz = {1'b0, // Control inital mux for RA1D
+						3'b010}; // 5th bit of WA3, RA2D and RA1D
+			// Load immedate byte/word
+			uOpInstrD = {defaultInstrD[31:28], 3'b000, // Condition bits and RSR-type
+						4'b1101, 1'b0, // MOV instruction, Do not update flags [24:20]
+						4'b0000, defaultInstrD[19:16], // If we have SBZ then [19:16]  shb 0000, we should use Rz [15:12]
+						8'b0, 4'b1111}; // from Rz
 		end
 
 		strHalf: begin
