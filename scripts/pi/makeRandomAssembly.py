@@ -354,12 +354,12 @@ def makeWBMemInstr(instruction, counter):
 	Rm = choice([i for i in regList if i != Rn]) # we change Rm currently, so don't use Rn.
 
 	# pick an offset
-	offset = choice([i for i in range(lower-sp, upper-sp, 4) if sp+i in addresses])
+	offset = choice([i for i in range(lower-sp, upper-sp-4, 4) if sp+i in addresses])
 	assert(sp+offset in addresses)
 	# but ok to store anywhere in range
 	sign = "+" if offset >= 0 else "-"
-	# use any valid byte-aligned
-	if B=="B":
+	# use any valid byte-aligned. can do for ldr as well, then specifies rotate.
+	if B=="B" or instruction == "ldr":
 		offset += choice([0,1,2,3])
 	#print "offset {}, sp {}->{}".format(offset, sp, sp if wb == "offset" else sp+offset)
 
@@ -428,7 +428,7 @@ def makeHMemInstr(instruction, counter):
 	Rm = choice([i for i in regList if i != Rn]) # we change Rm currently, so don't use Rn.
 
 	# pick an offset
-	offset = choice([i for i in range(lower-sp, upper-sp, 4) if sp+i in addresses])
+	offset = choice([i for i in range(lower-sp, upper-sp-4, 4) if sp+i in addresses])
 	assert(sp+offset in addresses)
 	# but ok to store anywhere in range
 	sign = "+" if offset >= 0 else "-"
@@ -470,8 +470,8 @@ def makeMMemInstr(instruction, counter):
 	# choose Rn and figure out how many regs we can use
 	#Rn = choice(regList)
 	Rn = "R13"
-	max_ascending_regs = max(0, (upper - sp) / 4)
-	max_descending_regs = max(0, (sp - lower) / 4)
+	max_ascending_regs = max(0, (upper - sp - 4) / 4)
+	max_descending_regs = max(0, (sp - lower - 4) / 4)
 
 	# choose cond
 	cond = choice(Conditions)
