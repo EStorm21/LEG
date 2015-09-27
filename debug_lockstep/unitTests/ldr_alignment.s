@@ -138,6 +138,30 @@ val35: .word 12534322
 next35:str R1, [sp, #-80]
 
 # MAIN PROGRAM
+# Initialize the coprocessor
+# S = 1 
+# R = 1
+# MMU disabled
+# Caches disabled
+ldr     r1, =0x00000300;
+mcr     p15, 0, r1, cr1, cr0, 0;    # disable MMU
+
+# ***pagetable.asm***
+LDR R1, =0x00300000
+LDR R2, =0x0003fdee
+STR R2, [R1]
+LDR R1, =0x00300004
+LDR R2, =0x0423fdee
+STR R2, [R1]
+LDR R1, =0x00300008
+LDR R2, =0x0833fdee
+STR R2, [R1]
+# ***end pagetable.asm***
+
+# Set the pagetable base
+ldr     r1, =0x00300000;            # pagetable base
+mcr     p15, 0, r1, cr2, cr0, 0;    # store the pagetable in the coprocessor
+
 mrc     p15, 0, r1, cr1, cr0, 0;    # Read in the control register
 orr     r1, r1, #3;
 mcr     p15, 0, r1, cr1, cr0, 0;    # Turn on the MMU for translation
