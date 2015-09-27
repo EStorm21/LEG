@@ -161,7 +161,7 @@ STR R2, [R1]
 # Set the pagetable base
 ldr     r1, =0x00300000;            # pagetable base
 mcr     p15, 0, r1, cr2, cr0, 0;    # store the pagetable in the coprocessor
-
+mrc     p15, 0, r7, cr2, cr0, 0;    # store the pagetable in the coprocessor
 mrc     p15, 0, r1, cr1, cr0, 0;    # Read in the control register
 orr     r1, r1, #3;
 mcr     p15, 0, r1, cr1, cr0, 0;    # Turn on the MMU for translation
