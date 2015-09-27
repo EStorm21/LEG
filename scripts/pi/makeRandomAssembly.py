@@ -530,7 +530,7 @@ def makeMMemInstr(instruction, counter):
 
 	if "I" in mode and wb:
 		sp += len(instrRegs) * 4
-	else if wb:
+	elif wb:
 		sp -= len(instrRegs) * 4
 
 	instrRegs.sort(key=lambda r: int(r[1:]))
