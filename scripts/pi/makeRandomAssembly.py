@@ -509,7 +509,7 @@ def makeMMemInstr(instruction, counter):
 	else:
 		numRegs = choice( range(1, min(len(regOptions), max_descending_regs) + 1) )
 
-	for _ in range(numRegs):
+	for _ in range(numRegs - 1):
 		r = choice(list(regOptions))
 		instrRegs += [r]
 		regOptions.remove(r)
@@ -528,9 +528,9 @@ def makeMMemInstr(instruction, counter):
 	if len(instrRegs) == 0:
 		return makeNopInstr(counter)
 
-	if "I" in mode:
+	if "I" in mode and wb:
 		sp += len(instrRegs) * 4
-	else:
+	else if wb:
 		sp -= len(instrRegs) * 4
 
 	instrRegs.sort(key=lambda r: int(r[1:]))
