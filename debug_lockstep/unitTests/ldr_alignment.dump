@@ -5,276 +5,276 @@ ldr_alignment.o:     file format elf32-littlearm
 Disassembly of section .text:
 
 00000000 <main>:
-       0:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
-       4:	e3811003 	orr	r1, r1, #3
-       8:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
-       c:	e05f000f 	subs	r0, pc, pc
-      10:	e59fd000 	ldr	sp, [pc]	; 18 <val>
-      14:	ea000000 	b	1c <next>
+       0:	e05f000f 	subs	r0, pc, pc
+       4:	e59fd000 	ldr	sp, [pc]	; c <val>
+       8:	ea000000 	b	10 <next>
 
-00000018 <val>:
-      18:	000ffff0 	.word	0x000ffff0
+0000000c <val>:
+       c:	000ffff0 	.word	0x000ffff0
 
-0000001c <next>:
-      1c:	e59f1000 	ldr	r1, [pc]	; 24 <val1>
-      20:	ea000000 	b	28 <next1>
+00000010 <next>:
+      10:	e59f1000 	ldr	r1, [pc]	; 18 <val1>
+      14:	ea000000 	b	1c <next1>
 
-00000024 <val1>:
-      24:	56ccb228 	.word	0x56ccb228
+00000018 <val1>:
+      18:	56ccb228 	.word	0x56ccb228
 
-00000028 <next1>:
-      28:	e59f2000 	ldr	r2, [pc]	; 30 <val2>
-      2c:	ea000000 	b	34 <next2>
+0000001c <next1>:
+      1c:	e59f2000 	ldr	r2, [pc]	; 24 <val2>
+      20:	ea000000 	b	28 <next2>
 
-00000030 <val2>:
-      30:	09805c76 	.word	0x09805c76
+00000024 <val2>:
+      24:	09805c76 	.word	0x09805c76
 
-00000034 <next2>:
-      34:	e59f3000 	ldr	r3, [pc]	; 3c <val3>
-      38:	ea000000 	b	40 <next3>
+00000028 <next2>:
+      28:	e59f3000 	ldr	r3, [pc]	; 30 <val3>
+      2c:	ea000000 	b	34 <next3>
 
-0000003c <val3>:
-      3c:	ef63a731 	.word	0xef63a731
+00000030 <val3>:
+      30:	ef63a731 	.word	0xef63a731
 
-00000040 <next3>:
-      40:	e59f4000 	ldr	r4, [pc]	; 48 <val4>
-      44:	ea000000 	b	4c <next4>
+00000034 <next3>:
+      34:	e59f4000 	ldr	r4, [pc]	; 3c <val4>
+      38:	ea000000 	b	40 <next4>
 
-00000048 <val4>:
-      48:	85734e5e 	.word	0x85734e5e
+0000003c <val4>:
+      3c:	85734e5e 	.word	0x85734e5e
 
-0000004c <next4>:
-      4c:	e59f5000 	ldr	r5, [pc]	; 54 <val5>
-      50:	ea000000 	b	58 <next5>
+00000040 <next4>:
+      40:	e59f5000 	ldr	r5, [pc]	; 48 <val5>
+      44:	ea000000 	b	4c <next5>
 
-00000054 <val5>:
-      54:	ff2ec6af 	.word	0xff2ec6af
+00000048 <val5>:
+      48:	ff2ec6af 	.word	0xff2ec6af
 
-00000058 <next5>:
-      58:	e59f6000 	ldr	r6, [pc]	; 60 <val6>
-      5c:	ea000000 	b	64 <next6>
+0000004c <next5>:
+      4c:	e59f6000 	ldr	r6, [pc]	; 54 <val6>
+      50:	ea000000 	b	58 <next6>
 
-00000060 <val6>:
-      60:	e48758fe 	.word	0xe48758fe
+00000054 <val6>:
+      54:	e48758fe 	.word	0xe48758fe
 
-00000064 <next6>:
-      64:	e59f7000 	ldr	r7, [pc]	; 6c <val7>
-      68:	ea000000 	b	70 <next7>
+00000058 <next6>:
+      58:	e59f7000 	ldr	r7, [pc]	; 60 <val7>
+      5c:	ea000000 	b	64 <next7>
 
-0000006c <val7>:
-      6c:	e89f7001 	.word	0xe89f7001
+00000060 <val7>:
+      60:	e89f7001 	.word	0xe89f7001
 
-00000070 <next7>:
-      70:	e59f8000 	ldr	r8, [pc]	; 78 <val8>
-      74:	ea000000 	b	7c <next8>
+00000064 <next7>:
+      64:	e59f8000 	ldr	r8, [pc]	; 6c <val8>
+      68:	ea000000 	b	70 <next8>
 
-00000078 <val8>:
-      78:	0c69408e 	.word	0x0c69408e
+0000006c <val8>:
+      6c:	0c69408e 	.word	0x0c69408e
 
-0000007c <next8>:
-      7c:	e59f9000 	ldr	r9, [pc]	; 84 <val9>
-      80:	ea000000 	b	88 <next9>
+00000070 <next8>:
+      70:	e59f9000 	ldr	r9, [pc]	; 78 <val9>
+      74:	ea000000 	b	7c <next9>
 
-00000084 <val9>:
-      84:	31a82f9c 	.word	0x31a82f9c
+00000078 <val9>:
+      78:	31a82f9c 	.word	0x31a82f9c
 
-00000088 <next9>:
-      88:	e59fa000 	ldr	sl, [pc]	; 90 <val10>
-      8c:	ea000000 	b	94 <next10>
+0000007c <next9>:
+      7c:	e59fa000 	ldr	sl, [pc]	; 84 <val10>
+      80:	ea000000 	b	88 <next10>
 
-00000090 <val10>:
-      90:	a93612eb 	.word	0xa93612eb
+00000084 <val10>:
+      84:	a93612eb 	.word	0xa93612eb
 
-00000094 <next10>:
-      94:	e59fb000 	ldr	fp, [pc]	; 9c <val11>
-      98:	ea000000 	b	a0 <next11>
+00000088 <next10>:
+      88:	e59fb000 	ldr	fp, [pc]	; 90 <val11>
+      8c:	ea000000 	b	94 <next11>
 
-0000009c <val11>:
-      9c:	45f93bf7 	.word	0x45f93bf7
+00000090 <val11>:
+      90:	45f93bf7 	.word	0x45f93bf7
 
-000000a0 <next11>:
-      a0:	e59fc000 	ldr	ip, [pc]	; a8 <val12>
-      a4:	ea000000 	b	ac <next12>
+00000094 <next11>:
+      94:	e59fc000 	ldr	ip, [pc]	; 9c <val12>
+      98:	ea000000 	b	a0 <next12>
 
-000000a8 <val12>:
-      a8:	b99f4ed6 	.word	0xb99f4ed6
+0000009c <val12>:
+      9c:	b99f4ed6 	.word	0xb99f4ed6
 
-000000ac <next12>:
-      ac:	e59fe000 	ldr	lr, [pc]	; b4 <val14>
-      b0:	ea000000 	b	b8 <next14>
+000000a0 <next12>:
+      a0:	e59fe000 	ldr	lr, [pc]	; a8 <val14>
+      a4:	ea000000 	b	ac <next14>
 
-000000b4 <val14>:
-      b4:	788b1521 	.word	0x788b1521
+000000a8 <val14>:
+      a8:	788b1521 	.word	0x788b1521
 
-000000b8 <next14>:
-      b8:	e59f1000 	ldr	r1, [pc]	; c0 <val15>
-      bc:	ea000000 	b	c4 <next15>
+000000ac <next14>:
+      ac:	e59f1000 	ldr	r1, [pc]	; b4 <val15>
+      b0:	ea000000 	b	b8 <next15>
 
-000000c0 <val15>:
-      c0:	d1a18096 	.word	0xd1a18096
+000000b4 <val15>:
+      b4:	d1a18096 	.word	0xd1a18096
 
-000000c4 <next15>:
-      c4:	e58d1000 	str	r1, [sp]
-      c8:	e59f1000 	ldr	r1, [pc]	; d0 <val16>
-      cc:	ea000000 	b	d4 <next16>
+000000b8 <next15>:
+      b8:	e58d1000 	str	r1, [sp]
+      bc:	e59f1000 	ldr	r1, [pc]	; c4 <val16>
+      c0:	ea000000 	b	c8 <next16>
 
-000000d0 <val16>:
-      d0:	cfecced6 	.word	0xcfecced6
+000000c4 <val16>:
+      c4:	cfecced6 	.word	0xcfecced6
 
-000000d4 <next16>:
-      d4:	e50d1004 	str	r1, [sp, #-4]
-      d8:	e59f1000 	ldr	r1, [pc]	; e0 <val17>
-      dc:	ea000000 	b	e4 <next17>
+000000c8 <next16>:
+      c8:	e50d1004 	str	r1, [sp, #-4]
+      cc:	e59f1000 	ldr	r1, [pc]	; d4 <val17>
+      d0:	ea000000 	b	d8 <next17>
 
-000000e0 <val17>:
-      e0:	a9abc989 	.word	0xa9abc989
+000000d4 <val17>:
+      d4:	a9abc989 	.word	0xa9abc989
 
-000000e4 <next17>:
-      e4:	e50d1008 	str	r1, [sp, #-8]
-      e8:	e59f1000 	ldr	r1, [pc]	; f0 <val18>
-      ec:	ea000000 	b	f4 <next18>
+000000d8 <next17>:
+      d8:	e50d1008 	str	r1, [sp, #-8]
+      dc:	e59f1000 	ldr	r1, [pc]	; e4 <val18>
+      e0:	ea000000 	b	e8 <next18>
 
-000000f0 <val18>:
-      f0:	3d345c3b 	.word	0x3d345c3b
+000000e4 <val18>:
+      e4:	3d345c3b 	.word	0x3d345c3b
 
-000000f4 <next18>:
-      f4:	e50d100c 	str	r1, [sp, #-12]
-      f8:	e59f1000 	ldr	r1, [pc]	; 100 <val19>
-      fc:	ea000000 	b	104 <next19>
+000000e8 <next18>:
+      e8:	e50d100c 	str	r1, [sp, #-12]
+      ec:	e59f1000 	ldr	r1, [pc]	; f4 <val19>
+      f0:	ea000000 	b	f8 <next19>
 
-00000100 <val19>:
-     100:	878882f8 	.word	0x878882f8
+000000f4 <val19>:
+      f4:	878882f8 	.word	0x878882f8
 
-00000104 <next19>:
-     104:	e50d1010 	str	r1, [sp, #-16]
-     108:	e59f1000 	ldr	r1, [pc]	; 110 <val20>
-     10c:	ea000000 	b	114 <next20>
+000000f8 <next19>:
+      f8:	e50d1010 	str	r1, [sp, #-16]
+      fc:	e59f1000 	ldr	r1, [pc]	; 104 <val20>
+     100:	ea000000 	b	108 <next20>
 
-00000110 <val20>:
-     110:	8667d2dd 	.word	0x8667d2dd
+00000104 <val20>:
+     104:	8667d2dd 	.word	0x8667d2dd
 
-00000114 <next20>:
-     114:	e50d1014 	str	r1, [sp, #-20]
-     118:	e59f1000 	ldr	r1, [pc]	; 120 <val21>
-     11c:	ea000000 	b	124 <next21>
+00000108 <next20>:
+     108:	e50d1014 	str	r1, [sp, #-20]
+     10c:	e59f1000 	ldr	r1, [pc]	; 114 <val21>
+     110:	ea000000 	b	118 <next21>
 
-00000120 <val21>:
-     120:	bb583d47 	.word	0xbb583d47
+00000114 <val21>:
+     114:	bb583d47 	.word	0xbb583d47
 
-00000124 <next21>:
-     124:	e50d1018 	str	r1, [sp, #-24]
-     128:	e59f1000 	ldr	r1, [pc]	; 130 <val22>
-     12c:	ea000000 	b	134 <next22>
+00000118 <next21>:
+     118:	e50d1018 	str	r1, [sp, #-24]
+     11c:	e59f1000 	ldr	r1, [pc]	; 124 <val22>
+     120:	ea000000 	b	128 <next22>
 
-00000130 <val22>:
-     130:	3dceed80 	.word	0x3dceed80
+00000124 <val22>:
+     124:	3dceed80 	.word	0x3dceed80
 
-00000134 <next22>:
-     134:	e50d101c 	str	r1, [sp, #-28]
-     138:	e59f1000 	ldr	r1, [pc]	; 140 <val23>
-     13c:	ea000000 	b	144 <next23>
+00000128 <next22>:
+     128:	e50d101c 	str	r1, [sp, #-28]
+     12c:	e59f1000 	ldr	r1, [pc]	; 134 <val23>
+     130:	ea000000 	b	138 <next23>
 
-00000140 <val23>:
-     140:	0d9f69bd 	.word	0x0d9f69bd
+00000134 <val23>:
+     134:	0d9f69bd 	.word	0x0d9f69bd
 
-00000144 <next23>:
-     144:	e50d1020 	str	r1, [sp, #-32]
-     148:	e59f1000 	ldr	r1, [pc]	; 150 <val24>
-     14c:	ea000000 	b	154 <next24>
-
-00000150 <val24>:
-     150:	38bdbe59 	.word	0x38bdbe59
-
-00000154 <next24>:
-     154:	e50d1024 	str	r1, [sp, #-36]	; 0x24
-     158:	e59f1000 	ldr	r1, [pc]	; 160 <val25>
-     15c:	ea000000 	b	164 <next25>
-
-00000160 <val25>:
-     160:	db3076aa 	.word	0xdb3076aa
-
-00000164 <next25>:
-     164:	e50d1028 	str	r1, [sp, #-40]	; 0x28
-     168:	e59f1000 	ldr	r1, [pc]	; 170 <val26>
-     16c:	ea000000 	b	174 <next26>
-
-00000170 <val26>:
-     170:	37cbd4e6 	.word	0x37cbd4e6
-
-00000174 <next26>:
-     174:	e50d102c 	str	r1, [sp, #-44]	; 0x2c
-     178:	e59f1000 	ldr	r1, [pc]	; 180 <val27>
-     17c:	ea000000 	b	184 <next27>
-
-00000180 <val27>:
-     180:	2e0d56f6 	.word	0x2e0d56f6
-
-00000184 <next27>:
-     184:	e50d1030 	str	r1, [sp, #-48]	; 0x30
-     188:	e59f1000 	ldr	r1, [pc]	; 190 <val28>
-     18c:	ea000000 	b	194 <next28>
-
-00000190 <val28>:
-     190:	c4f7137a 	.word	0xc4f7137a
-
-00000194 <next28>:
-     194:	e50d1034 	str	r1, [sp, #-52]	; 0x34
-     198:	e59f1000 	ldr	r1, [pc]	; 1a0 <val29>
-     19c:	ea000000 	b	1a4 <next29>
-
-000001a0 <val29>:
-     1a0:	7f5ceac8 	.word	0x7f5ceac8
-
-000001a4 <next29>:
-     1a4:	e50d1038 	str	r1, [sp, #-56]	; 0x38
-     1a8:	e59f1000 	ldr	r1, [pc]	; 1b0 <val30>
-     1ac:	ea000000 	b	1b4 <next30>
-
-000001b0 <val30>:
-     1b0:	a408c7ac 	.word	0xa408c7ac
-
-000001b4 <next30>:
-     1b4:	e50d103c 	str	r1, [sp, #-60]	; 0x3c
-     1b8:	e59f1000 	ldr	r1, [pc]	; 1c0 <val31>
-     1bc:	ea000000 	b	1c4 <next31>
-
-000001c0 <val31>:
-     1c0:	a0612207 	.word	0xa0612207
-
-000001c4 <next31>:
-     1c4:	e50d1040 	str	r1, [sp, #-64]	; 0x40
-     1c8:	e59f1000 	ldr	r1, [pc]	; 1d0 <val32>
-     1cc:	ea000000 	b	1d4 <next32>
-
-000001d0 <val32>:
-     1d0:	56794ab1 	.word	0x56794ab1
-
-000001d4 <next32>:
-     1d4:	e50d1044 	str	r1, [sp, #-68]	; 0x44
-     1d8:	e59f1000 	ldr	r1, [pc]	; 1e0 <val33>
-     1dc:	ea000000 	b	1e4 <next33>
-
-000001e0 <val33>:
-     1e0:	178816a2 	.word	0x178816a2
-
-000001e4 <next33>:
-     1e4:	e50d1048 	str	r1, [sp, #-72]	; 0x48
-     1e8:	e59f1000 	ldr	r1, [pc]	; 1f0 <val34>
-     1ec:	ea000000 	b	1f4 <next34>
-
-000001f0 <val34>:
-     1f0:	1fc20066 	.word	0x1fc20066
-
-000001f4 <next34>:
-     1f4:	e50d104c 	str	r1, [sp, #-76]	; 0x4c
-     1f8:	e59f1000 	ldr	r1, [pc]	; 200 <val35>
-     1fc:	ea000000 	b	204 <next35>
-
-00000200 <val35>:
-     200:	00bf4232 	.word	0x00bf4232
-
-00000204 <next35>:
-     204:	e50d1050 	str	r1, [sp, #-80]	; 0x50
+00000138 <next23>:
+     138:	e50d1020 	str	r1, [sp, #-32]
+     13c:	e59f1000 	ldr	r1, [pc]	; 144 <val24>
+     140:	ea000000 	b	148 <next24>
+
+00000144 <val24>:
+     144:	38bdbe59 	.word	0x38bdbe59
+
+00000148 <next24>:
+     148:	e50d1024 	str	r1, [sp, #-36]	; 0x24
+     14c:	e59f1000 	ldr	r1, [pc]	; 154 <val25>
+     150:	ea000000 	b	158 <next25>
+
+00000154 <val25>:
+     154:	db3076aa 	.word	0xdb3076aa
+
+00000158 <next25>:
+     158:	e50d1028 	str	r1, [sp, #-40]	; 0x28
+     15c:	e59f1000 	ldr	r1, [pc]	; 164 <val26>
+     160:	ea000000 	b	168 <next26>
+
+00000164 <val26>:
+     164:	37cbd4e6 	.word	0x37cbd4e6
+
+00000168 <next26>:
+     168:	e50d102c 	str	r1, [sp, #-44]	; 0x2c
+     16c:	e59f1000 	ldr	r1, [pc]	; 174 <val27>
+     170:	ea000000 	b	178 <next27>
+
+00000174 <val27>:
+     174:	2e0d56f6 	.word	0x2e0d56f6
+
+00000178 <next27>:
+     178:	e50d1030 	str	r1, [sp, #-48]	; 0x30
+     17c:	e59f1000 	ldr	r1, [pc]	; 184 <val28>
+     180:	ea000000 	b	188 <next28>
+
+00000184 <val28>:
+     184:	c4f7137a 	.word	0xc4f7137a
+
+00000188 <next28>:
+     188:	e50d1034 	str	r1, [sp, #-52]	; 0x34
+     18c:	e59f1000 	ldr	r1, [pc]	; 194 <val29>
+     190:	ea000000 	b	198 <next29>
+
+00000194 <val29>:
+     194:	7f5ceac8 	.word	0x7f5ceac8
+
+00000198 <next29>:
+     198:	e50d1038 	str	r1, [sp, #-56]	; 0x38
+     19c:	e59f1000 	ldr	r1, [pc]	; 1a4 <val30>
+     1a0:	ea000000 	b	1a8 <next30>
+
+000001a4 <val30>:
+     1a4:	a408c7ac 	.word	0xa408c7ac
+
+000001a8 <next30>:
+     1a8:	e50d103c 	str	r1, [sp, #-60]	; 0x3c
+     1ac:	e59f1000 	ldr	r1, [pc]	; 1b4 <val31>
+     1b0:	ea000000 	b	1b8 <next31>
+
+000001b4 <val31>:
+     1b4:	a0612207 	.word	0xa0612207
+
+000001b8 <next31>:
+     1b8:	e50d1040 	str	r1, [sp, #-64]	; 0x40
+     1bc:	e59f1000 	ldr	r1, [pc]	; 1c4 <val32>
+     1c0:	ea000000 	b	1c8 <next32>
+
+000001c4 <val32>:
+     1c4:	56794ab1 	.word	0x56794ab1
+
+000001c8 <next32>:
+     1c8:	e50d1044 	str	r1, [sp, #-68]	; 0x44
+     1cc:	e59f1000 	ldr	r1, [pc]	; 1d4 <val33>
+     1d0:	ea000000 	b	1d8 <next33>
+
+000001d4 <val33>:
+     1d4:	178816a2 	.word	0x178816a2
+
+000001d8 <next33>:
+     1d8:	e50d1048 	str	r1, [sp, #-72]	; 0x48
+     1dc:	e59f1000 	ldr	r1, [pc]	; 1e4 <val34>
+     1e0:	ea000000 	b	1e8 <next34>
+
+000001e4 <val34>:
+     1e4:	1fc20066 	.word	0x1fc20066
+
+000001e8 <next34>:
+     1e8:	e50d104c 	str	r1, [sp, #-76]	; 0x4c
+     1ec:	e59f1000 	ldr	r1, [pc]	; 1f4 <val35>
+     1f0:	ea000000 	b	1f8 <next35>
+
+000001f4 <val35>:
+     1f4:	00bf4232 	.word	0x00bf4232
+
+000001f8 <next35>:
+     1f8:	e50d1050 	str	r1, [sp, #-80]	; 0x50
+     1fc:	ee111f10 	mrc	15, 0, r1, cr1, cr0, {0}
+     200:	e3811003 	orr	r1, r1, #3
+     204:	ee011f10 	mcr	15, 0, r1, cr1, cr0, {0}
 
 00000208 <l1>:
      208:	e3a0c03e 	mov	ip, #62	; 0x3e

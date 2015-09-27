@@ -2,9 +2,6 @@
 main:
 
 # INITIALIZING R0 and SP
-mcr     p15, 0, r1, cr1, cr0, 0;    # Read in the control register
-orr     r1, r1, #3;
-mcr     p15, 0, r1, cr1, cr0, 0;    # Turn on the MMU for translation
 subs R0, R15, R15
 
 ldr sp, val
@@ -141,6 +138,9 @@ val35: .word 12534322
 next35:str R1, [sp, #-80]
 
 # MAIN PROGRAM
+mrc     p15, 0, r1, cr1, cr0, 0;    # Read in the control register
+orr     r1, r1, #3;
+mcr     p15, 0, r1, cr1, cr0, 0;    # Turn on the MMU for translation
 
 l1: mov R12, #62
 l2: ldr R11, [sp], -R12
