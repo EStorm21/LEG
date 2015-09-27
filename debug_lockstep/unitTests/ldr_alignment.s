@@ -148,13 +148,7 @@ mcr     p15, 0, r1, cr1, cr0, 0;    # disable MMU
 
 # ***pagetable.asm***
 LDR R1, =0x00300000
-LDR R2, =0x0003fdee
-STR R2, [R1]
-LDR R1, =0x00300004
-LDR R2, =0x0423fdee
-STR R2, [R1]
-LDR R1, =0x00300008
-LDR R2, =0x0833fdee
+LDR R2, =0x00000dde
 STR R2, [R1]
 # ***end pagetable.asm***
 
