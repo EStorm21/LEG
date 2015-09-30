@@ -1,0 +1,24 @@
+# //  ModelSim SE-64 10.3d Oct  6 2014 Linux 2.6.32-504.8.1.el6.x86_64
+# //
+# //  Copyright 1991-2014 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  THIS WORK CONTAINS TRADE SECRET AND PROPRIETARY INFORMATION
+# //  WHICH IS THE PROPERTY OF MENTOR GRAPHICS CORPORATION OR ITS
+# //  LICENSORS AND IS SUBJECT TO LICENSE TERMS.
+# //
+# vsim -restore output/checkpoints/tlb.checkpoint 
+# Loading checkpoint/restore data from file "output/checkpoints/tlb.checkpoint"
+# Checkpoint created Tue Sep 29 23:48:38 2015
+# ** Error: Cannot open WLF file: "/tmp/tmp7ielNY/wlffile.wlf"
+#           No such file or directory.
+#           Attempting to use alternate WLF file "/tmp/tmp7ielNY/wlftHoki0X".
+# ** Error: Cannot open WLF file: "/tmp/tmp7ielNY/wlftHoki0X"
+#           No such file or directory.
+#           Attempting to use alternate WLF file "./wlftn07Z1K".
+# Restoring state at time 227 ps, iteration 0
+# Simulation kernel restore completed
+# Start time: 01:12:13 on Sep 30,2015
+# Restoring graphical user interface: definitions of virtuals; contents of list and wave windows
+# env sim:/testbench
+# sim:/testbench

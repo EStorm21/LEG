@@ -7,7 +7,7 @@ module twh #(parameter tagbits = 16) (
   //input  logic               PStall        ,
   input  logic               IStall        ,
   input  logic               DStall        ,
-  input  logic               TLBMiss       ,
+  input  logic               PAReady       ,
   input  logic               CPUHRequest   ,
   input  logic               CPUHWrite     ,
   input  logic               DataAccess    ,
@@ -74,7 +74,7 @@ always_comb
 case (state)
   READY:        if ( Enable & Fault ) begin
                   nextstate <= DataAccess ? FAULTFSR : INSTRFAULT;
-                end else if (~HReady | ~CPUHRequest | ~Enable | Fault | reset ) begin 
+                end else if (~HReady | ~CPUHRequest | ~Enable | Fault | reset | PAReady) begin 
                   nextstate <= READY;
                 end else if(HRData[1:0] == 2'b01) begin
                   nextstate <= COARSEFETCH;
@@ -139,7 +139,8 @@ endcase
 // TODO: Make this structural
 always_comb
 case (state)
-  READY:        HAddrMid = {TBase,  CPUHAddr[31:20], 2'b00};
+  READY:        HAddrMid = PAReady ? {TableEntry[tagbits+8:9], CPUHAddr[31-tagbits:0]} : 
+                           {TBase,  CPUHAddr[31:20], 2'b00};
   SECTIONTRANS: HAddrMid = {PHRData[31:20], CPUHAddr[19:0]}; 
   COARSEFETCH:  HAddrMid = {PHRData[31:10], CPUHAddr[19:12], 2'b0};
   FINEFETCH:    HAddrMid = {PHRData[31:12], CPUHAddr[19:10], 2'b0};
@@ -165,6 +166,7 @@ assign HRequestMid = (state == COARSEFETCH) |
 assign CPUHReadyMid = (state == SECTIONTRANS) & HReady | 
                     (state == LARGETRANS)   & HReady |
                     (state == TINYTRANS)    & HReady |
+                    (state == READY)        & PAReady |
                     (state == SMALLTRANS)   & HReady;
 
 // HWriteMid Logic

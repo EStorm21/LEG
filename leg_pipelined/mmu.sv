@@ -37,7 +37,7 @@ module mmu #(parameter tbits = 22) (
 
   // Fault Signals
   logic        Enable;
-  logic        Fault, SelPrevAddr;
+  logic        Fault;
   //logic        PStall;
   logic [3:0]  Domain;
   logic [31:0] FSR, FAR, Dom;
@@ -52,7 +52,6 @@ module mmu #(parameter tbits = 22) (
   logic        instr_abort;
   // TLB Signals
   logic TLBwe;
-  logic TLBMiss;
   tri [tbits+8:0] TableEntry;
 
   // PHRData flop: Hold onto the previous bus value for current translation
@@ -69,15 +68,8 @@ module mmu #(parameter tbits = 22) (
                        {HAddrOut, HRequestMid, HWriteMid, CPUHReadyMid}, 
                        Enable & ~CPUHWrite, {HAddr, HRequest, HWrite, CPUHReady});
   
-  // Save last translated address
-  //    The caches expect the value on the bus to remain constant for 
-  //    one cycle after the stall.
-  // FIXME: Can this register and mux be removed?
-  //flopr #(32) HAddrFlop(clk, reset, HAddr, PHAddr);
   assign HAddrOut = HAddrMid;
-  assign PhysTag = TableEntry[tbits+8:8];
-  //mux2 #(32) HAddrMidMux(HAddrMid, PHAddr, SelPrevAddr, HAddrOut);
-  //flopr #(1) StallFlop(clk, reset, (DStall | IStall), PStall);
+  assign PhysTag = TableEntry[tbits+8:9];
 
   // MMUWriteData Mux
   mux2 #(32) WDMux(FAR, FSR, WDSel, MMUWriteData);
@@ -97,7 +89,6 @@ module mmu #(parameter tbits = 22) (
     .we        (TLBwe ),
     .VirtTag   (CPUHAddr[31:32-tbits]),
     .TableEntry(TableEntry), 
-    .Miss      (TLBMiss      ),
     .PAReady   (PAReady)
   );
 

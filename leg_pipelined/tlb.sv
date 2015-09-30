@@ -5,7 +5,6 @@ parameter tlb_word_size = tbits   + 1        + 1          + 2  + 4      + 1)
     input logic clk, reset, enable, we, // Clock
     input logic [tbits-1:0] VirtTag,
     inout logic [tlb_word_size-1:0] TableEntry, // Physical Tag to write data into TLB
-    output logic Miss,
     output logic PAReady
 );
 
