@@ -85,7 +85,7 @@ fbranch = ["fb"]
 bbranch = ["bb"]
 
 # Load/store word and unsigned byte
-wbmem = ["str","ldr"]
+wbmem = ["str","ldr", "strb", "ldrb"]
 
 # Load/store halfword and load signed byte
 hmem = ["ldrh", "ldrsb", "ldrsh", "strh"]
@@ -324,7 +324,7 @@ def makeMultiplyInstr(instruction, counter):
 def makeWBMemInstr(instruction, counter):
 	global sp
 	# choose byte 1/5 of time
-	B = "B" if choice(range(5)) == 0 else ""
+	B = "B" if "b" in instruction else ""
 	# choose Rd
 	Rd = choice(RegsWithPC)
 	# can't use PC with B, don't modify PC
@@ -354,12 +354,12 @@ def makeWBMemInstr(instruction, counter):
 	Rm = choice([i for i in regList if i != Rn]) # we change Rm currently, so don't use Rn.
 
 	# pick an offset
-	offset = choice([i for i in range(lower-sp, upper-sp, 4) if sp+i in addresses])
+	offset = choice([i for i in range(lower-sp, upper-sp-4, 4) if sp+i in addresses])
 	assert(sp+offset in addresses)
 	# but ok to store anywhere in range
 	sign = "+" if offset >= 0 else "-"
-	# use any valid byte-aligned
-	if B=="B":
+	# use any valid byte-aligned. can do for ldr as well, then specifies rotate.
+	if B=="B" or instruction == "ldr":
 		offset += choice([0,1,2,3])
 	#print "offset {}, sp {}->{}".format(offset, sp, sp if wb == "offset" else sp+offset)
 
@@ -386,7 +386,7 @@ def makeWBMemInstr(instruction, counter):
 		second_bracket = ""
 
 	# build instruction
-	program += "l{}: {}{}{} {}, [{}{}, {}{}{}\n".format(counter, instruction, cond, B, Rd, Rn, first_bracket, operand, second_bracket, exclamation)
+	program += "l{}: {}{}{} {}, [{}{}, {}{}{}\n".format(counter, instruction[0:3], cond, B, Rd, Rn, first_bracket, operand, second_bracket, exclamation)
 	#print program
 	return program, counter
 
@@ -428,7 +428,7 @@ def makeHMemInstr(instruction, counter):
 	Rm = choice([i for i in regList if i != Rn]) # we change Rm currently, so don't use Rn.
 
 	# pick an offset
-	offset = choice([i for i in range(lower-sp, upper-sp, 4) if sp+i in addresses])
+	offset = choice([i for i in range(lower-sp, upper-sp-4, 4) if sp+i in addresses])
 	assert(sp+offset in addresses)
 	# but ok to store anywhere in range
 	sign = "+" if offset >= 0 else "-"
@@ -470,8 +470,8 @@ def makeMMemInstr(instruction, counter):
 	# choose Rn and figure out how many regs we can use
 	#Rn = choice(regList)
 	Rn = "R13"
-	max_ascending_regs = max(0, (upper - sp) / 4)
-	max_descending_regs = max(0, (sp - lower) / 4)
+	max_ascending_regs = max(0, (upper - sp - 4) / 4)
+	max_descending_regs = max(0, (sp - lower - 4) / 4)
 
 	# choose cond
 	cond = choice(Conditions)
@@ -509,7 +509,7 @@ def makeMMemInstr(instruction, counter):
 	else:
 		numRegs = choice( range(1, min(len(regOptions), max_descending_regs) + 1) )
 
-	for _ in range(numRegs):
+	for _ in range(numRegs - 1):
 		r = choice(list(regOptions))
 		instrRegs += [r]
 		regOptions.remove(r)
@@ -528,9 +528,9 @@ def makeMMemInstr(instruction, counter):
 	if len(instrRegs) == 0:
 		return makeNopInstr(counter)
 
-	if "I" in mode:
+	if "I" in mode and wb:
 		sp += len(instrRegs) * 4
-	else:
+	elif wb:
 		sp -= len(instrRegs) * 4
 
 	instrRegs.sort(key=lambda r: int(r[1:]))
@@ -574,10 +574,10 @@ def initializeProgram():
 	program += "subs R0, R15, R15\n"				# Initializing R0 to 0
 	program += "ldr sp, val\n"						# Initializing stack pointer
 	program += "b next\n"
-	sp = 0xbefffae8
+	sp = 0xffff0
 	upper = sp + 0
 	lower = sp - (stackSize - 1) * 4
-	program += "val: .word 0xbefffae8\n"
+	program += "val: .word 0xffff0\n"
 	program += "\n"
 	program += "# INITIALIZING REGISTERS\n"
 	program += "\n"
