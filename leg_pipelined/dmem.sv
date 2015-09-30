@@ -18,7 +18,7 @@ module dmem (
   integer i;
   initial
     begin
-      $readmemh("/proj/leg/sim/simTest.dat", RAM);
+      $readmemh("../sim/simTest.dat", RAM);
       //$readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
 
       // Initialize RAM to 0

@@ -17,6 +17,10 @@
 ## Python compiled files
 *.pyc
 
+## Extras from google drive
+*.bak
+*.sv~
+
 ## Always ignore the pdf for documentation
 documentation/main.pdf
 /autoSimSD.tcl

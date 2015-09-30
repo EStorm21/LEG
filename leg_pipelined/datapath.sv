@@ -59,6 +59,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnext2F, PCnextF, PCPlus4D, PCPlus0D, PC_in, Instr_1D;
   logic [31:0] ExtImmD, Rd1D, Rd2D, PCPlus8D, RotImmD;
+  logic ZeroRotateD, ZeroRotateE;
   logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ALUSrcB4E, ShiftBE;
   logic [31:0] MultOutputBE, MultOutputAE;
   logic [31:0] ReadDataRawW, ReadDataW, Result1_W, ResultW;
@@ -104,7 +105,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                  WA3W, ResultW, PC_in, 
                  Rd1D, Rd2D); 
   extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25], noRotateD);
-  rotator   rotat(ExtImmD, InstrD, RotImmD, noRotateD); 
+  rotator   rotat(ExtImmD, InstrD, RotImmD, ZeroRotateD, noRotateD); 
 
 
   // ====================================================================================
@@ -114,6 +115,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   flopenrc #(32) rd1reg(clk, reset, ~StallE, FlushE, Rd1D, Rd1E);
   flopenrc #(32) rd2reg(clk, reset, ~StallE, FlushE, Rd2D, Rd2E);
   flopenrc #(32) immreg(clk, reset, ~StallE, FlushE, RotImmD, ExtImmE);
+  flopenrc #(1) zerorotatereg(clk, reset, ~StallE, FlushE, ZeroRotateD, ZeroRotateE);
   // pass on PC for debugging
   flopenrc #(32) pcereg(clk, reset, ~StallE, FlushE, PCD, PCE);
   flopenrc #(32) instrereg(clk, reset, ~StallE, FlushE, DefaultInstrD, instrEdebug);
@@ -129,14 +131,14 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   assign TFlagE = ALUSrcBE[0];
 
   // TODO: implement as a barrel shift
-  shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], LDRSTRshiftE, FlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
+  shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], LDRSTRshiftE, ZeroRotateE, FlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
   
   alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, AddZeroE, ZFlagKeptE, ALUOutputE, ALUFlagsE, FlagsE[1:0], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, KeepVE); 
   
   // TODO: Use a signle multiplier for both signed and unsigned
   // - Turn this into structural block
   // - Move relevant signals to controller
-  multiplier  mult(clk, reset, SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, FlagsE[1:0], ZFlagKeptE, CarryHiddenE);
+  multiplier  mult(SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, FlagsE[1:0], ZFlagKeptE, CarryHiddenE);
   
   mux3 #(32)  aluoutputmux(ALUOutputE, ShiftBE, MultOutputE, ResultSelectE, ALUResultE); 
   data_replicator memReplicate(WriteByteE, StrHalfwordE, WriteDataE, WriteDataReplE);
