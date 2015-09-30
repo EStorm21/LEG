@@ -1227,5 +1227,3 @@ always_comb
 		end
 	endcase
 endmodule
-
-

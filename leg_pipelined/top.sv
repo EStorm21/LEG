@@ -24,6 +24,7 @@ module top (
   logic IRQ, FIQ, IRQsync, FIQsync;
 
   // ----- MMU Signals -----
+  parameter tbits = 22;
   logic        MMUExtInt, DataAccess, CPSR4, SBit, RBit;
   logic        SupMode, WordAccess, PAReady, DRequestPA;
   // logic        SupMode, WordAccess;
@@ -31,6 +32,7 @@ module top (
   logic [6:0]  TLBCont, Cont;
   logic [17:0] TBase;
   logic [3:0]  CP15A;
+  logic [tbits-1:0] PhysTag;
 
   // ----- CP15 signals for LEG -----
   logic        CoProc_WrEnM, CoProc_EnM, MMUWriteEn, MMUEn;
@@ -88,8 +90,8 @@ module top (
   );
   // .TLBFlushI(TLBFlushI), .rd(CP15rd_M), .control(controlDummy), .tbase(DummyTBase));
 
-  parameter iLines = 256;   // Number of lines in D$
-  parameter ibsize = 4; // bsize of the D$
+  parameter iLines = 64;   // Number of lines in I$
+  parameter ibsize = 4; // bsize of the I$
   // I$
   instr_cache #(ibsize,iLines) instr_cache (
     .clk       (clk         ),
@@ -100,14 +102,14 @@ module top (
     .A         (PCF         ),
     .HRData    (HRData      ),
     .RD        (InstrF      ),
-    .PhysTag   (HAddr[31:12]),
+    .PhysTag   (PhysTag),
     .PAReady   (PAReadyF    ),
     .IStall    (IStall      ),
     .HAddrF    (HAddrF      ),
     .HRequestF (HRequestF   )
   );
 
-  parameter dLines = 256;   // Number of lines in D$
+  parameter dLines = 64;   // Number of lines in D$
   parameter dbsize = 4;     // block size of the D$
 
   // D$
@@ -125,7 +127,7 @@ module top (
     .MemtoRegM (MemtoRegM   ),
     .BusReady  (BusReadyM   ),
     .IStall    (IStall      ),
-    .PhysTag   (HAddr[31:12]),
+    .PhysTag   (PhysTag),
     .VirtA     (DataAdrM    ),
     .WD        (WriteDataM  ),
     .HRData    (HRData      ),
@@ -175,7 +177,7 @@ module top (
   );
 
   // Create the mmu
-  mmu mmuInst (.*);
+  mmu #(tbits) mmuInst (.*);
 
   // Set HSIZE from bytemask
   // FIXME: Use signals from control unit
