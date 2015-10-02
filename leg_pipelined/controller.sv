@@ -183,7 +183,7 @@ module controller (
   // CLZ: looks like MVN but S not set. Actually in the misc. instructions group. 
   // We need to check all these things to extract only this case. 
   // Check all of 7:4 in case we implement E variant later. Really could do just (~7 & 4)
-  assign ClzSelectE = InstrD[27:20] == 3'b00010110 & InstrD[7:4]==4'b0001;
+  assign ClzSelectE = InstrD[27:20] == 8'b00010110 & InstrD[7:4]==4'b0001;
   // === END ===
 
   // === Handling all Multiplication Stalls Decode ===
