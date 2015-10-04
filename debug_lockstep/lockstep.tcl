@@ -2,9 +2,6 @@ set dumpDir $1/
 
 source qemuDumpRestore.tcl
 
-set checkpoint_name "finished.checkpoint"
-set checkpoint_path $dumpDir$checkpoint_name
-
 set toModelSimFn "toModelSim.fifo"
 set fromModelSimFn "fromModelSim.fifo"
 set inFifo [open $dumpDir$toModelSimFn r]
@@ -89,9 +86,6 @@ proc inspect_w {t} {
 set STEPSIZE 10; list
 set MAX_STEPS_BEFORE_ABORT 50; list
 
-
-puts "Starting lockstep"
-
 puts $outFifo "Ready!"
 
 set time 227; list
@@ -99,11 +93,12 @@ run @$time ps
 
 while {1} {
 	gets $inFifo cmd
-	# For debugging:
-		# "pause" {
-		# 	pause
-		# }
 	switch $cmd {
+		"pause" {
+			pause
+			# After user runs "resume" in ModelSim console
+			puts $outFifo "Ready!"
+		}
 		"abort" {
 			puts "Aborting"
 			break
@@ -151,10 +146,12 @@ while {1} {
 			gets $inFifo fiq
 			call sim:/testbench/dut/ahb/ioShim/setInterrupts $irq $fiq
 		}
+		"checkpoint" {
+			gets $inFifo path
+			checkpoint $path
+		}
 		default {
 			puts "!!!!!!! Invalid command \"$cmd\" !!!!!!!"
 		}
 	}
 }
-# clean up
-checkpoint $checkpoint_path
