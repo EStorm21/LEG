@@ -358,8 +358,8 @@ def makeWBMemInstr(instruction, counter):
 	assert(sp+offset in addresses)
 	# but ok to store anywhere in range
 	sign = "+" if offset >= 0 else "-"
-	# use any valid byte-aligned. can do for ldr as well, then specifies rotate.
-	if B=="B" or instruction == "ldr":
+	# use any valid byte-aligned.
+	if B=="B":
 		offset += choice([0,1,2,3])
 	#print "offset {}, sp {}->{}".format(offset, sp, sp if wb == "offset" else sp+offset)
 
