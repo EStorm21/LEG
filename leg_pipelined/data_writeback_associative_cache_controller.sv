@@ -175,7 +175,7 @@ module data_writeback_associative_cache_controller
   assign HWriteM = (state == WRITEBACK) |
     ((state == READY) & ~Hit & Dirty & ~clean) |
     (state == DWRITE);
-  assign HRequestM = Stall;
+  assign HRequestM = RequestPA; 
 
   // RDSel makes WD the output for disabled cache behavior
   assign RDSel = (state == DWRITE);
@@ -207,5 +207,5 @@ module data_writeback_associative_cache_controller
                    FlushA[$clog2(lines)-1:0], clean, BlockNum);
 
   // ----------------MMU-------------------
-  assign RequestPA = (state == READY) & (MemtoRegM | MemWriteM) | Stall;
+  assign RequestPA = (state == READY) & (MemtoRegM) | ~(state == READY) & Stall;
 endmodule

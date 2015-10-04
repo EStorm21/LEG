@@ -162,6 +162,7 @@ module top (
   );
 
   // Create an ahb memory
+  // TODO: Partition into on chip and off chip
   ahb_lite ahb (
     .HCLK    (clk     ),
     .HRESETn (reset   ),
