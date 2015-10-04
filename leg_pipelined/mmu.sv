@@ -4,6 +4,7 @@ module mmu #(parameter tbits = 22) (
   input  logic        SupMode, WordAccess, DStall, IStall,
   input  logic        StallD, FlushD, FlushE,
   input  logic [31:0] CPUHAddr, HRData,
+  // TODO: fixe control signal name
   input  logic [31:0] control, CP15rd_M, // control[0] is the enable bit
   input  logic [17:0] TBase    ,
   output logic [31:0] HAddr, MMUWriteData,
@@ -67,7 +68,7 @@ module mmu #(parameter tbits = 22) (
   mux2 #(35) enableMux({CPUHAddr, CPUHRequest, CPUHWrite, HReady},
                        {HAddrOut, HRequestMid, HWriteMid, CPUHReadyMid}, 
                        Enable & ~CPUHWrite, {HAddr, HRequest, HWrite, CPUHReady});
-  
+  // TODO: fix this name
   assign HAddrOut = HAddrMid;
   assign PhysTag = TableEntry[tbits+8:9];
 
