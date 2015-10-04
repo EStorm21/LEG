@@ -139,7 +139,7 @@ if exc != []:
 
 
 
-instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[wbmem]*5+[hmem]*5+[mmem]*5+[multiply]*5
+instrs = [arithmetic]*5+[logicOps]*5+[fbranch]*5+[bbranch]*5+[wbmem]*5+[hmem]*5+[mmem]*5+[multiply]*5
 instrs = [subl for subl in instrs if len(subl) > 0]
 
 
