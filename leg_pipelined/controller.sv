@@ -122,7 +122,7 @@ module controller (
         else if ((InstrD[24:20] == 5'b10010) & (InstrD[19:4] == 16'hFFF1))
           ControlsD = 13'b01_00_0000_10001; // BX
         // else if (InstrD[24:23] == 2'b10 & (&InstrD[21:16]) & ~(|InstrD[11:0]))  ControlsD = 13'b00_00_0  // MRS
-        else if (~InstrD[20]) ControlsD = 13'b00_00_0010_00000;  // CLZ. Exactly like CMN RSR, but S=0
+        else if (InstrD[27:20] == 8'b00010110 & InstrD[7:4] == 4'b0001) ControlsD = 13'b00_00_0010_00000;  // CLZ. Exactly like CMN RSR, but S=0
         else  ControlsD = 13'b00_00_0010_01000; // Data processing register
       2'b01: if (InstrD[25] & InstrD[4])           ControlsD = 13'b00_00_0000_00000;  // Exception: UNDEFINED INSTRUCTION
         else if (InstrD[20] & ~InstrD[25])    ControlsD = 13'b00_01_1110_00010; // LDR, "I-type" 0xf0
