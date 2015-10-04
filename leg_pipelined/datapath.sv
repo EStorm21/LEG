@@ -12,7 +12,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic [3:0]  ALUControlE, 
                   input  logic [1:0]  MultControlE,
                   input  logic        MultEnableE, ZFlagKeptE, 
-                  input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, AddZeroE, 
+                  input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, AddZeroE, ClzSelectE,
                   input  logic [31:0] InstrE, PSR_W, 
                   // Handling data-processing Instrs (ALU)
                   input  logic [3:0]  FlagsE,
@@ -63,7 +63,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ALUSrcB4E, ShiftBE;
   logic [31:0] MultOutputBE, MultOutputAE;
   logic [31:0] ReadDataRawW, ReadDataW, Result1_W, ResultW;
-  logic [31:0] ALUSrcA, ALUSrcB, MultOutputE;
+  logic [31:0] ALUSrcA, ALUSrcB, MultOutputE, ZerosE, OperationOutputE;
   logic [31:0] ALUorCP15_M;
   // Keep PC and instruction in each stage for debugging
   logic [31:0] PCD, PCE, PCM, PCW;
@@ -134,13 +134,16 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], LDRSTRshiftE, ZeroRotateE, FlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
   
   alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, AddZeroE, ZFlagKeptE, ALUOutputE, ALUFlagsE, FlagsE[1:0], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, KeepVE); 
-  
+  zero_counter clz(SrcBE, ZerosE);
+  mux2 #(32) aluorclzmux(ALUOutputE, ZerosE, ClzSelectE, OperationOutputE);
+
+
   // TODO: Use a signle multiplier for both signed and unsigned
   // - Turn this into structural block
   // - Move relevant signals to controller
   multiplier  mult(SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, FlagsE[1:0], ZFlagKeptE, CarryHiddenE);
   
-  mux3 #(32)  aluoutputmux(ALUOutputE, ShiftBE, MultOutputE, ResultSelectE, ALUResultE); 
+  mux3 #(32)  aluoutputmux(OperationOutputE, ShiftBE, MultOutputE, ResultSelectE, ALUResultE); 
   data_replicator memReplicate(WriteByteE, StrHalfwordE, WriteDataE, WriteDataReplE);
   
   // ====================================================================================
