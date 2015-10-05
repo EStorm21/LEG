@@ -59,7 +59,7 @@ def parse_qemu_io_log(output):
 		else:
 			# We assume everything ends in a newline. Thus, once we hit end of stream,
 			# there is nothing left to process
-			assert line == ""
+			print "LEFTOVER LINE: "+line.__repr__()
 			break
 	return ios
 
@@ -75,9 +75,20 @@ class QemuMonitor(object):
 		self.qemu = qemu_proc
 
 		self.states = [None]*QemuMonitor.BUFFER_SIZE
+
+		# Next PC we will execute
 		self.execute_lookahead_pc = getQemuPC()
+		# Index of state of last execution
 		self.execute_head = -1
+		# Index of state of previous execution (for debugging)
+		self.prev_execute_head = -1
+		# Index of state of next un-checked writeback
 		self.writeback_head = 0
+		# Index of state of last checked writeback (for debugging)
+		self.prev_writeback_head = -1
+
+		# Number of times we have had the same state in a row
+		self.same_state_ct = 0
 
 		parse_qemu_io_log(self.qemu.stdout)
 		gdbQueryCmd("qemu.sstep="+QemuMonitor.SSTEP_NOIRQ)
@@ -88,8 +99,15 @@ class QemuMonitor(object):
 		cpsr, regs = getQemuState()
 		state = (pc_to_use, instr_to_use, cpsr, regs)
 
+		self.prev_execute_head = self.execute_head
 		self.execute_head = (self.execute_head+1)%QemuMonitor.BUFFER_SIZE
+		assert self.states[self.execute_head] is None
 		self.states[self.execute_head] = state
+
+		if self.states[self.execute_head] == self.states[self.prev_execute_head]:
+			self.same_instr_ct += 1
+		else:
+			self.same_instr_ct = 0
 
 		self.execute_lookahead_pc = getQemuPC()
 
@@ -99,7 +117,8 @@ class QemuMonitor(object):
 		return self._step(self.execute_lookahead_pc)
 
 	def advance_writeback(self):
-		self.states[self.writeback_head] = None
+		self.states[self.prev_writeback_head] = None
+		self.prev_writeback_head = self.writeback_head
 		self.writeback_head = (self.writeback_head+1)%QemuMonitor.BUFFER_SIZE
 
 	def get_state_execute(self):
@@ -107,6 +126,12 @@ class QemuMonitor(object):
 
 	def get_state_writeback(self):
 		return self.states[self.writeback_head]
+
+	def get_state_prev_execute(self):
+		return self.states[self.prev_execute_head]
+
+	def get_state_prev_writeback(self):
+		return self.states[self.prev_writeback_head]
 
 	def do_interrupt(self, is_fast):
 		gdbQueryCmd("qemu.sstep="+QemuMonitor.SSTEP_IRQ)
@@ -117,7 +142,7 @@ class QemuMonitor(object):
 		mode = getExpr('$cpsr') & 0x1f
 		correct_mode = 0x11 if is_fast else 0x12
 		if mode != correct_mode:
-			raise BadInterruptBug("CPSR 0x{:08x} is not in correct mode 0x{:02x}".format(getExpr('$cpsr'), correct_mode))
+			raise BadInterruptBug("CPSR 0x{:08x} is not in correct mode 0x{:02x}".format(getExpr('$cpsr'), correct_mode), is_fast)
 
 		return ios
 

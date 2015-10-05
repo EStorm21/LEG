@@ -42,7 +42,9 @@ change /testbench/dut/leg/dp/PCF $pcf
 
 # CPSR
 set cpsr [gets $dumpfile]
-change /testbench/dut/leg/c/CPSRW $cpsr
+change /testbench/dut/leg/c/cpsr_W/cpsr $cpsr
+change /testbench/dut/leg/c/FlagsNextW [examine {/testbench/dut/leg/c/cpsr_W/cpsr[31:28]}]
+# force /testbench/dut/leg/c/StallW 1'b1
 
 gets $dumpfile
 

@@ -17,7 +17,7 @@ import time
 import datetime
 import atexit
 
-import lockstep, checkpoint
+import lockstep_old as lockstep, checkpoint
 
 OUTPUT_DIR = "output"
 
@@ -59,13 +59,13 @@ def preex_fn_stop_interrupt():
 def initialize_qemu():
 	openport = get_open_port()
 
-	qemu_cmd = ['qemu-system-arm', '-M', 'integratorcp', '-m', '256M', '-nographic', '-icount', '0', '-S', '-gdb', 'tcp::{}'.format(openport)]
+	qemu_cmd = ['../../qemu/arm-softmmu/qemu-system-arm', '-M', 'integratorcp', '-m', '256M', '-nographic', '-serial', 'pty', '-icount', '0', '-S', '-gdb', 'tcp::{}'.format(openport)]
 	
 	if TEST_FILE is "":
 		qemu_cmd += ['-kernel', '/proj/leg/kernel/system.bin']
 	
 	print "Starting qemu with port {}".format(openport)
-	qemu = subprocess.Popen(qemu_cmd, stdin=open(os.devnull), preexec_fn = os.setpgrp)
+	qemu = subprocess.Popen(qemu_cmd, stdin=open(os.devnull), stdout=subprocess.PIPE, preexec_fn = os.setpgrp)
 
 	print "Connecting to qemu..."
 	gdb.execute('target remote localhost:{}'.format(openport))

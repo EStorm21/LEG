@@ -181,6 +181,7 @@ def dumpAllCoprocessorRegs():
 	return cpregs
 
 def fullDump(path):
+	print "Dumping Qemu state"
 	gdb.execute("disable breakpoints")
 
 	# TODO UNCOMMENT

@@ -58,8 +58,8 @@ proc check_advancing_e {t} {
 	return [examine -time $t -radix hex sim:/testbench/dut/leg/dp/advancingEdebug]
 }
 proc inspect_e {t} {
-	set pc_e [examine -time $t -radix hex sim:/testbench/dut/leg/dp/instrEdebug]; list
-	set instr_e [examine -time $t -radix hex sim:/testbench/dut/leg/dp/PCE]; list
+	set pc_e [examine -time $t -radix hex sim:/testbench/dut/leg/dp/PCE]; list
+	set instr_e [examine -time $t -radix hex sim:/testbench/dut/leg/dp/instrEdebug]; list
 
 	return [list $pc_e $instr_e]
 }
@@ -68,8 +68,8 @@ proc check_advancing_w {t} {
 	return [examine -time $t -radix hex sim:/testbench/dut/leg/dp/advancingWdebug]
 }
 proc inspect_w {t} {
-	set pc_w [examine -time $t -radix hex sim:/testbench/dut/leg/dp/instrWdebug]; list
-	set instr_w [examine -time $t -radix hex sim:/testbench/dut/leg/dp/PCW]; list
+	set pc_w [examine -time $t -radix hex sim:/testbench/dut/leg/dp/PCW]; list
+	set instr_w [examine -time $t -radix hex sim:/testbench/dut/leg/dp/instrWdebug]; list
 	set cpsr_w [examine -time $t -radix hex sim:/testbench/dut/leg/c/CPSRW]; list
 
 	set r [examine -time $t -radix hex sim:/testbench/dut/leg/dp/rf/rf]; list

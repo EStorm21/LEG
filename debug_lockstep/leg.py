@@ -44,6 +44,9 @@ def parseStateE(msState):
 		print "Invalid execute state {}".format(msState)
 		raise
 
+class AdvanceStuckBug(Exception):
+	pass
+
 class LegSim(object):
 	def __init__(self, dump_fn, gui=False):
 		try:
@@ -143,7 +146,7 @@ class LegSim(object):
 			return time, advance_w_state, advance_e_state
 		else:
 			# Failure!
-			return None
+			raise AdvanceStuckBug("ModelSim did not advance!")
 
 	def enqueue_io_read(self,addr,val):
 		self.toMSFifo.write("ioread\n")
