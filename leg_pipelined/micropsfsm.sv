@@ -1116,7 +1116,8 @@ always_comb
 				doNotUpdateFlagD = 1;
 				uOpStallD = 0;
 				prevRSRstate = 1;
-				keepV = 0;
+				keepV = 1;
+				keepC = 1;
 				addCarry = 0;
 				keepZ = 0;
 				addZero = 0;

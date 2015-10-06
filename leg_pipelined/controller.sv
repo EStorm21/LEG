@@ -297,8 +297,8 @@ module controller (
   flopenr #(2) msr_mrs_M(clk, reset, ~StallM, {restoreCPSR_E, RegtoCPSR_E},
     {restoreCPSR_M, RegtoCPSR_M});
   flopenr #(2) undef_exceptionEM(clk, reset, ~StallM, {undefE, SWI_E}, {undefM, SWI_M});
-  flopenr #(11) flagM(clk, reset, ~StallM, {FlagsNextE, SetNextFlagsE, PSRtypeE, MSRmaskE},
-    {FlagsNext0M, SetNextFlagsM, PSRtypeM, MSRmaskM});
+  flopenr #(11) flagM(clk, reset, ~StallM, {FlagsNextE,  SetNextFlagsE, PSRtypeE, MSRmaskE},
+                                           {FlagsNext0M, SetNextFlagsM, PSRtypeM, MSRmaskM});
   flopenr #(14) CoProc_M(clk, reset, ~StallM,
     {InstrE[19:16], InstrE[7:5], InstrE[3:0], (CoProc_WrEnE & CondExE), (CoProc_EnE & CondExE), (CoProc_FlagUpd_E & CondExE)},
     {CoProc_AddrM, CoProc_Op2M, CoProc_CRmM, CoProc_WrEnM, CoProc_EnM, CoProc_FlagUpd_M});
@@ -321,7 +321,7 @@ module controller (
     {MemtoRegM, RegWriteM, PCSrcM, ByteOrWordM, ByteOffsetM, LdrHalfwordM, Ldr_SignBM, Ldr_SignHM, HalfwordOffsetM, CPSRtoRegM},
     {MemtoRegW, RegWriteW, PCSrcW, LoadLengthW, ByteOffsetW, LdrHalfwordW, Ldr_SignBW, Ldr_SignHW, HalfwordOffsetW, CPSRtoRegW});
   flopenrc #(11) flagW(clk, reset, ~StallW, FlushW, {FlagsNextM, SetNextFlagsM, PSRtypeM, MSRmaskM},
-    {FlagsNextW, SetNextFlagsW, PSRtypeW, MSRmaskW});
+                                                    {FlagsNextW, SetNextFlagsW, PSRtypeW, MSRmaskW});
 
   // === CPSR / SPSR relevant info ===
   cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefW, SWI_W, 4'b0}, restoreCPSR_W, ~StallW, CoProc_FlagUpd_W,
