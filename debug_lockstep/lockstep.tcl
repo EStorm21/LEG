@@ -1,4 +1,5 @@
 set dumpDir $1/
+set guiEnabled $2
 
 source qemuDumpRestore.tcl
 
@@ -83,10 +84,19 @@ proc inspect_w {t} {
 
 ############# RUNNING ##############
 
+if { $guiEnabled } {
+	source ../debug_lockstep/setupWaves.tcl
+} else {
+	nolog -all
+}
+
 set STEPSIZE 10; list
-set MAX_STEPS_BEFORE_ABORT 50; list
+set MAX_STEPS_BEFORE_ABORT 1000; list
+set CLEAR_INTERVAL 1000; list
 
 puts $outFifo "Ready!"
+
+set nextClearTime 10000
 
 set time 227; list
 run @$time ps
@@ -105,6 +115,10 @@ while {1} {
 		}
 		"advance" {
 			for { set i 0 } { $i < $MAX_STEPS_BEFORE_ABORT } { incr i } {
+				if { $time > $nextClearTime } {
+					dataset clear
+					incr nextClearTime $CLEAR_INTERVAL
+				}
 				incr time $STEPSIZE
 				run @$time ps
 
@@ -131,9 +145,8 @@ while {1} {
 			}
 
 			if { $i >= $MAX_STEPS_BEFORE_ABORT } {
-				puts "Too many ticks without advance. Aborting!"
+				puts "Too many ticks without advance."
 				puts $outFifo "fail"
-				break
 			}
 		}
 		"ioread" {
@@ -151,7 +164,7 @@ while {1} {
 			checkpoint $path
 		}
 		default {
-			puts "!!!!!!! Invalid command \"$cmd\" !!!!!!!"
+			puts {!!!!!!! Invalid command "$cmd" !!!!!!!}
 		}
 	}
 }

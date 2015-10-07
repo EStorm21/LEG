@@ -22,15 +22,17 @@ vsim -quiet -wlf "$ignoredLogFile" -wlftlim {1 ns} work.testbench; list
 nolog -all
 set temp_t 0
 
-add wave -position insertpoint  sim:/testbench/dut/leg/dp/rf/rf; list
-add wave -position insertpoint  sim:/testbench/dut/leg/c/CPSRW; list
-add wave -position insertpoint  sim:/testbench/dut/leg/dp/PCF; list
-add wave -position insertpoint  sim:/testbench/dut/leg/c/cpsr_W/spsr; list
-add wave -position insertpoint  sim:/testbench/dut/cp15/rf; list
-add wave -position insertpoint  \
-	sim:/testbench/dut/leg/dp/InstrD \
-	sim:/testbench/dut/leg/dp/InstrE \
-	sim:/testbench/dut/leg/dp/InstrF; list
+# source ../debug_lockstep/setup_waves.tcl
+
+# add wave -position insertpoint  sim:/testbench/dut/leg/dp/rf/rf; list
+# add wave -position insertpoint  sim:/testbench/dut/leg/c/CPSRW; list
+# add wave -position insertpoint  sim:/testbench/dut/leg/dp/PCF; list
+# add wave -position insertpoint  sim:/testbench/dut/leg/c/cpsr_W/spsr; list
+# add wave -position insertpoint  sim:/testbench/dut/cp15/rf; list
+# add wave -position insertpoint  \
+# 	sim:/testbench/dut/leg/dp/InstrD \
+# 	sim:/testbench/dut/leg/dp/InstrE \
+# 	sim:/testbench/dut/leg/dp/InstrF; list
 
 run 223ps
 
@@ -44,7 +46,6 @@ change /testbench/dut/leg/dp/PCF $pcf
 set cpsr [gets $dumpfile]
 change /testbench/dut/leg/c/cpsr_W/cpsr $cpsr
 change /testbench/dut/leg/c/FlagsNextW [examine {/testbench/dut/leg/c/cpsr_W/cpsr[31:28]}]
-# force /testbench/dut/leg/c/StallW 1'b1
 
 gets $dumpfile
 

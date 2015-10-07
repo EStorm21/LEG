@@ -47,20 +47,25 @@ def parse_qemu_io_log(output):
 	ios = []
 	line = ""
 	while True:
-		r, w, e = select.select([ output ], [], [], 0)
-		if output in r:
-			line += output.read(1)
-			if line[-1] == '\n':
-				# print "QEMU: " + line
-				ioMatch = qemuIoParser.match(line)
-				if ioMatch is not None:
-					ios.append((int(ioMatch.group(2),16),int(ioMatch.group(1),16)))
-				line = ""
-		else:
-			# We assume everything ends in a newline. Thus, once we hit end of stream,
-			# there is nothing left to process
-			print "LEFTOVER LINE: "+line.__repr__()
-			break
+		try:
+			r, w, e = select.select([ output ], [], [], 0)
+			if output in r:
+				line += output.read(1)
+				if line[-1] == '\n':
+					# print "QEMU: " + line
+					ioMatch = qemuIoParser.match(line)
+					if ioMatch is not None:
+						ios.append((int(ioMatch.group(2),16),int(ioMatch.group(1),16)))
+					line = ""
+			else:
+				# We assume everything ends in a newline. Thus, once we hit end of stream,
+				# there is nothing left to process
+				if line != '':
+					print "Qemu says (ignoring): "+line.__repr__()
+				break
+		except select.error, e:
+			if e[1]!='Interrupted system call':
+				raise
 	return ios
 
 class BadInterruptBug(Exception):
@@ -78,6 +83,7 @@ class QemuMonitor(object):
 
 		# Next PC we will execute
 		self.execute_lookahead_pc = getQemuPC()
+		print self.execute_lookahead_pc
 		# Index of state of last execution
 		self.execute_head = -1
 		# Index of state of previous execution (for debugging)

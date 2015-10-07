@@ -23,9 +23,9 @@ stateWParser = re.compile("(.+) (.+) (.+) {(.*)}")
 def parseStateW(msState):
 	try:
 		stateMatch = stateWParser.match(msState)
-		pc = int(stateMatch.group(1), 16)
-		instr = int(stateMatch.group(2), 16)
-		cpsr = int(stateMatch.group(3), 16)
+		pc = parseVal(stateMatch.group(1))
+		instr = parseVal(stateMatch.group(2))
+		cpsr = parseVal(stateMatch.group(3))
 		regparts = stateMatch.group(4).split(' ')
 		regs = [parseVal(regparts[rIdxToMSIdx(i)]) for i in range(15)]
 		return pc, instr, cpsr, regs
@@ -37,8 +37,8 @@ stateEParser = re.compile("(.+) (.+)")
 def parseStateE(msState):
 	try:
 		stateMatch = stateEParser.match(msState)
-		pc = int(stateMatch.group(1), 16)
-		instr = int(stateMatch.group(2), 16)
+		pc = parseVal(stateMatch.group(1))
+		instr = parseVal(stateMatch.group(2))
 		return pc, instr
 	except Exception, e:
 		print "Invalid execute state {}".format(msState)
@@ -75,9 +75,7 @@ class LegSim(object):
 				subprocess.call(['vlib','../sim/work'])
 
 			cmds = ['vsim']
-			if gui:
-				cmds += ['-do', 'setup_waves.tcl']
-			cmds += ['-do', 'do lockstep.tcl {}'.format(os.path.abspath(self.dumpdir))]
+			cmds += ['-do', 'do lockstep.tcl {} {}'.format(os.path.abspath(self.dumpdir), "yes" if gui else "no")]
 			cmds += ['-do', 'quit -f']
 
 			self.modelsim = subprocess.Popen(cmds, stdin=(None if gui else open(os.devnull)), preexec_fn = os.setpgrp)
@@ -108,11 +106,15 @@ class LegSim(object):
 
 	def _attempt_readline(self):
 		while True:
-			r, w, e = select.select([ self.fromMSFifo ], [], [], 1)
-			if self.fromMSFifo in r:
-				return self.fromMSFifo.readline().strip() # skip trailing newline
-			elif self.modelsim.poll() is not None:
-				raise RuntimeError("ModelSim died instead of responding!")
+			try:
+				r, w, e = select.select([ self.fromMSFifo ], [], [], 1)
+				if self.fromMSFifo in r:
+					return self.fromMSFifo.readline().strip() # skip trailing newline
+				elif self.modelsim.poll() is not None:
+					raise RuntimeError("ModelSim died instead of responding!")
+			except select.error, e:
+				if e[1]!='Interrupted system call':
+					raise
 
 	def abort(self):
 		self.toMSFifo.write("abort\n")
