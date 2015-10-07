@@ -64,7 +64,6 @@ if __name__ == "__main__":
 
   # make test of working instructions. 1,000
   N1=str(3000)
-  arithmetic.remove("clz")
   working = arithmetic + logicOps + fbranch + bbranch + ["mul", "ldr", "str"]
   print "making {} random tests of working instructions".format(N1)
   with open("working_{}.s".format(N1), "w+") as f:

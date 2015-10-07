@@ -180,10 +180,4 @@ else
   end
 
 end
-/*
-// Here's a potential shifter
-  integer shiftAmt;
-  assign shiftAmt = InstrD[11:7];
-  assign ShiftImmD = rd2D << shiftAmt;
-  // Needs to set carry */
 endmodule

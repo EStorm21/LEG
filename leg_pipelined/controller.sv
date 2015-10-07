@@ -20,7 +20,7 @@ module controller (
   output logic [ 3:0] ALUControlE            ,
   output logic [ 1:0] MultControlE           ,
   output logic        MemWriteM              ,
-  output logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, AddZeroE,
+  output logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, AddZeroE, ClzSelectE,
   // For ALU logic unit
   output logic [ 2:0] ALUOperationE, CVUpdateE,
   output logic        DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryE,
@@ -111,32 +111,31 @@ module controller (
   // === Control Logic for Datapath ===
   always_comb
     casex(InstrD[27:26])
-      // If 2'b00, then this is data processing instruction
+      // If 2'b00, then this is data processing instruction  SD 10/1/2015: Dangerous! Not all with this code are DP.
       2'b00: if (InstrD[25]) ControlsD = 13'b00_00_1010_01000; // Data processing immediate   0x52
-    else begin   // (~InstrD[25])
-      if (InstrD[7:4] == 4'b1001 & ~InstrD[24])       ControlsD = 13'b00_00_0010_01100; // Multiply
-      else if (InstrD[22] & InstrD[20] & LdrStr_HalfD)   ControlsD = 13'b00_11_1110_00010;  // LDH I-type
-      else if (~InstrD[22] & InstrD[20] & LdrStr_HalfD)  ControlsD = 13'b00_11_0110_00010;  // LDH R-type
-      else if (InstrD[22] & ~InstrD[20] & LdrStr_HalfD)  ControlsD = 13'b10_11_1101_00010;  // STH I-type
-      else if (~InstrD[22] & ~InstrD[20] & LdrStr_HalfD) ControlsD = 13'b10_11_0101_00010;  // STH R-type
-      // "Move register to status register" not implemented
-      else if ((InstrD[24:20] == 5'b10010) & (InstrD[19:4] == 16'hFFF1))
-        ControlsD = 13'b01_00_0000_10001; // BX
-      // else if (InstrD[24:23] == 2'b10 & (&InstrD[21:16]) & ~(|InstrD[11:0]))  ControlsD = 13'b00_00_0  // MRS
-      else  ControlsD = 13'b00_00_0010_01000; // Data processing register
-    end
-  2'b01: if (InstrD[25] & InstrD[4])           ControlsD = 13'b00_00_0000_00000;  // Exception: UNDEFINED INSTRUCTION
-  else if (InstrD[20] & ~InstrD[25])    ControlsD = 13'b00_01_1110_00010; // LDR, "I-type" 0xf0
-  else if (InstrD[20] & InstrD[25])     ControlsD = 13'b00_01_0110_00010; // LDR, "R-Type" 0xb0
-  else if (~InstrD[20] & ~InstrD[25])   ControlsD = 13'b10_01_1001_00010; // STR, "I-type"
-  else if (~InstrD[20] & InstrD[25])    ControlsD = 13'b10_01_0001_00010; // STR, "R-type"
-  2'b10:                 ControlsD = 13'b01_10_1000_10000; // B                           0x344
-  2'b11: if(InstrD[25:24] == 2'b11)                     ControlsD = 13'b00_00_0000_00000; // Exception: SWI
-  else if (CoProc_MCR_D)                           ControlsD = 13'b10_00_0000_00000; // MCR (move to coprocessor from register)
-  else if (CoProc_MRC_D & InstrD[15:12] == 4'hF)   ControlsD = 13'b10_00_0000_00000; // MRC (R15 update flags only)
-  else if (CoProc_MRC_D)                           ControlsD = 13'b10_00_0010_00000; // MRC (move to register from coprocessor)
-  default:          ControlsD = 13'bx;      // unimplemented
-  endcase
+        else if (InstrD[7:4] == 4'b1001 & ~InstrD[24])       ControlsD = 13'b00_00_0010_01100; // Multiply
+        else if (InstrD[22] & InstrD[20] & LdrStr_HalfD)   ControlsD = 13'b00_11_1110_00010;  // LDH I-type
+        else if (~InstrD[22] & InstrD[20] & LdrStr_HalfD)  ControlsD = 13'b00_11_0110_00010;  // LDH R-type
+        else if (InstrD[22] & ~InstrD[20] & LdrStr_HalfD)  ControlsD = 13'b10_11_1101_00010;  // STH I-type
+        else if (~InstrD[22] & ~InstrD[20] & LdrStr_HalfD) ControlsD = 13'b10_11_0101_00010;  // STH R-type
+        // "Move register to status register" not implemented
+        else if ((InstrD[24:20] == 5'b10010) & (InstrD[19:4] == 16'hFFF1))
+          ControlsD = 13'b01_00_0000_10001; // BX
+        // else if (InstrD[24:23] == 2'b10 & (&InstrD[21:16]) & ~(|InstrD[11:0]))  ControlsD = 13'b00_00_0  // MRS
+        else if (InstrD[27:20] == 8'b00010110 & InstrD[7:4] == 4'b0001) ControlsD = 13'b00_00_0010_00000;  // CLZ. Exactly like CMN RSR, but S=0
+        else  ControlsD = 13'b00_00_0010_01000; // Data processing register
+      2'b01: if (InstrD[25] & InstrD[4])           ControlsD = 13'b00_00_0000_00000;  // Exception: UNDEFINED INSTRUCTION
+        else if (InstrD[20] & ~InstrD[25])    ControlsD = 13'b00_01_1110_00010; // LDR, "I-type" 0xf0
+        else if (InstrD[20] & InstrD[25])     ControlsD = 13'b00_01_0110_00010; // LDR, "R-Type" 0xb0
+        else if (~InstrD[20] & ~InstrD[25])   ControlsD = 13'b10_01_1001_00010; // STR, "I-type"
+        else if (~InstrD[20] & InstrD[25])    ControlsD = 13'b10_01_0001_00010; // STR, "R-type"
+      2'b10:  ControlsD = 13'b01_10_1000_10000; // B                           0x344
+      2'b11: if(InstrD[25:24] == 2'b11)                     ControlsD = 13'b00_00_0000_00000; // Exception: SWI
+        else if (CoProc_MCR_D)                           ControlsD = 13'b10_00_0000_00000; // MCR (move to coprocessor from register)
+        else if (CoProc_MRC_D & InstrD[15:12] == 4'hF)   ControlsD = 13'b10_00_0000_00000; // MRC (R15 update flags only)
+        else if (CoProc_MRC_D)                           ControlsD = 13'b10_00_0010_00000; // MRC (move to register from coprocessor)
+      default:          ControlsD = 13'bx;      // unimplemented
+    endcase
 
   // Notes: ldrstrALUopD gives Loads and Stores the ability to choose alu function add or subtract.
   assign {RegSrcD, ImmSrcD,     // 2 bits each
@@ -177,10 +176,15 @@ module controller (
 
   // === BASIC DATAPATH SELECTION
   assign RselectD      = (InstrD[27:25] == 3'b000 & InstrD[4] == 0) | (LdrStrRtypeD & ~LDMSTMforwardD); // Is a R-type instruction or R-type load store
-  assign RSRselectD    = (InstrD[27:25] == 3'b000 & ~InstrD[7] & InstrD[4] == 1) & ~(InstrD[27:4] == {8'b0001_0010, 12'hFFF, 4'b0001});
+  //                      DP RSR-type                 rest of bits: These look like RSR, but are not. c.f. note 2, page A3-3
+  assign RSRselectD    = (InstrD[27:25] == 3'b000 & ~InstrD[7] & InstrD[4] == 1) & ~(InstrD[24:23] == 2'b10 & ~InstrD[20]);
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~RegFileRzD[2] & ~CPSRtoRegD & ~RegtoCPSR_D) | BranchD); // Chooses program counter either from DMEM or from ALU calculation
   assign PSRtypeD      = (CPSRtoRegD & InstrD[22]);
   assign ResultSelectD = {MultSelectD, RSRselectD};
+  // CLZ: looks like MVN but S not set. Actually in the misc. instructions group. 
+  // We need to check all these things to extract only this case. 
+  // Check all of 7:4 in case we implement E variant later. Really could do just (~7 & 4)
+  assign ClzSelectE = InstrE[27:20] == 8'b00010110 & InstrE[7:4]==4'b0001;
   // === END ===
 
   // === Handling all Multiplication Stalls Decode ===
@@ -293,8 +297,8 @@ module controller (
   flopenr #(2) msr_mrs_M(clk, reset, ~StallM, {restoreCPSR_E, RegtoCPSR_E},
     {restoreCPSR_M, RegtoCPSR_M});
   flopenr #(2) undef_exceptionEM(clk, reset, ~StallM, {undefE, SWI_E}, {undefM, SWI_M});
-  flopenr #(11) flagM(clk, reset, ~StallM, {FlagsNextE, SetNextFlagsE, PSRtypeE, MSRmaskE},
-    {FlagsNext0M, SetNextFlagsM, PSRtypeM, MSRmaskM});
+  flopenr #(11) flagM(clk, reset, ~StallM, {FlagsNextE,  SetNextFlagsE, PSRtypeE, MSRmaskE},
+                                           {FlagsNext0M, SetNextFlagsM, PSRtypeM, MSRmaskM});
   flopenr #(14) CoProc_M(clk, reset, ~StallM,
     {InstrE[19:16], InstrE[7:5], InstrE[3:0], (CoProc_WrEnE & CondExE), (CoProc_EnE & CondExE), (CoProc_FlagUpd_E & CondExE)},
     {CoProc_AddrM, CoProc_Op2M, CoProc_CRmM, CoProc_WrEnM, CoProc_EnM, CoProc_FlagUpd_M});
@@ -317,7 +321,7 @@ module controller (
     {MemtoRegM, RegWriteM, PCSrcM, ByteOrWordM, ByteOffsetM, LdrHalfwordM, Ldr_SignBM, Ldr_SignHM, HalfwordOffsetM, CPSRtoRegM},
     {MemtoRegW, RegWriteW, PCSrcW, LoadLengthW, ByteOffsetW, LdrHalfwordW, Ldr_SignBW, Ldr_SignHW, HalfwordOffsetW, CPSRtoRegW});
   flopenrc #(11) flagW(clk, reset, ~StallW, FlushW, {FlagsNextM, SetNextFlagsM, PSRtypeM, MSRmaskM},
-    {FlagsNextW, SetNextFlagsW, PSRtypeW, MSRmaskW});
+                                                    {FlagsNextW, SetNextFlagsW, PSRtypeW, MSRmaskW});
 
   // === CPSR / SPSR relevant info ===
   cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefW, SWI_W, 4'b0}, restoreCPSR_W, ~StallW, CoProc_FlagUpd_W,

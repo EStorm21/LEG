@@ -135,7 +135,8 @@ always_comb
 			end
 			//start RSR type instructions
 			else if (defaultInstrD[27:25] == 3'b0 & defaultInstrD[7] == 0 & defaultInstrD[4] == 1 
-			  & ~(defaultInstrD[27:6] == {8'b0001_0010, 12'hFFF, 2'b00}) & defaultInstrD[4]) begin  // not BLX (2)
+				// don't treat opcode 10xx with s==0 as RSR. instead misc. instructions. c.f. note2, A3-3
+			  & ~(defaultInstrD[24:23] == 2'b10 & ~defaultInstrD[20])) begin 
 			  	debugText = "rsr type data processing instr";
 				InstrMuxD = 1;
 				doNotUpdateFlagD = 1;
@@ -1115,7 +1116,8 @@ always_comb
 				doNotUpdateFlagD = 1;
 				uOpStallD = 0;
 				prevRSRstate = 1;
-				keepV = 0;
+				keepV = 1;
+				keepC = 1;
 				addCarry = 0;
 				keepZ = 0;
 				addZero = 0;

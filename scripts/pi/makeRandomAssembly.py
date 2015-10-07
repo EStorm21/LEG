@@ -139,7 +139,7 @@ if exc != []:
 
 
 
-instrs = [arithmetic]*50+[logicOps]*15+[fbranch]*5+[bbranch]*5+[wbmem]*5+[hmem]*5+[mmem]*5+[multiply]*5
+instrs = [arithmetic]*5+[logicOps]*5+[fbranch]*5+[bbranch]*5+[wbmem]*5+[hmem]*5+[mmem]*5+[multiply]*5
 instrs = [subl for subl in instrs if len(subl) > 0]
 
 
@@ -358,8 +358,8 @@ def makeWBMemInstr(instruction, counter):
 	assert(sp+offset in addresses)
 	# but ok to store anywhere in range
 	sign = "+" if offset >= 0 else "-"
-	# use any valid byte-aligned. can do for ldr as well, then specifies rotate.
-	if B=="B" or instruction == "ldr":
+	# use any valid byte-aligned.
+	if B=="B":
 		offset += choice([0,1,2,3])
 	#print "offset {}, sp {}->{}".format(offset, sp, sp if wb == "offset" else sp+offset)
 
