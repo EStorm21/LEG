@@ -1,7 +1,140 @@
-import gdb, re, os, ast, math, tempfile, shutil, subprocess, sys, select, signal
+import os
+import subprocess
+import signal
+import gdb
+import re
+import pickle
+
+from leg import LegSim, AdvanceStuckBug
+from qemu_monitor import QemuMonitor, BadInterruptBug, getExpr, getDataAtExpr, getQemuInstrCt
 import qemuDump
 
-PASSED_MSG="""
+def build_bug(message, lsim, qmon):
+	return message, qmon.get_state_writeback()
+
+def vts(val):
+	if isinstance(val, str):
+		return val
+	else:
+		return "0x{:08x}".format(val)
+
+def build_state_msg(state):
+	if state is None:
+		return "<No previous state>\n"
+	pc, instr, cpsr, regs = state
+	msg = ""
+	msg += "PC:          {}   (instruction:  {})\n".format(vts(pc),vts(instr))
+	msg += "CPSR:        {}\n".format(vts(cpsr))
+	msg += "\n"
+	for i, reg in enumerate(regs):
+		msg += "r{:02}:         {}\n".format(i, vts(reg))
+	return msg
+
+def build_state_diff(qstate, msstate):
+	def min_diff(qval,msval):
+		if qval == msval:
+			return vts(qval)
+		else:
+			return "Expected {}, actually {}".format(vts(qval), vts(msval))
+	qpc, qinstr, qcpsr, qregs = qstate
+	mspc, msinstr, mscpsr, msregs = msstate
+	msg = ""
+	msg += "PC:          {}\n".format(min_diff(qpc, mspc))
+	msg += "   (instruction:  {} )\n".format(min_diff(qinstr, msinstr))
+	msg += "CPSR:        {}\n".format(min_diff(qcpsr, mscpsr))
+	msg += "\n"
+	for i, (qreg,msreg) in enumerate(zip(qregs, msregs)):
+		msg += "r{:02}:         {}\n".format(i, min_diff(qreg, msreg))
+	return msg
+
+def build_qemu_msg():
+	msg = ""
+	msg += "GDB says:\n"
+	msg += gdb.execute('info reg', to_string=True)  + "\n"
+	msg += gdb.execute('where', to_string=True)  + "\n"
+	msg += "\n"
+	msg += "Adjacent instructions are\n"
+	frompt = '0x0' if getExpr('$pc') < 0x30 else '$pc-0x30'
+	msg += gdb.execute('x/15i '+frompt, to_string=True)  + "\n"
+	msg += "or in hex,\n"
+	msg += gdb.execute('x/15x '+frompt, to_string=True) + "\n"
+	return msg
+
+def build_bug_advance_timeout(qmon):
+	msg = "\n"*4
+	msg += "ModelSim Advance Timeout\n"
+	msg += "========================\n"
+	msg += "\n"
+	msg += "The processor appears to be stuck: it is not advancing to the\n"
+	msg += "next instruction.\n"
+	msg += "\n"
+	msg += "Last state to pass through writeback correctly:\n"
+	msg += build_state_msg(qmon.get_state_prev_writeback())
+	msg += "\n"
+	msg += "Last state executed by Qemu (corresponds to execute stage):\n"
+	msg += build_state_msg(qmon.get_state_execute())
+	msg += "\n"
+	msg += build_qemu_msg()
+	msg += "\n"
+	return msg
+
+def build_bug_writeback_mismatch(qmon, bad_state):
+	msg = "\n"*4
+	msg += "Writeback State Mismatch\n"
+	msg += "========================\n"
+	msg += "\n"
+	msg += "The expected state of the processor was not correct! There were\n"
+	msg += "differences between Qemu and ModelSim's state.\n"
+	msg += "\n"
+	msg += "Previous state (passed through writeback correctly):\n"
+	msg += build_state_msg(qmon.get_state_prev_writeback())
+	msg += "\n"
+	msg += "Current conflict:\n"
+	msg += build_state_diff(qmon.get_state_writeback(), bad_state)
+	msg += "\n"
+	msg += build_qemu_msg()
+	msg += "\n"
+	return msg
+
+def build_bug_bad_interrupt(qmon, was_fast):
+	msg = "\n"*4
+	msg += "Bad Interrupt\n"
+	msg += "=============\n"
+	msg += "\n"
+	msg += "The processor triggered an interrupt, but Qemu did not perform\n"
+	msg += "the interrupt at this time when prompted.\n"
+	msg += "\n"
+	msg += "Previous state executed:"
+	msg += build_state_msg(qmon.get_state_prev_execute())
+	msg += "\n"
+	msg += "After this state, ModelSim performed an " + ("FIQ" if was_fast else "IRQ") + "\n"
+	msg += "Expectation: Qemu would perform same interrupt, and thus CPSR\n"
+	msg += "should become " + ("0x11" if was_fast else "0x12") + "\n"
+	msg += "However, Qemu's CPSR instead was {}, indicating that it did\n".format(qmon.get_state_execute()[2])
+	msg += "not perform the interrupt\n"
+	msg += "\n"
+	msg += build_qemu_msg()
+	msg += "\n"
+	return msg
+
+def build_bug_manual(qmon):
+	msg = "\n"*4
+	msg += "Manual Override\n"
+	msg += "===============\n"
+	msg += "\n"
+	msg += "You requested termination of the lockstep procedure.\n"
+	msg += "\n"
+	msg += "Last state to pass through writeback correctly:\n"
+	msg += build_state_msg(qmon.get_state_prev_writeback())
+	msg += "\n"
+	msg += "Last state executed by Qemu (corresponds to execute stage):\n"
+	msg += build_state_msg(qmon.get_state_execute())
+	msg += "\n"
+	msg += build_qemu_msg()
+	msg += "\n"
+	return msg
+
+TEST_PASSED_MSG="""
 
 ******************************
 ****                      ****
@@ -11,120 +144,104 @@ PASSED_MSG="""
 
 """
 
-regParser = re.compile("\\w+\\s+(\\w+)\\s+")
-def parseQemuRegs(regs):
-	lines = regs.split('\n');
-	reglines = lines[0:15]
-	regs = [int(regParser.match(r).group(1),16) for r in reglines]
-	return regs
+LOCKSTEP_BUG_RESUMABLE = 1
+LOCKSTEP_BUG_ABORT = 2
+LOCKSTEP_FINISHED = 3
+def lockstep(lsim, qemu_proc, is_linux):
 
-def getQemuRegs():
-	return parseQemuRegs(gdb.execute('info reg', to_string=True))
+	qmon = QemuMonitor(qemu_proc)
 
-icountParser = re.compile('.+: (.+)')
-def getQemuInstrCt():
-	countMatch = icountParser.match(gdb.execute('monitor xp/x 0x10000028', to_string=True))
-	timeval = int(countMatch.group(1),16)
-	return int(math.ceil(timeval * 1000. / 24.))
-
-dataParser = re.compile('\\$\\d+ = (.+)')
-def getExpr(expr):
-	dataMatch = dataParser.match(gdb.execute('p/x {}'.format(expr), to_string=True))
-	data = int(dataMatch.group(1),16)
-	return data
-
-def getQemuInstr():
-	return getExpr('$pc')
-
-def rIdxToMSIdx(idx):
-	#return 15-idx
-	return 14-idx
-def msIdxToRIdx(idx):
-	#return 15-idx
-	return 14-idx
-
-stateParser = re.compile("state: (.+) (.+) {(.*)}")
-def parseMSState(msState):
-	try:
-		#print msState
-		stateMatch = stateParser.match(msState)
-		time = int(stateMatch.group(1))
-		pc = int(stateMatch.group(2), 16)
-		regparts = stateMatch.group(3).split(' ')
-		regs = [parseVal(regparts[rIdxToMSIdx(i)]) for i in range(15)]
-		return time, regs
-	except Exception, e:
-		print "Invalid state {}".format(msState)
-		raise
-
-def parseVal(val):
-	if 'x' in val:
-		return '  '+val
-	else:
-		return int(val,16)
-
-changeParser = re.compile("changes: {(.+)}")
-def parseMSChanges(msChanges):
-	try:
-		changeMatch = changeParser.match(msChanges)
-		changeParts = changeMatch.group(1).split("} {")
-		changes = [tuple(c.split(' ')) for c in changeParts]
-		return [{'reg':msIdxToRIdx(int(idx)), 'value':parseVal(val)} for idx,val in changes]
-	except Exception, e:
-		print "Invalid changes {}".format(msChanges)
-		raise
-
-def getRegStateOuts(pstate,nstate,astate):
-	pstatestr = hexfmt(pstate)
-	nstatestr = hexfmt(nstate)
-	astatestr = hexfmt(astate)
-	for i in range(15):
-		if pstate[i] == nstate[i]:
-			if astate[i] != nstate[i]:
-				astatestr[i] += '  ! (INCORRECT CHANGE)'
+	should_stop = [False]
+	old_handler = None
+	def handler(_,__):
+		if should_stop[0]:
+			print "Press Ctrl-C again to force dirty abort"
+			signal.signal(signal.SIGINT, old_handler)
 		else:
-			nstatestr[i] += '  * (changed)'
-			if astate[i] == pstate[i]:
-				astatestr[i] += '  ~ (didn\'t change)'
-			elif astate[i] == nstate[i]:
-				astatestr[i] += '  * (changed)'
+			should_stop[0] = True
+			print "Registered Ctrl-C signal (SIGINT). Preparing to stop gracefully"
+
+	old_handler = signal.signal(signal.SIGINT, handler)
+
+	checked_count = 0
+
+	while True:
+		try:
+			time, advance_w_state, advance_e_state = lsim.advance()
+		except AdvanceStuckBug, e:
+			return (LOCKSTEP_BUG_RESUMABLE,
+				qmon.get_state_prev_writeback(),
+				qmon.get_state_writeback(),
+				build_bug_advance_timeout(qmon))
+
+		if advance_w_state is not None:
+			expected_state = qmon.get_state_writeback()
+			if advance_w_state == expected_state:
+				# Correct lockstep!
+				qmon.advance_writeback()
+				# print "Writeback Match: {}".format(expected_state)
+				checked_count += 1
+				if not is_linux:
+					print ".",
+				if checked_count % 500 == 0:
+					print "\nChecked about {} instructions! Just checked 0x{:x}. Currently executing:".format(checked_count, expected_state[0])
+					gdb.execute("where")
 			else:
-				astatestr[i] += '  ! (INCORRECT CHANGE)'
-	return '\n'.join(pstatestr), '\n'.join(nstatestr), '\n'.join(astatestr)
+				# Incorrect lockstep!
+				return (LOCKSTEP_BUG_RESUMABLE,
+					qmon.get_state_prev_writeback(),
+					qmon.get_state_writeback(),
+					build_bug_writeback_mismatch(qmon,advance_w_state))
 
-def hexfmt_one(regval):
-	return regval if isinstance(regval, str) else '0x{:08x}'.format(regval)
+		if advance_e_state is not None:
+			pc, instr = advance_e_state
+			expected_pc = qmon.execute_lookahead_pc
 
-def hexfmt(regs):
-	return ['{:>6}:   {}'.format(('r{}'.format(i) if i!=15 else 'cpsr'),hexfmt_one(regs[i])) for i in range(15)]
+			try:
+				if pc == expected_pc:
+					# print "Executing at 0x{:x}".format(pc)
+					ios = qmon.advance_execute()
+				elif pc == 0x18:
+					print "Executing IRQ"
+					ios = qmon.do_interrupt(False)
+				elif pc == 0x1c:
+					print "Executing FIQ"
+					ios = qmon.do_interrupt(True)
+				else:
+					print "Skipping execution of unexpected pc 0x{:x} (expected 0x{:x})".format(pc, expected_pc)
+					ios = []
+			except BadInterruptBug, e:
+				return (LOCKSTEP_BUG_RESUMABLE,
+					qmon.get_state_prev_writeback(),
+					qmon.get_state_writeback(),
+					build_bug_bad_interrupt(qmon, e.args[1]))
 
-def backtrace(previnstr, prevstate, mstime, msstate, execct):
-	trace = []
-	trace.append( "Bug occured at simulation time {}ps".format(mstime) )
-	trace.append( "after running about {} instructions".format(execct) )
-	trace.append( "" )
-	pout, nout, aout = getRegStateOuts(prevstate,getQemuRegs(),msstate)
-	trace.append( "Previous register state (as of {:#x}):\n{}".format(previnstr,pout))
-	instr = getQemuInstr()
-	trace.append( "Target register state (at {:#x}):\n{}".format(instr,nout) )
-	trace.append( "Actual register state:\n{}".format(aout ))
-	trace.append( "" )
-	trace.append( "GDB says:" )
-	trace.append( gdb.execute('info reg', to_string=True) )
-	trace.append( gdb.execute('where', to_string=True) )
-	trace.append( "" )
-	trace.append( "Last instructions were" )
-	trace.append( gdb.execute('x/15i $pc-0x30', to_string=True) )
-	trace.append( "or in hex,")
-	trace.append( gdb.execute('x/15x $pc-0x30', to_string=True))
-	return '\n'.join(trace)
+			for ioaddr, ioval in ios:
+				lsim.enqueue_io_read(ioaddr, ioval)
 
-def backtraceSummary(title, execct, ID):
+			irq, fiq = qmon.get_irq_lines()
+			lsim.set_interrupts(irq, fiq)
+
+			if (not is_linux) and qmon.same_instr_ct > 10:
+				return LOCKSTEP_FINISHED, None, None, TEST_PASSED_MSG
+
+		# print '\n'.join([str(x) for x in qmon.states])
+		# print "WRITEBACK_HEAD", qmon.writeback_head
+		# print "EXEC_HEAD", qmon.execute_head
+
+		if should_stop[0]:
+			signal.signal(signal.SIGINT, old_handler)
+			return (LOCKSTEP_BUG_ABORT,
+					qmon.get_state_prev_writeback(),
+					qmon.get_state_writeback(),
+					build_bug_manual(qmon))
+
+def backtraceSummary(title, instr, ID):
 	trace = []
 	trace.append( "Bug {}: {}".format(ID, title) )
-	trace.append( "    After about {} instructions".format(execct) )
+	trace.append( "    After about {} instructions".format(getQemuInstrCt()) )
 	trace.append( "    Instruction: ")
-	trace.append( "      {}".format(gdb.execute('x/1i $pc-0x4', to_string=True)) )
+	trace.append( "      {}".format(instr) )
 	return '\n'.join(trace)
 
 def getBugIDAndFile(run_dir):
@@ -137,200 +254,57 @@ def getBugIDAndFile(run_dir):
 	return bugDirCt, os.path.join(bugDir,"{}.buglog".format(bugDirCt))
 
 asmInstrParser = re.compile(".+:\\s+(.+)")
-def handleAbort(title, previnstr, prevstate, mstime, msstate, execct, prevexecct, run_dir, found_bugs):
-	trace = backtrace(previnstr, prevstate, mstime, msstate, execct)
-	print "\n\n\n{}\n------------\n".format(title)
-	print trace
+def handleBug(prev_state, state, bug_msg, found_bugs, run_dir):
+	bug_pc = state[0]
+	bug_instr = state[1]
 
-	#Check if we have seen this bug before:
-	#instr = getExpr('*((int)($pc-0x4))')
-	instr_str = gdb.execute('x/1i $pc-0x4', to_string=True)
-	instr_asm_match = asmInstrParser.match(instr_str)
-	instr = instr_asm_match.group(1)
-	print instr
-	if instr not in found_bugs:
-		found_bugs.add(instr)
+	if bug_instr not in found_bugs:
+		found_bugs.add(bug_instr)
+
+		# Check to make sure we haven't overwritten the buggy instr already
+		if getDataAtExpr(bug_pc) == bug_instr:
+			instr_str = gdb.execute('x/1i {}'.format(bug_pc), to_string=True)
+			instr_asm_match = asmInstrParser.match(instr_str)
+			instr_name = instr_asm_match.group(1)
+		else:
+			instr_name = "{}".format(bug_instr)
 
 		bugId, bugFn = getBugIDAndFile(run_dir)
+		title = bug_msg.split('\n')[0]
 
 		with open(os.path.join(run_dir,'runlog'),'a') as f:
-			f.write(backtraceSummary(title, prevexecct, bugId))
+			f.write(backtraceSummary(title, instr_name, bugId))
 			f.write('\n\n')
 
 		with open(bugFn,'w') as f:
-			f.write('0x{:08x}\n'.format(previnstr))
-			f.write('{}\n'.format(prevstate))
-			f.write('{}\n'.format(mstime))
-			f.write('{}\n'.format(prevexecct))
+			f.write(pickle.dumps(prev_state))
 			f.write('\n\n\n---------------\n\n\n')
-			f.write('{}\n'.format(title))
-			f.write(trace)
+			f.write(bug_msg)
 
 		print "Wrote this bug to {}".format(bugFn)
 	else:
 		print "Skipped writing this bug to file (already found)"
-	print ""
 
-
-def preex_fn_stop_interrupt():
-    # Ignore the SIGINT signal by setting the handler to the standard
-    # signal handler SIG_IGN.
-    signal.signal(signal.SIGINT, signal.SIG_IGN)
-
-def doLockstep(toMSFifo, fromMSFifo, run_dir, found_bugs, is_linux):
-	gdb.execute('set pagination off')
-	
-	state = getQemuRegs()
-	execCount = getQemuInstrCt()
-	lastStableExecCount = execCount
-
-	lastStableInstr = getQemuInstr()
-
-	
-	def logInstr(c, lastLoggedCt = [execCount]):
-		if not is_linux:
-			sys.stdout.write(c)
-			sys.stdout.flush()
-		if(execCount - lastLoggedCt[0] > 500):
-			print "Executed {} instructions (currently at {:#x})".format(
-				execCount, getQemuInstr())
-			gdb.execute('where')
-			lastLoggedCt[0] = execCount
-
-	gdb.execute('p/x $pc')
-
-	print "Getting state from ModelSim"
-	msstring = fromMSFifo.readline()
-	mstime, msstate = parseMSState(msstring)
-	print "Got initial state from ModelSim"
-	print "Beginning execution:"
-
+def debugFromHere(with_gui, qemu, is_linux, found_bugs, run_dir):
+	lsim = LegSim(qemuDump.fullDump, with_gui)
+	gdb.execute("set mem inaccessible-by-default on")
+	if with_gui:
+		print "Giving ModelSim control to do initial wave configuration"
+		lsim.gui_control()
 	try:
-		if(msstate != state):
-			toMSFifo.write("ABORT\n")
-			handleAbort('Invalid Initial State',lastStableInstr, state, mstime, msstate, execCount, lastStableExecCount, run_dir, found_bugs)
-		else:
-			changes = []
-			matching = True
-			prev_instrs = [None]*10
-
-			while matching:
-				gdb.execute('stepi', to_string=True)
-				if not is_linux:
-					prev_instrs = prev_instrs[1:] + [getQemuInstr()]
-					if all(x==prev_instrs[-1] for x in prev_instrs):
-						print "\nRecursive branch detected!"
-						print PASSED_MSG
-						return True
-
-				newState = getQemuRegs()
-				if newState == state:
-					execCount = getQemuInstrCt()
-					logInstr('.')
-					# lastLoggedCt = execCount
-					continue
-				changes = [{'reg':i,'value':newState[i]} for i in range(15) if state[i] != newState[i]]
-				#print("\nGot changes!", changes)
-				while len(changes)>0:
-					toMSFifo.write("step\n")
-					msstring = fromMSFifo.readline()
-
-					pingTimes = 0
-					while msstring[0:4] == "ping" and pingTimes < 100:
-						pingTimes += 1
-						toMSFifo.write("step\n")
-						msstring = fromMSFifo.readline()
-
-					if pingTimes == 100:
-						print "Too long without an update! Aborting"
-
-						toMSFifo.write("ABORT\n")
-						msstring = fromMSFifo.readline()
-						mstime, msstate = parseMSState(msstring)
-						handleAbort('Timeout (Aborted)',lastStableInstr, state, mstime, msstate, execCount, lastStableExecCount, run_dir, found_bugs)
-						matching = False
-						changes = []
-						break
-							
-
-					nextchanges = parseMSChanges(msstring)
-					#print msstring, nextchanges, changes
-					for c in nextchanges:
-						if c in changes:
-							changes.remove(c)
-						else:
-							toMSFifo.write("ABORT\n")
-							msstring = fromMSFifo.readline()
-							mstime, msstate = parseMSState(msstring)
-							handleAbort('Register Mismatch',lastStableInstr, state, mstime, msstate, execCount, lastStableExecCount, run_dir, found_bugs)
-							matching = False
-							changes = []
-							break
-
-				state = newState;
-				lastStableInstr = getQemuInstr()
-				execCount = getQemuInstrCt()
-				lastStableExecCount = execCount
-				logInstr('!')
-				# lastLoggedCt = execCount
-	except KeyboardInterrupt, e:
-		print "\nKeyboard interrupt detected!"
-		toMSFifo.write("ABORT\n")
-		msstring = "xxxxx"
-		while msstring[0:5] != "state":
-			msstring = fromMSFifo.readline()
-		mstime, msstate = parseMSState(msstring)
-		handleAbort('Keyboard Interrupt',lastStableInstr, state, mstime, msstate, execCount, lastStableExecCount, run_dir, found_bugs)
-		return True
-	return False
-
-def debugFromHere(run_dir, found_bugs, is_linux):
-	print "Preparing to lockstep with ModelSim..."
-
-	preventRestart = False
-
-	try:
-		# Initialize our temp directory
-		print "    Making temp directory"
-
-		
-		tmpdir = tempfile.mkdtemp()
-		# tmpdir = "tmp"
-		# os.mkdir(tmpdir)
-
-		# Make our fifos
-		print "    Initializing FIFOs"
-		toMSFifoFile = os.path.join(tmpdir, 'toModelSim.fifo')
-		fromMSFifoFile = os.path.join(tmpdir, 'fromModelSim.fifo')
-
-		os.mkfifo(toMSFifoFile)
-		os.mkfifo(fromMSFifoFile)
-	except OSError, e:
-		print "Failed to create FIFO:", e
-	else:
-		print "    Dumping qemu's current state..."
-		# Dump our current state
-		qemuDump.fullDump(tmpdir)
-
-		# Start ModelSim and sync it
-		print "Starting ModelSim..."
-		if not os.path.isdir('../sim/work'):
-			subprocess.call(['vlib','../sim/work'])
-		modelsim = subprocess.Popen(['vsim', '-do', 'do debug.tcl {}'.format(os.path.abspath(tmpdir))], stdin=open(os.devnull), preexec_fn = os.setpgrp)
-
-		try:
-			with open(toMSFifoFile, 'w+',0) as toMSFifo:
-				with open(fromMSFifoFile, 'r') as fromMSFifo:
-					preventRestart = doLockstep(toMSFifo, fromMSFifo, run_dir, found_bugs, is_linux)
-
-		except IOError, e:
-			print "Failed to open FIFOS:", e
-
-		# Stop ModelSim
-		modelsim.terminate()
-
-	print "Cleaning up..."
-	# Clean up files
-	shutil.rmtree(tmpdir)
-
-	return preventRestart
+		reason, prev_state, state, msg = lockstep(lsim, qemu, is_linux)
+		print msg
+		if reason != LOCKSTEP_FINISHED:
+			handleBug(prev_state, state, msg, found_bugs, run_dir)
+	except Exception, e:
+		print e
+		import traceback
+		traceback.print_exc()
+		reason = LOCKSTEP_BUG_ABORT
+		print "Terminated due to exception."
+	gdb.execute("set mem inaccessible-by-default off")
+	if with_gui:
+		print "Giving ModelSim control for debugging"
+		lsim.gui_control()
+	lsim.abort()
+	return reason != LOCKSTEP_BUG_RESUMABLE
