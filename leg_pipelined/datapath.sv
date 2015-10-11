@@ -179,7 +179,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   flopenrc #(32) instrwreg(clk, reset, ~StallW, FlushW, instrMdebug, instrWdebug);
   flopenrc #(1) validwreg(clk, reset, ~StallW, FlushW, validMdebug, validWdebug);
   flopenrc #(1) uopprogwreg(clk, reset, ~StallW, FlushW, uOpProgMdebug, uOpProgWdebug);
-  floprc #(1) advancingwreg(clk, reset, FlushW, validMdebug && ~uOpProgMdebug && ~StallW, advancingWdebug);
+  assign advancingWdebug = validWdebug && ~uOpProgWdebug && ~StallW;
 
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, Result1_W);
   mux2 #(32)  msr_mrs_mux(Result1_W, PSR_W, CPSRtoRegW, ResultW);

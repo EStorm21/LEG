@@ -2,6 +2,7 @@ import gdb
 import re
 import os
 import select
+import math
 
 regParser = re.compile("\\w+\\s+(\\w+)\\s+")
 def parseQemuRegs(regs):
@@ -42,6 +43,33 @@ def gdbQueryCmd(cmd):
 	queryMatch = queryRespParser.match(gdb.execute("maint packet q"+cmd, to_string=True))
 	return queryMatch.group(1)
 
+icountParser = re.compile('.+: (.+)')
+def getQemuInstrCt():
+	gdb.execute("set mem inaccessible-by-default off")
+	countMatch = icountParser.match(gdb.execute('monitor xp/x 0x10000028', to_string=True))
+	gdb.execute("set mem inaccessible-by-default on")
+	timeval = int(countMatch.group(1),16)
+	return int(math.ceil(timeval * 1000. / 24.))
+
+def jumpToState(target_state):
+	bpstr = gdb.execute('break *{0:#x}'.format(target_state[0]), to_string=True)
+	try:
+		while True:
+			cont_str = gdb.execute('continue', to_string=True)
+			if "SIGINT" in cont_str:
+				break
+			pc = getExpr('$pc')
+			instr = getDataAtExpr('$pc')
+			gdb.execute('stepi', to_string=True)
+			cpsr, regs = getQemuState()
+			current_state = (pc, instr, cpsr, regs)
+			print current_state
+			if current_state == target_state:
+				break
+	except KeyboardError, e:
+		print "Interrupted!"
+	gdb.execute('delete {}'.format(bpstr.split(' ')[1][:-1]))
+
 qemuIoParser = re.compile('IO_ACTION: Reading 0x(\\w*) from 0x(\\w*)')
 def parse_qemu_io_log(output):
 	ios = []
@@ -80,6 +108,7 @@ class QemuMonitor(object):
 		self.qemu = qemu_proc
 
 		self.states = [None]*QemuMonitor.BUFFER_SIZE
+		self.states[-1] = ("Unknown (first state)","Unknown (first state)") + getQemuState()
 
 		# Next PC we will execute
 		self.execute_lookahead_pc = getQemuPC()

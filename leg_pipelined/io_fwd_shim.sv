@@ -28,9 +28,11 @@ module io_fwd_shim(input  logic        HCLK,
                     // Pop the recorded read off, to match Qemu
                     void'( readAddrs.pop_front() );
                     HRDATA <= readVals.pop_front();
+                    $display("IO read data %h from %h", HRDATA, HADDR);
                 end else begin
                     // This is an invalid read. Give garbage data
                     HRDATA <= 32'hxxxxxxxx;
+                    $display("IO read invalid data from %h", HRDATA, HADDR);
                 end
             end
         end

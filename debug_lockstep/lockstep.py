@@ -3,9 +3,10 @@ import subprocess
 import signal
 import gdb
 import re
+import pickle
 
 from leg import LegSim, AdvanceStuckBug
-from qemu_monitor import QemuMonitor, BadInterruptBug
+from qemu_monitor import QemuMonitor, BadInterruptBug, getExpr, getDataAtExpr, getQemuInstrCt
 import qemuDump
 
 def build_bug(message, lsim, qmon):
@@ -45,12 +46,6 @@ def build_state_diff(qstate, msstate):
 	for i, (qreg,msreg) in enumerate(zip(qregs, msregs)):
 		msg += "r{:02}:         {}\n".format(i, min_diff(qreg, msreg))
 	return msg
-
-dataParser = re.compile('\\$\\d+ = (.+)')
-def getExpr(expr):
-	dataMatch = dataParser.match(gdb.execute('p/x {}'.format(expr), to_string=True))
-	data = int(dataMatch.group(1),16)
-	return data
 
 def build_qemu_msg():
 	msg = ""
@@ -174,7 +169,10 @@ def lockstep(lsim, qemu_proc, is_linux):
 		try:
 			time, advance_w_state, advance_e_state = lsim.advance()
 		except AdvanceStuckBug, e:
-			return LOCKSTEP_BUG_RESUMABLE, build_bug_advance_timeout(qmon)
+			return (LOCKSTEP_BUG_RESUMABLE,
+				qmon.get_state_prev_writeback(),
+				qmon.get_state_writeback(),
+				build_bug_advance_timeout(qmon))
 
 		if advance_w_state is not None:
 			expected_state = qmon.get_state_writeback()
@@ -190,7 +188,10 @@ def lockstep(lsim, qemu_proc, is_linux):
 					gdb.execute("where")
 			else:
 				# Incorrect lockstep!
-				return LOCKSTEP_BUG_RESUMABLE, build_bug_writeback_mismatch(qmon,advance_w_state)
+				return (LOCKSTEP_BUG_RESUMABLE,
+					qmon.get_state_prev_writeback(),
+					qmon.get_state_writeback(),
+					build_bug_writeback_mismatch(qmon,advance_w_state))
 
 		if advance_e_state is not None:
 			pc, instr = advance_e_state
@@ -209,10 +210,11 @@ def lockstep(lsim, qemu_proc, is_linux):
 				else:
 					print "Skipping execution of unexpected pc 0x{:x} (expected 0x{:x})".format(pc, expected_pc)
 					ios = []
-				# else:
-				# 	pass (we'll ignore it, its probably a data abort or similar)
 			except BadInterruptBug, e:
-				return LOCKSTEP_BUG_RESUMABLE, build_bug_bad_interrupt(qmon, e.args[1])
+				return (LOCKSTEP_BUG_RESUMABLE,
+					qmon.get_state_prev_writeback(),
+					qmon.get_state_writeback(),
+					build_bug_bad_interrupt(qmon, e.args[1]))
 
 			for ioaddr, ioval in ios:
 				lsim.enqueue_io_read(ioaddr, ioval)
@@ -221,7 +223,7 @@ def lockstep(lsim, qemu_proc, is_linux):
 			lsim.set_interrupts(irq, fiq)
 
 			if (not is_linux) and qmon.same_instr_ct > 10:
-				return LOCKSTEP_FINISHED, TEST_PASSED_MSG
+				return LOCKSTEP_FINISHED, None, None, TEST_PASSED_MSG
 
 		# print '\n'.join([str(x) for x in qmon.states])
 		# print "WRITEBACK_HEAD", qmon.writeback_head
@@ -229,25 +231,80 @@ def lockstep(lsim, qemu_proc, is_linux):
 
 		if should_stop[0]:
 			signal.signal(signal.SIGINT, old_handler)
-			return LOCKSTEP_BUG_ABORT, build_bug_manual(qmon)
+			return (LOCKSTEP_BUG_ABORT,
+					qmon.get_state_prev_writeback(),
+					qmon.get_state_writeback(),
+					build_bug_manual(qmon))
 
-global_lsim = None
-def debugFromHere(with_gui, qemu, is_linux):
-	global global_lsim
+def backtraceSummary(title, instr, ID):
+	trace = []
+	trace.append( "Bug {}: {}".format(ID, title) )
+	trace.append( "    After about {} instructions".format(getQemuInstrCt()) )
+	trace.append( "    Instruction: ")
+	trace.append( "      {}".format(instr) )
+	return '\n'.join(trace)
+
+def getBugIDAndFile(run_dir):
+	bugDir = os.path.join(run_dir,"bugs")
+	if not os.path.isdir(bugDir):
+		os.mkdir(bugDir)
+
+	bugDirCt = len(os.listdir(bugDir))
+
+	return bugDirCt, os.path.join(bugDir,"{}.buglog".format(bugDirCt))
+
+asmInstrParser = re.compile(".+:\\s+(.+)")
+def handleBug(prev_state, state, bug_msg, found_bugs, run_dir):
+	bug_pc = state[0]
+	bug_instr = state[1]
+
+	if bug_instr not in found_bugs:
+		found_bugs.add(bug_instr)
+
+		# Check to make sure we haven't overwritten the buggy instr already
+		if getDataAtExpr(bug_pc) == bug_instr:
+			instr_str = gdb.execute('x/1i {}'.format(bug_pc), to_string=True)
+			instr_asm_match = asmInstrParser.match(instr_str)
+			instr_name = instr_asm_match.group(1)
+		else:
+			instr_name = "{}".format(bug_instr)
+
+		bugId, bugFn = getBugIDAndFile(run_dir)
+		title = bug_msg.split('\n')[0]
+
+		with open(os.path.join(run_dir,'runlog'),'a') as f:
+			f.write(backtraceSummary(title, instr_name, bugId))
+			f.write('\n\n')
+
+		with open(bugFn,'w') as f:
+			f.write(pickle.dumps(prev_state))
+			f.write('\n\n\n---------------\n\n\n')
+			f.write(bug_msg)
+
+		print "Wrote this bug to {}".format(bugFn)
+	else:
+		print "Skipped writing this bug to file (already found)"
+
+def debugFromHere(with_gui, qemu, is_linux, found_bugs, run_dir):
 	lsim = LegSim(qemuDump.fullDump, with_gui)
-	global_lsim = lsim
+	gdb.execute("set mem inaccessible-by-default on")
 	if with_gui:
 		print "Giving ModelSim control to do initial wave configuration"
 		lsim.gui_control()
 	try:
-		reason, msg = lockstep(lsim, qemu, is_linux)
+		reason, prev_state, state, msg = lockstep(lsim, qemu, is_linux)
+		print msg
+		if reason != LOCKSTEP_FINISHED:
+			handleBug(prev_state, state, msg, found_bugs, run_dir)
 	except Exception, e:
 		print e
 		import traceback
 		traceback.print_exc()
-		msg = "Terminated due to exception"
-	print msg
+		reason = LOCKSTEP_BUG_ABORT
+		print "Terminated due to exception."
+	gdb.execute("set mem inaccessible-by-default off")
 	if with_gui:
 		print "Giving ModelSim control for debugging"
 		lsim.gui_control()
 	lsim.abort()
+	return reason != LOCKSTEP_BUG_RESUMABLE

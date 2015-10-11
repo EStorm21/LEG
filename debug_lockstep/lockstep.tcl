@@ -105,6 +105,7 @@ while {1} {
 	gets $inFifo cmd
 	switch $cmd {
 		"pause" {
+			transcribe list ---- Lockstepping is paused. Run {"resume"} to give control back to GDB. ----
 			pause
 			# After user runs "resume" in ModelSim console
 			puts $outFifo "Ready!"
@@ -164,7 +165,7 @@ while {1} {
 			checkpoint $path
 		}
 		default {
-			puts {!!!!!!! Invalid command "$cmd" !!!!!!!}
+			puts "!!!!!!! Invalid command ($cmd) !!!!!!!"
 		}
 	}
 }
