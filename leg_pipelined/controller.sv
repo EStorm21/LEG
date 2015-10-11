@@ -11,25 +11,26 @@ module controller (
   output logic        Reg_usr_D              ,
   /// ------ From Datapath ------
   input  logic [31:0] InstrD, ALUOutW        ,
-  input  logic [ 3:0] ALUFlagsE, MultFlagsE  ,
+  input  logic [ 3:0] ALUFlagsE              ,
+  input  logic [ 1:0] MultFlagsE             ,
   input  logic [31:0] ALUResultE, DefaultInstrD,
-  input  logic        ShifterCarryOutE, CarryHiddenE,
+  input  logic        ShifterCarryOutE,
   /// ------ To   Datapath ------
   output logic [ 1:0] RegSrcD, ImmSrcD       ,
   output logic        ALUSrcE, BranchTakenE  ,
   output logic [ 3:0] ALUControlE            ,
   output logic [ 1:0] MultControlE           ,
   output logic        MemWriteM              ,
-  output logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, AddZeroE, ClzSelectE,
+  output logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE,
   // For ALU logic unit
-  output logic [ 2:0] ALUOperationE, CVUpdateE,
-  output logic        DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryE,
+  output logic [ 2:0] ALUOperationE,
+  output logic        DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryInE,
   output logic [ 3:0] FlagsE                 ,
   // For micro-op decoding
-  output logic        RselectE, PrevRSRstateE, LDRSTRshiftE, LDMSTMforwardE,
+  output logic        RselectE, LDRSTRshiftE, LDMSTMforwardE,
   output logic [ 1:0] ResultSelectE          ,
   output logic [ 6:4] ShiftOpCode_E          ,
-  output logic        MultSelectD, MultEnableE, ZFlagKeptE,
+  output logic        MultSelectD, MultEnableE,
   output logic [31:0] InstrE                 ,
   // To handle memory load/store byte and halfword
   output logic [ 3:0] ByteMaskM              ,
@@ -37,14 +38,9 @@ module controller (
   output logic [ 1:0] ByteOffsetW            ,
   output logic        WriteByteE, StrHalfwordE, LdrHalfwordW, Ldr_SignBW, Ldr_SignHW,
   // For micro-op decoding
-  output logic        KeepVE, noRotateD, InstrMuxD, uOpStallD,
+  output logic        noRotateD, InstrMuxD, uOpStallD,
   output logic [ 3:0] RegFileRzD             ,
   output logic [31:0] uOpInstrD, PSR_W       ,
-  // Handle Multiplication stalls
-  // output logic         MultStallD, MultStallE,
-  // output  logic        WriteMultLoE, WriteMultLoKeptE,
-  // Shifter carry out to ALU
-  output logic        ShifterCarryOut_cycle2E,
   /// ------ From Hazard ------
   input  logic        FlushE, StallE, StallM, FlushW, StallW, StalluOp, ExceptionSavePC,
   /// ------ To   Hazard ------
@@ -144,6 +140,7 @@ module controller (
   // === END ===
 
   // === Controlling the ALU ===
+  // ALUControlD is the opcode of the data processing instruction we want to perform.
   always_comb
     // The following two are: LOAD STORE LOGIC
     if ((InstrD[27:26] == 2'b01 | LdrStr_HalfD) & InstrD[23]) begin// Load/Store (Rn + 12 bit offset)
@@ -253,7 +250,7 @@ module controller (
   // assign MultEnable = InstrE[7:4] == 4'b1001;
 
   // === ALU Decoding ===
-  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], AddCarryE, CFlagKeptE, BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, DoNotWriteRegE);
+  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], AddCarryE, CFlagKeptE, BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryInE, DoNotWriteRegE);
   // === END ===
 
   // TODO: Add Thumb mode
@@ -275,7 +272,7 @@ module controller (
   // === CONDITIONAL EXECUTION CHECKING ===
   assign FlagsE     = SetNextFlagsM ? FlagsNextM : (SetNextFlagsW ? FlagsNextW : CPSRW[31:28]);
   assign FlagsNextE = (RegtoCPSR_E & InstrE[19]) ? ALUResultE[31:28] : FlagsNext0E; // If flags field is set by MSR, update flags now!
-  conditional Cond(CondE, FlagsE, ALUFlagsE, MultFlagsE, FlagWriteE, CondExE, FlagsNext0E, FlagsOutE, ResultSelectE[1], CarryHiddenE);
+  conditional Cond(CondE, FlagsE, ALUFlagsE, MultFlagsE, FlagWriteE, CondExE, FlagsNext0E, FlagsOutE, ResultSelectE[1], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, CVUpdateE, MultControlE[0], ZFlagKeptE, AddZeroE, KeepVE);
   assign BranchTakenE    = BranchE & CondExE;
   assign RegWritepreMuxE = (RegWriteE & CondExE);
   assign MemWriteGatedE  = MemWriteE & CondExE;

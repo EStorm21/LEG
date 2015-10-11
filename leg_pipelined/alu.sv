@@ -2,20 +2,17 @@ module alu(input  logic [31:0] AIn, BIn,
            input  logic [2:0]  ALUOperation,
            input logic         InvertB, ReverseInputs, ALUCarryIn,
            output logic [31:0] Result,
-           output logic [3:0]  Flags,
-           input  logic ShifterCarryOut_cycle2E, ShifterCarryOut_cycle1E, PrevRSRstateE);
+           output logic [3:0]  Flags);
 
  /***** Brief Description *******
  * First Created by Ivan Wong for Clay Wolkin 2014-2015
  * ALU receives all control signals from Controller.
  * To be implemented in 32-bit datapath.
  ******************************/
-  logic        Neg, Zero, Carry, Overflow, ShifterCarryOutE;
+  logic        Neg, Zero, Carry, Overflow;
   logic [31:0] Condinvb, A, B;
   logic [32:0] Sum;
 
-  // In RSR we do shift and op on different cycles. We need to save the shifter flag
-  assign ShifterCarryOutE = PrevRSRstateE ? ShifterCarryOut_cycle2E : ShifterCarryOut_cycle1E;
 
   mux2 #(32)  alu_inA(AIn, BIn, ReverseInputs, A); 
   mux2 #(32)  alu_inB(BIn, AIn, ReverseInputs, B); 

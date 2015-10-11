@@ -11,15 +11,15 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic        ALUSrcE, BranchTakenE,
                   input  logic [3:0]  ALUControlE, 
                   input  logic [1:0]  MultControlE,
-                  input  logic        MultEnableE, ZFlagKeptE, 
-                  input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, AddZeroE, ClzSelectE,
+                  input  logic        MultEnableE,
+                  input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE,
                   input  logic [31:0] InstrE, PSR_W, 
                   // Handling data-processing Instrs (ALU)
                   input  logic [3:0]  FlagsE,
-                  input  logic [2:0]  CVUpdateE, ALUOperationE,
-                  input  logic        InvertBE, ReverseInputsE, ALUCarryE,
+                  input  logic [2:0]  ALUOperationE,
+                  input  logic        InvertBE, ReverseInputsE, ALUCarryInE,
                   // To handle micro-op decoding
-                  input  logic        RselectE, PrevRSRstateE, LDRSTRshiftE, 
+                  input  logic        RselectE, LDRSTRshiftE, 
                   input  logic [1:0]  ResultSelectE, // 2 bits Comes from {MultSelectE, RSRselectE}
                   input  logic [6:4]  ShiftOpCode_E,
                   // To handle load-store half-words and bytes
@@ -27,19 +27,18 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic [1:0]  ByteOffsetW,
                   input  logic        WriteByteE, StrHalfwordE, LdrHalfwordW, IncrementE, //HalfwordOffset, 
                   // Added for moving MicroOpFSM to Controller decode
-                  input  logic        KeepVE, noRotateD, InstrMuxD,
+                  input  logic        noRotateD, InstrMuxD,
                   input  logic [3:0]  RegFileRzD,
                   input  logic [31:0] uOpInstrD,
-                  input  logic        WriteMultLoKeptE,
-                  input  logic        ShifterCarryOut_cycle2E, CoProc_EnM, 
+                  input  logic        CoProc_EnM, 
 
                 /// ------ To Controller ------
                   output logic [31:0] InstrD,
                   output logic [31:0] ALUOutM, ALUOutW,
-                  output logic [3:0]  ALUFlagsE, MultFlagsE,
+                  output logic [1:0]  ALUFlagsE, MultFlagsE,
                   output logic [1:0]  STR_cycleD,
                   output logic [31:0] ALUResultE, DefaultInstrD,
-                  output logic        ShifterCarryOutE, CarryHiddenE,
+                  output logic        ShifterCarryOutE,
 
                 /// ------ From Hazard ------
                   input  logic [1:0]  ForwardAE, ForwardBE,
@@ -134,7 +133,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // TODO: implement as a barrel shift
   shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], LDRSTRshiftE, ZeroRotateE, FlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
   
-  alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, AddZeroE, ZFlagKeptE, ALUOutputE, ALUFlagsE, FlagsE[1:0], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, KeepVE); 
+  alu         alu(SrcAE, SrcBE, ALUOperationE, InvertBE, ReverseInputsE, ALUCarryInE, ALUOutputE, ALUFlagsE); 
   zero_counter clz(SrcBE, ZerosE);
   mux2 #(32) aluorclzmux(ALUOutputE, ZerosE, ClzSelectE, OperationOutputE);
 
@@ -142,7 +141,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // TODO: Use a signle multiplier for both signed and unsigned
   // - Turn this into structural block
   // - Move relevant signals to controller
-  multiplier  mult(SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, FlagsE[1:0], ZFlagKeptE, CarryHiddenE);
+  multiplier  mult(SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE);
   
   mux3 #(32)  aluoutputmux(OperationOutputE, ShiftBE, MultOutputE, ResultSelectE, ALUResultE); 
   data_replicator memReplicate(WriteByteE, StrHalfwordE, WriteDataE, WriteDataReplE);
