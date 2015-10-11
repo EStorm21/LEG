@@ -70,6 +70,7 @@ module controller (
   logic        TFlag, restoreCPSR_D, restoreCPSR_E, restoreCPSR_M, restoreCPSR_W;
   logic        CPSRtoRegD, CPSRtoReg0E, CPSRtoRegE, CPSRtoRegM;
   logic        PSRtypeD, PSRtypeE, PSRtypeM;
+  logic [2:0]  CVUpdateE;
   logic        PSRtypeW, RegtoCPSRr_D, RegtoCPSRi_D;
   logic        RegtoCPSR_D, RegtoCPSR_0E, RegtoCPSR_E, RegtoCPSR_M, RegtoCPSR_W;
   logic [ 1:0] FlagWriteD, FlagWriteE, SignExtendD;

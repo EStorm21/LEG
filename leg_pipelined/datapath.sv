@@ -35,7 +35,8 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                 /// ------ To Controller ------
                   output logic [31:0] InstrD,
                   output logic [31:0] ALUOutM, ALUOutW,
-                  output logic [1:0]  ALUFlagsE, MultFlagsE,
+                  output logic [3:0]  ALUFlagsE, 
+                  output logic [1:0]  MultFlagsE,
                   output logic [1:0]  STR_cycleD,
                   output logic [31:0] ALUResultE, DefaultInstrD,
                   output logic        ShifterCarryOutE,

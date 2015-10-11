@@ -25,7 +25,8 @@ module leg(input  logic        clk, reset,
   logic        ExceptionSavePC;
 
   /// Output from Datapath
-  logic [3:0]  ALUFlagsE, MultFlagsE;
+  logic [3:0]  ALUFlagsE;
+  logic [1:0]  MultFlagsE;
   logic [31:0] InstrD, DefaultInstrD, ALUOutW;
   logic        MultStallD, MultStallE;
   logic        WriteMultLoE, WriteMultLoKeptE;
@@ -48,7 +49,7 @@ module leg(input  logic        clk, reset,
   logic        KeepVE, noRotateD, InstrMuxD;
   logic [31:0] uOpInstrD;
   logic [2:0]  ALUOperationE, CVUpdateE;
-  logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnableE, ZFlagKeptE, LoadLengthW;
+  logic        InvertBE, ReverseInputsE, ALUCarryInE, MultEnableE, ZFlagKeptE, LoadLengthW;
   logic [3:0]  RegFileRzD;
   logic        ShifterCarryOut_cycle2E, CoProc_En, AddZeroE, ClzSelectE;
   logic [7:0]  CPSR8_W;
