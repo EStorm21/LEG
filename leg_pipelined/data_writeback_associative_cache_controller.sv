@@ -207,5 +207,6 @@ module data_writeback_associative_cache_controller
                    FlushA[$clog2(lines)-1:0], clean, BlockNum);
 
   // ----------------MMU-------------------
-  assign RequestPA = (state == READY) & (MemtoRegM) | ~(state == READY) & Stall;
+  assign RequestPA = (state == READY) & (MemtoRegM | MemWriteM) 
+                    | ~(state == READY) & Stall;
 endmodule

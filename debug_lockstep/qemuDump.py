@@ -144,7 +144,7 @@ def getExpr(expr):
 	return data
 
 def setExpr(expr, val):
-	gdb.execute('set {} = {:#x}'.format(expr,val), to_string=True)
+	gdb.execute('set {} = {:#x}'.format(expr,val))
 
 def dumpCoprocessorReg(reg):
 	# Command we want:
@@ -181,7 +181,9 @@ def dumpAllCoprocessorRegs():
 	return cpregs
 
 def fullDump(path):
+	print "Dumping Qemu state"
 	gdb.execute("disable breakpoints")
+
 
 	# TODO UNCOMMENT
 	dumpQemuFile(path)

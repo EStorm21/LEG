@@ -11,8 +11,8 @@ module ahb_lite (
 );
               
   // TODO: Make memRE functional
-  logic [ 2:0] HSEL   ;
-  logic [31:0] HRDATA0, HRDATA1, HRDATA2; // NOTE: This assumes memory outputs 4 words at a time
+  logic [ 1:0] HSEL   ;
+  logic [31:0] HRDATA0, HRDATA1; // NOTE: This assumes memory outputs 4 words at a time
   logic [31:0] rawFIQVec, rawIRQVecPart, rawIRQVec, rawSICVec;
   logic        SICinterrupt; // says whether an interrupt is pending in the SIC
 
@@ -24,7 +24,7 @@ module ahb_lite (
   
   // Memory map decoding
   ahb_decoder dec(HADDR, HSEL);
-  ahb_mux     mux(HSEL, HRDATA0, HRDATA1, HRDATA2, HRDATA);
+  ahb_mux     mux(HSEL, HRDATA0, HRDATA1, HRDATA);
   
   // Memory and peripherals
   // mem_simulation mem (.clk(HCLK), .we(HWRITE), .re(HREQUEST & ~HWRITE), 
@@ -43,17 +43,9 @@ dmem mem (
   .HSIZE(HSIZE             )
 );
 
-pic primaryInterruptController (  .*,
+io_fwd_shim ioShim(  .*,
   .HSEL  (HSEL[1]   ),
-  .HRDATA(HRDATA1   ),
-  .HADDR (HADDR[6:2])
-);
-             
-sic secondaryInterruptController (  .*,
-  .HSEL     (HSEL[2]     ),
-  .HRDATA   (HRDATA2     ),
-  .HADDR    (HADDR[4:2]  ),
-  .interrupt(SICinterrupt)
+  .HRDATA(HRDATA1   )
 );
   
 endmodule
