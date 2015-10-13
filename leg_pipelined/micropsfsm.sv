@@ -163,7 +163,7 @@ always_comb
 				InstrMuxD = 1;
 				doNotUpdateFlagD = 0;
 				uOpStallD = 0;
-				KeepVD = 0;
+				KeepVD = 1;
 				addCarry = 0;
 				KeepZD = 0;
 				AddZeroD = 0;
@@ -1149,7 +1149,7 @@ always_comb
 				doNotUpdateFlagD = 1;
 				uOpStallD = 1;
 				prevRSRstate = 1;
-				KeepVD = 0;
+				KeepVD = 1;
 				KeepCD = 1;
 				KeepZD = 1;
 				addCarry = 0;
@@ -1168,7 +1168,7 @@ always_comb
 				doNotUpdateFlagD = 0;
 				prevRSRstate = 0;
 				uOpStallD = 0;
-				KeepVD = 0;
+				KeepVD = 1;
 				addCarry = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of RA2D and RA1D
@@ -1200,7 +1200,7 @@ always_comb
 			doNotUpdateFlagD = 1;
 			uOpStallD = 0;
 			prevRSRstate = 1;
-			KeepVD = 0;
+			KeepVD = 1;
 			KeepZD = 0;
 			addCarry = 1;
 			AddZeroD = 1;
