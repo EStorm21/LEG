@@ -278,7 +278,7 @@ module controller (
   assign RegWritepreMuxE = (RegWriteE & CondExE);
   assign MemWriteGatedE  = MemWriteE & CondExE;
   assign PCSrcGatedE     = PCSrcE & CondExE;
-  assign SetNextFlagsE   = FlagWriteE[0] & CondExE;
+  assign SetNextFlagsE   = (FlagWriteE != 2'b00) & CondExE;
   assign CPSRtoRegE      = CPSRtoReg0E & CondExE;
   assign RegtoCPSR_E     = RegtoCPSR_0E & CondExE;
   // disable write to register for flag-setting instructions
