@@ -22,7 +22,6 @@ module conditional(input  logic [3:0] Cond,
   logic negNext, zeroNext, carryNext, overflowNext;
   logic aluZ, multZ;
   logic ShifterCarryOut;
-  logic aluV;
 
   // Compute conditional execution
 
@@ -72,9 +71,7 @@ module conditional(input  logic [3:0] Cond,
   // Overflow flag
   // Multiplies require the ALU to keep the V flag UNAFFECTED
   // The same DP instructions special cased in C require V UNAFFECTED
-  // Some require a negated overflow as well (SUB, RSB, ADC, SBC, RSC, CMP)
-  assign aluV = (CVUpdate == 3'b101) ? ~ALUFlagsE[0] : ALUFlagsE[0];
-  assign overflowNext = (CVUpdate == 3'b000 | keepVE) ? Flags[0] : aluV;
+  assign overflowNext = (CVUpdate == 3'b000 | (CVUpdate == 3'b110 & keepVE) ) ? Flags[0] : ALUFlagsE[0];
 
   assign FlagsNext[3:2] = (FlagsWrite[1] & CondEx) ? {negNext, zeroNext}       : Flags[3:2];
   assign FlagsNext[1:0] = (FlagsWrite[0] & CondEx) ? {carryNext, overflowNext} : Flags[1:0]; // [1] is C flag, [0] is V flag

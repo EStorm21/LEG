@@ -35,7 +35,8 @@ module alu(input  logic [31:0] AIn, BIn,
   assign Neg      = Result[31];
   assign Zero     = (Result == 32'b0);
   assign Carry    = Sum[32]; 
-  assign Overflow = ~(A[31] ^ B[31]) & (A[31] ^ Sum[31]);
+  assign Overflow = ~(A[31] ^ Condinvb[31]) & (A[31] ^ Sum[31]);
 
   assign Flags = {Neg, Zero, Carry, Overflow};
 endmodule
+
