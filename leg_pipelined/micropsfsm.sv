@@ -1,6 +1,6 @@
 module micropsfsm(input  logic        clk, reset,
                input  logic [31:0] defaultInstrD,
-               output logic        InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforward, Reg_usr_D, MicroOpCPSRrestoreD,
+               output logic        InstrMuxD, uOpStallD, LDMSTMforward, Reg_usr_D, MicroOpCPSRrestoreD,
                output logic [1:0]  STR_cycle, SignExtend,
                output logic 	   prevRSRstate, KeepVD, KeepZD, KeepCD, addCarry, AddZeroD, noRotate, ldrstrRtype, 
                output logic [1:0]  multControlD, 
@@ -139,7 +139,6 @@ always_comb
 			  & ~(defaultInstrD[24:23] == 2'b10 & ~defaultInstrD[20])) begin 
 			  	debugText = "rsr type data processing instr";
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 1;
 				uOpStallD = 1;
 				regFileRz = {1'b1, // Control inital mux for RA1D
 							3'b100}; // 5th bit of WA3, RA2D and RA1D
@@ -161,7 +160,6 @@ always_comb
 			else if((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:21] == 7'h0)) begin 
 				debugText = "multiply";
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 0;
 				uOpStallD = 0;
 				KeepVD = 1;
 				addCarry = 0;
@@ -179,7 +177,6 @@ always_comb
 			else if((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:21] == 7'h01)) begin 
 				debugText = "multiply accumulate";
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 0;
 				uOpStallD = 1;
 				KeepVD = 1;
 				addCarry = 0;
@@ -200,7 +197,6 @@ always_comb
 			else if((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:23] == 5'h01) & ~defaultInstrD[21]) begin 
 				debugText = "multiply long";
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 0;
 				uOpStallD = 1;
 				KeepVD = 1;
 				KeepZD = 1; 
@@ -219,7 +215,6 @@ always_comb
 			else if((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:23] == 5'h01) & defaultInstrD[21]) begin 
 				debugText = "multiply long accum";
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 0;
 				uOpStallD = 1;
 				KeepVD = 1;
 				KeepZD = 0; 
@@ -236,7 +231,6 @@ always_comb
 			else if(defaultInstrD[27:24]== 4'b1011) begin // bl
 				debugText = "bl";
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 0;
 				uOpStallD = 1;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
@@ -257,7 +251,6 @@ always_comb
 			else if(defaultInstrD[27:4]== {8'b00010010, 12'hfff, 4'b0011}) begin // blx
 				debugText = "blx";
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 0;
 				addCarry = 0;
 				uOpStallD = 1;
 				regFileRz = {1'b0, // Control inital mux for RA1D
@@ -280,7 +273,6 @@ always_comb
 			else if(defaultInstrD[27:25] == 3'b100) begin 
 				debugText = "ldm / stm";
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 1;
 				uOpStallD = 1;
 				LDMSTMforward = 0;
 				addCarry = 0;
@@ -312,7 +304,6 @@ always_comb
 					nextState = ls_halfword;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
-					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
 					addCarry = 0;
 					KeepZD = 0;
@@ -331,7 +322,6 @@ always_comb
 					nextState = ls_halfword;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
-					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
 					addCarry = 0;
 					KeepZD = 0;
@@ -351,7 +341,6 @@ always_comb
 					nextState = ls_halfword;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
-					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
 					addCarry = 0;
 					KeepZD = 0;
@@ -370,7 +359,6 @@ always_comb
 					nextState = ls_halfword;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
-					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
 					addCarry = 0;
 					KeepZD = 0;
@@ -394,7 +382,6 @@ always_comb
 					STR_cycle = 2'b11; // for debugging
 					InstrMuxD = 1;
 					ldrstrRtype = 1;
-					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
 					addCarry = 0;
 					KeepZD = 0;
@@ -414,7 +401,6 @@ always_comb
 				end else begin // OFFSET (no writeback)
 					nextState = ready;
 					InstrMuxD = 0;
-					doNotUpdateFlagD = 0;
 					uOpStallD = 0;
 					prevRSRstate = 0;
 					SignExtend = 2'b0;
@@ -440,7 +426,6 @@ always_comb
 					nextState = ls_word_byte;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
-					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
 					noRotate = 1;
 					addCarry = 0;
@@ -462,7 +447,6 @@ always_comb
 					nextState = ls_word_byte;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
-					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
 					noRotate = 1;
 					addCarry = 0;
@@ -483,7 +467,6 @@ always_comb
 					nextState = ls_word_byte;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
-					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
 					SignExtend = 2'b0;
 					addCarry = 0;
@@ -504,7 +487,6 @@ always_comb
 					nextState = ls_word_byte;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
-					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
 					noRotate = 1;
 					addCarry = 0;
@@ -526,7 +508,6 @@ always_comb
 					nextState = ls_word_byte;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
-					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
 					KeepZD = 0;
 					AddZeroD = 0;
@@ -544,7 +525,6 @@ always_comb
 					debugText = "ldr/str/ldrb/strb else case";
 					nextState = ready;
 					InstrMuxD = 0;
-					doNotUpdateFlagD = 0;
 					uOpStallD = 0;
 					prevRSRstate = 0;
 					noRotate = 1;
@@ -568,7 +548,6 @@ always_comb
 				debugText = "stay in ready";
 				nextState = ready;
 				InstrMuxD = 0;
-				doNotUpdateFlagD = 0;
 				uOpStallD = 0;
 				prevRSRstate = 0;
 				KeepVD = 0;
@@ -596,7 +575,6 @@ always_comb
 				InstrMuxD = 1;
 				ldrstrRtype = 0;
 				addCarry = 0;
-				doNotUpdateFlagD = 1;
 				KeepZD = 0;
 				AddZeroD = 0;
 				uOpStallD = 0;
@@ -613,7 +591,6 @@ always_comb
 				nextState = ready;
 				InstrMuxD = 1;
 				ldrstrRtype = 0;
-				doNotUpdateFlagD = 1;
 				addCarry = 0;
 				KeepZD = 0;
 				AddZeroD = 0;
@@ -636,7 +613,6 @@ always_comb
 				noRotate = 1;
 				KeepZD = 0;
 				AddZeroD = 0;
-				doNotUpdateFlagD = 1;
 				uOpStallD = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
@@ -653,7 +629,6 @@ always_comb
 					nextState = ls_word_byte_wb;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
-					doNotUpdateFlagD = 1;
 					uOpStallD = 1;
 					KeepZD = 0;
 					AddZeroD = 0;
@@ -677,7 +652,6 @@ always_comb
 				addCarry = 0;
 				KeepZD = 0;
 				AddZeroD = 0;
-				doNotUpdateFlagD = 1;
 				uOpStallD = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
@@ -691,7 +665,6 @@ always_comb
 					debugText = "ldr/str/ldrb/strb cycle 2 else case";
 					nextState = ready;
 					InstrMuxD = 0;
-					doNotUpdateFlagD = 0;
 					uOpStallD = 0;
 					addCarry = 0;
 					noRotate = 1;
@@ -716,7 +689,6 @@ always_comb
 			InstrMuxD = 1;
 			ldrstrRtype = 0;
 			addCarry = 0;
-			doNotUpdateFlagD = 1;
 			KeepZD = 0;
 			AddZeroD = 0;
 			uOpStallD = 0;
@@ -733,7 +705,6 @@ always_comb
 			if (defaultInstrD[27:25] == 3'b000 & ~defaultInstrD[20] & ~defaultInstrD[22] & defaultInstrD[7] 
 							& defaultInstrD[4] & ~(defaultInstrD[6:5] == 2'b00)) begin 
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 1;
 				uOpStallD = 0;
 				prevRSRstate = 0;
 				KeepZD = 0;
@@ -758,7 +729,6 @@ always_comb
 			// immediate pre-indexed
 			if (defaultInstrD[24] & defaultInstrD[21] & defaultInstrD[7:4] == 4'b1011) begin 
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 1;
 				uOpStallD = 0;
 				prevRSRstate = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
@@ -780,7 +750,6 @@ always_comb
 			// Post-indexed immediate
 			end else if (~defaultInstrD[24] & defaultInstrD[22:21] == 2'b10 & defaultInstrD[7:4] == 4'b1011) begin
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 1;
 				uOpStallD = 0;
 				prevRSRstate = 0;
 				addCarry = 0;
@@ -799,7 +768,6 @@ always_comb
 			// Post-indexed register
 			end else if (~defaultInstrD[24] & defaultInstrD[22:21] == 2'b00 & defaultInstrD[11:4] == 8'h0B) begin
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 1;
 				uOpStallD = 0;
 				prevRSRstate = 0;
 				addCarry = 0;
@@ -832,7 +800,6 @@ always_comb
 					uOpStallD = 0;
 				end
 			  	InstrMuxD = 1;
-			  	doNotUpdateFlagD = 1;
 			  	prevRSRstate = 0;
 			  	addCarry = 0;
 			  	KeepZD = 0;
@@ -853,7 +820,6 @@ always_comb
 				debugText = "stm2";
 			  	nextState = ldmstmWriteback;
 			  	InstrMuxD = 1;
-				doNotUpdateFlagD = 1;
 				addCarry = 0;
 				KeepZD = 0;
 				AddZeroD = 0;
@@ -877,7 +843,6 @@ always_comb
 				debugText = "stm3";
 			  	nextState = ready;
 			  	InstrMuxD = 1;
-				doNotUpdateFlagD = 1;
 				addCarry = 0;
 				KeepZD = 0;
 				AddZeroD = 0;
@@ -903,7 +868,6 @@ always_comb
 				InstrMuxD = 1;
 				KeepZD = 0;
 				AddZeroD = 0;
-				doNotUpdateFlagD = 1;
 				uOpStallD = 1;
 				prevRSRstate = 0;
 				addCarry = 0;
@@ -943,7 +907,6 @@ always_comb
 					uOpStallD = 0;
 				end
 			  	InstrMuxD = 1;
-			  	doNotUpdateFlagD = 1;
 			  	addCarry = 0;
 			  	KeepZD = 0;
 				AddZeroD = 0;
@@ -966,7 +929,6 @@ always_comb
 			  	InstrMuxD = 1;
 			  	KeepZD = 0;
 				AddZeroD = 0;
-				doNotUpdateFlagD = 1;
 				uOpStallD = 1;
 				prevRSRstate = 0;
 				addCarry = 0;
@@ -990,7 +952,6 @@ always_comb
 			  	InstrMuxD = 1;
 			  	KeepZD = 0;
 				AddZeroD = 0;
-				doNotUpdateFlagD = 1;
 				uOpStallD = 0;
 				addCarry = 0;
 				prevRSRstate = 0;
@@ -1014,7 +975,6 @@ always_comb
 				InstrMuxD = 1;
 				KeepZD = 0;
 				AddZeroD = 0;
-				doNotUpdateFlagD = 1;
 				uOpStallD = 1;
 				addCarry = 0;
 				prevRSRstate = 0;
@@ -1043,7 +1003,6 @@ always_comb
 				noRotate = 0;
 				KeepZD = 0;
 				AddZeroD = 0;
-				doNotUpdateFlagD = 1;
 				uOpStallD = 0;
 				addCarry = 0;
 				prevRSRstate = 0;
@@ -1061,7 +1020,6 @@ always_comb
 
 		bl:begin
 			InstrMuxD = 1;
-			doNotUpdateFlagD = 0;
 			uOpStallD = 0;
 			prevRSRstate = 0;
 			KeepVD = 0;
@@ -1078,7 +1036,6 @@ always_comb
 		blx:begin
 			if(defaultInstrD[27:24]== 4'b1011) begin
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 0;
 				uOpStallD = 0;
 				prevRSRstate = 0;
 				KeepVD = 0;
@@ -1095,7 +1052,6 @@ always_comb
 
 		rsr:begin
 			InstrMuxD = 1;
-			doNotUpdateFlagD = 0;
 			uOpStallD = 0;
 			prevRSRstate = 1;
 			KeepVD = 0;
@@ -1114,7 +1070,6 @@ always_comb
 			if(defaultInstrD[21] & ~defaultInstrD[23] & (defaultInstrD[7:4] == 4'b1001)) begin //accumulate short
 				debugText = "accumulate short";
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 1;
 				uOpStallD = 0;
 				prevRSRstate = 1;
 				KeepVD = 1;
@@ -1132,7 +1087,6 @@ always_comb
 			else if((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:23] == 5'h01) & ~defaultInstrD[21]) begin //multiply long
 				debugText = "multiply long";
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 0;
 				uOpStallD = 0;
 				KeepVD = 1;
 				addCarry = 0;
@@ -1147,7 +1101,6 @@ always_comb
 			else if(((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:23] == 5'h01) & defaultInstrD[21])) begin //accumulate long
 				debugText = "accumulate long";
 				InstrMuxD = 1;
-				doNotUpdateFlagD = 1;
 				uOpStallD = 1;
 				prevRSRstate = 1;
 				KeepVD = 1;
@@ -1166,7 +1119,6 @@ always_comb
 				debugText = "multiply else";
 				nextState = ready;
 				InstrMuxD = 0;
-				doNotUpdateFlagD = 0;
 				prevRSRstate = 0;
 				uOpStallD = 0;
 				KeepVD = 1;
@@ -1180,7 +1132,6 @@ always_comb
 		mlal1:begin 
 			debugText = "multiply long accum";
 			InstrMuxD = 1;
-			doNotUpdateFlagD = 0;
 			uOpStallD = 1;
 			KeepVD = 1;
 			KeepZD = 0; 
@@ -1198,7 +1149,6 @@ always_comb
 
 		mlal2:begin 
 			InstrMuxD = 1;
-			doNotUpdateFlagD = 1;
 			uOpStallD = 0;
 			prevRSRstate = 1;
 			KeepVD = 1;
@@ -1220,7 +1170,6 @@ always_comb
 			KeepZD = 0;
 			addCarry = 0;
 			AddZeroD = 0;
-			doNotUpdateFlagD = 0;
 			LDMSTMforward = 0;
 			prevRSRstate = 0;
 			uOpStallD = 0;

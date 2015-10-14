@@ -82,7 +82,7 @@ module controller (
   logic        Ldr_SignBD, Ldr_SignHD, Ldr_SignBE, Ldr_SignHE, Ldr_SignBM, Ldr_SignHM;
   logic [ 1:0] ByteOffsetE, ByteOffsetM;
   logic [ 1:0] STR_cycleD         ;
-  logic        doNotUpdateFlagD, LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD;
+  logic        LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD;
   logic        RegWriteKillE   ;
   logic        CoProc_MCR_D, CoProc_MRC_D, CoProc_FlagUpd_D, CoProc_WrEnD, CoProc_EnD;
   logic        CoProc_FlagUpd_E, CoProc_FlagUpd_M, CoProc_FlagUpd_W;
@@ -102,7 +102,7 @@ module controller (
   // ======================================= Decode Stage ===============================================
   // ====================================================================================================
 
-  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, doNotUpdateFlagD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, STR_cycleD, SignExtendD,
+  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, STR_cycleD, SignExtendD,
     PrevRSRstateD, KeepVD, KeepZD, KeepCD, AddCarryD, AddZeroD, noRotateD, uOpRtypeLdrStrD, MultControlD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC);
 
   // === Control Logic for Datapath ===
