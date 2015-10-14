@@ -44,7 +44,7 @@ module leg(input  logic        clk, reset,
   logic        DoNotWriteRegE, uOpStallD, PrevRSRstateD, PrevRSRstateE, CPSRtoRegW;
   logic        LDMSTMforwardD, LDMSTMforwardE, LDRSTRshiftE, MultSelectD, RselectE;
   logic [3:0]  FlagsE; // [1] is C, [0] is V
-  logic [1:0]  ResultSelectE, STR_cycleD, ByteOffsetW;
+  logic [1:0]  ResultSelectE, ByteOffsetW;
   logic [1:0]  MultControlE;
   logic        KeepVE, noRotateD, InstrMuxD;
   logic [31:0] uOpInstrD;

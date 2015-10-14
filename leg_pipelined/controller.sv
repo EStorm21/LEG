@@ -73,7 +73,7 @@ module controller (
   logic [2:0]  CVUpdateE;
   logic        PSRtypeW, RegtoCPSRr_D, RegtoCPSRi_D;
   logic        RegtoCPSR_D, RegtoCPSR_0E, RegtoCPSR_E, RegtoCPSR_M, RegtoCPSR_W;
-  logic [ 1:0] FlagWriteD, FlagWriteE, SignExtendD;
+  logic [ 1:0] FlagWriteD, FlagWriteE;
   logic        PCSrcD, PCSrcE, PCSrcM;
   logic [ 3:0] FlagsNext0E, FlagsNextE, FlagsNextM, FlagsNext0M, FlagsNextW, FlagsNext0W, CondE;
   logic        RegWritepreMuxE, RselectD, RSRselectD, LdrStrRtypeD;
@@ -81,7 +81,6 @@ module controller (
   logic        ByteOrWordE, ByteOrWordM, LdrStr_HalfD, LdrStr_HalfE, LdrHalfwordE, LdrHalfwordM;
   logic        Ldr_SignBD, Ldr_SignHD, Ldr_SignBE, Ldr_SignHE, Ldr_SignBM, Ldr_SignHM;
   logic [ 1:0] ByteOffsetE, ByteOffsetM;
-  logic [ 1:0] STR_cycleD         ;
   logic        LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD;
   logic        RegWriteKillE   ;
   logic        CoProc_MCR_D, CoProc_MRC_D, CoProc_FlagUpd_D, CoProc_WrEnD, CoProc_EnD;
@@ -102,8 +101,8 @@ module controller (
   // ======================================= Decode Stage ===============================================
   // ====================================================================================================
 
-  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, STR_cycleD, SignExtendD,
-    PrevRSRstateD, KeepVD, KeepZD, KeepCD, AddCarryD, AddZeroD, noRotateD, uOpRtypeLdrStrD, MultControlD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC);
+  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevRSRstateD, 
+    KeepVD, KeepZD, KeepCD, AddCarryD, AddZeroD, noRotateD, uOpRtypeLdrStrD, MultControlD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC);
 
   // === Control Logic for Datapath ===
   always_comb
