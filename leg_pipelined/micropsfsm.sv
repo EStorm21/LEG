@@ -452,36 +452,6 @@ always_comb
 						};
 
 
-
-				// To change in the future (defaultInstrD[24] & (defaultInstrD[22:21] == 2'b01) & defaultInstrD[7] & defaultInstrD[4])
-				// SD 5/1/2015 BUG: just r type strh. Not pre indexed or anything special.
-				//                  Comment is load/store register signed/unsigned halfword/signed byte
-				end else if (defaultInstrD[27:25] == 3'b000 & ~defaultInstrD[20] & ~defaultInstrD[22] & defaultInstrD[7] 
-							& defaultInstrD[4] & defaultInstrD[6:5] == 2'b01) begin // store, r type, pre indexed (!)
-					nextState = strHalf;
-					InstrMuxD = 1;
-					ldrstrRtype = 1;
-					uOpStallD = 1;
-					addCarry = 0;
-					KeepZD = 0;
-					AddZeroD = 0;
-					regFileRz = {1'b0, // Control inital mux for RA1D
-								3'b100}; // 5th bit of WA3, RA2D and RA1D
-					prevRSRstate = 0;
-					noRotate = 0;
-					LDMSTMforward = 0;
-					Reg_usr_D = 0; 
-					MicroOpCPSRrestoreD = 0;
-					KeepVD = 0;   
-					KeepCD = 0;    
-					multControlD = 2'b00;  
-					// We need to calculate the Rn + Rm in the first cycle, then second cycle load value from regfile to store to mem
-					uOpInstrD = {defaultInstrD[31:28], // Condition bits
-								3'b000,				   // R-type data processing instr
-								1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, // ADD OR SUBTRACT
-								1'b0, defaultInstrD[19:16], // S = 0, Rn is same
-								4'b1111, 8'b0, defaultInstrD[3:0] // Add and store into Rz,
-								}; 
 				end else begin // OFFSET (no writeback)
 					nextState = ready;
 					InstrMuxD = 0;
