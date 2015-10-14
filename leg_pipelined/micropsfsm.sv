@@ -1040,6 +1040,7 @@ always_comb
 			if(LastCycle | ZeroRegsLeft) begin
 				nextState = ready;
 				InstrMuxD = 1;
+				noRotate = 0;
 				KeepZD = 0;
 				AddZeroD = 0;
 				doNotUpdateFlagD = 1;
