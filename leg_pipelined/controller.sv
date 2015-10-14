@@ -260,7 +260,7 @@ module controller (
   /*** BRIEF ***
   * These bits select which bit of memory to mask for Load/Store Byte, Word and Halfword operations
   *************/
-  assign ByteOrWordE     = (InstrE[27:26] == 2'b01 & InstrE[22]); // 0 if Word, 1 if byte
+  assign ByteOrWordE     = (InstrE[27:26] == 2'b01 & InstrE[22]) | Ldr_SignBD; // 0 if Word, 1 if byte
   assign StrHalfwordE    = LdrStr_HalfE & ~InstrE[20];
   assign ByteOffsetE     = ALUResultE[1:0];
   assign HalfwordOffsetE = (LdrStr_HalfE & ALUResultE[1]); // to verify if it is offset by 2
