@@ -347,10 +347,10 @@ always_comb
 							 };
 			end 
 			// LOAD/STORE HALF-WORDS
-			else if (defaultInstrD[27:25] == 3'b000 & defaultInstrD[7] & defaultInstrD[4]) begin // LDRH and STRH only
+			else if (defaultInstrD[27:25] == 3'b000 & defaultInstrD[7] & defaultInstrD[4]) begin // LDRH, STRH, LDRSH, LDRSB only
 				debugText = "ldrh/strh";
 				// COMMENT: ldrh/strh immediate pre indexed (yes both load and store!)
-				if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b11 & defaultInstrD[7] & defaultInstrD[4]) begin
+				if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b11) begin
 					nextState = ls_halfword;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -368,14 +368,14 @@ always_comb
 					KeepCD = 0;  
 					noRotate = 0;  
 					multControlD = 2'b00;  
-					// We need to calculate Rn + Rm in the first cycle, then second cycle save it! 
+					// We need to calculate Rn + imm in the first cycle, then second cycle save it! 
 					uOpInstrD = {defaultInstrD[31:28], 3'b001, // I-Type Data processing instr
 						1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
 						defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + imm 
 						4'b0, defaultInstrD[11:8], defaultInstrD[3:0] // Immediate
 						};
 				// COMMENT: ldrh/strh register pre indexed (yes, both load and store!) 
-				end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:8] == 4'b0000 & defaultInstrD[7] & defaultInstrD[4]) begin 
+				end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:8] == 4'b0000) begin 
 					nextState = ls_halfword;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -401,7 +401,7 @@ always_comb
 						};
 
 				// COMMENT: ldrh/strh immediate post indexed (yes, both load and store)	
-				end else if (~defaultInstrD[24] & defaultInstrD[22:21] == 2'b10 & defaultInstrD[7] & defaultInstrD[4]) begin
+				end else if (~defaultInstrD[24] & defaultInstrD[22:21] == 2'b10) begin
 					nextState = ls_halfword;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -420,13 +420,14 @@ always_comb
 					noRotate = 0;  
 					multControlD = 2'b00;  
 					// (1) <addr> = Rn, (2) Rn = Rn + imm
-					uOpInstrD = {defaultInstrD[31:25], 1'b1, // change to basic ldrh/strh i type
+					uOpInstrD = {defaultInstrD[31:25], 1'b1, // change to offset ldrh/strh i type
 						defaultInstrD[23:12],
 						4'b0, defaultInstrD[7:4], 4'b0 // make offset 0
 						};
 				
 				// COMMENT: ldrh/strh register post-indexed (yest both load store)
-				end else if (~defaultInstrD[24] & defaultInstrD[22:21] == 2'b00 & defaultInstrD[11:8] == 4'b0000 & defaultInstrD[7] & defaultInstrD[4]) begin
+				// SD 10/13/2015 BUG: want to set bit 24 for offset, as the immediate post indexed case does above.
+				end else if (~defaultInstrD[24] & defaultInstrD[22:21] == 2'b00 & defaultInstrD[11:8] == 4'b0000) begin
 					nextState = ls_halfword;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -453,7 +454,8 @@ always_comb
 
 
 				// To change in the future (defaultInstrD[24] & (defaultInstrD[22:21] == 2'b01) & defaultInstrD[7] & defaultInstrD[4])
-				// SD 5/1/2015 BUG: actually nothing useful. Comment is load/store register signed/unsigned halfword/signed byte
+				// SD 5/1/2015 BUG: just r type strh. Not pre indexed or anything special.
+				//                  Comment is load/store register signed/unsigned halfword/signed byte
 				end else if (defaultInstrD[27:25] == 3'b000 & ~defaultInstrD[20] & ~defaultInstrD[22] & defaultInstrD[7] 
 							& defaultInstrD[4] & defaultInstrD[6:5] == 2'b01) begin // store, r type, pre indexed (!)
 					nextState = strHalf;
