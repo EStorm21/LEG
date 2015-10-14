@@ -350,7 +350,7 @@ always_comb
 			else if (defaultInstrD[27:25] == 3'b000 & defaultInstrD[7] & defaultInstrD[4]) begin // LDRH and STRH only
 				debugText = "ldrh/strh";
 				// COMMENT: ldrh/strh immediate pre indexed (yes both load and store!)
-				if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b11 & defaultInstrD[7] & defaultInstrD[4]) begin
+				if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b11) begin
 					nextState = ls_halfword;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -375,7 +375,7 @@ always_comb
 						4'b0, defaultInstrD[11:8], defaultInstrD[3:0] // Immediate
 						};
 				// COMMENT: ldrh/strh register pre indexed (yes, both load and store!) 
-				end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:8] == 4'b0000 & defaultInstrD[7] & defaultInstrD[4]) begin 
+				end else if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b01 & defaultInstrD[11:8] == 4'b0000) begin 
 					nextState = ls_halfword;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -401,7 +401,7 @@ always_comb
 						};
 
 				// COMMENT: ldrh/strh immediate post indexed (yes, both load and store)	
-				end else if (~defaultInstrD[24] & defaultInstrD[22:21] == 2'b10 & defaultInstrD[7] & defaultInstrD[4]) begin
+				end else if (~defaultInstrD[24] & defaultInstrD[22:21] == 2'b10) begin
 					nextState = ls_halfword;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -426,7 +426,7 @@ always_comb
 						};
 				
 				// COMMENT: ldrh/strh register post-indexed (yest both load store)
-				end else if (~defaultInstrD[24] & defaultInstrD[22:21] == 2'b00 & defaultInstrD[11:8] == 4'b0000 & defaultInstrD[7] & defaultInstrD[4]) begin
+				end else if (~defaultInstrD[24] & defaultInstrD[22:21] == 2'b00 & defaultInstrD[11:8] == 4'b0000) begin
 					nextState = ls_halfword;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -453,9 +453,8 @@ always_comb
 
 
 				// To change in the future (defaultInstrD[24] & (defaultInstrD[22:21] == 2'b01) & defaultInstrD[7] & defaultInstrD[4])
-				// SD 5/1/2015 BUG: actually nothing useful. Comment is load/store register signed/unsigned halfword/signed byte
-				end else if (defaultInstrD[27:25] == 3'b000 & ~defaultInstrD[20] & ~defaultInstrD[22] & defaultInstrD[7] 
-							& defaultInstrD[4] & defaultInstrD[6:5] == 2'b01) begin // store, r type, pre indexed (!)
+				// SD 10/13/2015: Based on cases above, this covers strh r type offset. 
+				end else if (~defaultInstrD[20] & ~defaultInstrD[22] & defaultInstrD[6:5] == 2'b01) begin // store, r type, pre indexed (!)
 					nextState = strHalf;
 					InstrMuxD = 1;
 					ldrstrRtype = 1;
