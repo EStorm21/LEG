@@ -265,7 +265,7 @@ module controller (
   assign ByteOffsetE     = ALUResultE[1:0];
   assign HalfwordOffsetE = (LdrStr_HalfE & ALUResultE[1]); // to verify if it is offset by 2
   assign WriteByteE      = (InstrE[27:26] == 2'b01) & InstrE[22] & ~InstrE[20];
-  assign LdrHalfwordE    = LdrStr_HalfE & InstrE[20];
+  assign LdrHalfwordE    = LdrStr_HalfE & InstrE[20] & InstrE[5];
   memory_mask MemMask(ByteOrWordE, StrHalfwordE, HalfwordOffsetE, ALUResultE[1:0], ByteMaskE);
 
 
