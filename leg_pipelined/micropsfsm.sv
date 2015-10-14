@@ -130,6 +130,17 @@ always_comb
 				KeepZD = 0;
 				AddZeroD = 0;
 				SignExtend = 2'b0;
+				LDMSTMforward = 0;
+				Reg_usr_D = 0; 
+				MicroOpCPSRrestoreD = 0;
+				STR_cycle = 0; 
+				prevRSRstate = 0;  
+				KeepVD = 0;  
+				KeepCD = 0;    
+				noRotate = 0;  
+				ldrstrRtype = 0;  
+				multControlD = 0;  
+				regFileRz = 0; 
 				nextState = ready;
 				uOpInstrD = 32'b1110_000_1101_0_0000_1110_00000000_1111; // mov r14, pc
 			end
@@ -150,13 +161,20 @@ always_comb
 				KeepZD = 0;
 				AddZeroD = 0;
 				LDMSTMforward = 0;
+				Reg_usr_D = 0; 
+				MicroOpCPSRrestoreD = 0;
+				STR_cycle = 2'b00;  
+				KeepCD = 0;  
+				noRotate = 0;  
+				ldrstrRtype = 0;  
+				multControlD = 2'b00;  
 				uOpInstrD = {defaultInstrD[31:25], // Condition bits and RSR-type
 							4'b1101, 1'b0, // MOV instruction, Do not update flags [24:20]
 							4'b0000, 4'b1111, // If we have SBZ then [19:16]  shb 0000, we should use Rz [15:12]
 							defaultInstrD[11:0]}; // This needs to be MOV R1 R2 << R3. 
 			end
 			// Start multiply
-            // SD 5/6/2015 Why have this case?
+            // SD 5/6/2015 Why have this case? Just put it in controller
 			else if((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:21] == 7'h0)) begin 
 				debugText = "multiply";
 				InstrMuxD = 1;
@@ -171,6 +189,13 @@ always_comb
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
 				nextState = ready;
 				multControlD = 2'b00; //unsigned low
+				LDMSTMforward = 0;
+				Reg_usr_D = 0; 
+				MicroOpCPSRrestoreD = 0;
+				STR_cycle = 2'b00;  
+				KeepCD = 0;   
+				noRotate = 0;  
+				ldrstrRtype = 0;  
 				uOpInstrD = defaultInstrD; 
 			end
 			// Start multiply accumulate
