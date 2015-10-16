@@ -13,7 +13,13 @@ fconfigure $outFifo -blocking off
 fconfigure $outFifo -buffering none
 
 proc extractRegisters {regList cpsr} {
-	set mode [expr 0x$cpsr & 0x1f]; list
+	set modebits [string range $cpsr 6 7]
+	if {[string match X $modebits]} {
+		# Invalid mode? This is very bad
+		set mode 0x10; list
+	} else {
+		set mode [expr 0x$modebits & 0x1f]; list
+	}
 	if {$mode == 0x10} { 
 		#10000 - User mode
 		# 0-14

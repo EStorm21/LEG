@@ -30,22 +30,62 @@ def build_state_msg(state):
 		msg += "r{:02}:         {}\n".format(i, vts(reg))
 	return msg
 
-def build_state_diff(qstate, msstate):
-	def min_diff(qval,msval):
-		if qval == msval:
-			return vts(qval)
+def getRegStateOuts(pstate,qstate, msstate):
+        pstatestr = hexfmt(pstate)
+        nstatestr = hexfmt(nstate)
+        astatestr = hexfmt(astate)
+        for i in range(15):
+                if pstate[i] == nstate[i]:
+                        if astate[i] != nstate[i]:
+                                astatestr[i] += '  ! (INCORRECT CHANGE)'
+                else:
+                        nstatestr[i] += '  * (changed)'
+                        if astate[i] == pstate[i]:
+                                astatestr[i] += '  ~ (didn\'t change)'
+                        elif astate[i] == nstate[i]:
+                                astatestr[i] += '  * (changed)'
+                        else:
+                                astatestr[i] += '  ! (INCORRECT CHANGE)'
+        return '\n'.join(pstatestr), '\n'.join(nstatestr), '\n'.join(astatestr)
+
+def build_state_diff(pstate,qstate, msstate):
+	def min_diff(pval, qval, msval):
+		qval_out = vts(qval)
+		msval_out = vts(msval)
+		if pval == qval:
+			if msval != qval:
+				msval_out += '  ! (INCORRECT CHANGE)'
 		else:
-			return "Expected {}, actually {}".format(vts(qval), vts(msval))
+			qval_out += '  * (changed)'
+			if msval == pval:
+				msval_out += '  ~ (didn\'t change)'
+			elif msval == qval:
+				msval_out += '  * (changed)'
+			else:
+				msval_out += '  ! (INCORRECT CHANGE)'
+		return qval_out, msval_out
+
+	def build_part(prefix, ql, msl, pval, qval, msval):
+		qval_out, msval_out = min_diff(pval, qval, msval)
+		ql.append(prefix + qval_out)
+		msl.append(prefix + msval_out)
+
+	ppc, pinstr, pcpsr, pregs = pstate
 	qpc, qinstr, qcpsr, qregs = qstate
 	mspc, msinstr, mscpsr, msregs = msstate
-	msg = ""
-	msg += "PC:          {}\n".format(min_diff(qpc, mspc))
-	msg += "   (instruction:  {} )\n".format(min_diff(qinstr, msinstr))
-	msg += "CPSR:        {}\n".format(min_diff(qcpsr, mscpsr))
-	msg += "\n"
-	for i, (qreg,msreg) in enumerate(zip(qregs, msregs)):
-		msg += "r{:02}:         {}\n".format(i, min_diff(qreg, msreg))
-	return msg
+
+	ql = [""]
+	msl = [""]
+
+	build_part("PC:          ",ql,msl,		ppc, qpc, mspc)
+	build_part("   instr:    ",ql,msl,		pinstr, qinstr, msinstr)
+	build_part("CPSR:        ",ql,msl,		pcpsr, qcpsr, mscpsr)
+	ql.append("-----------------------")
+	msl.append("-----------------------")
+	for i, (preg,qreg,msreg) in enumerate(zip(pregs,qregs, msregs)):
+		build_part("r{:02}:         ".format(i),ql,msl,		preg, qreg, msreg)
+
+	return "Qemu's state:\n" + "\n    ".join(ql) + "\n\nModelsim's state:\n" + "\n    ".join(msl) + "\n"
 
 def build_qemu_msg():
 	msg = ""
@@ -90,7 +130,9 @@ def build_bug_writeback_mismatch(qmon, bad_state):
 	msg += build_state_msg(qmon.get_state_prev_writeback())
 	msg += "\n"
 	msg += "Current conflict:\n"
-	msg += build_state_diff(qmon.get_state_writeback(), bad_state)
+	msg += build_state_diff(qmon.get_state_prev_writeback(),
+							qmon.get_state_writeback(),
+							bad_state)
 	msg += "\n"
 	msg += build_qemu_msg()
 	msg += "\n"

@@ -6,8 +6,9 @@ import time
 import select
 import re
 
+validStateMatcher = re.compile("[0-9a-f]{8}")
 def parseVal(val):
-	if 'x' in val:
+	if not validStateMatcher.match(val):
 		return '  '+val
 	else:
 		return int(val,16)
