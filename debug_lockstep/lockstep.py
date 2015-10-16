@@ -5,7 +5,7 @@ import gdb
 import re
 import pickle
 
-from leg import LegSim, AdvanceStuckBug
+from leg import LegSim, AdvanceStuckBug, NoDataBug
 from qemu_monitor import QemuMonitor, BadInterruptBug, getExpr, getDataAtExpr, getQemuInstrCt
 import qemuDump
 
@@ -118,6 +118,24 @@ def build_bug_advance_timeout(qmon):
 	msg += "\n"
 	return msg
 
+def build_bug_no_data(qmon):
+	msg = "\n"*4
+	msg += "ModelSim No Data\n"
+	msg += "================\n"
+	msg += "\n"
+	msg += "Modelsim has stopped providing data! It reported No_Data\n"
+	msg += "when asked for its state.\n"
+	msg += "\n"
+	msg += "Last state to pass through writeback correctly:\n"
+	msg += build_state_msg(qmon.get_state_prev_writeback())
+	msg += "\n"
+	msg += "Last state executed by Qemu (corresponds to execute stage):\n"
+	msg += build_state_msg(qmon.get_state_execute())
+	msg += "\n"
+	msg += build_qemu_msg()
+	msg += "\n"
+	return msg
+
 def build_bug_writeback_mismatch(qmon, bad_state):
 	msg = "\n"*4
 	msg += "Writeback State Mismatch\n"
@@ -215,6 +233,11 @@ def lockstep(lsim, qemu_proc, is_linux):
 				qmon.get_state_prev_writeback(),
 				qmon.get_state_writeback(),
 				build_bug_advance_timeout(qmon))
+		except NoDataBug, e:
+			return (LOCKSTEP_BUG_RESUMABLE,
+				qmon.get_state_prev_writeback(),
+				qmon.get_state_writeback(),
+				build_bug_no_data(qmon))
 
 		if advance_w_state is not None:
 			expected_state = qmon.get_state_writeback()
@@ -297,6 +320,10 @@ def getBugIDAndFile(run_dir):
 
 asmInstrParser = re.compile(".+:\\s+(.+)")
 def handleBug(prev_state, state, bug_msg, found_bugs, run_dir):
+	if state is None:
+		print "Skipped writing this bug to file (not enough information)"
+		return
+
 	bug_pc = state[0]
 	bug_instr = state[1]
 
@@ -312,7 +339,7 @@ def handleBug(prev_state, state, bug_msg, found_bugs, run_dir):
 			instr_name = "{}".format(bug_instr)
 
 		bugId, bugFn = getBugIDAndFile(run_dir)
-		title = bug_msg.split('\n')[0]
+		title = bug_msg.strip().split('\n')[0]
 
 		with open(os.path.join(run_dir,'runlog'),'a') as f:
 			f.write(backtraceSummary(title, instr_name, bugId))

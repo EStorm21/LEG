@@ -132,6 +132,12 @@ while {1} {
 				set advance_e [check_advancing_e $time]; list
 				set advance_w [check_advancing_w $time]; list
 
+				if {[string match No_Data $advance_e] || [string match No_Data $advance_w]} {
+					puts "Missing data: did ModelSim not advance?."
+					puts $outFifo "fail-nodata"
+					break;
+				}
+
 				if {$advance_e || $advance_w} {
 					puts $outFifo "success"
 					puts $outFifo $time
@@ -153,7 +159,7 @@ while {1} {
 
 			if { $i >= $MAX_STEPS_BEFORE_ABORT } {
 				puts "Too many ticks without advance."
-				puts $outFifo "fail"
+				puts $outFifo "fail-nochange"
 			}
 		}
 		"ioread" {

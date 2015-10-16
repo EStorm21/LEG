@@ -48,6 +48,9 @@ def parseStateE(msState):
 class AdvanceStuckBug(Exception):
 	pass
 
+class NoDataBug(Exception):
+	pass
+
 class LegSim(object):
 	def __init__(self, dump_fn, gui=False):
 		try:
@@ -147,7 +150,9 @@ class LegSim(object):
 				advance_e_state = None
 
 			return time, advance_w_state, advance_e_state
-		else:
+		elif status == "fail-nodata":
+			raise NoDataBug("ModelSim reported No_Data!")
+		else: # status == "fail-nochange"
 			# Failure!
 			raise AdvanceStuckBug("ModelSim did not advance!")
 

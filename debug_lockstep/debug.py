@@ -45,7 +45,9 @@ def get_open_port():
 
 def get_run_directory():
 	dt = datetime.datetime.today()
-	dirname = dt.strftime("%Y-%m-%d_%H:%M:%S")
+	teststr = os.path.basename(TEST_FILE)[:-4] if TEST_FILE != '' else "linux"
+	timestr = dt.strftime("%Y-%m-%d_%H:%M:%S")
+	dirname = teststr + "_" + timestr
 	if os.path.isdir(os.path.join(OUTPUT_DIR, dirname)):
 		dirname = dt.strftime("%Y-%m-%d_%H:%M:%S_%f")
 	dirpath = os.path.join(OUTPUT_DIR, dirname)
