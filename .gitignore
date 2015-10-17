@@ -6,6 +6,20 @@
 *.fls
 *.out
 *.toc
+## Extras from latexmk
+*.fdb_latexmk
+*.synctex.gz
+## Memory file
+*.flash
+## Python compiled files
+*.pyc
+
+## Python compiled files
+*.pyc
+
+## Extras from google drive
+*.bak
+*.sv~
 
 ## Always ignore the pdf for documentation
 documentation/main.pdf

@@ -1,0 +1,3277 @@
+
+orr_1000.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <main>:
+       0:	e05f000f 	subs	r0, pc, pc
+       4:	e59fd000 	ldr	sp, [pc]	; c <val>
+       8:	ea000000 	b	10 <next>
+
+0000000c <val>:
+       c:	000ffff0 	.word	0x000ffff0
+
+00000010 <next>:
+      10:	e59f1000 	ldr	r1, [pc]	; 18 <val1>
+      14:	ea000000 	b	1c <next1>
+
+00000018 <val1>:
+      18:	a6f060a6 	.word	0xa6f060a6
+
+0000001c <next1>:
+      1c:	e59f2000 	ldr	r2, [pc]	; 24 <val2>
+      20:	ea000000 	b	28 <next2>
+
+00000024 <val2>:
+      24:	69c71a40 	.word	0x69c71a40
+
+00000028 <next2>:
+      28:	e59f3000 	ldr	r3, [pc]	; 30 <val3>
+      2c:	ea000000 	b	34 <next3>
+
+00000030 <val3>:
+      30:	f983bab8 	.word	0xf983bab8
+
+00000034 <next3>:
+      34:	e59f4000 	ldr	r4, [pc]	; 3c <val4>
+      38:	ea000000 	b	40 <next4>
+
+0000003c <val4>:
+      3c:	0f5312f8 	.word	0x0f5312f8
+
+00000040 <next4>:
+      40:	e59f5000 	ldr	r5, [pc]	; 48 <val5>
+      44:	ea000000 	b	4c <next5>
+
+00000048 <val5>:
+      48:	817a6a83 	.word	0x817a6a83
+
+0000004c <next5>:
+      4c:	e59f6000 	ldr	r6, [pc]	; 54 <val6>
+      50:	ea000000 	b	58 <next6>
+
+00000054 <val6>:
+      54:	ffb73ce0 	.word	0xffb73ce0
+
+00000058 <next6>:
+      58:	e59f7000 	ldr	r7, [pc]	; 60 <val7>
+      5c:	ea000000 	b	64 <next7>
+
+00000060 <val7>:
+      60:	318ac61b 	.word	0x318ac61b
+
+00000064 <next7>:
+      64:	e59f8000 	ldr	r8, [pc]	; 6c <val8>
+      68:	ea000000 	b	70 <next8>
+
+0000006c <val8>:
+      6c:	dc649964 	.word	0xdc649964
+
+00000070 <next8>:
+      70:	e59f9000 	ldr	r9, [pc]	; 78 <val9>
+      74:	ea000000 	b	7c <next9>
+
+00000078 <val9>:
+      78:	566497a8 	.word	0x566497a8
+
+0000007c <next9>:
+      7c:	e59fa000 	ldr	sl, [pc]	; 84 <val10>
+      80:	ea000000 	b	88 <next10>
+
+00000084 <val10>:
+      84:	95b003de 	.word	0x95b003de
+
+00000088 <next10>:
+      88:	e59fb000 	ldr	fp, [pc]	; 90 <val11>
+      8c:	ea000000 	b	94 <next11>
+
+00000090 <val11>:
+      90:	41dd8dc4 	.word	0x41dd8dc4
+
+00000094 <next11>:
+      94:	e59fc000 	ldr	ip, [pc]	; 9c <val12>
+      98:	ea000000 	b	a0 <next12>
+
+0000009c <val12>:
+      9c:	3f2ddb16 	.word	0x3f2ddb16
+
+000000a0 <next12>:
+      a0:	e59fe000 	ldr	lr, [pc]	; a8 <val14>
+      a4:	ea000000 	b	ac <next14>
+
+000000a8 <val14>:
+      a8:	b730c0b5 	.word	0xb730c0b5
+
+000000ac <next14>:
+      ac:	e59f1000 	ldr	r1, [pc]	; b4 <val15>
+      b0:	ea000000 	b	b8 <next15>
+
+000000b4 <val15>:
+      b4:	3321c0a4 	.word	0x3321c0a4
+
+000000b8 <next15>:
+      b8:	e58d1000 	str	r1, [sp]
+      bc:	e59f1000 	ldr	r1, [pc]	; c4 <val16>
+      c0:	ea000000 	b	c8 <next16>
+
+000000c4 <val16>:
+      c4:	fa5ee631 	.word	0xfa5ee631
+
+000000c8 <next16>:
+      c8:	e50d1004 	str	r1, [sp, #-4]
+      cc:	e59f1000 	ldr	r1, [pc]	; d4 <val17>
+      d0:	ea000000 	b	d8 <next17>
+
+000000d4 <val17>:
+      d4:	2546e74d 	.word	0x2546e74d
+
+000000d8 <next17>:
+      d8:	e50d1008 	str	r1, [sp, #-8]
+      dc:	e59f1000 	ldr	r1, [pc]	; e4 <val18>
+      e0:	ea000000 	b	e8 <next18>
+
+000000e4 <val18>:
+      e4:	b576eb39 	.word	0xb576eb39
+
+000000e8 <next18>:
+      e8:	e50d100c 	str	r1, [sp, #-12]
+      ec:	e59f1000 	ldr	r1, [pc]	; f4 <val19>
+      f0:	ea000000 	b	f8 <next19>
+
+000000f4 <val19>:
+      f4:	64cb1085 	.word	0x64cb1085
+
+000000f8 <next19>:
+      f8:	e50d1010 	str	r1, [sp, #-16]
+      fc:	e59f1000 	ldr	r1, [pc]	; 104 <val20>
+     100:	ea000000 	b	108 <next20>
+
+00000104 <val20>:
+     104:	d185beca 	.word	0xd185beca
+
+00000108 <next20>:
+     108:	e50d1014 	str	r1, [sp, #-20]
+     10c:	e59f1000 	ldr	r1, [pc]	; 114 <val21>
+     110:	ea000000 	b	118 <next21>
+
+00000114 <val21>:
+     114:	a7002f00 	.word	0xa7002f00
+
+00000118 <next21>:
+     118:	e50d1018 	str	r1, [sp, #-24]
+     11c:	e59f1000 	ldr	r1, [pc]	; 124 <val22>
+     120:	ea000000 	b	128 <next22>
+
+00000124 <val22>:
+     124:	34ae076f 	.word	0x34ae076f
+
+00000128 <next22>:
+     128:	e50d101c 	str	r1, [sp, #-28]
+     12c:	e59f1000 	ldr	r1, [pc]	; 134 <val23>
+     130:	ea000000 	b	138 <next23>
+
+00000134 <val23>:
+     134:	3db63451 	.word	0x3db63451
+
+00000138 <next23>:
+     138:	e50d1020 	str	r1, [sp, #-32]
+     13c:	e59f1000 	ldr	r1, [pc]	; 144 <val24>
+     140:	ea000000 	b	148 <next24>
+
+00000144 <val24>:
+     144:	514a4a69 	.word	0x514a4a69
+
+00000148 <next24>:
+     148:	e50d1024 	str	r1, [sp, #-36]	; 0x24
+     14c:	e59f1000 	ldr	r1, [pc]	; 154 <val25>
+     150:	ea000000 	b	158 <next25>
+
+00000154 <val25>:
+     154:	764d2d57 	.word	0x764d2d57
+
+00000158 <next25>:
+     158:	e50d1028 	str	r1, [sp, #-40]	; 0x28
+     15c:	e59f1000 	ldr	r1, [pc]	; 164 <val26>
+     160:	ea000000 	b	168 <next26>
+
+00000164 <val26>:
+     164:	2b9b69a1 	.word	0x2b9b69a1
+
+00000168 <next26>:
+     168:	e50d102c 	str	r1, [sp, #-44]	; 0x2c
+     16c:	e59f1000 	ldr	r1, [pc]	; 174 <val27>
+     170:	ea000000 	b	178 <next27>
+
+00000174 <val27>:
+     174:	f42237cf 	.word	0xf42237cf
+
+00000178 <next27>:
+     178:	e50d1030 	str	r1, [sp, #-48]	; 0x30
+     17c:	e59f1000 	ldr	r1, [pc]	; 184 <val28>
+     180:	ea000000 	b	188 <next28>
+
+00000184 <val28>:
+     184:	3241b9d8 	.word	0x3241b9d8
+
+00000188 <next28>:
+     188:	e50d1034 	str	r1, [sp, #-52]	; 0x34
+     18c:	e59f1000 	ldr	r1, [pc]	; 194 <val29>
+     190:	ea000000 	b	198 <next29>
+
+00000194 <val29>:
+     194:	a3a618bd 	.word	0xa3a618bd
+
+00000198 <next29>:
+     198:	e50d1038 	str	r1, [sp, #-56]	; 0x38
+     19c:	e59f1000 	ldr	r1, [pc]	; 1a4 <val30>
+     1a0:	ea000000 	b	1a8 <next30>
+
+000001a4 <val30>:
+     1a4:	829ad4a5 	.word	0x829ad4a5
+
+000001a8 <next30>:
+     1a8:	e50d103c 	str	r1, [sp, #-60]	; 0x3c
+     1ac:	e59f1000 	ldr	r1, [pc]	; 1b4 <val31>
+     1b0:	ea000000 	b	1b8 <next31>
+
+000001b4 <val31>:
+     1b4:	36415e5f 	.word	0x36415e5f
+
+000001b8 <next31>:
+     1b8:	e50d1040 	str	r1, [sp, #-64]	; 0x40
+     1bc:	e59f1000 	ldr	r1, [pc]	; 1c4 <val32>
+     1c0:	ea000000 	b	1c8 <next32>
+
+000001c4 <val32>:
+     1c4:	fb7db39e 	.word	0xfb7db39e
+
+000001c8 <next32>:
+     1c8:	e50d1044 	str	r1, [sp, #-68]	; 0x44
+     1cc:	e59f1000 	ldr	r1, [pc]	; 1d4 <val33>
+     1d0:	ea000000 	b	1d8 <next33>
+
+000001d4 <val33>:
+     1d4:	a1ff7976 	.word	0xa1ff7976
+
+000001d8 <next33>:
+     1d8:	e50d1048 	str	r1, [sp, #-72]	; 0x48
+     1dc:	e59f1000 	ldr	r1, [pc]	; 1e4 <val34>
+     1e0:	ea000000 	b	1e8 <next34>
+
+000001e4 <val34>:
+     1e4:	c483e4a4 	.word	0xc483e4a4
+
+000001e8 <next34>:
+     1e8:	e50d104c 	str	r1, [sp, #-76]	; 0x4c
+     1ec:	e59f1000 	ldr	r1, [pc]	; 1f4 <val35>
+     1f0:	ea000000 	b	1f8 <next35>
+
+000001f4 <val35>:
+     1f4:	d1efce1b 	.word	0xd1efce1b
+
+000001f8 <next35>:
+     1f8:	e50d1050 	str	r1, [sp, #-80]	; 0x50
+
+000001fc <l1>:
+     1fc:	918b720a 	orrls	r7, fp, sl, lsl #4
+
+00000200 <l2>:
+     200:	e18f2003 	orr	r2, pc, r3
+
+00000204 <l3>:
+     204:	e198cd87 	orrs	ip, r8, r7, lsl #27
+
+00000208 <l4>:
+     208:	61971185 	orrsvs	r1, r7, r5, lsl #3
+
+0000020c <l5>:
+     20c:	e198335b 	orrs	r3, r8, fp, asr r3
+
+00000210 <l6>:
+     210:	c19cc008 	orrsgt	ip, ip, r8
+
+00000214 <l7>:
+     214:	b18a757b 	orrlt	r7, sl, fp, ror r5
+
+00000218 <l8>:
+     218:	4391471e 	orrsmi	r4, r1, #7864320	; 0x780000
+
+0000021c <l9>:
+     21c:	d18c0881 	orrle	r0, ip, r1, lsl #17
+
+00000220 <l10>:
+     220:	b180e009 	orrlt	lr, r0, r9
+
+00000224 <l11>:
+     224:	d3845622 	orrle	r5, r4, #35651584	; 0x2200000
+
+00000228 <l12>:
+     228:	438e19e1 	orrmi	r1, lr, #3686400	; 0x384000
+
+0000022c <l13>:
+     22c:	418bb001 	orrmi	fp, fp, r1
+
+00000230 <l14>:
+     230:	9189e73e 	orrls	lr, r9, lr, lsr r7
+
+00000234 <l15>:
+     234:	e19c184c 	orrs	r1, ip, ip, asr #16
+
+00000238 <l16>:
+     238:	8192a00e 	orrshi	sl, r2, lr
+
+0000023c <l17>:
+     23c:	c38a1f49 	orrgt	r1, sl, #292	; 0x124
+
+00000240 <l18>:
+     240:	e1897714 	orr	r7, r9, r4, lsl r7
+
+00000244 <l19>:
+     244:	81975002 	orrshi	r5, r7, r2
+
+00000248 <l20>:
+     248:	019ca685 	orrseq	sl, ip, r5, lsl #13
+
+0000024c <l21>:
+     24c:	a385693b 	orrge	r6, r5, #966656	; 0xec000
+
+00000250 <l22>:
+     250:	b1837114 	orrlt	r7, r3, r4, lsl r1
+
+00000254 <l23>:
+     254:	718c006c 	orrvc	r0, ip, ip, rrx
+
+00000258 <l24>:
+     258:	b19bb064 	orrslt	fp, fp, r4, rrx
+
+0000025c <l25>:
+     25c:	0182a008 	orreq	sl, r2, r8
+
+00000260 <l26>:
+     260:	9380cd29 	orrls	ip, r0, #2624	; 0xa40
+
+00000264 <l27>:
+     264:	c38f8c15 	orrgt	r8, pc, #5376	; 0x1500
+
+00000268 <l28>:
+     268:	e1852c79 	orr	r2, r5, r9, ror ip
+
+0000026c <l29>:
+     26c:	e183a653 	orr	sl, r3, r3, asr r6
+
+00000270 <l30>:
+     270:	e1883005 	orr	r3, r8, r5
+
+00000274 <l31>:
+     274:	e1835510 	orr	r5, r3, r0, lsl r5
+
+00000278 <l32>:
+     278:	e185500b 	orr	r5, r5, fp
+
+0000027c <l33>:
+     27c:	919e6e5b 	orrsls	r6, lr, fp, asr lr
+
+00000280 <l34>:
+     280:	e181400a 	orr	r4, r1, sl
+
+00000284 <l35>:
+     284:	e38e11b9 	orr	r1, lr, #1073741870	; 0x4000002e
+
+00000288 <l36>:
+     288:	b189ac61 	orrlt	sl, r9, r1, ror #24
+
+0000028c <l37>:
+     28c:	019cb061 	orrseq	fp, ip, r1, rrx
+
+00000290 <l38>:
+     290:	138586b7 	orrne	r8, r5, #191889408	; 0xb700000
+
+00000294 <l39>:
+     294:	819e9008 	orrshi	r9, lr, r8
+
+00000298 <l40>:
+     298:	1195667e 	orrsne	r6, r5, lr, ror r6
+
+0000029c <l41>:
+     29c:	c388ac1d 	orrgt	sl, r8, #7424	; 0x1d00
+
+000002a0 <l42>:
+     2a0:	d1833083 	orrle	r3, r3, r3, lsl #1
+
+000002a4 <l43>:
+     2a4:	01946c39 	orrseq	r6, r4, r9, lsr ip
+
+000002a8 <l44>:
+     2a8:	1197283b 	orrsne	r2, r7, fp, lsr r8
+
+000002ac <l45>:
+     2ac:	2192b062 	orrscs	fp, r2, r2, rrx
+
+000002b0 <l46>:
+     2b0:	e1975001 	orrs	r5, r7, r1
+
+000002b4 <l47>:
+     2b4:	9391ca2f 	orrsls	ip, r1, #192512	; 0x2f000
+
+000002b8 <l48>:
+     2b8:	81841009 	orrhi	r1, r4, r9
+
+000002bc <l49>:
+     2bc:	d19b8ba2 	orrsle	r8, fp, r2, lsr #23
+
+000002c0 <l50>:
+     2c0:	93947fe1 	orrsls	r7, r4, #900	; 0x384
+
+000002c4 <l51>:
+     2c4:	c186ab2c 	orrgt	sl, r6, ip, lsr #22
+
+000002c8 <l52>:
+     2c8:	8381ab19 	orrhi	sl, r1, #25600	; 0x6400
+
+000002cc <l53>:
+     2cc:	21993f67 	orrscs	r3, r9, r7, ror #30
+
+000002d0 <l54>:
+     2d0:	e39e8e2b 	orrs	r8, lr, #688	; 0x2b0
+
+000002d4 <l55>:
+     2d4:	d38c2001 	orrle	r2, ip, #1
+
+000002d8 <l56>:
+     2d8:	4389ea19 	orrmi	lr, r9, #102400	; 0x19000
+
+000002dc <l57>:
+     2dc:	e19c0970 	orrs	r0, ip, r0, ror r9
+
+000002e0 <l58>:
+     2e0:	b19a906e 	orrslt	r9, sl, lr, rrx
+
+000002e4 <l59>:
+     2e4:	0182e00e 	orreq	lr, r2, lr
+
+000002e8 <l60>:
+     2e8:	a1887bc1 	orrge	r7, r8, r1, asr #23
+
+000002ec <l61>:
+     2ec:	e195e005 	orrs	lr, r5, r5
+
+000002f0 <l62>:
+     2f0:	b1947000 	orrslt	r7, r4, r0
+
+000002f4 <l63>:
+     2f4:	a191cd08 	orrsge	ip, r1, r8, lsl #26
+
+000002f8 <l64>:
+     2f8:	b191c51a 	orrslt	ip, r1, sl, lsl r5
+
+000002fc <l65>:
+     2fc:	a19e600e 	orrsge	r6, lr, lr
+
+00000300 <l66>:
+     300:	7191014b 	orrsvc	r0, r1, fp, asr #2
+
+00000304 <l67>:
+     304:	0186c655 	orreq	ip, r6, r5, asr r6
+
+00000308 <l68>:
+     308:	e197955a 	orrs	r9, r7, sl, asr r5
+
+0000030c <l69>:
+     30c:	e193700c 	orrs	r7, r3, ip
+
+00000310 <l70>:
+     310:	41839c79 	orrmi	r9, r3, r9, ror ip
+
+00000314 <l71>:
+     314:	018a3815 	orreq	r3, sl, r5, lsl r8
+
+00000318 <l72>:
+     318:	639f5536 	orrsvs	r5, pc, #226492416	; 0xd800000
+
+0000031c <l73>:
+     31c:	6183700a 	orrvs	r7, r3, sl
+
+00000320 <l74>:
+     320:	91880ac6 	orrls	r0, r8, r6, asr #21
+
+00000324 <l75>:
+     324:	5194c004 	orrspl	ip, r4, r4
+
+00000328 <l76>:
+     328:	e18a554b 	orr	r5, sl, fp, asr #10
+
+0000032c <l77>:
+     32c:	a18f6de8 	orrge	r6, pc, r8, ror #27
+
+00000330 <l78>:
+     330:	e1941272 	orrs	r1, r4, r2, ror r2
+
+00000334 <l79>:
+     334:	21908067 	orrscs	r8, r0, r7, rrx
+
+00000338 <l80>:
+     338:	e18c4b82 	orr	r4, ip, r2, lsl #23
+
+0000033c <l81>:
+     33c:	038411b7 	orreq	r1, r4, #-1073741779	; 0xc000002d
+
+00000340 <l82>:
+     340:	018eb387 	orreq	fp, lr, r7, lsl #7
+
+00000344 <l83>:
+     344:	9192906e 	orrsls	r9, r2, lr, rrx
+
+00000348 <l84>:
+     348:	6191b002 	orrsvs	fp, r1, r2
+
+0000034c <l85>:
+     34c:	519ec000 	orrspl	ip, lr, r0
+
+00000350 <l86>:
+     350:	e186a06f 	orr	sl, r6, pc, rrx
+
+00000354 <l87>:
+     354:	7198a065 	orrsvc	sl, r8, r5, rrx
+
+00000358 <l88>:
+     358:	51829004 	orrpl	r9, r2, r4
+
+0000035c <l89>:
+     35c:	b190b536 	orrslt	fp, r0, r6, lsr r5
+
+00000360 <l90>:
+     360:	5190106f 	orrspl	r1, r0, pc, rrx
+
+00000364 <l91>:
+     364:	6181843a 	orrvs	r8, r1, sl, lsr r4
+
+00000368 <l92>:
+     368:	918a400e 	orrls	r4, sl, lr
+
+0000036c <l93>:
+     36c:	439c30d3 	orrsmi	r3, ip, #211	; 0xd3
+
+00000370 <l94>:
+     370:	4184e75b 	orrmi	lr, r4, fp, asr r7
+
+00000374 <l95>:
+     374:	e1864008 	orr	r4, r6, r8
+
+00000378 <l96>:
+     378:	e1978007 	orrs	r8, r7, r7
+
+0000037c <l97>:
+     37c:	d388025d 	orrle	r0, r8, #-805306363	; 0xd0000005
+
+00000380 <l98>:
+     380:	83903e67 	orrshi	r3, r0, #1648	; 0x670
+
+00000384 <l99>:
+     384:	e1830003 	orr	r0, r3, r3
+
+00000388 <l100>:
+     388:	e199503c 	orrs	r5, r9, ip, lsr r0
+
+0000038c <l101>:
+     38c:	d1960008 	orrsle	r0, r6, r8
+
+00000390 <l102>:
+     390:	138b38d2 	orrne	r3, fp, #13762560	; 0xd20000
+
+00000394 <l103>:
+     394:	538b5d05 	orrpl	r5, fp, #320	; 0x140
+
+00000398 <l104>:
+     398:	91857007 	orrls	r7, r5, r7
+
+0000039c <l105>:
+     39c:	8383c102 	orrhi	ip, r3, #-2147483648	; 0x80000000
+
+000003a0 <l106>:
+     3a0:	e1985008 	orrs	r5, r8, r8
+
+000003a4 <l107>:
+     3a4:	b1869532 	orrlt	r9, r6, r2, lsr r5
+
+000003a8 <l108>:
+     3a8:	e19a2002 	orrs	r2, sl, r2
+
+000003ac <l109>:
+     3ac:	e1909876 	orrs	r9, r0, r6, ror r8
+
+000003b0 <l110>:
+     3b0:	319b600e 	orrscc	r6, fp, lr
+
+000003b4 <l111>:
+     3b4:	719f522b 	orrsvc	r5, pc, fp, lsr #4
+
+000003b8 <l112>:
+     3b8:	e19c544b 	orrs	r5, ip, fp, asr #8
+
+000003bc <l113>:
+     3bc:	519b3c41 	orrspl	r3, fp, r1, asr #24
+
+000003c0 <l114>:
+     3c0:	819b6785 	orrshi	r6, fp, r5, lsl #15
+
+000003c4 <l115>:
+     3c4:	e3995695 	orrs	r5, r9, #156237824	; 0x9500000
+
+000003c8 <l116>:
+     3c8:	91936111 	orrsls	r6, r3, r1, lsl r1
+
+000003cc <l117>:
+     3cc:	1190c00f 	orrsne	ip, r0, pc
+
+000003d0 <l118>:
+     3d0:	e18723cb 	orr	r2, r7, fp, asr #7
+
+000003d4 <l119>:
+     3d4:	63938003 	orrsvs	r8, r3, #3
+
+000003d8 <l120>:
+     3d8:	21827001 	orrcs	r7, r2, r1
+
+000003dc <l121>:
+     3dc:	a3824e5d 	orrge	r4, r2, #1488	; 0x5d0
+
+000003e0 <l122>:
+     3e0:	e1849008 	orr	r9, r4, r8
+
+000003e4 <l123>:
+     3e4:	e1889614 	orr	r9, r8, r4, lsl r6
+
+000003e8 <l124>:
+     3e8:	d38e0cbb 	orrle	r0, lr, #47872	; 0xbb00
+
+000003ec <l125>:
+     3ec:	0193737a 	orrseq	r7, r3, sl, ror r3
+
+000003f0 <l126>:
+     3f0:	e1951a14 	orrs	r1, r5, r4, lsl sl
+
+000003f4 <l127>:
+     3f4:	e180b017 	orr	fp, r0, r7, lsl r0
+
+000003f8 <l128>:
+     3f8:	e195117c 	orrs	r1, r5, ip, ror r1
+
+000003fc <l129>:
+     3fc:	e191800a 	orrs	r8, r1, sl
+
+00000400 <l130>:
+     400:	e19455a5 	orrs	r5, r4, r5, lsr #11
+
+00000404 <l131>:
+     404:	e18c300e 	orr	r3, ip, lr
+
+00000408 <l132>:
+     408:	e1899062 	orr	r9, r9, r2, rrx
+
+0000040c <l133>:
+     40c:	1182193a 	orrne	r1, r2, sl, lsr r9
+
+00000410 <l134>:
+     410:	b189c671 	orrlt	ip, r9, r1, ror r6
+
+00000414 <l135>:
+     414:	2193600c 	orrscs	r6, r3, ip
+
+00000418 <l136>:
+     418:	2194bbe7 	orrscs	fp, r4, r7, ror #23
+
+0000041c <l137>:
+     41c:	919fc009 	orrsls	ip, pc, r9
+
+00000420 <l138>:
+     420:	e196b00a 	orrs	fp, r6, sl
+
+00000424 <l139>:
+     424:	e394c77d 	orrs	ip, r4, #32768000	; 0x1f40000
+
+00000428 <l140>:
+     428:	e183e065 	orr	lr, r3, r5, rrx
+
+0000042c <l141>:
+     42c:	419b1749 	orrsmi	r1, fp, r9, asr #14
+
+00000430 <l142>:
+     430:	61828937 	orrvs	r8, r2, r7, lsr r9
+
+00000434 <l143>:
+     434:	21841dee 	orrcs	r1, r4, lr, ror #27
+
+00000438 <l144>:
+     438:	d18e3283 	orrle	r3, lr, r3, lsl #5
+
+0000043c <l145>:
+     43c:	e197c06f 	orrs	ip, r7, pc, rrx
+
+00000440 <l146>:
+     440:	0190900e 	orrseq	r9, r0, lr
+
+00000444 <l147>:
+     444:	7183a67a 	orrvc	sl, r3, sl, ror r6
+
+00000448 <l148>:
+     448:	e189100c 	orr	r1, r9, ip
+
+0000044c <l149>:
+     44c:	d194a067 	orrsle	sl, r4, r7, rrx
+
+00000450 <l150>:
+     450:	e39a411e 	orrs	r4, sl, #-2147483641	; 0x80000007
+
+00000454 <l151>:
+     454:	519c8b59 	orrspl	r8, ip, r9, asr fp
+
+00000458 <l152>:
+     458:	718ce009 	orrvc	lr, ip, r9
+
+0000045c <l153>:
+     45c:	6183e006 	orrvs	lr, r3, r6
+
+00000460 <l154>:
+     460:	e189c002 	orr	ip, r9, r2
+
+00000464 <l155>:
+     464:	e1811957 	orr	r1, r1, r7, asr r9
+
+00000468 <l156>:
+     468:	e38a4a27 	orr	r4, sl, #159744	; 0x27000
+
+0000046c <l157>:
+     46c:	21837065 	orrcs	r7, r3, r5, rrx
+
+00000470 <l158>:
+     470:	e180200e 	orr	r2, r0, lr
+
+00000474 <l159>:
+     474:	2194000c 	orrscs	r0, r4, ip
+
+00000478 <l160>:
+     478:	a19f98ab 	orrsge	r9, pc, fp, lsr #17
+
+0000047c <l161>:
+     47c:	219a900e 	orrscs	r9, sl, lr
+
+00000480 <l162>:
+     480:	d1819680 	orrle	r9, r1, r0, lsl #13
+
+00000484 <l163>:
+     484:	41985552 	orrsmi	r5, r8, r2, asr r5
+
+00000488 <l164>:
+     488:	639156e1 	orrsvs	r5, r1, #235929600	; 0xe100000
+
+0000048c <l165>:
+     48c:	53997b31 	orrspl	r7, r9, #50176	; 0xc400
+
+00000490 <l166>:
+     490:	539888f3 	orrspl	r8, r8, #15925248	; 0xf30000
+
+00000494 <l167>:
+     494:	e1852a51 	orr	r2, r5, r1, asr sl
+
+00000498 <l168>:
+     498:	b1982009 	orrslt	r2, r8, r9
+
+0000049c <l169>:
+     49c:	0386141b 	orreq	r1, r6, #452984832	; 0x1b000000
+
+000004a0 <l170>:
+     4a0:	e39b7302 	orrs	r7, fp, #134217728	; 0x8000000
+
+000004a4 <l171>:
+     4a4:	1196463e 	orrsne	r4, r6, lr, lsr r6
+
+000004a8 <l172>:
+     4a8:	e3930c01 	orrs	r0, r3, #256	; 0x100
+
+000004ac <l173>:
+     4ac:	e196bb55 	orrs	fp, r6, r5, asr fp
+
+000004b0 <l174>:
+     4b0:	c19ace39 	orrsgt	ip, sl, r9, lsr lr
+
+000004b4 <l175>:
+     4b4:	c396cc1f 	orrsgt	ip, r6, #7936	; 0x1f00
+
+000004b8 <l176>:
+     4b8:	a198c06c 	orrsge	ip, r8, ip, rrx
+
+000004bc <l177>:
+     4bc:	e198bb2b 	orrs	fp, r8, fp, lsr #22
+
+000004c0 <l178>:
+     4c0:	d385e1ba 	orrle	lr, r5, #-2147483602	; 0x8000002e
+
+000004c4 <l179>:
+     4c4:	4186500f 	orrmi	r5, r6, pc
+
+000004c8 <l180>:
+     4c8:	11843c57 	orrne	r3, r4, r7, asr ip
+
+000004cc <l181>:
+     4cc:	6196abc4 	orrsvs	sl, r6, r4, asr #23
+
+000004d0 <l182>:
+     4d0:	c39a0461 	orrsgt	r0, sl, #1627389952	; 0x61000000
+
+000004d4 <l183>:
+     4d4:	1187906a 	orrne	r9, r7, sl, rrx
+
+000004d8 <l184>:
+     4d8:	9196ecab 	orrsls	lr, r6, fp, lsr #25
+
+000004dc <l185>:
+     4dc:	81808759 	orrhi	r8, r0, r9, asr r7
+
+000004e0 <l186>:
+     4e0:	e182c073 	orr	ip, r2, r3, ror r0
+
+000004e4 <l187>:
+     4e4:	018bc487 	orreq	ip, fp, r7, lsl #9
+
+000004e8 <l188>:
+     4e8:	a3978e2a 	orrsge	r8, r7, #672	; 0x2a0
+
+000004ec <l189>:
+     4ec:	e19ae10e 	orrs	lr, sl, lr, lsl #2
+
+000004f0 <l190>:
+     4f0:	e1896002 	orr	r6, r9, r2
+
+000004f4 <l191>:
+     4f4:	5196806f 	orrspl	r8, r6, pc, rrx
+
+000004f8 <l192>:
+     4f8:	e1996535 	orrs	r6, r9, r5, lsr r5
+
+000004fc <l193>:
+     4fc:	e182200c 	orr	r2, r2, ip
+
+00000500 <l194>:
+     500:	e39ec12e 	orrs	ip, lr, #-2147483637	; 0x8000000b
+
+00000504 <l195>:
+     504:	c1843a49 	orrgt	r3, r4, r9, asr #20
+
+00000508 <l196>:
+     508:	e1805005 	orr	r5, r0, r5
+
+0000050c <l197>:
+     50c:	e384027b 	orr	r0, r4, #-1342177273	; 0xb0000007
+
+00000510 <l198>:
+     510:	9198938f 	orrsls	r9, r8, pc, lsl #7
+
+00000514 <l199>:
+     514:	11971069 	orrsne	r1, r7, r9, rrx
+
+00000518 <l200>:
+     518:	e1957b2c 	orrs	r7, r5, ip, lsr #22
+
+0000051c <l201>:
+     51c:	2195901b 	orrscs	r9, r5, fp, lsl r0
+
+00000520 <l202>:
+     520:	e182652e 	orr	r6, r2, lr, lsr #10
+
+00000524 <l203>:
+     524:	a18f7f81 	orrge	r7, pc, r1, lsl #31
+
+00000528 <l204>:
+     528:	e1943dc6 	orrs	r3, r4, r6, asr #27
+
+0000052c <l205>:
+     52c:	c1993e3b 	orrsgt	r3, r9, fp, lsr lr
+
+00000530 <l206>:
+     530:	918a1001 	orrls	r1, sl, r1
+
+00000534 <l207>:
+     534:	e19e9611 	orrs	r9, lr, r1, lsl r6
+
+00000538 <l208>:
+     538:	819c9803 	orrshi	r9, ip, r3, lsl #16
+
+0000053c <l209>:
+     53c:	e3861956 	orr	r1, r6, #1409024	; 0x158000
+
+00000540 <l210>:
+     540:	818bc000 	orrhi	ip, fp, r0
+
+00000544 <l211>:
+     544:	e1870064 	orr	r0, r7, r4, rrx
+
+00000548 <l212>:
+     548:	71883006 	orrvc	r3, r8, r6
+
+0000054c <l213>:
+     54c:	9385309b 	orrls	r3, r5, #155	; 0x9b
+
+00000550 <l214>:
+     550:	e3800f49 	orr	r0, r0, #292	; 0x124
+
+00000554 <l215>:
+     554:	e186c062 	orr	ip, r6, r2, rrx
+
+00000558 <l216>:
+     558:	e18c0062 	orr	r0, ip, r2, rrx
+
+0000055c <l217>:
+     55c:	91981003 	orrsls	r1, r8, r3
+
+00000560 <l218>:
+     560:	818c71c0 	orrhi	r7, ip, r0, asr #3
+
+00000564 <l219>:
+     564:	a198471a 	orrsge	r4, r8, sl, lsl r7
+
+00000568 <l220>:
+     568:	81974008 	orrshi	r4, r7, r8
+
+0000056c <l221>:
+     56c:	e1990008 	orrs	r0, r9, r8
+
+00000570 <l222>:
+     570:	218ae008 	orrcs	lr, sl, r8
+
+00000574 <l223>:
+     574:	e180c835 	orr	ip, r0, r5, lsr r8
+
+00000578 <l224>:
+     578:	518c8e75 	orrpl	r8, ip, r5, ror lr
+
+0000057c <l225>:
+     57c:	51845c3b 	orrpl	r5, r4, fp, lsr ip
+
+00000580 <l226>:
+     580:	e1862061 	orr	r2, r6, r1, rrx
+
+00000584 <l227>:
+     584:	d191888c 	orrsle	r8, r1, ip, lsl #17
+
+00000588 <l228>:
+     588:	538823ca 	orrpl	r2, r8, #671088643	; 0x28000003
+
+0000058c <l229>:
+     58c:	03861205 	orreq	r1, r6, #1342177280	; 0x50000000
+
+00000590 <l230>:
+     590:	e18e2003 	orr	r2, lr, r3
+
+00000594 <l231>:
+     594:	01814a14 	orreq	r4, r1, r4, lsl sl
+
+00000598 <l232>:
+     598:	63905385 	orrsvs	r5, r0, #335544322	; 0x14000002
+
+0000059c <l233>:
+     59c:	439e2939 	orrsmi	r2, lr, #933888	; 0xe4000
+
+000005a0 <l234>:
+     5a0:	6398eca1 	orrsvs	lr, r8, #41216	; 0xa100
+
+000005a4 <l235>:
+     5a4:	e19c5ce5 	orrs	r5, ip, r5, ror #25
+
+000005a8 <l236>:
+     5a8:	23920d92 	orrscs	r0, r2, #9344	; 0x2480
+
+000005ac <l237>:
+     5ac:	e190206b 	orrs	r2, r0, fp, rrx
+
+000005b0 <l238>:
+     5b0:	b188b067 	orrlt	fp, r8, r7, rrx
+
+000005b4 <l239>:
+     5b4:	419f500b 	orrsmi	r5, pc, fp
+
+000005b8 <l240>:
+     5b8:	d190c001 	orrsle	ip, r0, r1
+
+000005bc <l241>:
+     5bc:	e1977789 	orrs	r7, r7, r9, lsl #15
+
+000005c0 <l242>:
+     5c0:	e1843454 	orr	r3, r4, r4, asr r4
+
+000005c4 <l243>:
+     5c4:	e38517de 	orr	r1, r5, #58195968	; 0x3780000
+
+000005c8 <l244>:
+     5c8:	e19e700b 	orrs	r7, lr, fp
+
+000005cc <l245>:
+     5cc:	9380b82d 	orrls	fp, r0, #2949120	; 0x2d0000
+
+000005d0 <l246>:
+     5d0:	218f6001 	orrcs	r6, pc, r1
+
+000005d4 <l247>:
+     5d4:	e1973060 	orrs	r3, r7, r0, rrx
+
+000005d8 <l248>:
+     5d8:	538427c3 	orrpl	r2, r4, #51118080	; 0x30c0000
+
+000005dc <l249>:
+     5dc:	318f4061 	orrcc	r4, pc, r1, rrx
+
+000005e0 <l250>:
+     5e0:	819e1062 	orrshi	r1, lr, r2, rrx
+
+000005e4 <l251>:
+     5e4:	51831910 	orrpl	r1, r3, r0, lsl r9
+
+000005e8 <l252>:
+     5e8:	e19b1e32 	orrs	r1, fp, r2, lsr lr
+
+000005ec <l253>:
+     5ec:	e39e865f 	orrs	r8, lr, #99614720	; 0x5f00000
+
+000005f0 <l254>:
+     5f0:	e1891064 	orr	r1, r9, r4, rrx
+
+000005f4 <l255>:
+     5f4:	439e1d49 	orrsmi	r1, lr, #4672	; 0x1240
+
+000005f8 <l256>:
+     5f8:	01846b32 	orreq	r6, r4, r2, lsr fp
+
+000005fc <l257>:
+     5fc:	e199783a 	orrs	r7, r9, sl, lsr r8
+
+00000600 <l258>:
+     600:	639fc86e 	orrsvs	ip, pc, #7208960	; 0x6e0000
+
+00000604 <l259>:
+     604:	e18392a3 	orr	r9, r3, r3, lsr #5
+
+00000608 <l260>:
+     608:	e192406e 	orrs	r4, r2, lr, rrx
+
+0000060c <l261>:
+     60c:	e18e0005 	orr	r0, lr, r5
+
+00000610 <l262>:
+     610:	e19fe908 	orrs	lr, pc, r8, lsl #18
+
+00000614 <l263>:
+     614:	b18a2418 	orrlt	r2, sl, r8, lsl r4
+
+00000618 <l264>:
+     618:	23814d4b 	orrcs	r4, r1, #4800	; 0x12c0
+
+0000061c <l265>:
+     61c:	a18f8061 	orrge	r8, pc, r1, rrx
+
+00000620 <l266>:
+     620:	e19c163b 	orrs	r1, ip, fp, lsr r6
+
+00000624 <l267>:
+     624:	e191a002 	orrs	sl, r1, r2
+
+00000628 <l268>:
+     628:	e18b867a 	orr	r8, fp, sl, ror r6
+
+0000062c <l269>:
+     62c:	e1803327 	orr	r3, r0, r7, lsr #6
+
+00000630 <l270>:
+     630:	5187200f 	orrpl	r2, r7, pc
+
+00000634 <l271>:
+     634:	c38b7b13 	orrgt	r7, fp, #19456	; 0x4c00
+
+00000638 <l272>:
+     638:	13996807 	orrsne	r6, r9, #458752	; 0x70000
+
+0000063c <l273>:
+     63c:	6189800e 	orrvs	r8, r9, lr
+
+00000640 <l274>:
+     640:	e38ecbc1 	orr	ip, lr, #197632	; 0x30400
+
+00000644 <l275>:
+     644:	e18b0b10 	orr	r0, fp, r0, lsl fp
+
+00000648 <l276>:
+     648:	c3867456 	orrgt	r7, r6, #1442840576	; 0x56000000
+
+0000064c <l277>:
+     64c:	619a4c59 	orrsvs	r4, sl, r9, asr ip
+
+00000650 <l278>:
+     650:	e190300a 	orrs	r3, r0, sl
+
+00000654 <l279>:
+     654:	919fe00e 	orrsls	lr, pc, lr
+
+00000658 <l280>:
+     658:	b39403cf 	orrslt	r0, r4, #1006632963	; 0x3c000003
+
+0000065c <l281>:
+     65c:	81925626 	orrshi	r5, r2, r6, lsr #12
+
+00000660 <l282>:
+     660:	e19c8065 	orrs	r8, ip, r5, rrx
+
+00000664 <l283>:
+     664:	e1866004 	orr	r6, r6, r4
+
+00000668 <l284>:
+     668:	4198c9cb 	orrsmi	ip, r8, fp, asr #19
+
+0000066c <l285>:
+     66c:	039c2bb2 	orrseq	r2, ip, #182272	; 0x2c800
+
+00000670 <l286>:
+     670:	b198300c 	orrslt	r3, r8, ip
+
+00000674 <l287>:
+     674:	4197300a 	orrsmi	r3, r7, sl
+
+00000678 <l288>:
+     678:	219c6730 	orrscs	r6, ip, r0, lsr r7
+
+0000067c <l289>:
+     67c:	e1892064 	orr	r2, r9, r4, rrx
+
+00000680 <l290>:
+     680:	33848018 	orrcc	r8, r4, #24
+
+00000684 <l291>:
+     684:	e1913519 	orrs	r3, r1, r9, lsl r5
+
+00000688 <l292>:
+     688:	33926545 	orrscc	r6, r2, #289406976	; 0x11400000
+
+0000068c <l293>:
+     68c:	b1923004 	orrslt	r3, r2, r4
+
+00000690 <l294>:
+     690:	e385c73a 	orr	ip, r5, #15204352	; 0xe80000
+
+00000694 <l295>:
+     694:	e19b79cc 	orrs	r7, fp, ip, asr #19
+
+00000698 <l296>:
+     698:	5193000f 	orrspl	r0, r3, pc
+
+0000069c <l297>:
+     69c:	e1807005 	orr	r7, r0, r5
+
+000006a0 <l298>:
+     6a0:	d198b030 	orrsle	fp, r8, r0, lsr r0
+
+000006a4 <l299>:
+     6a4:	d194a913 	orrsle	sl, r4, r3, lsl r9
+
+000006a8 <l300>:
+     6a8:	31963008 	orrscc	r3, r6, r8
+
+000006ac <l301>:
+     6ac:	e1802068 	orr	r2, r0, r8, rrx
+
+000006b0 <l302>:
+     6b0:	718ab959 	orrvc	fp, sl, r9, asr r9
+
+000006b4 <l303>:
+     6b4:	11888030 	orrne	r8, r8, r0, lsr r0
+
+000006b8 <l304>:
+     6b8:	d397a335 	orrsle	sl, r7, #-738197504	; 0xd4000000
+
+000006bc <l305>:
+     6bc:	e1955b7e 	orrs	r5, r5, lr, ror fp
+
+000006c0 <l306>:
+     6c0:	7388e62f 	orrvc	lr, r8, #49283072	; 0x2f00000
+
+000006c4 <l307>:
+     6c4:	d18b500b 	orrle	r5, fp, fp
+
+000006c8 <l308>:
+     6c8:	e184a184 	orr	sl, r4, r4, lsl #3
+
+000006cc <l309>:
+     6cc:	819fb00a 	orrshi	fp, pc, sl
+
+000006d0 <l310>:
+     6d0:	e19bc069 	orrs	ip, fp, r9, rrx
+
+000006d4 <l311>:
+     6d4:	518c7dc7 	orrpl	r7, ip, r7, asr #27
+
+000006d8 <l312>:
+     6d8:	e198e00f 	orrs	lr, r8, pc
+
+000006dc <l313>:
+     6dc:	51889065 	orrpl	r9, r8, r5, rrx
+
+000006e0 <l314>:
+     6e0:	e181706c 	orr	r7, r1, ip, rrx
+
+000006e4 <l315>:
+     6e4:	e1957b83 	orrs	r7, r5, r3, lsl #23
+
+000006e8 <l316>:
+     6e8:	6189b975 	orrvs	fp, r9, r5, ror r9
+
+000006ec <l317>:
+     6ec:	e185200e 	orr	r2, r5, lr
+
+000006f0 <l318>:
+     6f0:	119491ae 	orrsne	r9, r4, lr, lsr #3
+
+000006f4 <l319>:
+     6f4:	e3986db5 	orrs	r6, r8, #11584	; 0x2d40
+
+000006f8 <l320>:
+     6f8:	838e5013 	orrhi	r5, lr, #19
+
+000006fc <l321>:
+     6fc:	b384c93f 	orrlt	ip, r4, #1032192	; 0xfc000
+
+00000700 <l322>:
+     700:	e395696b 	orrs	r6, r5, #1753088	; 0x1ac000
+
+00000704 <l323>:
+     704:	5184a006 	orrpl	sl, r4, r6
+
+00000708 <l324>:
+     708:	e38f9e92 	orr	r9, pc, #2336	; 0x920
+
+0000070c <l325>:
+     70c:	5388c7fa 	orrpl	ip, r8, #65536000	; 0x3e80000
+
+00000710 <l326>:
+     710:	e3899656 	orr	r9, r9, #90177536	; 0x5600000
+
+00000714 <l327>:
+     714:	c3839821 	orrgt	r9, r3, #2162688	; 0x210000
+
+00000718 <l328>:
+     718:	81877450 	orrhi	r7, r7, r0, asr r4
+
+0000071c <l329>:
+     71c:	719ac000 	orrsvc	ip, sl, r0
+
+00000720 <l330>:
+     720:	e19e900f 	orrs	r9, lr, pc
+
+00000724 <l331>:
+     724:	e197a8cb 	orrs	sl, r7, fp, asr #17
+
+00000728 <l332>:
+     728:	e18a561b 	orr	r5, sl, fp, lsl r6
+
+0000072c <l333>:
+     72c:	e19fb00c 	orrs	fp, pc, ip
+
+00000730 <l334>:
+     730:	c188643e 	orrgt	r6, r8, lr, lsr r4
+
+00000734 <l335>:
+     734:	3195bf62 	orrscc	fp, r5, r2, ror #30
+
+00000738 <l336>:
+     738:	3195cb82 	orrscc	ip, r5, r2, lsl #23
+
+0000073c <l337>:
+     73c:	819ea06e 	orrshi	sl, lr, lr, rrx
+
+00000740 <l338>:
+     740:	b195c001 	orrslt	ip, r5, r1
+
+00000744 <l339>:
+     744:	e1945268 	orrs	r5, r4, r8, ror #4
+
+00000748 <l340>:
+     748:	e195cdce 	orrs	ip, r5, lr, asr #27
+
+0000074c <l341>:
+     74c:	518834aa 	orrpl	r3, r8, sl, lsr #9
+
+00000750 <l342>:
+     750:	e195ab2c 	orrs	sl, r5, ip, lsr #22
+
+00000754 <l343>:
+     754:	8186400b 	orrhi	r4, r6, fp
+
+00000758 <l344>:
+     758:	e18bc008 	orr	ip, fp, r8
+
+0000075c <l345>:
+     75c:	e190200a 	orrs	r2, r0, sl
+
+00000760 <l346>:
+     760:	01849068 	orreq	r9, r4, r8, rrx
+
+00000764 <l347>:
+     764:	e39ab459 	orrs	fp, sl, #1493172224	; 0x59000000
+
+00000768 <l348>:
+     768:	e1810ea8 	orr	r0, r1, r8, lsr #29
+
+0000076c <l349>:
+     76c:	e38fa0ee 	orr	sl, pc, #238	; 0xee
+
+00000770 <l350>:
+     770:	e19c7065 	orrs	r7, ip, r5, rrx
+
+00000774 <l351>:
+     774:	a191777b 	orrsge	r7, r1, fp, ror r7
+
+00000778 <l352>:
+     778:	01901062 	orrseq	r1, r0, r2, rrx
+
+0000077c <l353>:
+     77c:	c389c1e3 	orrgt	ip, r9, #-1073741768	; 0xc0000038
+
+00000780 <l354>:
+     780:	e19a9254 	orrs	r9, sl, r4, asr r2
+
+00000784 <l355>:
+     784:	e1919008 	orrs	r9, r1, r8
+
+00000788 <l356>:
+     788:	31949827 	orrscc	r9, r4, r7, lsr #16
+
+0000078c <l357>:
+     78c:	e194200b 	orrs	r2, r4, fp
+
+00000790 <l358>:
+     790:	41962008 	orrsmi	r2, r6, r8
+
+00000794 <l359>:
+     794:	918f5008 	orrls	r5, pc, r8
+
+00000798 <l360>:
+     798:	e184b063 	orr	fp, r4, r3, rrx
+
+0000079c <l361>:
+     79c:	21856c22 	orrcs	r6, r5, r2, lsr #24
+
+000007a0 <l362>:
+     7a0:	238f84ae 	orrcs	r8, pc, #-1375731712	; 0xae000000
+
+000007a4 <l363>:
+     7a4:	01954155 	orrseq	r4, r5, r5, asr r1
+
+000007a8 <l364>:
+     7a8:	91824069 	orrls	r4, r2, r9, rrx
+
+000007ac <l365>:
+     7ac:	e38e9be9 	orr	r9, lr, #238592	; 0x3a400
+
+000007b0 <l366>:
+     7b0:	919373eb 	orrsls	r7, r3, fp, ror #7
+
+000007b4 <l367>:
+     7b4:	e39c8a3d 	orrs	r8, ip, #249856	; 0x3d000
+
+000007b8 <l368>:
+     7b8:	e19e3f04 	orrs	r3, lr, r4, lsl #30
+
+000007bc <l369>:
+     7bc:	81889006 	orrhi	r9, r8, r6
+
+000007c0 <l370>:
+     7c0:	c1928064 	orrsgt	r8, r2, r4, rrx
+
+000007c4 <l371>:
+     7c4:	638024a9 	orrvs	r2, r0, #-1459617792	; 0xa9000000
+
+000007c8 <l372>:
+     7c8:	e1816065 	orr	r6, r1, r5, rrx
+
+000007cc <l373>:
+     7cc:	c384ce6d 	orrgt	ip, r4, #1744	; 0x6d0
+
+000007d0 <l374>:
+     7d0:	738c36ff 	orrvc	r3, ip, #267386880	; 0xff00000
+
+000007d4 <l375>:
+     7d4:	d39ea636 	orrsle	sl, lr, #56623104	; 0x3600000
+
+000007d8 <l376>:
+     7d8:	7199bc4e 	orrsvc	fp, r9, lr, asr #24
+
+000007dc <l377>:
+     7dc:	519c3254 	orrspl	r3, ip, r4, asr r2
+
+000007e0 <l378>:
+     7e0:	81980064 	orrshi	r0, r8, r4, rrx
+
+000007e4 <l379>:
+     7e4:	c39e147e 	orrsgt	r1, lr, #2113929216	; 0x7e000000
+
+000007e8 <l380>:
+     7e8:	0187006a 	orreq	r0, r7, sl, rrx
+
+000007ec <l381>:
+     7ec:	918bb002 	orrls	fp, fp, r2
+
+000007f0 <l382>:
+     7f0:	1396602f 	orrsne	r6, r6, #47	; 0x2f
+
+000007f4 <l383>:
+     7f4:	e1848e75 	orr	r8, r4, r5, ror lr
+
+000007f8 <l384>:
+     7f8:	118e7004 	orrne	r7, lr, r4
+
+000007fc <l385>:
+     7fc:	e185c5e9 	orr	ip, r5, r9, ror #11
+
+00000800 <l386>:
+     800:	e191331a 	orrs	r3, r1, sl, lsl r3
+
+00000804 <l387>:
+     804:	e3959206 	orrs	r9, r5, #1610612736	; 0x60000000
+
+00000808 <l388>:
+     808:	71853069 	orrvc	r3, r5, r9, rrx
+
+0000080c <l389>:
+     80c:	e19048e7 	orrs	r4, r0, r7, ror #17
+
+00000810 <l390>:
+     810:	e19e5c51 	orrs	r5, lr, r1, asr ip
+
+00000814 <l391>:
+     814:	e1866637 	orr	r6, r6, r7, lsr r6
+
+00000818 <l392>:
+     818:	e19011e4 	orrs	r1, r0, r4, ror #3
+
+0000081c <l393>:
+     81c:	d19be6a9 	orrsle	lr, fp, r9, lsr #13
+
+00000820 <l394>:
+     820:	51952c09 	orrspl	r2, r5, r9, lsl #24
+
+00000824 <l395>:
+     824:	e19c4003 	orrs	r4, ip, r3
+
+00000828 <l396>:
+     828:	e196700f 	orrs	r7, r6, pc
+
+0000082c <l397>:
+     82c:	e18c6005 	orr	r6, ip, r5
+
+00000830 <l398>:
+     830:	33999039 	orrscc	r9, r9, #57	; 0x39
+
+00000834 <l399>:
+     834:	e18f5000 	orr	r5, pc, r0
+
+00000838 <l400>:
+     838:	e19f4d25 	orrs	r4, pc, r5, lsr #26
+
+0000083c <l401>:
+     83c:	e19c8009 	orrs	r8, ip, r9
+
+00000840 <l402>:
+     840:	21993775 	orrscs	r3, r9, r5, ror r7
+
+00000844 <l403>:
+     844:	e38f47eb 	orr	r4, pc, #61603840	; 0x3ac0000
+
+00000848 <l404>:
+     848:	e3904001 	orrs	r4, r0, #1
+
+0000084c <l405>:
+     84c:	b1890009 	orrlt	r0, r9, r9
+
+00000850 <l406>:
+     850:	e1927a73 	orrs	r7, r2, r3, ror sl
+
+00000854 <l407>:
+     854:	53809aff 	orrpl	r9, r0, #1044480	; 0xff000
+
+00000858 <l408>:
+     858:	81909782 	orrshi	r9, r0, r2, lsl #15
+
+0000085c <l409>:
+     85c:	e1985312 	orrs	r5, r8, r2, lsl r3
+
+00000860 <l410>:
+     860:	418e858a 	orrmi	r8, lr, sl, lsl #11
+
+00000864 <l411>:
+     864:	e190232f 	orrs	r2, r0, pc, lsr #6
+
+00000868 <l412>:
+     868:	c1843771 	orrgt	r3, r4, r1, ror r7
+
+0000086c <l413>:
+     86c:	e18ebb77 	orr	fp, lr, r7, ror fp
+
+00000870 <l414>:
+     870:	119323ce 	orrsne	r2, r3, lr, asr #7
+
+00000874 <l415>:
+     874:	e1922002 	orrs	r2, r2, r2
+
+00000878 <l416>:
+     878:	d38abc61 	orrle	fp, sl, #24832	; 0x6100
+
+0000087c <l417>:
+     87c:	61846062 	orrvs	r6, r4, r2, rrx
+
+00000880 <l418>:
+     880:	e19f406a 	orrs	r4, pc, sl, rrx
+
+00000884 <l419>:
+     884:	e18f8009 	orr	r8, pc, r9
+
+00000888 <l420>:
+     888:	e19fb067 	orrs	fp, pc, r7, rrx
+
+0000088c <l421>:
+     88c:	e1976234 	orrs	r6, r7, r4, lsr r2
+
+00000890 <l422>:
+     890:	e184c375 	orr	ip, r4, r5, ror r3
+
+00000894 <l423>:
+     894:	2190c817 	orrscs	ip, r0, r7, lsl r8
+
+00000898 <l424>:
+     898:	e189653c 	orr	r6, r9, ip, lsr r5
+
+0000089c <l425>:
+     89c:	51911829 	orrspl	r1, r1, r9, lsr #16
+
+000008a0 <l426>:
+     8a0:	21894007 	orrcs	r4, r9, r7
+
+000008a4 <l427>:
+     8a4:	e184075a 	orr	r0, r4, sl, asr r7
+
+000008a8 <l428>:
+     8a8:	e39b514b 	orrs	r5, fp, #-1073741806	; 0xc0000012
+
+000008ac <l429>:
+     8ac:	e39b35db 	orrs	r3, fp, #918552576	; 0x36c00000
+
+000008b0 <l430>:
+     8b0:	e1905060 	orrs	r5, r0, r0, rrx
+
+000008b4 <l431>:
+     8b4:	e399b485 	orrs	fp, r9, #-2063597568	; 0x85000000
+
+000008b8 <l432>:
+     8b8:	e38e993d 	orr	r9, lr, #999424	; 0xf4000
+
+000008bc <l433>:
+     8bc:	e191ae77 	orrs	sl, r1, r7, ror lr
+
+000008c0 <l434>:
+     8c0:	8184986b 	orrhi	r9, r4, fp, ror #16
+
+000008c4 <l435>:
+     8c4:	018c22eb 	orreq	r2, ip, fp, ror #5
+
+000008c8 <l436>:
+     8c8:	e382bf51 	orr	fp, r2, #324	; 0x144
+
+000008cc <l437>:
+     8cc:	c18b9006 	orrgt	r9, fp, r6
+
+000008d0 <l438>:
+     8d0:	3180c942 	orrcc	ip, r0, r2, asr #18
+
+000008d4 <l439>:
+     8d4:	d3887391 	orrle	r7, r8, #1140850690	; 0x44000002
+
+000008d8 <l440>:
+     8d8:	719c7006 	orrsvc	r7, ip, r6
+
+000008dc <l441>:
+     8dc:	b19a9c1c 	orrslt	r9, sl, ip, lsl ip
+
+000008e0 <l442>:
+     8e0:	e189e872 	orr	lr, r9, r2, ror r8
+
+000008e4 <l443>:
+     8e4:	c38074d3 	orrgt	r7, r0, #-754974720	; 0xd3000000
+
+000008e8 <l444>:
+     8e8:	019c2002 	orrseq	r2, ip, r2
+
+000008ec <l445>:
+     8ec:	b184c56c 	orrlt	ip, r4, ip, ror #10
+
+000008f0 <l446>:
+     8f0:	e1909c17 	orrs	r9, r0, r7, lsl ip
+
+000008f4 <l447>:
+     8f4:	81937065 	orrshi	r7, r3, r5, rrx
+
+000008f8 <l448>:
+     8f8:	e1808867 	orr	r8, r0, r7, ror #16
+
+000008fc <l449>:
+     8fc:	e390c1e9 	orrs	ip, r0, #1073741882	; 0x4000003a
+
+00000900 <l450>:
+     900:	e18b0061 	orr	r0, fp, r1, rrx
+
+00000904 <l451>:
+     904:	e396e01b 	orrs	lr, r6, #27
+
+00000908 <l452>:
+     908:	c19b5714 	orrsgt	r5, fp, r4, lsl r7
+
+0000090c <l453>:
+     90c:	8194afa5 	orrshi	sl, r4, r5, lsr #31
+
+00000910 <l454>:
+     910:	1181c551 	orrne	ip, r1, r1, asr r5
+
+00000914 <l455>:
+     914:	e18be009 	orr	lr, fp, r9
+
+00000918 <l456>:
+     918:	d184300b 	orrle	r3, r4, fp
+
+0000091c <l457>:
+     91c:	e1942005 	orrs	r2, r4, r5
+
+00000920 <l458>:
+     920:	3184200f 	orrcc	r2, r4, pc
+
+00000924 <l459>:
+     924:	e18feae0 	orr	lr, pc, r0, ror #21
+
+00000928 <l460>:
+     928:	419e600e 	orrsmi	r6, lr, lr
+
+0000092c <l461>:
+     92c:	e19583ae 	orrs	r8, r5, lr, lsr #7
+
+00000930 <l462>:
+     930:	e3884821 	orr	r4, r8, #2162688	; 0x210000
+
+00000934 <l463>:
+     934:	a18ebc32 	orrge	fp, lr, r2, lsr ip
+
+00000938 <l464>:
+     938:	e183173e 	orr	r1, r3, lr, lsr r7
+
+0000093c <l465>:
+     93c:	9391859b 	orrsls	r8, r1, #650117120	; 0x26c00000
+
+00000940 <l466>:
+     940:	3199706a 	orrscc	r7, r9, sl, rrx
+
+00000944 <l467>:
+     944:	e389c923 	orr	ip, r9, #573440	; 0x8c000
+
+00000948 <l468>:
+     948:	e1835930 	orr	r5, r3, r0, lsr r9
+
+0000094c <l469>:
+     94c:	a38791a7 	orrge	r9, r7, #-1073741783	; 0xc0000029
+
+00000950 <l470>:
+     950:	638c30cd 	orrvs	r3, ip, #205	; 0xcd
+
+00000954 <l471>:
+     954:	e19ea064 	orrs	sl, lr, r4, rrx
+
+00000958 <l472>:
+     958:	43841b5d 	orrmi	r1, r4, #95232	; 0x17400
+
+0000095c <l473>:
+     95c:	019e6002 	orrseq	r6, lr, r2
+
+00000960 <l474>:
+     960:	4193c28f 	orrsmi	ip, r3, pc, lsl #5
+
+00000964 <l475>:
+     964:	b198000e 	orrslt	r0, r8, lr
+
+00000968 <l476>:
+     968:	518c2b31 	orrpl	r2, ip, r1, lsr fp
+
+0000096c <l477>:
+     96c:	e19c2c82 	orrs	r2, ip, r2, lsl #25
+
+00000970 <l478>:
+     970:	7189200f 	orrvc	r2, r9, pc
+
+00000974 <l479>:
+     974:	118aa25e 	orrne	sl, sl, lr, asr r2
+
+00000978 <l480>:
+     978:	d181406f 	orrle	r4, r1, pc, rrx
+
+0000097c <l481>:
+     97c:	e3820b2b 	orr	r0, r2, #44032	; 0xac00
+
+00000980 <l482>:
+     980:	e38345c6 	orr	r4, r3, #830472192	; 0x31800000
+
+00000984 <l483>:
+     984:	e1982007 	orrs	r2, r8, r7
+
+00000988 <l484>:
+     988:	e19f900c 	orrs	r9, pc, ip
+
+0000098c <l485>:
+     98c:	319a200f 	orrscc	r2, sl, pc
+
+00000990 <l486>:
+     990:	e19429c0 	orrs	r2, r4, r0, asr #19
+
+00000994 <l487>:
+     994:	119141ab 	orrsne	r4, r1, fp, lsr #3
+
+00000998 <l488>:
+     998:	a1958002 	orrsge	r8, r5, r2
+
+0000099c <l489>:
+     99c:	53888abf 	orrpl	r8, r8, #782336	; 0xbf000
+
+000009a0 <l490>:
+     9a0:	e184eae7 	orr	lr, r4, r7, ror #21
+
+000009a4 <l491>:
+     9a4:	e190b002 	orrs	fp, r0, r2
+
+000009a8 <l492>:
+     9a8:	018b100b 	orreq	r1, fp, fp
+
+000009ac <l493>:
+     9ac:	31955842 	orrscc	r5, r5, r2, asr #16
+
+000009b0 <l494>:
+     9b0:	8198c154 	orrshi	ip, r8, r4, asr r1
+
+000009b4 <l495>:
+     9b4:	2198ee18 	orrscs	lr, r8, r8, lsl lr
+
+000009b8 <l496>:
+     9b8:	619b8064 	orrsvs	r8, fp, r4, rrx
+
+000009bc <l497>:
+     9bc:	5188a06f 	orrpl	sl, r8, pc, rrx
+
+000009c0 <l498>:
+     9c0:	41995756 	orrsmi	r5, r9, r6, asr r7
+
+000009c4 <l499>:
+     9c4:	518f4a6e 	orrpl	r4, pc, lr, ror #20
+
+000009c8 <l500>:
+     9c8:	d1815002 	orrle	r5, r1, r2
+
+000009cc <l501>:
+     9cc:	e38645bd 	orr	r4, r6, #792723456	; 0x2f400000
+
+000009d0 <l502>:
+     9d0:	e190031c 	orrs	r0, r0, ip, lsl r3
+
+000009d4 <l503>:
+     9d4:	a194a00a 	orrsge	sl, r4, sl
+
+000009d8 <l504>:
+     9d8:	318c927e 	orrcc	r9, ip, lr, ror r2
+
+000009dc <l505>:
+     9dc:	d199a2c9 	orrsle	sl, r9, r9, asr #5
+
+000009e0 <l506>:
+     9e0:	e19cb00a 	orrs	fp, ip, sl
+
+000009e4 <l507>:
+     9e4:	d18f1762 	orrle	r1, pc, r2, ror #14
+
+000009e8 <l508>:
+     9e8:	a3995129 	orrsge	r5, r9, #1073741834	; 0x4000000a
+
+000009ec <l509>:
+     9ec:	b1842a6f 	orrlt	r2, r4, pc, ror #20
+
+000009f0 <l510>:
+     9f0:	e1964ca6 	orrs	r4, r6, r6, lsr #25
+
+000009f4 <l511>:
+     9f4:	e392ad0d 	orrs	sl, r2, #832	; 0x340
+
+000009f8 <l512>:
+     9f8:	e1824537 	orr	r4, r2, r7, lsr r5
+
+000009fc <l513>:
+     9fc:	e3840319 	orr	r0, r4, #1677721600	; 0x64000000
+
+00000a00 <l514>:
+     a00:	b3944513 	orrslt	r4, r4, #79691776	; 0x4c00000
+
+00000a04 <l515>:
+     a04:	e195657b 	orrs	r6, r5, fp, ror r5
+
+00000a08 <l516>:
+     a08:	2182c371 	orrcs	ip, r2, r1, ror r3
+
+00000a0c <l517>:
+     a0c:	b18a4818 	orrlt	r4, sl, r8, lsl r8
+
+00000a10 <l518>:
+     a10:	1198a06c 	orrsne	sl, r8, ip, rrx
+
+00000a14 <l519>:
+     a14:	83996e4f 	orrshi	r6, r9, #1264	; 0x4f0
+
+00000a18 <l520>:
+     a18:	7199906a 	orrsvc	r9, r9, sl, rrx
+
+00000a1c <l521>:
+     a1c:	e1859a67 	orr	r9, r5, r7, ror #20
+
+00000a20 <l522>:
+     a20:	b1900734 	orrslt	r0, r0, r4, lsr r7
+
+00000a24 <l523>:
+     a24:	7180a06c 	orrvc	sl, r0, ip, rrx
+
+00000a28 <l524>:
+     a28:	518e5017 	orrpl	r5, lr, r7, lsl r0
+
+00000a2c <l525>:
+     a2c:	539849b9 	orrspl	r4, r8, #3031040	; 0x2e4000
+
+00000a30 <l526>:
+     a30:	e38802ca 	orr	r0, r8, #-1610612724	; 0xa000000c
+
+00000a34 <l527>:
+     a34:	518aa813 	orrpl	sl, sl, r3, lsl r8
+
+00000a38 <l528>:
+     a38:	e38a2502 	orr	r2, sl, #8388608	; 0x800000
+
+00000a3c <l529>:
+     a3c:	e186c7a4 	orr	ip, r6, r4, lsr #15
+
+00000a40 <l530>:
+     a40:	219aa00b 	orrscs	sl, sl, fp
+
+00000a44 <l531>:
+     a44:	e39038d1 	orrs	r3, r0, #13697024	; 0xd10000
+
+00000a48 <l532>:
+     a48:	019c0e4a 	orrseq	r0, ip, sl, asr #28
+
+00000a4c <l533>:
+     a4c:	e3983141 	orrs	r3, r8, #1073741840	; 0x40000010
+
+00000a50 <l534>:
+     a50:	e181338f 	orr	r3, r1, pc, lsl #7
+
+00000a54 <l535>:
+     a54:	a1801ec3 	orrge	r1, r0, r3, asr #29
+
+00000a58 <l536>:
+     a58:	21850517 	orrcs	r0, r5, r7, lsl r5
+
+00000a5c <l537>:
+     a5c:	e38700a4 	orr	r0, r7, #164	; 0xa4
+
+00000a60 <l538>:
+     a60:	8195300f 	orrshi	r3, r5, pc
+
+00000a64 <l539>:
+     a64:	4396e7a6 	orrsmi	lr, r6, #43515904	; 0x2980000
+
+00000a68 <l540>:
+     a68:	e189400a 	orr	r4, r9, sl
+
+00000a6c <l541>:
+     a6c:	a18b2a6c 	orrge	r2, fp, ip, ror #20
+
+00000a70 <l542>:
+     a70:	c39ebfd2 	orrsgt	fp, lr, #840	; 0x348
+
+00000a74 <l543>:
+     a74:	4184822f 	orrmi	r8, r4, pc, lsr #4
+
+00000a78 <l544>:
+     a78:	3184c539 	orrcc	ip, r4, r9, lsr r5
+
+00000a7c <l545>:
+     a7c:	e18ae60c 	orr	lr, sl, ip, lsl #12
+
+00000a80 <l546>:
+     a80:	e38762b6 	orr	r6, r7, #1610612747	; 0x6000000b
+
+00000a84 <l547>:
+     a84:	e3942572 	orrs	r2, r4, #478150656	; 0x1c800000
+
+00000a88 <l548>:
+     a88:	e196e002 	orrs	lr, r6, r2
+
+00000a8c <l549>:
+     a8c:	e1824b73 	orr	r4, r2, r3, ror fp
+
+00000a90 <l550>:
+     a90:	e190c00b 	orrs	ip, r0, fp
+
+00000a94 <l551>:
+     a94:	b19e5a67 	orrslt	r5, lr, r7, ror #20
+
+00000a98 <l552>:
+     a98:	e186c066 	orr	ip, r6, r6, rrx
+
+00000a9c <l553>:
+     a9c:	e38f6015 	orr	r6, pc, #21
+
+00000aa0 <l554>:
+     aa0:	939e34fb 	orrsls	r3, lr, #-83886080	; 0xfb000000
+
+00000aa4 <l555>:
+     aa4:	d3879223 	orrle	r9, r7, #805306370	; 0x30000002
+
+00000aa8 <l556>:
+     aa8:	e38f2397 	orr	r2, pc, #1543503874	; 0x5c000002
+
+00000aac <l557>:
+     aac:	31903ce7 	orrscc	r3, r0, r7, ror #25
+
+00000ab0 <l558>:
+     ab0:	e1821007 	orr	r1, r2, r7
+
+00000ab4 <l559>:
+     ab4:	1186353c 	orrne	r3, r6, ip, lsr r5
+
+00000ab8 <l560>:
+     ab8:	e18b8254 	orr	r8, fp, r4, asr r2
+
+00000abc <l561>:
+     abc:	e385107c 	orr	r1, r5, #124	; 0x7c
+
+00000ac0 <l562>:
+     ac0:	e18a200b 	orr	r2, sl, fp
+
+00000ac4 <l563>:
+     ac4:	c186a88e 	orrgt	sl, r6, lr, lsl #17
+
+00000ac8 <l564>:
+     ac8:	2193cce8 	orrscs	ip, r3, r8, ror #25
+
+00000acc <l565>:
+     acc:	51964d0e 	orrspl	r4, r6, lr, lsl #26
+
+00000ad0 <l566>:
+     ad0:	6182900a 	orrvs	r9, r2, sl
+
+00000ad4 <l567>:
+     ad4:	b1841280 	orrlt	r1, r4, r0, lsl #5
+
+00000ad8 <l568>:
+     ad8:	519ac069 	orrspl	ip, sl, r9, rrx
+
+00000adc <l569>:
+     adc:	618a6065 	orrvs	r6, sl, r5, rrx
+
+00000ae0 <l570>:
+     ae0:	6189a006 	orrvs	sl, r9, r6
+
+00000ae4 <l571>:
+     ae4:	6186400c 	orrvs	r4, r6, ip
+
+00000ae8 <l572>:
+     ae8:	e1837e3e 	orr	r7, r3, lr, lsr lr
+
+00000aec <l573>:
+     aec:	e187ec3e 	orr	lr, r7, lr, lsr ip
+
+00000af0 <l574>:
+     af0:	1187eb34 	orrne	lr, r7, r4, lsr fp
+
+00000af4 <l575>:
+     af4:	d396800c 	orrsle	r8, r6, #12
+
+00000af8 <l576>:
+     af8:	e1802b45 	orr	r2, r0, r5, asr #22
+
+00000afc <l577>:
+     afc:	a19f700c 	orrsge	r7, pc, ip
+
+00000b00 <l578>:
+     b00:	e1880422 	orr	r0, r8, r2, lsr #8
+
+00000b04 <l579>:
+     b04:	e392a3a3 	orrs	sl, r2, #-1946157054	; 0x8c000002
+
+00000b08 <l580>:
+     b08:	4184306f 	orrmi	r3, r4, pc, rrx
+
+00000b0c <l581>:
+     b0c:	e38cc9f7 	orr	ip, ip, #4046848	; 0x3dc000
+
+00000b10 <l582>:
+     b10:	218fe061 	orrcs	lr, pc, r1, rrx
+
+00000b14 <l583>:
+     b14:	31873002 	orrcc	r3, r7, r2
+
+00000b18 <l584>:
+     b18:	e1915e78 	orrs	r5, r1, r8, ror lr
+
+00000b1c <l585>:
+     b1c:	619b2251 	orrsvs	r2, fp, r1, asr r2
+
+00000b20 <l586>:
+     b20:	1388b92e 	orrne	fp, r8, #753664	; 0xb8000
+
+00000b24 <l587>:
+     b24:	9182806b 	orrls	r8, r2, fp, rrx
+
+00000b28 <l588>:
+     b28:	51872535 	orrpl	r2, r7, r5, lsr r5
+
+00000b2c <l589>:
+     b2c:	e1907004 	orrs	r7, r0, r4
+
+00000b30 <l590>:
+     b30:	619b3008 	orrsvs	r3, fp, r8
+
+00000b34 <l591>:
+     b34:	c1880658 	orrgt	r0, r8, r8, asr r6
+
+00000b38 <l592>:
+     b38:	6199a000 	orrsvs	sl, r9, r0
+
+00000b3c <l593>:
+     b3c:	e19c5171 	orrs	r5, ip, r1, ror r1
+
+00000b40 <l594>:
+     b40:	e1850b36 	orr	r0, r5, r6, lsr fp
+
+00000b44 <l595>:
+     b44:	61998005 	orrsvs	r8, r9, r5
+
+00000b48 <l596>:
+     b48:	b3800b0a 	orrlt	r0, r0, #10240	; 0x2800
+
+00000b4c <l597>:
+     b4c:	71903853 	orrsvc	r3, r0, r3, asr r8
+
+00000b50 <l598>:
+     b50:	d1969ee9 	orrsle	r9, r6, r9, ror #29
+
+00000b54 <l599>:
+     b54:	e1906060 	orrs	r6, r0, r0, rrx
+
+00000b58 <l600>:
+     b58:	8194e12b 	orrshi	lr, r4, fp, lsr #2
+
+00000b5c <l601>:
+     b5c:	6391547a 	orrsvs	r5, r1, #2046820352	; 0x7a000000
+
+00000b60 <l602>:
+     b60:	6192b73a 	orrsvs	fp, r2, sl, lsr r7
+
+00000b64 <l603>:
+     b64:	43961c31 	orrsmi	r1, r6, #12544	; 0x3100
+
+00000b68 <l604>:
+     b68:	918ec108 	orrls	ip, lr, r8, lsl #2
+
+00000b6c <l605>:
+     b6c:	e396e62a 	orrs	lr, r6, #44040192	; 0x2a00000
+
+00000b70 <l606>:
+     b70:	e3875112 	orr	r5, r7, #-2147483644	; 0x80000004
+
+00000b74 <l607>:
+     b74:	e19036e1 	orrs	r3, r0, r1, ror #13
+
+00000b78 <l608>:
+     b78:	e191496a 	orrs	r4, r1, sl, ror #18
+
+00000b7c <l609>:
+     b7c:	e18ba005 	orr	sl, fp, r5
+
+00000b80 <l610>:
+     b80:	a3905987 	orrsge	r5, r0, #2211840	; 0x21c000
+
+00000b84 <l611>:
+     b84:	e198ba86 	orrs	fp, r8, r6, lsl #21
+
+00000b88 <l612>:
+     b88:	e19c3003 	orrs	r3, ip, r3
+
+00000b8c <l613>:
+     b8c:	619b000a 	orrsvs	r0, fp, sl
+
+00000b90 <l614>:
+     b90:	21804001 	orrcs	r4, r0, r1
+
+00000b94 <l615>:
+     b94:	e194995a 	orrs	r9, r4, sl, asr r9
+
+00000b98 <l616>:
+     b98:	31964005 	orrscc	r4, r6, r5
+
+00000b9c <l617>:
+     b9c:	3194053b 	orrscc	r0, r4, fp, lsr r5
+
+00000ba0 <l618>:
+     ba0:	339e26ff 	orrscc	r2, lr, #267386880	; 0xff00000
+
+00000ba4 <l619>:
+     ba4:	e190900a 	orrs	r9, r0, sl
+
+00000ba8 <l620>:
+     ba8:	51800e69 	orrpl	r0, r0, r9, ror #28
+
+00000bac <l621>:
+     bac:	e1947008 	orrs	r7, r4, r8
+
+00000bb0 <l622>:
+     bb0:	b184bcee 	orrlt	fp, r4, lr, ror #25
+
+00000bb4 <l623>:
+     bb4:	b1980243 	orrslt	r0, r8, r3, asr #4
+
+00000bb8 <l624>:
+     bb8:	e19a9a38 	orrs	r9, sl, r8, lsr sl
+
+00000bbc <l625>:
+     bbc:	b192347c 	orrslt	r3, r2, ip, ror r4
+
+00000bc0 <l626>:
+     bc0:	819e6008 	orrshi	r6, lr, r8
+
+00000bc4 <l627>:
+     bc4:	219c0004 	orrscs	r0, ip, r4
+
+00000bc8 <l628>:
+     bc8:	03928555 	orrseq	r8, r2, #356515840	; 0x15400000
+
+00000bcc <l629>:
+     bcc:	518fc826 	orrpl	ip, pc, r6, lsr #16
+
+00000bd0 <l630>:
+     bd0:	7197806c 	orrsvc	r8, r7, ip, rrx
+
+00000bd4 <l631>:
+     bd4:	1193e00e 	orrsne	lr, r3, lr
+
+00000bd8 <l632>:
+     bd8:	e1817c37 	orr	r7, r1, r7, lsr ip
+
+00000bdc <l633>:
+     bdc:	e1845007 	orr	r5, r4, r7
+
+00000be0 <l634>:
+     be0:	2192c06e 	orrscs	ip, r2, lr, rrx
+
+00000be4 <l635>:
+     be4:	4386ad25 	orrmi	sl, r6, #2368	; 0x940
+
+00000be8 <l636>:
+     be8:	e395a666 	orrs	sl, r5, #106954752	; 0x6600000
+
+00000bec <l637>:
+     bec:	e39293e5 	orrs	r9, r2, #-1811939325	; 0x94000003
+
+00000bf0 <l638>:
+     bf0:	2389cc2a 	orrcs	ip, r9, #10752	; 0x2a00
+
+00000bf4 <l639>:
+     bf4:	618fb006 	orrvs	fp, pc, r6
+
+00000bf8 <l640>:
+     bf8:	518f200f 	orrpl	r2, pc, pc
+
+00000bfc <l641>:
+     bfc:	d190c00a 	orrsle	ip, r0, sl
+
+00000c00 <l642>:
+     c00:	0191206c 	orrseq	r2, r1, ip, rrx
+
+00000c04 <l643>:
+     c04:	d189100b 	orrle	r1, r9, fp
+
+00000c08 <l644>:
+     c08:	e19aa066 	orrs	sl, sl, r6, rrx
+
+00000c0c <l645>:
+     c0c:	e39eb28d 	orrs	fp, lr, #-805306360	; 0xd0000008
+
+00000c10 <l646>:
+     c10:	31888006 	orrcc	r8, r8, r6
+
+00000c14 <l647>:
+     c14:	e1969ac5 	orrs	r9, r6, r5, asr #21
+
+00000c18 <l648>:
+     c18:	61881219 	orrvs	r1, r8, r9, lsl r2
+
+00000c1c <l649>:
+     c1c:	338e4525 	orrcc	r4, lr, #155189248	; 0x9400000
+
+00000c20 <l650>:
+     c20:	e1803422 	orr	r3, r0, r2, lsr #8
+
+00000c24 <l651>:
+     c24:	e3816f6f 	orr	r6, r1, #444	; 0x1bc
+
+00000c28 <l652>:
+     c28:	e390252f 	orrs	r2, r0, #197132288	; 0xbc00000
+
+00000c2c <l653>:
+     c2c:	93973a02 	orrsls	r3, r7, #8192	; 0x2000
+
+00000c30 <l654>:
+     c30:	e1944000 	orrs	r4, r4, r0
+
+00000c34 <l655>:
+     c34:	e3998042 	orrs	r8, r9, #66	; 0x42
+
+00000c38 <l656>:
+     c38:	e196c009 	orrs	ip, r6, r9
+
+00000c3c <l657>:
+     c3c:	11939000 	orrsne	r9, r3, r0
+
+00000c40 <l658>:
+     c40:	81974006 	orrshi	r4, r7, r6
+
+00000c44 <l659>:
+     c44:	91827005 	orrls	r7, r2, r5
+
+00000c48 <l660>:
+     c48:	618ab005 	orrvs	fp, sl, r5
+
+00000c4c <l661>:
+     c4c:	a38f1d5f 	orrge	r1, pc, #6080	; 0x17c0
+
+00000c50 <l662>:
+     c50:	238c8fff 	orrcs	r8, ip, #1020	; 0x3fc
+
+00000c54 <l663>:
+     c54:	638a440e 	orrvs	r4, sl, #234881024	; 0xe000000
+
+00000c58 <l664>:
+     c58:	e1862067 	orr	r2, r6, r7, rrx
+
+00000c5c <l665>:
+     c5c:	e1809002 	orr	r9, r0, r2
+
+00000c60 <l666>:
+     c60:	63841547 	orrvs	r1, r4, #297795584	; 0x11c00000
+
+00000c64 <l667>:
+     c64:	21844067 	orrcs	r4, r4, r7, rrx
+
+00000c68 <l668>:
+     c68:	e39fe60a 	orrs	lr, pc, #10485760	; 0xa00000
+
+00000c6c <l669>:
+     c6c:	33984a81 	orrscc	r4, r8, #528384	; 0x81000
+
+00000c70 <l670>:
+     c70:	e1855b35 	orr	r5, r5, r5, lsr fp
+
+00000c74 <l671>:
+     c74:	e3906bcd 	orrs	r6, r0, #209920	; 0x33400
+
+00000c78 <l672>:
+     c78:	d19a2000 	orrsle	r2, sl, r0
+
+00000c7c <l673>:
+     c7c:	e395ebfe 	orrs	lr, r5, #260096	; 0x3f800
+
+00000c80 <l674>:
+     c80:	919a300f 	orrsls	r3, sl, pc
+
+00000c84 <l675>:
+     c84:	519c8610 	orrspl	r8, ip, r0, lsl r6
+
+00000c88 <l676>:
+     c88:	e18aa5a1 	orr	sl, sl, r1, lsr #11
+
+00000c8c <l677>:
+     c8c:	51800001 	orrpl	r0, r0, r1
+
+00000c90 <l678>:
+     c90:	a3845521 	orrge	r5, r4, #138412032	; 0x8400000
+
+00000c94 <l679>:
+     c94:	11912183 	orrsne	r2, r1, r3, lsl #3
+
+00000c98 <l680>:
+     c98:	c19e500b 	orrsgt	r5, lr, fp
+
+00000c9c <l681>:
+     c9c:	e1813d02 	orr	r3, r1, r2, lsl #26
+
+00000ca0 <l682>:
+     ca0:	e39a0d0b 	orrs	r0, sl, #704	; 0x2c0
+
+00000ca4 <l683>:
+     ca4:	4195700f 	orrsmi	r7, r5, pc
+
+00000ca8 <l684>:
+     ca8:	71885061 	orrvc	r5, r8, r1, rrx
+
+00000cac <l685>:
+     cac:	41801009 	orrmi	r1, r0, r9
+
+00000cb0 <l686>:
+     cb0:	a1904fa9 	orrsge	r4, r0, r9, lsr #31
+
+00000cb4 <l687>:
+     cb4:	2196c00a 	orrscs	ip, r6, sl
+
+00000cb8 <l688>:
+     cb8:	4382c8ee 	orrmi	ip, r2, #15597568	; 0xee0000
+
+00000cbc <l689>:
+     cbc:	318c906c 	orrcc	r9, ip, ip, rrx
+
+00000cc0 <l690>:
+     cc0:	5197a002 	orrspl	sl, r7, r2
+
+00000cc4 <l691>:
+     cc4:	e39e5119 	orrs	r5, lr, #1073741830	; 0x40000006
+
+00000cc8 <l692>:
+     cc8:	918e8063 	orrls	r8, lr, r3, rrx
+
+00000ccc <l693>:
+     ccc:	e187b973 	orr	fp, r7, r3, ror r9
+
+00000cd0 <l694>:
+     cd0:	3186124e 	orrcc	r1, r6, lr, asr #4
+
+00000cd4 <l695>:
+     cd4:	738c74d5 	orrvc	r7, ip, #-721420288	; 0xd5000000
+
+00000cd8 <l696>:
+     cd8:	918ac880 	orrls	ip, sl, r0, lsl #17
+
+00000cdc <l697>:
+     cdc:	e1971ec4 	orrs	r1, r7, r4, asr #29
+
+00000ce0 <l698>:
+     ce0:	e3831bae 	orr	r1, r3, #178176	; 0x2b800
+
+00000ce4 <l699>:
+     ce4:	b18b7c11 	orrlt	r7, fp, r1, lsl ip
+
+00000ce8 <l700>:
+     ce8:	43819307 	orrmi	r9, r1, #469762048	; 0x1c000000
+
+00000cec <l701>:
+     cec:	739a0ea9 	orrsvc	r0, sl, #2704	; 0xa90
+
+00000cf0 <l702>:
+     cf0:	e18a5929 	orr	r5, sl, r9, lsr #18
+
+00000cf4 <l703>:
+     cf4:	b186806b 	orrlt	r8, r6, fp, rrx
+
+00000cf8 <l704>:
+     cf8:	61940131 	orrsvs	r0, r4, r1, lsr r1
+
+00000cfc <l705>:
+     cfc:	738f2223 	orrvc	r2, pc, #805306370	; 0x30000002
+
+00000d00 <l706>:
+     d00:	11981d22 	orrsne	r1, r8, r2, lsr #26
+
+00000d04 <l707>:
+     d04:	1184806c 	orrne	r8, r4, ip, rrx
+
+00000d08 <l708>:
+     d08:	e3888cff 	orr	r8, r8, #65280	; 0xff00
+
+00000d0c <l709>:
+     d0c:	e18a6c1c 	orr	r6, sl, ip, lsl ip
+
+00000d10 <l710>:
+     d10:	218e6932 	orrcs	r6, lr, r2, lsr r9
+
+00000d14 <l711>:
+     d14:	1398b213 	orrsne	fp, r8, #805306369	; 0x30000001
+
+00000d18 <l712>:
+     d18:	e1870142 	orr	r0, r7, r2, asr #2
+
+00000d1c <l713>:
+     d1c:	d393536d 	orrsle	r5, r3, #-1275068415	; 0xb4000001
+
+00000d20 <l714>:
+     d20:	e1848000 	orr	r8, r4, r0
+
+00000d24 <l715>:
+     d24:	e18aa78a 	orr	sl, sl, sl, lsl #15
+
+00000d28 <l716>:
+     d28:	d19c900e 	orrsle	r9, ip, lr
+
+00000d2c <l717>:
+     d2c:	e18f7000 	orr	r7, pc, r0
+
+00000d30 <l718>:
+     d30:	c196a716 	orrsgt	sl, r6, r6, lsl r7
+
+00000d34 <l719>:
+     d34:	61800009 	orrvs	r0, r0, r9
+
+00000d38 <l720>:
+     d38:	e3935db2 	orrs	r5, r3, #11392	; 0x2c80
+
+00000d3c <l721>:
+     d3c:	e18e6003 	orr	r6, lr, r3
+
+00000d40 <l722>:
+     d40:	e19a0000 	orrs	r0, sl, r0
+
+00000d44 <l723>:
+     d44:	c18f1005 	orrgt	r1, pc, r5
+
+00000d48 <l724>:
+     d48:	d1881531 	orrle	r1, r8, r1, lsr r5
+
+00000d4c <l725>:
+     d4c:	d18fb062 	orrle	fp, pc, r2, rrx
+
+00000d50 <l726>:
+     d50:	e19c042b 	orrs	r0, ip, fp, lsr #8
+
+00000d54 <l727>:
+     d54:	919fb003 	orrsls	fp, pc, r3
+
+00000d58 <l728>:
+     d58:	e1956b62 	orrs	r6, r5, r2, ror #22
+
+00000d5c <l729>:
+     d5c:	618c7007 	orrvs	r7, ip, r7
+
+00000d60 <l730>:
+     d60:	33829867 	orrcc	r9, r2, #6750208	; 0x670000
+
+00000d64 <l731>:
+     d64:	619c6068 	orrsvs	r6, ip, r8, rrx
+
+00000d68 <l732>:
+     d68:	e1906b34 	orrs	r6, r0, r4, lsr fp
+
+00000d6c <l733>:
+     d6c:	e189e06f 	orr	lr, r9, pc, rrx
+
+00000d70 <l734>:
+     d70:	e39f8080 	orrs	r8, pc, #128	; 0x80
+
+00000d74 <l735>:
+     d74:	11924007 	orrsne	r4, r2, r7
+
+00000d78 <l736>:
+     d78:	7181435c 	orrvc	r4, r1, ip, asr r3
+
+00000d7c <l737>:
+     d7c:	71993063 	orrsvc	r3, r9, r3, rrx
+
+00000d80 <l738>:
+     d80:	e39caa76 	orrs	sl, ip, #483328	; 0x76000
+
+00000d84 <l739>:
+     d84:	019477ce 	orrseq	r7, r4, lr, asr #15
+
+00000d88 <l740>:
+     d88:	e1839332 	orr	r9, r3, r2, lsr r3
+
+00000d8c <l741>:
+     d8c:	538fa5d5 	orrpl	sl, pc, #893386752	; 0x35400000
+
+00000d90 <l742>:
+     d90:	61868004 	orrvs	r8, r6, r4
+
+00000d94 <l743>:
+     d94:	2183c5c6 	orrcs	ip, r3, r6, asr #11
+
+00000d98 <l744>:
+     d98:	e1857363 	orr	r7, r5, r3, ror #6
+
+00000d9c <l745>:
+     d9c:	b185c005 	orrlt	ip, r5, r5
+
+00000da0 <l746>:
+     da0:	e18a6c5b 	orr	r6, sl, fp, asr ip
+
+00000da4 <l747>:
+     da4:	e381544d 	orr	r5, r1, #1291845632	; 0x4d000000
+
+00000da8 <l748>:
+     da8:	e182ee30 	orr	lr, r2, r0, lsr lr
+
+00000dac <l749>:
+     dac:	e382061f 	orr	r0, r2, #32505856	; 0x1f00000
+
+00000db0 <l750>:
+     db0:	e19861e6 	orrs	r6, r8, r6, ror #3
+
+00000db4 <l751>:
+     db4:	81910a5e 	orrshi	r0, r1, lr, asr sl
+
+00000db8 <l752>:
+     db8:	018b6003 	orreq	r6, fp, r3
+
+00000dbc <l753>:
+     dbc:	e1997753 	orrs	r7, r9, r3, asr r7
+
+00000dc0 <l754>:
+     dc0:	e189915a 	orr	r9, r9, sl, asr r1
+
+00000dc4 <l755>:
+     dc4:	9181087b 	orrls	r0, r1, fp, ror r8
+
+00000dc8 <l756>:
+     dc8:	e190700b 	orrs	r7, r0, fp
+
+00000dcc <l757>:
+     dcc:	a1838061 	orrge	r8, r3, r1, rrx
+
+00000dd0 <l758>:
+     dd0:	b19e2c78 	orrslt	r2, lr, r8, ror ip
+
+00000dd4 <l759>:
+     dd4:	e18c7007 	orr	r7, ip, r7
+
+00000dd8 <l760>:
+     dd8:	d18a95a3 	orrle	r9, sl, r3, lsr #11
+
+00000ddc <l761>:
+     ddc:	41865419 	orrmi	r5, r6, r9, lsl r4
+
+00000de0 <l762>:
+     de0:	e18aa014 	orr	sl, sl, r4, lsl r0
+
+00000de4 <l763>:
+     de4:	e19e500c 	orrs	r5, lr, ip
+
+00000de8 <l764>:
+     de8:	e1863735 	orr	r3, r6, r5, lsr r7
+
+00000dec <l765>:
+     dec:	e19c4c1a 	orrs	r4, ip, sl, lsl ip
+
+00000df0 <l766>:
+     df0:	e19b4002 	orrs	r4, fp, r2
+
+00000df4 <l767>:
+     df4:	e399217b 	orrs	r2, r9, #-1073741794	; 0xc000001e
+
+00000df8 <l768>:
+     df8:	e18181c7 	orr	r8, r1, r7, asr #3
+
+00000dfc <l769>:
+     dfc:	2398b0c9 	orrscs	fp, r8, #201	; 0xc9
+
+00000e00 <l770>:
+     e00:	6399e93e 	orrsvs	lr, r9, #1015808	; 0xf8000
+
+00000e04 <l771>:
+     e04:	e1906064 	orrs	r6, r0, r4, rrx
+
+00000e08 <l772>:
+     e08:	21980727 	orrscs	r0, r8, r7, lsr #14
+
+00000e0c <l773>:
+     e0c:	e19c4a35 	orrs	r4, ip, r5, lsr sl
+
+00000e10 <l774>:
+     e10:	219375ce 	orrscs	r7, r3, lr, asr #11
+
+00000e14 <l775>:
+     e14:	e1987eae 	orrs	r7, r8, lr, lsr #29
+
+00000e18 <l776>:
+     e18:	a196e656 	orrsge	lr, r6, r6, asr r6
+
+00000e1c <l777>:
+     e1c:	e1964c13 	orrs	r4, r6, r3, lsl ip
+
+00000e20 <l778>:
+     e20:	119c9416 	orrsne	r9, ip, r6, lsl r4
+
+00000e24 <l779>:
+     e24:	0183b065 	orreq	fp, r3, r5, rrx
+
+00000e28 <l780>:
+     e28:	11924004 	orrsne	r4, r2, r4
+
+00000e2c <l781>:
+     e2c:	e185400b 	orr	r4, r5, fp
+
+00000e30 <l782>:
+     e30:	a3910a4e 	orrsge	r0, r1, #319488	; 0x4e000
+
+00000e34 <l783>:
+     e34:	e198a004 	orrs	sl, r8, r4
+
+00000e38 <l784>:
+     e38:	e39a7cd3 	orrs	r7, sl, #54016	; 0xd300
+
+00000e3c <l785>:
+     e3c:	e1916e65 	orrs	r6, r1, r5, ror #28
+
+00000e40 <l786>:
+     e40:	21895179 	orrcs	r5, r9, r9, ror r1
+
+00000e44 <l787>:
+     e44:	01921068 	orrseq	r1, r2, r8, rrx
+
+00000e48 <l788>:
+     e48:	e19ae00b 	orrs	lr, sl, fp
+
+00000e4c <l789>:
+     e4c:	e3864409 	orr	r4, r6, #150994944	; 0x9000000
+
+00000e50 <l790>:
+     e50:	e3814101 	orr	r4, r1, #1073741824	; 0x40000000
+
+00000e54 <l791>:
+     e54:	d39e7ec5 	orrsle	r7, lr, #3152	; 0xc50
+
+00000e58 <l792>:
+     e58:	718bc00c 	orrvc	ip, fp, ip
+
+00000e5c <l793>:
+     e5c:	339813ea 	orrscc	r1, r8, #-1476395005	; 0xa8000003
+
+00000e60 <l794>:
+     e60:	e392c8db 	orrs	ip, r2, #14352384	; 0xdb0000
+
+00000e64 <l795>:
+     e64:	7193a06f 	orrsvc	sl, r3, pc, rrx
+
+00000e68 <l796>:
+     e68:	e398b805 	orrs	fp, r8, #327680	; 0x50000
+
+00000e6c <l797>:
+     e6c:	9180cac5 	orrls	ip, r0, r5, asr #21
+
+00000e70 <l798>:
+     e70:	a185e063 	orrge	lr, r5, r3, rrx
+
+00000e74 <l799>:
+     e74:	81826a34 	orrhi	r6, r2, r4, lsr sl
+
+00000e78 <l800>:
+     e78:	d192700a 	orrsle	r7, r2, sl
+
+00000e7c <l801>:
+     e7c:	c18c2155 	orrgt	r2, ip, r5, asr r1
+
+00000e80 <l802>:
+     e80:	0196bcac 	orrseq	fp, r6, ip, lsr #25
+
+00000e84 <l803>:
+     e84:	1398bce6 	orrsne	fp, r8, #58880	; 0xe600
+
+00000e88 <l804>:
+     e88:	8383b98f 	orrhi	fp, r3, #2342912	; 0x23c000
+
+00000e8c <l805>:
+     e8c:	5198655a 	orrspl	r6, r8, sl, asr r5
+
+00000e90 <l806>:
+     e90:	e1908003 	orrs	r8, r0, r3
+
+00000e94 <l807>:
+     e94:	9181800a 	orrls	r8, r1, sl
+
+00000e98 <l808>:
+     e98:	e1802a43 	orr	r2, r0, r3, asr #20
+
+00000e9c <l809>:
+     e9c:	4187614a 	orrmi	r6, r7, sl, asr #2
+
+00000ea0 <l810>:
+     ea0:	e1919003 	orrs	r9, r1, r3
+
+00000ea4 <l811>:
+     ea4:	e1966001 	orrs	r6, r6, r1
+
+00000ea8 <l812>:
+     ea8:	e38f0205 	orr	r0, pc, #1342177280	; 0x50000000
+
+00000eac <l813>:
+     eac:	e38f462f 	orr	r4, pc, #49283072	; 0x2f00000
+
+00000eb0 <l814>:
+     eb0:	e19f50c1 	orrs	r5, pc, r1, asr #1
+
+00000eb4 <l815>:
+     eb4:	e18a70e5 	orr	r7, sl, r5, ror #1
+
+00000eb8 <l816>:
+     eb8:	e1862a2e 	orr	r2, r6, lr, lsr #20
+
+00000ebc <l817>:
+     ebc:	e193900a 	orrs	r9, r3, sl
+
+00000ec0 <l818>:
+     ec0:	91905c70 	orrsls	r5, r0, r0, ror ip
+
+00000ec4 <l819>:
+     ec4:	4394ae16 	orrsmi	sl, r4, #352	; 0x160
+
+00000ec8 <l820>:
+     ec8:	818b206e 	orrhi	r2, fp, lr, rrx
+
+00000ecc <l821>:
+     ecc:	619b66ca 	orrsvs	r6, fp, sl, asr #13
+
+00000ed0 <l822>:
+     ed0:	0191400a 	orrseq	r4, r1, sl
+
+00000ed4 <l823>:
+     ed4:	e3917586 	orrs	r7, r1, #562036736	; 0x21800000
+
+00000ed8 <l824>:
+     ed8:	e195e005 	orrs	lr, r5, r5
+
+00000edc <l825>:
+     edc:	e1878834 	orr	r8, r7, r4, lsr r8
+
+00000ee0 <l826>:
+     ee0:	e398a4c7 	orrs	sl, r8, #-956301312	; 0xc7000000
+
+00000ee4 <l827>:
+     ee4:	019a0009 	orrseq	r0, sl, r9
+
+00000ee8 <l828>:
+     ee8:	e18b1459 	orr	r1, fp, r9, asr r4
+
+00000eec <l829>:
+     eec:	e18b8002 	orr	r8, fp, r2
+
+00000ef0 <l830>:
+     ef0:	5189300c 	orrpl	r3, r9, ip
+
+00000ef4 <l831>:
+     ef4:	e380706f 	orr	r7, r0, #111	; 0x6f
+
+00000ef8 <l832>:
+     ef8:	c1828f29 	orrgt	r8, r2, r9, lsr #30
+
+00000efc <l833>:
+     efc:	5385326b 	orrpl	r3, r5, #-1342177274	; 0xb0000006
+
+00000f00 <l834>:
+     f00:	31896403 	orrcc	r6, r9, r3, lsl #8
+
+00000f04 <l835>:
+     f04:	318e777b 	orrcc	r7, lr, fp, ror r7
+
+00000f08 <l836>:
+     f08:	738ec2dd 	orrvc	ip, lr, #-805306355	; 0xd000000d
+
+00000f0c <l837>:
+     f0c:	e187305c 	orr	r3, r7, ip, asr r0
+
+00000f10 <l838>:
+     f10:	1198e007 	orrsne	lr, r8, r7
+
+00000f14 <l839>:
+     f14:	b38a6021 	orrlt	r6, sl, #33	; 0x21
+
+00000f18 <l840>:
+     f18:	e1940610 	orrs	r0, r4, r0, lsl r6
+
+00000f1c <l841>:
+     f1c:	21970111 	orrscs	r0, r7, r1, lsl r1
+
+00000f20 <l842>:
+     f20:	e3921a3b 	orrs	r1, r2, #241664	; 0x3b000
+
+00000f24 <l843>:
+     f24:	339a7586 	orrscc	r7, sl, #562036736	; 0x21800000
+
+00000f28 <l844>:
+     f28:	e196300c 	orrs	r3, r6, ip
+
+00000f2c <l845>:
+     f2c:	e1909000 	orrs	r9, r0, r0
+
+00000f30 <l846>:
+     f30:	91836f2e 	orrls	r6, r3, lr, lsr #30
+
+00000f34 <l847>:
+     f34:	319b255a 	orrscc	r2, fp, sl, asr r5
+
+00000f38 <l848>:
+     f38:	61858837 	orrvs	r8, r5, r7, lsr r8
+
+00000f3c <l849>:
+     f3c:	b18e0e73 	orrlt	r0, lr, r3, ror lr
+
+00000f40 <l850>:
+     f40:	11895067 	orrne	r5, r9, r7, rrx
+
+00000f44 <l851>:
+     f44:	5181ce16 	orrpl	ip, r1, r6, lsl lr
+
+00000f48 <l852>:
+     f48:	e1982063 	orrs	r2, r8, r3, rrx
+
+00000f4c <l853>:
+     f4c:	e398bb81 	orrs	fp, r8, #132096	; 0x20400
+
+00000f50 <l854>:
+     f50:	e18a3b6c 	orr	r3, sl, ip, ror #22
+
+00000f54 <l855>:
+     f54:	e38c3b0d 	orr	r3, ip, #13312	; 0x3400
+
+00000f58 <l856>:
+     f58:	219a8009 	orrscs	r8, sl, r9
+
+00000f5c <l857>:
+     f5c:	c18b800f 	orrgt	r8, fp, pc
+
+00000f60 <l858>:
+     f60:	81940ac4 	orrshi	r0, r4, r4, asr #21
+
+00000f64 <l859>:
+     f64:	b3826525 	orrlt	r6, r2, #155189248	; 0x9400000
+
+00000f68 <l860>:
+     f68:	e1945066 	orrs	r5, r4, r6, rrx
+
+00000f6c <l861>:
+     f6c:	438c3629 	orrmi	r3, ip, #42991616	; 0x2900000
+
+00000f70 <l862>:
+     f70:	b38345bf 	orrlt	r4, r3, #801112064	; 0x2fc00000
+
+00000f74 <l863>:
+     f74:	6196e003 	orrsvs	lr, r6, r3
+
+00000f78 <l864>:
+     f78:	a182bb87 	orrge	fp, r2, r7, lsl #23
+
+00000f7c <l865>:
+     f7c:	e193813a 	orrs	r8, r3, sl, lsr r1
+
+00000f80 <l866>:
+     f80:	e195b005 	orrs	fp, r5, r5
+
+00000f84 <l867>:
+     f84:	4193e0c9 	orrsmi	lr, r3, r9, asr #1
+
+00000f88 <l868>:
+     f88:	e199700c 	orrs	r7, r9, ip
+
+00000f8c <l869>:
+     f8c:	e3943023 	orrs	r3, r4, #35	; 0x23
+
+00000f90 <l870>:
+     f90:	e19b100b 	orrs	r1, fp, fp
+
+00000f94 <l871>:
+     f94:	e19ca5a9 	orrs	sl, ip, r9, lsr #11
+
+00000f98 <l872>:
+     f98:	91990237 	orrsls	r0, r9, r7, lsr r2
+
+00000f9c <l873>:
+     f9c:	e192ea28 	orrs	lr, r2, r8, lsr #20
+
+00000fa0 <l874>:
+     fa0:	e1900535 	orrs	r0, r0, r5, lsr r5
+
+00000fa4 <l875>:
+     fa4:	31955061 	orrscc	r5, r5, r1, rrx
+
+00000fa8 <l876>:
+     fa8:	319ae036 	orrscc	lr, sl, r6, lsr r0
+
+00000fac <l877>:
+     fac:	339a0a03 	orrscc	r0, sl, #12288	; 0x3000
+
+00000fb0 <l878>:
+     fb0:	a38c9c9b 	orrge	r9, ip, #39680	; 0x9b00
+
+00000fb4 <l879>:
+     fb4:	e180e000 	orr	lr, r0, r0
+
+00000fb8 <l880>:
+     fb8:	0384831b 	orreq	r8, r4, #1811939328	; 0x6c000000
+
+00000fbc <l881>:
+     fbc:	63864786 	orrvs	r4, r6, #35127296	; 0x2180000
+
+00000fc0 <l882>:
+     fc0:	e197b06f 	orrs	fp, r7, pc, rrx
+
+00000fc4 <l883>:
+     fc4:	e19f8004 	orrs	r8, pc, r4
+
+00000fc8 <l884>:
+     fc8:	b1907958 	orrslt	r7, r0, r8, asr r9
+
+00000fcc <l885>:
+     fcc:	e387ba6a 	orr	fp, r7, #434176	; 0x6a000
+
+00000fd0 <l886>:
+     fd0:	419e091a 	orrsmi	r0, lr, sl, lsl r9
+
+00000fd4 <l887>:
+     fd4:	e1880000 	orr	r0, r8, r0
+
+00000fd8 <l888>:
+     fd8:	b1985b13 	orrslt	r5, r8, r3, lsl fp
+
+00000fdc <l889>:
+     fdc:	e193006c 	orrs	r0, r3, ip, rrx
+
+00000fe0 <l890>:
+     fe0:	21838862 	orrcs	r8, r3, r2, ror #16
+
+00000fe4 <l891>:
+     fe4:	e38c6705 	orr	r6, ip, #1310720	; 0x140000
+
+00000fe8 <l892>:
+     fe8:	e39476b1 	orrs	r7, r4, #185597952	; 0xb100000
+
+00000fec <l893>:
+     fec:	e1941e14 	orrs	r1, r4, r4, lsl lr
+
+00000ff0 <l894>:
+     ff0:	e181b00a 	orr	fp, r1, sl
+
+00000ff4 <l895>:
+     ff4:	d18058c1 	orrle	r5, r0, r1, asr #17
+
+00000ff8 <l896>:
+     ff8:	13907519 	orrsne	r7, r0, #104857600	; 0x6400000
+
+00000ffc <l897>:
+     ffc:	51949de2 	orrspl	r9, r4, r2, ror #27
+
+00001000 <l898>:
+    1000:	c39b110b 	orrsgt	r1, fp, #-1073741822	; 0xc0000002
+
+00001004 <l899>:
+    1004:	d1954439 	orrsle	r4, r5, r9, lsr r4
+
+00001008 <l900>:
+    1008:	7184b836 	orrvc	fp, r4, r6, lsr r8
+
+0000100c <l901>:
+    100c:	b1806a1e 	orrlt	r6, r0, lr, lsl sl
+
+00001010 <l902>:
+    1010:	1184406c 	orrne	r4, r4, ip, rrx
+
+00001014 <l903>:
+    1014:	e18c106b 	orr	r1, ip, fp, rrx
+
+00001018 <l904>:
+    1018:	4392e427 	orrsmi	lr, r2, #654311424	; 0x27000000
+
+0000101c <l905>:
+    101c:	239c163f 	orrscs	r1, ip, #66060288	; 0x3f00000
+
+00001020 <l906>:
+    1020:	a390a872 	orrsge	sl, r0, #7471104	; 0x720000
+
+00001024 <l907>:
+    1024:	e1849037 	orr	r9, r4, r7, lsr r0
+
+00001028 <l908>:
+    1028:	018e0008 	orreq	r0, lr, r8
+
+0000102c <l909>:
+    102c:	e1958dee 	orrs	r8, r5, lr, ror #27
+
+00001030 <l910>:
+    1030:	718c0509 	orrvc	r0, ip, r9, lsl #10
+
+00001034 <l911>:
+    1034:	e3902d0b 	orrs	r2, r0, #704	; 0x2c0
+
+00001038 <l912>:
+    1038:	b192b000 	orrslt	fp, r2, r0
+
+0000103c <l913>:
+    103c:	e38b6213 	orr	r6, fp, #805306369	; 0x30000001
+
+00001040 <l914>:
+    1040:	b397e301 	orrslt	lr, r7, #67108864	; 0x4000000
+
+00001044 <l915>:
+    1044:	e1988063 	orrs	r8, r8, r3, rrx
+
+00001048 <l916>:
+    1048:	e1981005 	orrs	r1, r8, r5
+
+0000104c <l917>:
+    104c:	318faccb 	orrcc	sl, pc, fp, asr #25
+
+00001050 <l918>:
+    1050:	638b49dd 	orrvs	r4, fp, #3620864	; 0x374000
+
+00001054 <l919>:
+    1054:	e19a9e38 	orrs	r9, sl, r8, lsr lr
+
+00001058 <l920>:
+    1058:	1190ab76 	orrsne	sl, r0, r6, ror fp
+
+0000105c <l921>:
+    105c:	43865a6f 	orrmi	r5, r6, #454656	; 0x6f000
+
+00001060 <l922>:
+    1060:	e183c777 	orr	ip, r3, r7, ror r7
+
+00001064 <l923>:
+    1064:	e1939380 	orrs	r9, r3, r0, lsl #7
+
+00001068 <l924>:
+    1068:	41956ac4 	orrsmi	r6, r5, r4, asr #21
+
+0000106c <l925>:
+    106c:	e197c8ca 	orrs	ip, r7, sl, asr #17
+
+00001070 <l926>:
+    1070:	e390a04d 	orrs	sl, r0, #77	; 0x4d
+
+00001074 <l927>:
+    1074:	31915257 	orrscc	r5, r1, r7, asr r2
+
+00001078 <l928>:
+    1078:	d1959150 	orrsle	r9, r5, r0, asr r1
+
+0000107c <l929>:
+    107c:	e3821e2b 	orr	r1, r2, #688	; 0x2b0
+
+00001080 <l930>:
+    1080:	a388843f 	orrge	r8, r8, #1056964608	; 0x3f000000
+
+00001084 <l931>:
+    1084:	31910007 	orrscc	r0, r1, r7
+
+00001088 <l932>:
+    1088:	e18a4002 	orr	r4, sl, r2
+
+0000108c <l933>:
+    108c:	e186b614 	orr	fp, r6, r4, lsl r6
+
+00001090 <l934>:
+    1090:	c182a005 	orrgt	sl, r2, r5
+
+00001094 <l935>:
+    1094:	6388afb1 	orrvs	sl, r8, #708	; 0x2c4
+
+00001098 <l936>:
+    1098:	8196e004 	orrshi	lr, r6, r4
+
+0000109c <l937>:
+    109c:	e1818005 	orr	r8, r1, r5
+
+000010a0 <l938>:
+    10a0:	e188600c 	orr	r6, r8, ip
+
+000010a4 <l939>:
+    10a4:	11920008 	orrsne	r0, r2, r8
+
+000010a8 <l940>:
+    10a8:	e185506b 	orr	r5, r5, fp, rrx
+
+000010ac <l941>:
+    10ac:	e397ee19 	orrs	lr, r7, #400	; 0x190
+
+000010b0 <l942>:
+    10b0:	e39eafdd 	orrs	sl, lr, #884	; 0x374
+
+000010b4 <l943>:
+    10b4:	b19c706a 	orrslt	r7, ip, sl, rrx
+
+000010b8 <l944>:
+    10b8:	0387a5e9 	orreq	sl, r7, #977272832	; 0x3a400000
+
+000010bc <l945>:
+    10bc:	5194ba19 	orrspl	fp, r4, r9, lsl sl
+
+000010c0 <l946>:
+    10c0:	618ac008 	orrvs	ip, sl, r8
+
+000010c4 <l947>:
+    10c4:	e39ac107 	orrs	ip, sl, #-1073741823	; 0xc0000001
+
+000010c8 <l948>:
+    10c8:	33897973 	orrcc	r7, r9, #1884160	; 0x1cc000
+
+000010cc <l949>:
+    10cc:	119acb57 	orrsne	ip, sl, r7, asr fp
+
+000010d0 <l950>:
+    10d0:	638a000f 	orrvs	r0, sl, #15
+
+000010d4 <l951>:
+    10d4:	519aa005 	orrspl	sl, sl, r5
+
+000010d8 <l952>:
+    10d8:	21899c46 	orrcs	r9, r9, r6, asr #24
+
+000010dc <l953>:
+    10dc:	738eb27f 	orrvc	fp, lr, #-268435449	; 0xf0000007
+
+000010e0 <l954>:
+    10e0:	e3839777 	orr	r9, r3, #31195136	; 0x1dc0000
+
+000010e4 <l955>:
+    10e4:	2192906c 	orrscs	r9, r2, ip, rrx
+
+000010e8 <l956>:
+    10e8:	e382bde1 	orr	fp, r2, #14400	; 0x3840
+
+000010ec <l957>:
+    10ec:	93903023 	orrsls	r3, r0, #35	; 0x23
+
+000010f0 <l958>:
+    10f0:	e389b036 	orr	fp, r9, #54	; 0x36
+
+000010f4 <l959>:
+    10f4:	c18eb35b 	orrgt	fp, lr, fp, asr r3
+
+000010f8 <l960>:
+    10f8:	41839001 	orrmi	r9, r3, r1
+
+000010fc <l961>:
+    10fc:	c19b6009 	orrsgt	r6, fp, r9
+
+00001100 <l962>:
+    1100:	b19f7063 	orrslt	r7, pc, r3, rrx
+
+00001104 <l963>:
+    1104:	51805060 	orrpl	r5, r0, r0, rrx
+
+00001108 <l964>:
+    1108:	e199bec6 	orrs	fp, r9, r6, asr #29
+
+0000110c <l965>:
+    110c:	618c1278 	orrvs	r1, ip, r8, ror r2
+
+00001110 <l966>:
+    1110:	a1882006 	orrge	r2, r8, r6
+
+00001114 <l967>:
+    1114:	e18b2a71 	orr	r2, fp, r1, ror sl
+
+00001118 <l968>:
+    1118:	b39a3b56 	orrslt	r3, sl, #88064	; 0x15800
+
+0000111c <l969>:
+    111c:	e18bc645 	orr	ip, fp, r5, asr #12
+
+00001120 <l970>:
+    1120:	118b374f 	orrne	r3, fp, pc, asr #14
+
+00001124 <l971>:
+    1124:	e39b03ea 	orrs	r0, fp, #-1476395005	; 0xa8000003
+
+00001128 <l972>:
+    1128:	e19143a6 	orrs	r4, r1, r6, lsr #7
+
+0000112c <l973>:
+    112c:	e1943009 	orrs	r3, r4, r9
+
+00001130 <l974>:
+    1130:	e19e806f 	orrs	r8, lr, pc, rrx
+
+00001134 <l975>:
+    1134:	e19b7511 	orrs	r7, fp, r1, lsl r5
+
+00001138 <l976>:
+    1138:	1185e062 	orrne	lr, r5, r2, rrx
+
+0000113c <l977>:
+    113c:	e18b7ba3 	orr	r7, fp, r3, lsr #23
+
+00001140 <l978>:
+    1140:	e18a000a 	orr	r0, sl, sl
+
+00001144 <l979>:
+    1144:	e391a706 	orrs	sl, r1, #1572864	; 0x180000
+
+00001148 <l980>:
+    1148:	e183166b 	orr	r1, r3, fp, ror #12
+
+0000114c <l981>:
+    114c:	439e6b1d 	orrsmi	r6, lr, #29696	; 0x7400
+
+00001150 <l982>:
+    1150:	d1899fe1 	orrle	r9, r9, r1, ror #31
+
+00001154 <l983>:
+    1154:	418fc1a1 	orrmi	ip, pc, r1, lsr #3
+
+00001158 <l984>:
+    1158:	218b85ca 	orrcs	r8, fp, sl, asr #11
+
+0000115c <l985>:
+    115c:	9197e06c 	orrsls	lr, r7, ip, rrx
+
+00001160 <l986>:
+    1160:	e19ae061 	orrs	lr, sl, r1, rrx
+
+00001164 <l987>:
+    1164:	b380e479 	orrlt	lr, r0, #2030043136	; 0x79000000
+
+00001168 <l988>:
+    1168:	c1876373 	orrgt	r6, r7, r3, ror r3
+
+0000116c <l989>:
+    116c:	e19a1004 	orrs	r1, sl, r4
+
+00001170 <l990>:
+    1170:	119a3005 	orrsne	r3, sl, r5
+
+00001174 <l991>:
+    1174:	0191e061 	orrseq	lr, r1, r1, rrx
+
+00001178 <l992>:
+    1178:	41810003 	orrmi	r0, r1, r3
+
+0000117c <l993>:
+    117c:	01941008 	orrseq	r1, r4, r8
+
+00001180 <l994>:
+    1180:	41940b89 	orrsmi	r0, r4, r9, lsl #23
+
+00001184 <l995>:
+    1184:	0199a377 	orrseq	sl, r9, r7, ror r3
+
+00001188 <l996>:
+    1188:	3391b0e2 	orrscc	fp, r1, #226	; 0xe2
+
+0000118c <l997>:
+    118c:	e180515e 	orr	r5, r0, lr, asr r1
+
+00001190 <l998>:
+    1190:	8193a004 	orrshi	sl, r3, r4
+
+00001194 <l999>:
+    1194:	319040c4 	orrscc	r4, r0, r4, asr #1
+
+00001198 <l1000>:
+    1198:	e18b2006 	orr	r2, fp, r6
+
+0000119c <end>:
+    119c:	eafffffe 	b	119c <end>

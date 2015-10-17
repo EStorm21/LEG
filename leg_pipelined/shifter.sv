@@ -1,7 +1,7 @@
 module shifter(input  logic [31:0] a,
 			        input logic [31:0] b,
               output logic [31:0] shiftBE,
-              input logic isRtype, isRSRtype, isLDRSTR_shift,
+              input logic isRtype, isRSRtype, isLDRSTR_shift, ZeroRotate,
               input logic [1:0] prevCVflag, // [1] is C, [0] is V
               input logic [6:4] shiftOpCode_E,
               output logic      shifterCarryOutE);
@@ -13,7 +13,7 @@ module shifter(input  logic [31:0] a,
  * RSR type and load/store shift immediate types. 
  *
  ******************************/
-// [6:5] is the shift bit 
+ 
 reg[63:0] temp;
 
 
@@ -21,6 +21,9 @@ always_comb
 begin
 if (isRtype & ~isLDRSTR_shift) // R type
   begin
+    // In R type, this comes from the immediate.
+    // It happens to be the bits [6:5] of the instruction specify the shift,
+    // and they get passed along as the "immediate."
   	casex(a[6:5])
   		2'b00: begin // LSL
                 shiftBE = b << a[11:7]; 
@@ -173,17 +176,11 @@ else if (isLDRSTR_shift)
 else
   begin
     shiftBE = b[31:0];
-    if(b[11:8] == 4'b0)
+    if(ZeroRotate)
         shifterCarryOutE = prevCVflag[1];
     else
         shifterCarryOutE = b[31];
   end
 
 end
-/*
-// Here's a potential shifter
-  integer shiftAmt;
-  assign shiftAmt = InstrD[11:7];
-  assign ShiftImmD = rd2D << shiftAmt;
-  // Needs to set carry */
 endmodule

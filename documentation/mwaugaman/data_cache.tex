@@ -1,0 +1,41 @@
+% TODO
+\section{Data Cache}
+
+\subsection{Brief Overview}
+
+The data cache is a writeback, 2 way associative cache. The cache uses physical tagging and virtual indexing, so the number of lines in each way is limited to the size of a tiny translation page or 256 lines where each line consists of four words. This architecture implies that the total cache size is $2 ways \cdot 256 \frac{lines}{way} \cdot 4 \frac{words}{line} \cdot 4 \frac{bytes}{word} = 2048 bytes$
+% TODO
+
+\subsection{Important Diagrams}
+
+% TODO - include images or give path to images in git
+
+\subsection{All Relevant Files and Brief Descriptions}
+
+% TODO
+
+\subsection{Analysis of Confusing Sections of Code}
+
+Below is an explanation of the states NEXTINSTR, WRITEBYTES, WAIT,and DWRITE.
+
+\begin{enumerate}
+	\item NEXTINSTR
+	The next instr state removes the stall on the pipeline and allows the instructions to move one stage down the pipeline. If this stage did not exist, then the instruction at the data stage would remain the same and after the requested data is retrieved, the same data would be retrieved again. If the entry were uncachable, then the processor would stall forever.
+
+	\item WRITEBYTES
+	The cache enters this state when the cache is disabled, and it needs to writeback bytes of data. In this state, the data from the memory has been loaded into the cache and the proper bytes have been written to the cache memory. After this state, the data is stored back into the main memory with the proper bytes overwritten. This state is separate from DWRITE because writing a whole word to memory does not require loading the word first. This state will be removed when a bytemask is added to the bus.
+
+	\item WAIT
+	The data cache enters this state when simultaneous data and instruction stalls occur. The data cache has bus precedence, so it waits for the instruction cache to retrieve data before handling the next request. 
+
+	\item DWRITE
+	This state handles disables full word writes to main memory.
+	
+\end{enumerate}
+
+\subsection{Not complete}
+
+\begin{enumerate}
+	\item Add Byte Mask to the ahb bus
+	\item Fix the infinite loop bug at linux simulation time ~1772200
+\end{enumerate}

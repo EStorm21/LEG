@@ -25,7 +25,8 @@ module leg(input  logic        clk, reset,
   logic        ExceptionSavePC;
 
   /// Output from Datapath
-  logic [3:0]  ALUFlagsE, MultFlagsE;
+  logic [3:0]  ALUFlagsE;
+  logic [1:0]  MultFlagsE;
   logic [31:0] InstrD, DefaultInstrD, ALUOutW;
   logic        MultStallD, MultStallE;
   logic        WriteMultLoE, WriteMultLoKeptE;
@@ -40,17 +41,17 @@ module leg(input  logic        clk, reset,
   logic [31:0] InstrE, ALUResultE;
   logic        RegWriteM, MemtoRegE, PCWrPendingF, WriteByteE, StrHalfwordE, LdrHalfwordW, HalfwordOffsetW;
   logic        Ldr_SignBW, Ldr_SignHW;
-  logic        DoNotWriteRegE, doNotUpdateFlagD,uOpStallD, PrevRSRstateD, PrevRSRstateE, CPSRtoRegW;
+  logic        DoNotWriteRegE, uOpStallD, PrevRSRstateD, PrevRSRstateE, CPSRtoRegW;
   logic        LDMSTMforwardD, LDMSTMforwardE, LDRSTRshiftE, MultSelectD, RselectE;
   logic [3:0]  FlagsE; // [1] is C, [0] is V
-  logic [1:0]  ResultSelectE, STR_cycleD, ByteOffsetW;
+  logic [1:0]  ResultSelectE, ByteOffsetW;
   logic [1:0]  MultControlE;
   logic        KeepVE, noRotateD, InstrMuxD;
   logic [31:0] uOpInstrD;
   logic [2:0]  ALUOperationE, CVUpdateE;
-  logic        InvertBE, ReverseInputsE, ALUCarryE, MultEnableE, ZFlagKeptE, LoadLengthW;
+  logic        InvertBE, ReverseInputsE, ALUCarryInE, MultEnableE, ZFlagKeptE, LoadLengthW;
   logic [3:0]  RegFileRzD;
-  logic        ShifterCarryOut_cycle2E, CoProc_En, AddZeroE;
+  logic        ShifterCarryOut_cycle2E, CoProc_En, AddZeroE, ClzSelectE;
   logic [7:0]  CPSR8_W;
   logic [31:0] PSR_W;
   logic [6:0]  PCVectorAddressW;
@@ -69,10 +70,8 @@ module leg(input  logic        clk, reset,
   logic       RegtoCPSR, CPSRtoReg;
   logic [1:0] PCInSelect;
 
-  
-
-  controller c(.*);
-  datapath dp(.*); 
+  controller c (.*);
+  datapath dp (.*); 
   hazard h(.*);
   addresspath ap(.*);
 

@@ -1,22 +1,25 @@
-module instr_cache_way #(parameter lines = 65536, parameter tagbits = 14, 
-                           parameter blocksize = 4)
-                    (input logic clk, reset, WE, 
-                     input logic [31:0] WD, 
-                     input logic [31:0] A,
-                     output logic rv,
-                     output logic [tagbits-1:0] RTag,
-                     output logic [blocksize*32-1:0] RD);
+module instr_cache_way #(
+  parameter lines     = 65536, parameter tbits = 14,
+  parameter bsize = 4
+) (
+  input  logic                    clk, reset, WE,
+  input  logic [            31:0] WD  ,
+  input  logic [            31:0] A   ,
+  output logic                    rv  ,
+  output logic [       tbits-1:0] RTag,
+  output logic [bsize*32-1:0] RD
+);
 
   parameter setbits = $clog2(lines);
-  parameter blockoffset = $clog2(blocksize);
+  parameter blockoffset = $clog2(bsize);
 
-  logic [tagbits-1:0] tag[lines-1:0]; // n lines x tagbits
+  logic [tbits-1:0] tag[lines-1:0]; // n lines x tbits
   logic [lines-1:0] v;                // n lines x 1 bit
   logic [setbits-1:0]  set;           // n lines 16 bit address
   logic [31:0] rd3, rd2, rd1, rd0;    // Four words of instruction cache line
 
   // Read the data from the cache immediately
-  assign set = A[blocksize+setbits-1:blocksize];
+  assign set = A[bsize+setbits-1:bsize];
   assign RTag = tag[set];
   assign rv = v[set];
   assign RD = {rd3, rd2, rd1, rd0};
@@ -40,7 +43,7 @@ module instr_cache_way #(parameter lines = 65536, parameter tagbits = 14,
       v <= 'b0;
     end else if (WE) begin
       v[set]    <= 1'b1;  // write the valid bit
-      tag[set]  <= A[31:31-tagbits+1];  // write the tag
+      tag[set]  <= A[31:31-tbits+1];  // write the tag
     end
 
 endmodule

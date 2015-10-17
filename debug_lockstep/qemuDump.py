@@ -144,7 +144,7 @@ def getExpr(expr):
 	return data
 
 def setExpr(expr, val):
-	gdb.execute('set {} = {:#x}'.format(expr,val), to_string=True)
+	gdb.execute('set {} = {:#x}'.format(expr,val))
 
 def dumpCoprocessorReg(reg):
 	# Command we want:
@@ -181,7 +181,9 @@ def dumpAllCoprocessorRegs():
 	return cpregs
 
 def fullDump(path):
+	print "Dumping Qemu state"
 	gdb.execute("disable breakpoints")
+
 
 	# TODO UNCOMMENT
 	dumpQemuFile(path)
@@ -221,35 +223,3 @@ def fullDump(path):
 	# 	print f.read()
 
 	gdb.execute("enable breakpoints")
-
-
-
-# gdb.execute('file ../kernel/vmlinux')
-# gdb.execute('target remote localhost:1234')
-
-# # with open('/proj/leg/sim/kernelBug.log','r') as f:
-# # 	instr = int(f.readline(),16)
-# # 	state = ast.literal_eval(f.readline())
-
-# # gdb.execute('break *{0:#x}'.format(instr), to_string=True)
-# # while True:
-# # 	gdb.execute('continue', to_string=True)
-# # 	if getQemuRegs() == state:
-# # 		break
-# gdb.execute('break start_kernel')
-# gdb.execute('continue')
-
-# gdb.execute('delete 1')
-
-# gdb.execute('set pagination off')
-# fullDump('test0')
-
-# # print "\nLocation:"
-# # gdb.execute('where')
-# # print "\nRegisters:"
-# # gdb.execute('info reg')
-# # print "\nInstructions:"
-# # gdb.execute('x/15i $pc')
-
-# gdb.execute('detach')
-# gdb.execute('quit')
