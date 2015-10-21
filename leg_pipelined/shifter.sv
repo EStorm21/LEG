@@ -13,7 +13,7 @@ module shifter(input  logic [31:0] a,
  * RSR type and load/store shift immediate types. 
  *
  ******************************/
-// [6:5] is the shift bit 
+ 
 reg[63:0] temp;
 
 
@@ -21,6 +21,9 @@ always_comb
 begin
 if (isRtype & ~isLDRSTR_shift) // R type
   begin
+    // In R type, this comes from the immediate.
+    // It happens to be the bits [6:5] of the instruction specify the shift,
+    // and they get passed along as the "immediate."
   	casex(a[6:5])
   		2'b00: begin // LSL
                 shiftBE = b << a[11:7]; 

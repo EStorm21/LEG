@@ -11,15 +11,15 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic        ALUSrcE, BranchTakenE,
                   input  logic [3:0]  ALUControlE, 
                   input  logic [1:0]  MultControlE,
-                  input  logic        MultEnableE, ZFlagKeptE, 
-                  input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, AddZeroE, ClzSelectE,
+                  input  logic        MultEnableE,
+                  input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE,
                   input  logic [31:0] InstrE, PSR_W, 
                   // Handling data-processing Instrs (ALU)
                   input  logic [3:0]  FlagsE,
-                  input  logic [2:0]  CVUpdateE, ALUOperationE,
-                  input  logic        InvertBE, ReverseInputsE, ALUCarryE,
+                  input  logic [2:0]  ALUOperationE,
+                  input  logic        InvertBE, ReverseInputsE, ALUCarryInE,
                   // To handle micro-op decoding
-                  input  logic        RselectE, PrevRSRstateE, LDRSTRshiftE, 
+                  input  logic        RselectE, LDRSTRshiftE, 
                   input  logic [1:0]  ResultSelectE, // 2 bits Comes from {MultSelectE, RSRselectE}
                   input  logic [6:4]  ShiftOpCode_E,
                   // To handle load-store half-words and bytes
@@ -27,19 +27,19 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic [1:0]  ByteOffsetW,
                   input  logic        WriteByteE, StrHalfwordE, LdrHalfwordW, IncrementE, //HalfwordOffset, 
                   // Added for moving MicroOpFSM to Controller decode
-                  input  logic        KeepVE, noRotateD, InstrMuxD,
+                  input  logic        noRotateD, InstrMuxD,
                   input  logic [3:0]  RegFileRzD,
                   input  logic [31:0] uOpInstrD,
-                  input  logic        WriteMultLoKeptE,
-                  input  logic        ShifterCarryOut_cycle2E, CoProc_EnM, 
+		  input logic         uOpStallD,
+                  input  logic        CoProc_EnM, 
 
                 /// ------ To Controller ------
                   output logic [31:0] InstrD,
                   output logic [31:0] ALUOutM, ALUOutW,
-                  output logic [3:0]  ALUFlagsE, MultFlagsE,
-                  output logic [1:0]  STR_cycleD,
+                  output logic [3:0]  ALUFlagsE, 
+                  output logic [1:0]  MultFlagsE,
                   output logic [31:0] ALUResultE, DefaultInstrD,
-                  output logic        ShifterCarryOutE, CarryHiddenE,
+                  output logic        ShifterCarryOutE,
 
                 /// ------ From Hazard ------
                   input  logic [1:0]  ForwardAE, ForwardBE,
@@ -68,6 +68,10 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // Keep PC and instruction in each stage for debugging
   logic [31:0] PCD, PCE, PCM, PCW;
   logic [31:0] instrEdebug, instrMdebug, instrWdebug;
+  // Also track whether or not each instruction is valid (not flushed)
+  logic        validDdebug, validEdebug, validMdebug, validWdebug;
+  logic        uOpProgEdebug, uOpProgMdebug, uOpProgWdebug;
+  logic        advancingEdebug, advancingWdebug;
   
 /***** Brief Description *******
  * Modified by Ivan Wong for Clay Wolkin 2014-2015 
@@ -97,6 +101,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
   // pass on PC for debugging
   flopenrc #(32) pcdreg(clk, reset, ~StallD, FlushD, PCF, PCD);
+  flopenrc #(1) validdreg(clk, reset, ~StallD, FlushD, 1'h1, validDdebug);
 
   mux3 #(32)  exceptionPC(PCPlus8D, PCPlus4D, PCPlus0D, PCInSelect, PC_in);
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
@@ -115,10 +120,14 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   flopenrc #(32) rd1reg(clk, reset, ~StallE, FlushE, Rd1D, Rd1E);
   flopenrc #(32) rd2reg(clk, reset, ~StallE, FlushE, Rd2D, Rd2E);
   flopenrc #(32) immreg(clk, reset, ~StallE, FlushE, RotImmD, ExtImmE);
+  // SD 10/6/2015: Do something about this. We don't want 1 bit signals in DP
   flopenrc #(1) zerorotatereg(clk, reset, ~StallE, FlushE, ZeroRotateD, ZeroRotateE);
   // pass on PC for debugging
   flopenrc #(32) pcereg(clk, reset, ~StallE, FlushE, PCD, PCE);
   flopenrc #(32) instrereg(clk, reset, ~StallE, FlushE, DefaultInstrD, instrEdebug);
+  flopenrc #(1) validereg(clk, reset, ~StallE, FlushE, validDdebug, validEdebug);
+  flopenrc #(1) uopprogereg(clk, reset, ~StallE, FlushE, uOpStallD, uOpProgEdebug);
+  floprc #(1) advancingereg(clk, reset, FlushE, validDdebug && ~uOpStallD && ~StallE, advancingEdebug);
 
   mux3 #(32)  byp1mux(Rd1E, ResultW, ALUorCP15_M, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(Rd2E, ResultW, ALUorCP15_M, ForwardBE, WriteDataE);
@@ -133,7 +142,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // TODO: implement as a barrel shift
   shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], LDRSTRshiftE, ZeroRotateE, FlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
   
-  alu         alu(SrcAE, SrcBE, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryE, AddZeroE, ZFlagKeptE, ALUOutputE, ALUFlagsE, FlagsE[1:0], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, KeepVE); 
+  alu         alu(SrcAE, SrcBE, ALUOperationE, InvertBE, ReverseInputsE, ALUCarryInE, ALUOutputE, ALUFlagsE); 
   zero_counter clz(SrcBE, ZerosE);
   mux2 #(32) aluorclzmux(ALUOutputE, ZerosE, ClzSelectE, OperationOutputE);
 
@@ -141,7 +150,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // TODO: Use a signle multiplier for both signed and unsigned
   // - Turn this into structural block
   // - Move relevant signals to controller
-  multiplier  mult(SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE, FlagsE[1:0], ZFlagKeptE, CarryHiddenE);
+  multiplier  mult(SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE);
   
   mux3 #(32)  aluoutputmux(OperationOutputE, ShiftBE, MultOutputE, ResultSelectE, ALUResultE); 
   data_replicator memReplicate(WriteByteE, StrHalfwordE, WriteDataE, WriteDataReplE);
@@ -153,6 +162,8 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // pass on PC for debugging
   flopenr #(32) pcmreg(clk, reset, ~StallM, PCE, PCM);
   flopenr #(32) instrmreg(clk, reset, ~StallM, instrEdebug, instrMdebug);
+  flopenr #(1) validmreg(clk, reset, ~StallM, validEdebug, validMdebug);
+  flopenr #(1) uopprogmreg(clk, reset, ~StallM, uOpProgEdebug, uOpProgMdebug);
 
   mux2 #(32) CP15_ALU_mux(ALUOutM, CP15rd_M, CoProc_EnM, ALUorCP15_M);
   flopenr #(32) wdreg(clk, reset, ~StallM, WriteDataReplE, WriteDataM);
@@ -165,6 +176,9 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // pass on PC for debugging
   flopenrc #(32) pcwreg(clk, reset, ~StallW, FlushW, PCM, PCW);
   flopenrc #(32) instrwreg(clk, reset, ~StallW, FlushW, instrMdebug, instrWdebug);
+  flopenrc #(1) validwreg(clk, reset, ~StallW, FlushW, validMdebug, validWdebug);
+  flopenrc #(1) uopprogwreg(clk, reset, ~StallW, FlushW, uOpProgMdebug, uOpProgWdebug);
+  assign advancingWdebug = validWdebug && ~uOpProgWdebug && ~StallW;
 
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, Result1_W);
   mux2 #(32)  msr_mrs_mux(Result1_W, PSR_W, CPSRtoRegW, ResultW);

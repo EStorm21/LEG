@@ -4,7 +4,7 @@ module alu_decoder(input  logic       ALUOpE,
            input  logic       addCarry, CFlagKeptE, 
            input  logic BXInstrE, RegtoCPSR,
            output   logic [2:0] ALUOperation, CVUpdate,
-           output   logic     InvertB, ReverseInputs, ALUCarry, DoNotWriteReg);
+           output   logic     InvertB, ReverseInputs, ALUCarryIn, DoNotWriteReg);
 
  /***** Brief Description *******
  * First Created by Ivan Wong for Clay Wolkin 2014-2015
@@ -23,15 +23,16 @@ module alu_decoder(input  logic       ALUOpE,
                    (ALUControlE[24:21] == 4'b1110)));    //BIC
                  
   always_comb
+    // SD 10/5/2015: Why not simplify with don't care?
     casex ({ALUOpE, ALUControlE[24:21]}) 
-      5'b10010: ALUCarry = 1'b1;   // SUB, RSB
-      5'b10011: ALUCarry = 1'b1;   // SUB, RSB
-      5'b10101: ALUCarry = PreviousCVFlag[1];   // ADC
-      5'b10110: ALUCarry = PreviousCVFlag[1];   // SBC
-      5'b10111: ALUCarry = PreviousCVFlag[1];   // RSC
-      5'b11010: ALUCarry = 1'b1;   // CMP
-      5'b10100: ALUCarry = addCarry & CFlagKeptE; // ADD
-      default: ALUCarry = 1'b0;
+      5'b10010: ALUCarryIn = 1'b1;   // SUB, RSB
+      5'b10011: ALUCarryIn = 1'b1;   // SUB, RSB
+      5'b10101: ALUCarryIn = PreviousCVFlag[1];   // ADC
+      5'b10110: ALUCarryIn = PreviousCVFlag[1];   // SBC
+      5'b10111: ALUCarryIn = PreviousCVFlag[1];   // RSC
+      5'b11010: ALUCarryIn = 1'b1;   // CMP
+      5'b10100: ALUCarryIn = addCarry & CFlagKeptE; // ADD
+      default:  ALUCarryIn = 1'b0;
     endcase
   
   always_comb
