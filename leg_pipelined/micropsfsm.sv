@@ -169,8 +169,7 @@ always_comb
 							defaultInstrD[11:0]}; // This needs to be MOV R1 R2 << R3. 
 			end
 			// Start SWP{B}
-			else if (defaultInstrD[27:23] == 5'b00010 & defaultInstrD[21:20] == 2'b00 & defaultInstrD[7:4] == 4'b1001)
-							  	debugText = "rsr type data processing instr";
+			else if (defaultInstrD[27:23] == 5'b00010 & defaultInstrD[21:20] == 2'b00 & defaultInstrD[7:4] == 4'b1001) begin
 				InstrMuxD = 1;
 				uOpStallD = 1;
 				regFileRz = {1'b0, // Control inital mux for RA1D
@@ -734,6 +733,7 @@ always_comb
 						defaultInstrD[19:16],  // Store to Rn
 						defaultInstrD[3:0],  // Store data is Rm
 						12'b0};	
+		end
 
 		ls_word_byte: begin
 			// scaled register
