@@ -211,12 +211,16 @@ def lockstep(lsim, qemu_proc, is_linux):
 
 	qmon = QemuMonitor(qemu_proc)
 
-	should_stop = [False]
+	should_stop = [False, False]
 	old_handler = None
 	def handler(_,__):
 		if should_stop[0]:
-			print "Press Ctrl-C again to force dirty abort"
-			signal.signal(signal.SIGINT, old_handler)
+			if should_stop[1]:
+				signal.signal(signal.SIGINT, old_handler)
+				raise RuntimeError("Dirty Keyboard Abort")
+			else:
+				print "Press Ctrl-C again to force dirty abort"
+				should_stop[1] = True
 		else:
 			should_stop[0] = True
 			print "Registered Ctrl-C signal (SIGINT). Preparing to stop gracefully"
@@ -229,12 +233,12 @@ def lockstep(lsim, qemu_proc, is_linux):
 		try:
 			time, advance_w_state, advance_e_state = lsim.advance()
 		except AdvanceStuckBug, e:
-			return (LOCKSTEP_BUG_RESUMABLE,
+			return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
 				qmon.get_state_prev_writeback(),
 				qmon.get_state_writeback(),
 				build_bug_advance_timeout(qmon))
 		except NoDataBug, e:
-			return (LOCKSTEP_BUG_RESUMABLE,
+			return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
 				qmon.get_state_prev_writeback(),
 				qmon.get_state_writeback(),
 				build_bug_no_data(qmon))
@@ -253,7 +257,7 @@ def lockstep(lsim, qemu_proc, is_linux):
 					gdb.execute("where")
 			else:
 				# Incorrect lockstep!
-				return (LOCKSTEP_BUG_RESUMABLE,
+				return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
 					qmon.get_state_prev_writeback(),
 					qmon.get_state_writeback(),
 					build_bug_writeback_mismatch(qmon,advance_w_state))
@@ -276,7 +280,7 @@ def lockstep(lsim, qemu_proc, is_linux):
 					print "Skipping execution of unexpected pc 0x{:x} (expected 0x{:x})".format(pc, expected_pc)
 					ios = []
 			except BadInterruptBug, e:
-				return (LOCKSTEP_BUG_RESUMABLE,
+				return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
 					qmon.get_state_prev_writeback(),
 					qmon.get_state_writeback(),
 					build_bug_bad_interrupt(qmon, e.args[1]))
