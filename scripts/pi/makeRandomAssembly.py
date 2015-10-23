@@ -129,6 +129,7 @@ if inc != []:
 	hmem = [i for i in hmem if i in inc]
 	mmem = [i for i in mmem if i in inc]
 	multiply = [i for i in multiply if i in inc]
+	swp = [i for i in swp if i in inc]
 
 if exc != []:
 	arithmetic = [i for i in arithmetic if i not in exc]
@@ -139,6 +140,7 @@ if exc != []:
 	hmem = [i for i in hmem if i not in exc]
 	mmem = [i for i in mmem if i not in exc]
 	multiply = [i for i in multiply if i not in exc]
+	swp = [i for i in swp if i not in exc]
 
 
 
@@ -322,7 +324,7 @@ def makeMultiplyInstr(instruction, counter):
 		Rd = choice(regList)
 		Rm = choice([i for i in regList if i != Rd])
 		Rs = choice(regList)
-		program = "l{}: {}{} {}, {}, {}\n".format(counter, instruction, cond, Rd, Rm, Rs)
+		program = "l{}: {}{}{} {}, {}, {}\n".format(counter, instruction[0:3], cond, instruction[3:] Rd, Rm, Rs)
 
 	return program
 
