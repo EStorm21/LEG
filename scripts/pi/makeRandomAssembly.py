@@ -324,7 +324,7 @@ def makeMultiplyInstr(instruction, counter):
 		Rd = choice(regList)
 		Rm = choice([i for i in regList if i != Rd])
 		Rs = choice(regList)
-		program = "l{}: {}{}{} {}, {}, {}\n".format(counter, instruction[0:3], cond, instruction[3:] Rd, Rm, Rs)
+		program = "l{}: {}{} {}, {}, {}\n".format(counter, instruction, cond, Rd, Rm, Rs)
 
 	return program
 
@@ -562,7 +562,7 @@ def makeSWPInstr(instruction, counter):
 	program += "l{}: b l{}\n".format(counter+1, counter+3)
 	program += "l{}: .word {}\n".format(counter+2, addr)
 	# Finally build the actual swp/swpb
-	program += "l{}: {}{} {}, {}, [{}]\n".format(counter+3, instruction, cond, Rd, Rm, Rn)
+	program += "l{}: {}{}{} {}, {}, [{}]\n".format(counter+3, instruction[0:3], cond, instruction[3:], Rd, Rm, Rn)
 	counter += 3
 
 	return program, counter
