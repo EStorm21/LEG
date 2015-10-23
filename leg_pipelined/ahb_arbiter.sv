@@ -10,8 +10,6 @@ module ahb_arbiter( input  logic HWriteM, IStall, DStall, HReady, HRequestF,
     assign HReadyM = DStall & HReady;
     assign PAReadyF = IStall & ~DRequestPA & PAReady;
     assign PAReadyM = DRequestPA & PAReady;
-    // assign CPUHAddr = DStall ? HAddrM : HAddrF;
-    // assign CPUHAddr = DRequestPA ? HAddrM : HAddrF;
     assign CPUHRequest = HRequestF | HRequestM;
     mux2 #(32) HAddrArbMux(HAddrF, HAddrM, DRequestPA, CPUHAddr);
 

@@ -50,7 +50,9 @@ module instr_cache_controller #(parameter tbits = 14) (
 
   // output logic
   assign IStall =  (state == MEMREAD) | ((state == READY) & ~Hit);
-  assign CWE    = ( (state == MEMREAD) & BusReady | ( (state == READY) & ~Hit & BusReady) );
+  assign CWE    = 
+    ( (state == MEMREAD) & BusReady | 
+  	( (state == READY) & ~Hit & BusReady & PAReady) );
   assign HRequestF  = (state == MEMREAD) | ((state == READY) & ~Hit);
   assign ResetBlockOff = ( (state == READY) & Hit ) | ( state == NEXTINSTR );
 
