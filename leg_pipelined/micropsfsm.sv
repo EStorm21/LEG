@@ -16,7 +16,7 @@ module micropsfsm(input  logic        clk, reset,
 
 
 // define states READY and RSR 
-typedef enum {ready, rsr, multiply, mlal1, mlal2, ldm, stm, bl, ldmstmWriteback, ls_word, str, blx, strHalf, ls_halfword, ls_word_byte, ls_word_byte_wb} statetype; // theres a bug if we get rid of strHalf... need to figoure out why
+typedef enum {ready, rsr, multiply, mlal1, mlal2, ldm, stm, bl, ldmstmWriteback, ls_word, str, blx, strHalf, ls_halfword, ls_word_byte, ls_word_byte_wb, swp} statetype; // theres a bug if we get rid of strHalf... need to figoure out why
 statetype state, nextState;
 
 string debugText;
@@ -167,6 +167,32 @@ always_comb
 							4'b1101, 1'b0, // MOV instruction, Do not update flags [24:20]
 							4'b0000, 4'b1111, // If we have SBZ then [19:16]  shb 0000, we should use Rz [15:12]
 							defaultInstrD[11:0]}; // This needs to be MOV R1 R2 << R3. 
+			end
+			// Start SWP{B}
+			else if (defaultInstrD[27:23] == 5'b00010 & defaultInstrD[21:20] == 2'b00 & defaultInstrD[7:4] == 4'b1001)
+							  	debugText = "rsr type data processing instr";
+				InstrMuxD = 1;
+				uOpStallD = 1;
+				regFileRz = {1'b0, // Control inital mux for RA1D
+							3'b000}; // 5th bit of WA3, RA2D and RA1D
+				prevRSRstate = 0;
+				nextState = swp;
+				KeepVD = 0;
+				addCarry = 0;
+				KeepZD = 0;
+				AddZeroD = 0;
+				LDMSTMforward = 0;
+				Reg_usr_D = 0; 
+				MicroOpCPSRrestoreD = 0;
+				KeepCD = 0;  
+				noRotate = 0;  
+				ldrstrRtype = 0;  
+				multControlD = 2'b00;  
+				uOpInstrD = {defaultInstrD[31:28], 5'b01011, // ldr{b} immediate offset
+							defaultInstrD[22], 2'b01, 	// load word or byte; offset mode
+							defaultInstrD[19:16],  // Load from Rn
+							defaultInstrD[15:12],  // Store into Rd
+							12'b0};	
 			end
 			// Start multiply
             // SD 5/6/2015 Why have this case? Just put it in controller
@@ -683,6 +709,31 @@ always_comb
 				KeepCD = 0;     
 			end
 		end
+
+		swp: begin	
+			// swp{b} step 2: store Rm to [Rn]		
+			InstrMuxD = 1;
+			uOpStallD = 0;
+			regFileRz = {1'b0, // Control inital mux for RA1D
+						3'b000}; // 5th bit of WA3, RA2D and RA1D
+			prevRSRstate = 0;
+			nextState = ready;
+			KeepVD = 0;
+			addCarry = 0;
+			KeepZD = 0;
+			AddZeroD = 0;
+			LDMSTMforward = 0;
+			Reg_usr_D = 0; 
+			MicroOpCPSRrestoreD = 0;
+			KeepCD = 0;  
+			noRotate = 0;  
+			ldrstrRtype = 0;  
+			multControlD = 2'b00;  
+			uOpInstrD = {defaultInstrD[31:28], 5'b01011, // str{b} immediate offset
+						defaultInstrD[22], 2'b00, 	// store word or byte; offset mode
+						defaultInstrD[19:16],  // Store to Rn
+						defaultInstrD[3:0],  // Store data is Rm
+						12'b0};	
 
 		ls_word_byte: begin
 			// scaled register
