@@ -8,9 +8,9 @@ module ahb_arbiter( input  logic HWriteM, IStall, DStall, HReady, HRequestF,
     assign CPUHWrite = HWriteM & DStall;
     assign HReadyF = IStall & ~DStall & HReady;
     assign HReadyM = DStall & HReady;
-    // Assume that the instructino cache always requests a physical address.
-    // Only give the instruction cache the Physical address when the data cache is not 
-    // requesting it.
+    // Assume that the instruction cache always requests a physical address.
+    // Only give the instruction cache the physical address when the data cache
+    // is not requesting it
     assign PAReadyF = ~DRequestPA & PAReady;
     assign PAReadyM = DRequestPA & PAReady;
     assign CPUHRequest = HRequestF | HRequestM;
