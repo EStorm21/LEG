@@ -7,7 +7,7 @@ module data_writeback_associative_cache_controller
    input  logic [3:0] ByteMask,
    input  logic [31:0] A,
    input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag, VirtTag, 
-   output logic Stall, HWriteM, HRequestM, BlockWE, ResetBlockOff,
+   output logic Stall, HWriteM, HRequestM, BlockWE, 
    output logic W1WE, W2WE, W1EN, UseWD, UseCacheA, DirtyIn, WaySel, RDSel,
    output logic cleanCurr, RequestPA,
    output logic [1:0] CacheRDSel, 
@@ -18,7 +18,7 @@ module data_writeback_associative_cache_controller
 
   logic [      tbits-1:0] Tag, PrevPTag;
   logic [$clog2(lines):0] FlushA    ; // Create block address to increment
-  logic                   IncFlush  ;
+  logic                   IncFlush, ResetBlockOff;
   logic                   WordAccess, CWE, Hit, W2Hit, W1Hit, TagSel, writeW1;
   logic                   W2EN, Dirty;
 
@@ -43,7 +43,7 @@ module data_writeback_associative_cache_controller
     end
 
   // ----------------FLUSHING--------------------
-  // Create the flush counter (count through all blocks and each way per block)
+  // Create the flush c ounter (count through all blocks and each way per block)
   countEn #($clog2(lines)+1) fc(.clk(clk), .reset(reset), .en(IncFlush), .q(FlushA));
   // Create a mux for the way select signal
   mux2 #(1) waySelMux(WaySelMid, W1D, clean, WaySel);

@@ -54,7 +54,7 @@ module instr_cache_controller #(parameter tbits = 14) (
     ( (state == MEMREAD) & BusReady | 
   	( (state == READY) & ~Hit & BusReady & PAReady) );
   assign HRequestF  = (state == MEMREAD) | ((state == READY) & ~Hit);
-  assign ResetBlockOff = ( (state == READY) & Hit ) | ( state == NEXTINSTR );
+  assign ResetBlockOff = ( state == READY ) | ( state == NEXTINSTR );
 
   // Create Counter for sequential bus access
   always_ff @(posedge clk, posedge reset)
