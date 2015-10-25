@@ -110,7 +110,7 @@ module data_writeback_associative_cache_controller
       else if ( ~enable & MemWriteM ) begin
         nextstate <= DWRITE;
       end
-      else if ( Hit |
+      else if ( Hit & ~IStall |
         (~MemWriteM & ~MemtoRegM) |
         (~PAReady & enable) |
         (~enable & MemWriteM)
@@ -118,6 +118,9 @@ module data_writeback_associative_cache_controller
       begin
         // else if ( Hit | (~MemWriteM & ~MemtoRegM) & enable) begin
         nextstate <= READY;
+      end
+      else if(IStall & enable & ~clean & ~Hit & PAReady) begin
+        nextstate <= WAIT;
       end
       else if( ~Dirty ) begin
         nextstate <= MEMREAD;

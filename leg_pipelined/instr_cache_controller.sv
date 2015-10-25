@@ -17,15 +17,15 @@ module instr_cache_controller #(parameter tbits = 14) (
   logic [      1:0] CounterMid;
 
   // Store the most recent valid physical tag
-  flopenr #(tbits) tagReg (clk,reset,PAReady,PhysTag,PrevPTag);
+  // flopenr #(tbits) tagReg (clk,reset,PAReady,PhysTag,PrevPTag);
 
-  // If the current tag is valid, use it instead of the stored value
-  mux2 #(tbits) tagMux(PrevPTag, PhysTag, PAReady, Tag);
+  // // If the current tag is valid, use it instead of the stored value
+  // mux2 #(tbits) tagMux(PrevPTag, PhysTag, PAReady, Tag);
 
   // Create Hit signal 
-  assign W1Hit = (W1V & (Tag == W1Tag));
-  assign W2Hit = (W2V & (Tag == W2Tag));
-  assign Hit = W1Hit | W2Hit;
+  assign W1Hit = (W1V & (PhysTag == W1Tag));
+  assign W2Hit = (W2V & (PhysTag == W2Tag));
+  assign Hit = (W1Hit | W2Hit) & PAReady;
 
   // Select output from Way 1 or Way 2
   assign WaySel = enable & W1Hit | ~enable;
