@@ -36,9 +36,6 @@ def setup():
 	if not os.path.isfile('util/convertBinToDat'):
 		subprocess.call(['make', '-C', 'util'])
 
-	gdb.execute("mem 0 0x10000000 rw")
-	gdb.execute("set mem inaccessible-by-default off")
-
 def get_open_port():
 	import socket
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
