@@ -14,12 +14,6 @@ def parseQemuRegs(regs):
 def getQemuState():
     return parseQemuRegs(gdb.execute('info reg', to_string=True))
 
-icountParser = re.compile('.+: (.+)')
-def getQemuInstrCt():
-	countMatch = icountParser.match(gdb.execute('monitor xp/x 0x10000028', to_string=True))
-	timeval = int(countMatch.group(1),16)
-	return int(math.ceil(timeval * 1000. / 24.))
-
 dataParser = re.compile('\\$\\d+ = (.+)')
 def getExpr(expr):
 	dataMatch = dataParser.match(gdb.execute('p/x {}'.format(expr), to_string=True))
@@ -43,13 +37,8 @@ def gdbQueryCmd(cmd):
 	queryMatch = queryRespParser.match(gdb.execute("maint packet q"+cmd, to_string=True))
 	return queryMatch.group(1)
 
-icountParser = re.compile('.+: (.+)')
 def getQemuInstrCt():
-	gdb.execute("set mem inaccessible-by-default off")
-	countMatch = icountParser.match(gdb.execute('monitor xp/x 0x10000028', to_string=True))
-	gdb.execute("set mem inaccessible-by-default on")
-	timeval = int(countMatch.group(1),16)
-	return int(math.ceil(timeval * 1000. / 24.))
+	return int(gdbQueryCmd('qemu.icount'))
 
 def jumpToState(target_state):
 	bpstr = gdb.execute('break *{0:#x}'.format(target_state[0]), to_string=True)
