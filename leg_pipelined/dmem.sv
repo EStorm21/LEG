@@ -18,13 +18,13 @@ module dmem (
   integer i;
   initial
     begin
+      // Initialize RAM to 0
+      for(i = 0; i < MEM_SIZE; i = i + 1) begin
+        RAM[i] = 32'b0;
+      end
       $readmemh("../sim/simTest.dat", RAM);
       //$readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
 
-      // Initialize RAM to 0
-      // for(i = 0; i < MEM_SIZE; i = i + 1) begin
-      //   RAM[i] = 32'b0;
-      // end
       //readmemh("C:/Users/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
       // $readmemh("C:/Users/Max/Google Drive/Clay-Wolkin/SourceTree2/Tests/ldm.dat",RAM);
