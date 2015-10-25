@@ -1,8 +1,13 @@
 # Note: By the time this script is run, we expect the variable
 # TEST_FILE to be set either to "", if we are debugging Linux,
 # or to the name of a test (.bin), relative to the current
-# directory. If TEST_FILE is set, we also expect RUN_TESTS to
-# be True or False. If True, we should run the test noninteractively.
+# directory.
+# We also expect the variable COMMAND to be set. It can have the
+# following values:
+# 	["interactive"] - Start the normal, interactive GDB prompt
+# 	["autorun"] - Run the test automatically, and quit when done.
+# 	["bugcheckpoint", bugfile, cppath] - Jump to the given bug,
+# 		then make a checkpoint there. Finally, quit.
 
 import gdb
 import re
@@ -96,7 +101,7 @@ class LegLockstepCommand (gdb.Command):
 	def invoke (self, arg, from_tty):
 		print "Starting lockstep from here"
 		try:
-			lockstep.debugFromHere(False, qemu, TEST_FILE=="", found_bugs, run_dir)
+			lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir)
 		except:
 			print traceback.format_exc()
 
@@ -259,11 +264,21 @@ run_dir = get_run_directory()
 found_bugs = set()
 
 print "Connected!"
-if TEST_FILE and RUN_TESTS:
+if TEST_FILE and COMMAND[0]=="autorun":
 	# Non-interactive mode!
 	print "Automatically starting lockstepping"
 	gdb.execute("leg-lockstep");
 	print "Output saved in {}".format(run_dir)
+	gdb.execute("leg-stop");
+elif COMMAND[0]=="bugcheckpoint":
+	print "Automatically creating bug checkpoint"
+	try:
+		gdb.execute("leg-frombug {}".format(COMMAND[1]));
+		gdb.execute("leg-checkpoint temp_bug_checkpoint");
+		os.rename("output/checkpoints/temp_bug_checkpoint.checkpoint", COMMAND[2])
+	except:
+		import traceback
+		traceback.print_exc()
 	gdb.execute("leg-stop");
 else:
 	print ""

@@ -211,12 +211,16 @@ def lockstep(lsim, qemu_proc, is_linux):
 
 	qmon = QemuMonitor(qemu_proc)
 
-	should_stop = [False]
+	should_stop = [False, False]
 	old_handler = None
 	def handler(_,__):
 		if should_stop[0]:
-			print "Press Ctrl-C again to force dirty abort"
-			signal.signal(signal.SIGINT, old_handler)
+			if should_stop[1]:
+				signal.signal(signal.SIGINT, old_handler)
+				raise RuntimeError("Dirty Keyboard Abort")
+			else:
+				print "Press Ctrl-C again to force dirty abort"
+				should_stop[1] = True
 		else:
 			should_stop[0] = True
 			print "Registered Ctrl-C signal (SIGINT). Preparing to stop gracefully"
@@ -229,12 +233,12 @@ def lockstep(lsim, qemu_proc, is_linux):
 		try:
 			time, advance_w_state, advance_e_state = lsim.advance()
 		except AdvanceStuckBug, e:
-			return (LOCKSTEP_BUG_RESUMABLE,
+			return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
 				qmon.get_state_prev_writeback(),
 				qmon.get_state_writeback(),
 				build_bug_advance_timeout(qmon))
 		except NoDataBug, e:
-			return (LOCKSTEP_BUG_RESUMABLE,
+			return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
 				qmon.get_state_prev_writeback(),
 				qmon.get_state_writeback(),
 				build_bug_no_data(qmon))
@@ -253,7 +257,7 @@ def lockstep(lsim, qemu_proc, is_linux):
 					gdb.execute("where")
 			else:
 				# Incorrect lockstep!
-				return (LOCKSTEP_BUG_RESUMABLE,
+				return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
 					qmon.get_state_prev_writeback(),
 					qmon.get_state_writeback(),
 					build_bug_writeback_mismatch(qmon,advance_w_state))
@@ -276,7 +280,7 @@ def lockstep(lsim, qemu_proc, is_linux):
 					print "Skipping execution of unexpected pc 0x{:x} (expected 0x{:x})".format(pc, expected_pc)
 					ios = []
 			except BadInterruptBug, e:
-				return (LOCKSTEP_BUG_RESUMABLE,
+				return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
 					qmon.get_state_prev_writeback(),
 					qmon.get_state_writeback(),
 					build_bug_bad_interrupt(qmon, e.args[1]))
@@ -309,17 +313,17 @@ def backtraceSummary(title, instr, ID):
 	trace.append( "      {}".format(instr) )
 	return '\n'.join(trace)
 
-def getBugIDAndFile(run_dir):
+def getBugIDAndFiles(run_dir):
 	bugDir = os.path.join(run_dir,"bugs")
 	if not os.path.isdir(bugDir):
 		os.mkdir(bugDir)
 
 	bugDirCt = len(os.listdir(bugDir))
 
-	return bugDirCt, os.path.join(bugDir,"{}.buglog".format(bugDirCt))
+	return bugDirCt, os.path.join(bugDir,"{}.buglog".format(bugDirCt)), os.path.join(bugDir,"{}.checkpoint".format(bugDirCt))
 
 asmInstrParser = re.compile(".+:\\s+(.+)")
-def handleBug(prev_state, state, bug_msg, found_bugs, run_dir):
+def handleBug(prev_state, state, bug_msg, found_bugs, run_dir, test_file):
 	if state is None:
 		print "Skipped writing this bug to file (not enough information)"
 		return
@@ -338,7 +342,7 @@ def handleBug(prev_state, state, bug_msg, found_bugs, run_dir):
 		else:
 			instr_name = "{}".format(bug_instr)
 
-		bugId, bugFn = getBugIDAndFile(run_dir)
+		bugId, bugFn, bugCheckpt = getBugIDAndFiles(run_dir)
 		title = bug_msg.strip().split('\n')[0]
 
 		with open(os.path.join(run_dir,'runlog'),'a') as f:
@@ -351,20 +355,27 @@ def handleBug(prev_state, state, bug_msg, found_bugs, run_dir):
 			f.write(bug_msg)
 
 		print "Wrote this bug to {}".format(bugFn)
+
+		autocheckpt_cmd = ['./debug.sh']
+		if test_file != "":
+			autocheckpt_cmd += ['-t', test_file]
+		autocheckpt_cmd += ['--bugcheckpoint', bugFn, bugCheckpt]
+		subprocess.Popen(autocheckpt_cmd, stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'));
+		print "Automatically creating checkpoint at {}".format(bugCheckpt)
 	else:
 		print "Skipped writing this bug to file (already found)"
 
-def debugFromHere(with_gui, qemu, is_linux, found_bugs, run_dir):
+def debugFromHere(with_gui, qemu, test_file, found_bugs, run_dir):
 	lsim = LegSim(qemuDump.fullDump, with_gui)
 	gdb.execute("set mem inaccessible-by-default on")
 	if with_gui:
 		print "Giving ModelSim control to do initial wave configuration"
 		lsim.gui_control()
 	try:
-		reason, prev_state, state, msg = lockstep(lsim, qemu, is_linux)
+		reason, prev_state, state, msg = lockstep(lsim, qemu, test_file=="")
 		print msg
 		if reason != LOCKSTEP_FINISHED:
-			handleBug(prev_state, state, msg, found_bugs, run_dir)
+			handleBug(prev_state, state, msg, found_bugs, run_dir, test_file)
 	except Exception, e:
 		print e
 		import traceback

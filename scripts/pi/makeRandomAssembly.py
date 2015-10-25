@@ -91,6 +91,9 @@ wbmem = ["str","ldr", "strb", "ldrb"]
 hmem = ["ldrh", "ldrsb", "ldrsh", "strh"]
 mmem = ["ldm", "stm"]
 
+# swap and swap byte
+swp = ["swp", "swpb"]
+
 mode3Types = ["imm", "reg"]
 mode2Types = mode3Types + ["ISR"]
 addrRegs = ["sp"]
@@ -126,6 +129,7 @@ if inc != []:
 	hmem = [i for i in hmem if i in inc]
 	mmem = [i for i in mmem if i in inc]
 	multiply = [i for i in multiply if i in inc]
+	swp = [i for i in swp if i in inc]
 
 if exc != []:
 	arithmetic = [i for i in arithmetic if i not in exc]
@@ -136,10 +140,11 @@ if exc != []:
 	hmem = [i for i in hmem if i not in exc]
 	mmem = [i for i in mmem if i not in exc]
 	multiply = [i for i in multiply if i not in exc]
+	swp = [i for i in swp if i not in exc]
 
 
 
-instrs = [arithmetic]*5+[logicOps]*5+[fbranch]*5+[bbranch]*5+[wbmem]*5+[hmem]*5+[mmem]*5+[multiply]*5
+instrs = [arithmetic]*len(arithmetic)+[logicOps]*len(logicOps)+[fbranch]*len(fbranch)+[bbranch]*len(bbranch)+[wbmem]*len(wbmem)+[hmem]*len(hmem)+[mmem]*len(mmem)+[multiply]*0+[swp]*len(swp)
 instrs = [subl for subl in instrs if len(subl) > 0]
 
 
@@ -182,6 +187,9 @@ def makeProgram(numInstru):
 			program += prog
 		elif instrList == mmem:									
 			program += makeMMemInstr(instrChoice, counter)
+		elif instrList == swp:
+			prog, counter = makeSWPInstr(instrChoice, counter)
+			program += prog
 
 		# leftover case (branch graveyard)
 		else:
@@ -537,6 +545,27 @@ def makeMMemInstr(instruction, counter):
 
 	program = "l{}: {}{}{} {}{}, {{{}}}\n".format(counter, instruction, cond, mode, Rn, "!" if wb else "", ", ".join(instrRegs))
 	return program
+
+
+def makeSWPInstr(instruction, counter):
+	# Choose instruction parameters
+	cond = choice(Conditions)
+	Rd = choice(regList)
+	Rm = choice(regList)
+	# Can't load or store from mem addr.
+	Rn = choice([i for i in regList if i != Rd and i != Rm])
+	addr = choice([i for i in range(lower, upper-4, 4)])
+
+	# First load the address into Rn so we can use it
+	# this uses a similar format to loading values into registers at initialization
+	program = "l{}: ldr {}, l{}\n".format(counter, Rn, counter+2)
+	program += "l{}: b l{}\n".format(counter+1, counter+3)
+	program += "l{}: .word {}\n".format(counter+2, addr)
+	# Finally build the actual swp/swpb
+	program += "l{}: {}{}{} {}, {}, [{}]\n".format(counter+3, instruction[0:3], cond, instruction[3:], Rd, Rm, Rn)
+	counter += 3
+
+	return program, counter
 
 
 def makeNopInstr(counter):
