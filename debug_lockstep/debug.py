@@ -116,7 +116,7 @@ class LegLockstepGuiCommand (gdb.Command):
 	def invoke (self, arg, from_tty):
 		print "Starting lockstep from here, with GUI"
 		try:
-			lockstep.debugFromHere(True, qemu, TEST_FILE=="", found_bugs, run_dir)
+			lockstep.debugFromHere(True, qemu, TEST_FILE, found_bugs, run_dir)
 		except:
 			print traceback.format_exc()
 
@@ -133,7 +133,7 @@ class LegAutoCommand (gdb.Command):
 		while True:
 			print "Starting lockstep from:"
 			gdb.execute("where")
-			preventRestart = lockstep.debugFromHere(False, qemu, TEST_FILE=="", found_bugs, run_dir)
+			preventRestart = lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir)
 			if preventRestart:
 				print "Stopping automatic lockstep (run leg-lockstep-auto again to resume)"
 				break
