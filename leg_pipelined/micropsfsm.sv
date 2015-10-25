@@ -173,7 +173,7 @@ always_comb
 			else if (defaultInstrD[27:23] == 5'b00010 & defaultInstrD[21:20] == 2'b00 & defaultInstrD[7:4] == 4'b1001) begin
 				InstrMuxD = 1;
 				uOpStallD = 1;
-				regFileRz = {1'b1, // Control inital mux for RA1D
+				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b100}; // 5th bit of WA3, RA2D and RA1D
 				prevRSRstate = 0;
 				nextState = swp_str;
