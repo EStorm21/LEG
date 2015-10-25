@@ -1,6 +1,6 @@
 #!/bin/sh
 
-RUNTEST=False
+COMMAND="['interactive']"
 
 while [[ $# > 0 ]]
 do
@@ -11,13 +11,20 @@ case $key in
 	TESTFILE="$2"
 	shift # past argument
 	;;
-	-a|--automatic)
-	RUNTEST=True
+	-a|--auto)
+	COMMAND="['autorun']"
+	;;
+	--bugcheckpoint)
+	COMMAND="['bugcheckpoint', '$2', '$3']"
+	shift # past argument
+	shift # past argument
 	;;
 	-h|--help)
 	echo "Usage:"
 	echo "  -t TEST, --test TEST             Load a test (.bin) from the given path"
 	echo "  -a, --auto                       Automatically run the test noninteractively"
+	# Hidden option:
+	# echo "  --bugcheckpoint BUGFILE DEST   Automatically create a checkpoint for BUGFILE."
 	exit 0
 	;;
 	*)
@@ -33,7 +40,7 @@ PYTHONPATH=./:/proj/leg/debugutils/python2.7/install/lib/ \
 	LD_LIBRARY_PATH=/proj/leg/debugutils/python2.7/install/lib/ \
 	/proj/leg/debugutils/gcc-arm-none-eabi-4_9-2015q1/bin/arm-none-eabi-gdb-py -q \
 	-ex "python TEST_FILE=\"$TESTFILE\"" \
-	-ex "python RUN_TESTS=$RUNTEST" \
+	-ex "python COMMAND=$COMMAND" \
 	-x debug.py
 
 mv transcript output/transcript
