@@ -94,10 +94,12 @@ def build_qemu_msg():
 	msg += gdb.execute('where', to_string=True)  + "\n"
 	msg += "\n"
 	msg += "Adjacent instructions are\n"
+	gdb.execute("set mem inaccessible-by-default off")
 	frompt = '0x0' if getExpr('$pc') < 0x30 else '$pc-0x30'
 	msg += gdb.execute('x/15i '+frompt, to_string=True)  + "\n"
 	msg += "or in hex,\n"
 	msg += gdb.execute('x/15x '+frompt, to_string=True) + "\n"
+	gdb.execute("set mem inaccessible-by-default on")
 	return msg
 
 def build_bug_advance_timeout(qmon):
@@ -336,7 +338,9 @@ def handleBug(prev_state, state, bug_msg, found_bugs, run_dir, test_file):
 
 		# Check to make sure we haven't overwritten the buggy instr already
 		if getDataAtExpr(bug_pc) == bug_instr:
+			gdb.execute("set mem inaccessible-by-default off")
 			instr_str = gdb.execute('x/1i {}'.format(bug_pc), to_string=True)
+			gdb.execute("set mem inaccessible-by-default on")
 			instr_asm_match = asmInstrParser.match(instr_str)
 			instr_name = instr_asm_match.group(1)
 		else:

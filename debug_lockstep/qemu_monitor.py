@@ -22,7 +22,9 @@ def getExpr(expr):
 
 addrParser = re.compile('.*:\t(.+)')
 def getDataAtExpr(expr):
+	gdb.execute("set mem inaccessible-by-default off")
 	addrMatch = addrParser.match(gdb.execute('x/x {}'.format(expr), to_string=True))
+	gdb.execute("set mem inaccessible-by-default on")
 	data = int(addrMatch.group(1),16)
 	return data
 
