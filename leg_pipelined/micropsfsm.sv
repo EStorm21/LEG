@@ -737,7 +737,7 @@ always_comb
 		end
 
 		swp_mov: begin
-			// swp{b} step 3: mov Rm, Rz		
+			// swp{b} step 3: mov Rd, Rz		
 			InstrMuxD = 1;
 			uOpStallD = 0;
 			regFileRz = {1'b0, // Control inital mux for RA1D
@@ -758,7 +758,7 @@ always_comb
 
 			uOpInstrD = {defaultInstrD[31:28], 3'b000, // Condition bits and RSR-type
 						4'b1101, 1'b0, // MOV instruction, Do not update flags [24:20]
-						4'b0000, defaultInstrD[3:0], // Store to Rm
+						4'b0000, defaultInstrD[15:12], // Store to Rd
 						8'b0, 4'b1111}; // from Rz
 		end
 
