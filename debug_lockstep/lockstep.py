@@ -239,7 +239,7 @@ TEST_PASSED_MSG="""
 LOCKSTEP_BUG_RESUMABLE = 1
 LOCKSTEP_BUG_ABORT = 2
 LOCKSTEP_FINISHED = 3
-def lockstep(lsim, qemu_proc, is_linux):
+def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 
 	qmon = QemuMonitor(qemu_proc, NON_LOCKSTEP_INTERRUPTS)
 
@@ -287,6 +287,10 @@ def lockstep(lsim, qemu_proc, is_linux):
 				if checked_count % 500 == 0:
 					print "\nChecked about {} instructions! Just checked 0x{:x}. Currently executing:".format(checked_count, expected_state[0])
 					gdb.execute("where")
+
+				if goal_pc == expected_state[0]:
+					return LOCKSTEP_FINISHED, None, None, "\nReached goal PC {}!\n\n".format(goal_pc)
+
 			else:
 				# Incorrect lockstep!
 				return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
@@ -397,13 +401,13 @@ def handleBug(prev_state, state, bug_msg, found_bugs, run_dir, test_file):
 	else:
 		print "Skipped writing this bug to file (already found)"
 
-def debugFromHere(with_gui, qemu, test_file, found_bugs, run_dir):
+def debugFromHere(with_gui, qemu, test_file, found_bugs, run_dir, goal_pc=None):
 	lsim = LegSim(qemuDump.fullDump, with_gui)
 	if with_gui:
 		print "Giving ModelSim control to do initial wave configuration"
 		lsim.gui_control()
 	try:
-		reason, prev_state, state, msg = lockstep(lsim, qemu, test_file=="")
+		reason, prev_state, state, msg = lockstep(lsim, qemu, test_file=="", goal_pc)
 		print msg
 		if reason != LOCKSTEP_FINISHED:
 			handleBug(prev_state, state, msg, found_bugs, run_dir, test_file)

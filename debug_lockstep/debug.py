@@ -8,6 +8,9 @@
 # 	["autorun"] - Run the test automatically, and quit when done.
 # 	["bugcheckpoint", bugfile, cppath] - Jump to the given bug,
 # 		then make a checkpoint there. Finally, quit.
+# 	["divideandconquer", rundir, start_pc, goal_pc] - Use the
+# 		given run directory. Jump to the start_pc, then debug
+# 		until reaching goal_pc. Finally, quit.
 
 import gdb
 import re
@@ -85,7 +88,7 @@ def initialize_qemu():
 def cleanup():
 	print "Shutting down qemu"
 	qemu.terminate()
-	if not os.path.isfile(os.path.join(run_dir, "runlog")):
+	if should_cleanup_dir and not os.path.isfile(os.path.join(run_dir, "runlog")):
 		print "Cleaning up empty output directory"
 		shutil.rmtree(run_dir)
 
@@ -137,6 +140,33 @@ class LegAutoCommand (gdb.Command):
 			print "Got a bug. Skipping over it"
 
 LegAutoCommand()
+
+
+class LegLockstepToGoalCommand (gdb.Command):
+	"""
+	Repeatedly lockstep and restart after bugs, and stop once we reach a defined goal.
+	Note that this is not a function users should call directly.
+	Usage: leg-lockstep-goal PCADDRESS (i.e. 0xdeadbeef)
+	"""
+
+	def __init__ (self):
+		super (LegLockstepToGoalCommand, self).__init__ ("leg-lockstep-goal", gdb.COMMAND_USER)
+
+	def invoke (self, arg, from_tty):
+		if arg == "":
+			print "Please pass a location"
+		else:
+			while True:
+				print "Starting lockstep from:"
+				gdb.execute("where")
+				print "Seeking goal {}, or {}".format(arg, hex(int(arg,0)))
+				preventRestart = lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir, int(arg, 0))
+				if preventRestart:
+					print "Stopping automatic lockstep (run leg-lockstep-goal again to resume)"
+					break
+				print "Got a bug. Skipping over it"
+
+LegLockstepToGoalCommand()
 
 class LegJumpCommand (gdb.Command):
 	""" Shortcut to skip to a function or address """
@@ -257,6 +287,7 @@ qemu = initialize_qemu()
 gdb.execute('set pagination off')
 
 run_dir = get_run_directory()
+should_cleanup_dir = True
 
 found_bugs = set()
 
@@ -264,19 +295,28 @@ print "Connected!"
 if TEST_FILE and COMMAND[0]=="autorun":
 	# Non-interactive mode!
 	print "Automatically starting lockstepping"
-	gdb.execute("leg-lockstep");
+	gdb.execute("leg-lockstep")
 	print "Output saved in {}".format(run_dir)
-	gdb.execute("leg-stop");
+	gdb.execute("leg-stop")
 elif COMMAND[0]=="bugcheckpoint":
 	print "Automatically creating bug checkpoint"
 	try:
-		gdb.execute("leg-frombug {}".format(COMMAND[1]));
-		gdb.execute("leg-checkpoint temp_bug_checkpoint");
+		gdb.execute("leg-frombug {}".format(COMMAND[1]))
+		gdb.execute("leg-checkpoint temp_bug_checkpoint")
 		os.rename("output/checkpoints/temp_bug_checkpoint.checkpoint", COMMAND[2])
 	except:
 		import traceback
 		traceback.print_exc()
-	gdb.execute("leg-stop");
+	gdb.execute("leg-stop")
+elif COMMAND[0]=="divideandconquer":
+	shutil.rmtree(run_dir)
+	should_cleanup_dir = False
+	run_dir = COMMAND[1]
+	start_pc = COMMAND[2]
+	goal_pc = COMMAND[3]
+	gdb.execute("leg-jump *{}".format(start_pc))
+	gdb.execute("leg-lockstep-goal {}".format(goal_pc))
+	gdb.execute("leg-stop")
 else:
 	print ""
 	print "Welcome to the interactive LEG debugger!"

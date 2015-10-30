@@ -19,12 +19,19 @@ case $key in
 	shift # past argument
 	shift # past argument
 	;;
+	--divideandconquer)
+	COMMAND="['divideandconquer', '$2', $3, $4]"
+	shift # past argument
+	shift # past argument
+	shift # past argument
+	;;
 	-h|--help)
 	echo "Usage:"
 	echo "  -t TEST, --test TEST             Load a test (.bin) from the given path"
 	echo "  -a, --auto                       Automatically run the test noninteractively"
 	# Hidden option:
 	# echo "  --bugcheckpoint BUGFILE DEST   Automatically create a checkpoint for BUGFILE."
+	# echo "  --divideandconquer RUNDIR START END   Automatically run a divide-and-conquer section from START to END"
 	exit 0
 	;;
 	*)
