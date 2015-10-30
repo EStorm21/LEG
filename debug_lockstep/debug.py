@@ -286,8 +286,12 @@ qemu = initialize_qemu()
 
 gdb.execute('set pagination off')
 
-run_dir = get_run_directory()
-should_cleanup_dir = True
+if COMMAND[0]=="divideandconquer":
+	should_cleanup_dir = False
+	run_dir = COMMAND[1]
+else:
+	should_cleanup_dir = True
+	run_dir = get_run_directory()
 
 found_bugs = set()
 
@@ -309,12 +313,10 @@ elif COMMAND[0]=="bugcheckpoint":
 		traceback.print_exc()
 	gdb.execute("leg-stop")
 elif COMMAND[0]=="divideandconquer":
-	shutil.rmtree(run_dir)
-	should_cleanup_dir = False
-	run_dir = COMMAND[1]
 	start_pc = COMMAND[2]
 	goal_pc = COMMAND[3]
-	gdb.execute("leg-jump *{}".format(start_pc))
+	if start_pc != 0:
+		gdb.execute("leg-jump *{}".format(start_pc))
 	gdb.execute("leg-lockstep-goal {}".format(goal_pc))
 	gdb.execute("leg-stop")
 else:
