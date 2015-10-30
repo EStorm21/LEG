@@ -293,6 +293,9 @@ else:
 	should_cleanup_dir = True
 	run_dir = get_run_directory()
 
+with open(os.path.join(run_dir,'pid'), 'w') as f:
+	f.write(str(os.getpid()) + '\n')
+
 found_bugs = set()
 
 print "Connected!"

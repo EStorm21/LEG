@@ -72,10 +72,18 @@ def statuslist_msg(subprocs, divisions, running_only):
 		msg += "{}: {} - Found {} bugs\n".format(identifier, run_status, nbugs)
 	return msg
 
+def send_ctrlc(sdir):
+	with open(os.path.join(sdir,'pid'), 'r') as f:
+		pid = int(f.readline())
+	try:
+		os.kill(pid, signal.SIGINT)
+	except OSError:
+		pass
+		#print "SIGINT of {} ({}) failed!".format(pid, sdir)
+
 def killall(subprocs):
 	for sp, sdir in subprocs:
-		try: sp.send_signal(signal.SIGINT)
-		except OSError: pass
+		send_ctrlc(sdir)
 	for i in range(100):
 		if all(sp.poll() is not None for sp,_ in subprocs):
 			return
@@ -83,9 +91,8 @@ def killall(subprocs):
 	print "Agressively SIGINTing"
 	for i in range(5):
 		for sp, sdir in subprocs:
-			try: sp.send_signal(signal.SIGINT)
-			except OSError: pass
-		time.sleep(0.1)
+			send_ctrlc(sdir)
+		time.sleep(1)
 	print "Killing misbehaving processes"
 	for sp, sdir in subprocs:
 		if sp.poll() is None:
