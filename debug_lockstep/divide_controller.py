@@ -33,10 +33,15 @@ def record_pids(rundir, subprocs):
 	with open(os.path.join(rundir,"pids"),'w') as f:
 		f.write(' '.join(pids))
 
-def print_tail(subprocs, divisions, target):
+def print_inspect(subprocs, divisions, target):
 	for (sp, sdir), division in zip(subprocs,divisions):
 		identifier = "{}-{}".format(hex(division[0]), hex(division[1]))
 		if identifier == target:
+			runlog = os.path.join(sdir,'runlog')
+			if os.path.isfile(runlog):
+				with open(runlog, 'r') as f:
+					print f.read()
+			print "To view stdout:"
 			print "$ tail -f \"{}\" -n 20".format(os.path.abspath(os.path.join(sdir,'stdout')))
 			break
 	else:
@@ -106,7 +111,7 @@ def print_help():
 	print "  list-all        - List status of each division"
 	print "  list-running    - List status of each division"
 	print "  interrupt       - Stop all divisions immediately"
-	print "  inspect TARGET  - Give the command to inspect a target"
+	print "  inspect TARGET  - Show target's bugs and command to view stdout"
 
 def run_divisions(test_file, divisions):
 	rundir = get_run_directory(test_file)
@@ -144,7 +149,7 @@ def run_divisions(test_file, divisions):
 				print_help()
 			elif command.startswith("inspect "):
 				target = command[8:]
-				print_tail(subprocs, divisions, target)
+				print_inspect(subprocs, divisions, target)
 	except:
 		print "Got an exception!"
 		killall(subprocs)
