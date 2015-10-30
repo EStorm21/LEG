@@ -9,6 +9,8 @@ from leg import LegSim, AdvanceStuckBug, NoDataBug
 from qemu_monitor import QemuMonitor, BadInterruptBug, getExpr, getDataAtExpr, getQemuInstrCt
 import qemuDump
 
+NON_LOCKSTEP_INTERRUPTS = True
+
 def build_bug(message, lsim, qmon):
 	return message, qmon.get_state_writeback()
 
@@ -137,6 +139,9 @@ def build_bug_no_data(qmon):
 	return msg
 
 def build_bug_writeback_mismatch(qmon, bad_state):
+	interrupt_msg = build_bug_interrupts_notimplemented(qmon, bad_state)
+	if interrupt_msg is not None:
+		return interrupt_msg
 	msg = "\n"*4
 	msg += "Writeback State Mismatch\n"
 	msg += "========================\n"
@@ -155,6 +160,33 @@ def build_bug_writeback_mismatch(qmon, bad_state):
 	msg += build_qemu_msg()
 	msg += "\n"
 	return msg
+
+def build_bug_interrupts_notimplemented(qmon, bad_state):
+	good_state = qmon.get_state_writeback()
+	try:
+		if (good_state[2] & 0x1f) in [0x11, 0x12] and good_state[2] != bad_state[2]:
+			msg = "\n"*4
+			msg += "Interrupts Not Implemented\n"
+			msg += "==========================\n"
+			msg += "\n"
+			msg += "Qemu triggered an interrupt, but we have not enabled\n"
+			msg += "interrupts yet in ModelSim. (Note: Disregard the pc\n"
+			msg += "and instruction below. They are inaccurate. The\n"
+			msg += "actual instruction executed was in the vector table.)\n"
+			msg += "\n"
+			msg += "Previous state (passed through writeback correctly):\n"
+			msg += build_state_msg(qmon.get_state_prev_writeback())
+			msg += "\n"
+			msg += "Current conflict:\n"
+			msg += build_state_diff(qmon.get_state_prev_writeback(),
+									qmon.get_state_writeback(),
+									bad_state)
+			msg += "\n"
+			msg += build_qemu_msg()
+			msg += "\n"
+			return msg
+	except:
+		pass
 
 def build_bug_bad_interrupt(qmon, was_fast):
 	msg = "\n"*4
@@ -209,7 +241,7 @@ LOCKSTEP_BUG_ABORT = 2
 LOCKSTEP_FINISHED = 3
 def lockstep(lsim, qemu_proc, is_linux):
 
-	qmon = QemuMonitor(qemu_proc)
+	qmon = QemuMonitor(qemu_proc, NON_LOCKSTEP_INTERRUPTS)
 
 	should_stop = [False, False]
 	old_handler = None

@@ -93,8 +93,9 @@ class QemuMonitor(object):
 	SSTEP_IRQ = "0x1"
 	SSTEP_NOIRQ = "0x3"
 
-	def __init__(self, qemu_proc):
+	def __init__(self, qemu_proc, allow_spontaneous_interrupts):
 		self.qemu = qemu_proc
+		self.allow_spontaneous_interrupts = allow_spontaneous_interrupts
 
 		self.states = [None]*QemuMonitor.BUFFER_SIZE
 		self.states[-1] = ("Unknown (first state)","Unknown (first state)") + getQemuState()
@@ -115,7 +116,10 @@ class QemuMonitor(object):
 		self.same_state_ct = 0
 
 		parse_qemu_io_log(self.qemu.stdout)
-		gdbQueryCmd("qemu.sstep="+QemuMonitor.SSTEP_NOIRQ)
+		if allow_spontaneous_interrupts:
+			gdbQueryCmd("qemu.sstep="+QemuMonitor.SSTEP_IRQ)
+		else:
+			gdbQueryCmd("qemu.sstep="+QemuMonitor.SSTEP_NOIRQ)
 
 	def _step(self, pc_to_use):
 		instr_to_use = getDataAtExpr(pc_to_use)
@@ -161,7 +165,8 @@ class QemuMonitor(object):
 		gdbQueryCmd("qemu.sstep="+QemuMonitor.SSTEP_IRQ)
 		interrupt_pc = 0x1c if is_fast else 0x18
 		ios = self._step(interrupt_pc)
-		gdbQueryCmd("qemu.sstep="+QemuMonitor.SSTEP_NOIRQ)
+		if not self.allow_spontaneous_interrupts:
+			gdbQueryCmd("qemu.sstep="+QemuMonitor.SSTEP_NOIRQ)
 
 		mode = getExpr('$cpsr') & 0x1f
 		correct_mode = 0x11 if is_fast else 0x12
