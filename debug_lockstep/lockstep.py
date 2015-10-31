@@ -394,19 +394,18 @@ def handleBug(prev_state, state, bug_msg, found_bugs, run_dir, test_file):
 			f.write(backtraceSummary(title, instr_name, bugId))
 			f.write('\n\n')
 
+		autocheckpt_cmd = ['./debug.sh']
+		if test_file != "":
+			autocheckpt_cmd += ['-t', test_file]
+		autocheckpt_cmd += ['--bugcheckpoint', os.path.abspath(bugFn), os.path.abspath(bugCheckpt)]
+
 		with open(bugFn,'w') as f:
 			f.write(pickle.dumps(prev_state))
 			f.write('\n\n\n---------------\n\n\n')
 			f.write(bug_msg)
+			f.write('\n\nTo generate a checkpoint for this bug, run\n$ ' + ' '.join(autocheckpt_cmd) + '\n')
 
 		print "Wrote this bug to {}".format(bugFn)
-
-		autocheckpt_cmd = ['./debug.sh']
-		if test_file != "":
-			autocheckpt_cmd += ['-t', test_file]
-		autocheckpt_cmd += ['--bugcheckpoint', bugFn, bugCheckpt]
-		subprocess.Popen(autocheckpt_cmd, stdout=open(os.devnull, 'w'), stderr=open(os.devnull, 'w'));
-		print "Automatically creating checkpoint at {}".format(bugCheckpt)
 	else:
 		print "Skipped writing this bug to file (already found)"
 

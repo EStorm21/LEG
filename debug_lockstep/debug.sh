@@ -50,4 +50,4 @@ PYTHONPATH=./:/proj/leg/debugutils/python2.7/install/lib/ \
 	-ex "python COMMAND=$COMMAND" \
 	-x debug.py
 
-mv transcript output/transcript
+rm transcript

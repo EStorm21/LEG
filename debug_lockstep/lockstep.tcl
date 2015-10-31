@@ -1,6 +1,7 @@
 set dumpDir $1/
 set guiEnabled $2
 
+transcript file ""
 source qemuDumpRestore.tcl
 
 set toModelSimFn "toModelSim.fifo"
