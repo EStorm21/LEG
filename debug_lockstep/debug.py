@@ -64,6 +64,7 @@ def preex_fn_stop_interrupt():
     # signal handler SIG_IGN.
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
+qemuSerialParser = re.compile('char device redirected to ([^ ]+) \(label .+')
 def initialize_qemu():
 	openport = get_open_port()
 
@@ -73,7 +74,7 @@ def initialize_qemu():
 		qemu_cmd += ['-kernel', '/proj/leg/kernel/system.bin']
 	
 	print "Starting qemu with port {}".format(openport)
-	qemu = subprocess.Popen(qemu_cmd, stdin=open(os.devnull), stdout=subprocess.PIPE, preexec_fn = os.setpgrp)
+	qemu = subprocess.Popen(qemu_cmd, stdin=open(os.devnull), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn = os.setpgrp)
 
 	print "Connecting to qemu..."
 	gdb.execute('target remote localhost:{}'.format(openport))
@@ -82,6 +83,16 @@ def initialize_qemu():
 	else:
 		print "Loading script {}".format(TEST_FILE)
 		gdb.execute('restore {} binary'.format(TEST_FILE))
+		symfile = TEST_FILE[:-4] + '.elf'
+		print "Looking for symbol file {}".format(symfile)
+		try:
+			gdb.execute('file {}'.format(symfile))
+		except gdb.error:
+			print "Symbol file {} not found".format(symfile)
+
+	serialmatch = qemuSerialParser.match(qemu.stderr.readline())
+	qemu.serial_in = serialmatch.group(1)
+	print "QEMU is redirecing UART output to {}".format(qemu.serial_in)
 
 	return qemu
 

@@ -4,9 +4,11 @@ import signal
 import gdb
 import re
 import pickle
+import serial
+import time
 
 from leg import LegSim, AdvanceStuckBug, NoDataBug
-from qemu_monitor import QemuMonitor, BadInterruptBug, getExpr, getDataAtExpr, getQemuInstrCt
+from qemu_monitor import QemuMonitor, BadInterruptBug, getExpr, getDataAtExpr, getQemuInstrCt, gdbQueryCmd
 import qemuDump
 
 NON_LOCKSTEP_INTERRUPTS = True
@@ -236,12 +238,37 @@ TEST_PASSED_MSG="""
 
 """
 
+interruptLocParser = re.compile('Symbol ".+" is at 0x([^ ]+) .+')
+def find_interrupt_locs():
+	i = 0
+	locs = []
+	while True:
+		try:
+			addr = gdb.execute('info address interrupt_{}'.format(i), to_string=True)
+		except gdb.error:
+			# Not found!
+			break
+		locmatch = interruptLocParser.match(addr)
+		locs.append(int(locmatch.group(1),16))
+		i += 1
+	return locs
+
+
+def trigger_interrupt(qemu_proc, qmon):
+	ser = serial.Serial(qemu_proc.serial_in)
+	ser.write('a')
+	ser.flush()
+	while qmon.get_irq_lines() == (False, False):
+		time.sleep(0.1)
+	ser.close()
+
 LOCKSTEP_BUG_RESUMABLE = 1
 LOCKSTEP_BUG_ABORT = 2
 LOCKSTEP_FINISHED = 3
 def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 
 	qmon = QemuMonitor(qemu_proc, NON_LOCKSTEP_INTERRUPTS)
+	interrupt_locs = find_interrupt_locs()
 
 	should_stop = [False, False]
 	old_handler = None
@@ -296,6 +323,10 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 				if goal_pc == expected_state[0]:
 					fix_handler()
 					return LOCKSTEP_FINISHED, None, None, "\nReached goal PC {}!\n\n".format(goal_pc)
+				elif expected_state[0] in interrupt_locs:
+					interrupt_locs.remove(expected_state[0])
+					print "Triggering interrupt!"
+					trigger_interrupt(qemu_proc, qmon)
 
 			else:
 				# Incorrect lockstep!
