@@ -1,0 +1,100 @@
+
+interrupt.o:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <vectors_start>:
+   0:	ea000006 	b	20 <reset_handler>
+   4:	ea00000f 	b	48 <undef_handler>
+   8:	ea00000f 	b	4c <swi_handler>
+   c:	ea00000f 	b	50 <pfa_handler>
+  10:	ea00000f 	b	54 <da_handler>
+  14:	eafffffe 	b	14 <vectors_start+0x14>
+  18:	ea000014 	b	70 <irq_handler>
+  1c:	ea00000d 	b	58 <fiq_handler>
+
+00000020 <reset_handler>:
+  20:	e59fd034 	ldr	sp, [pc, #52]	; 5c <stack_top>
+  24:	e10f0000 	mrs	r0, CPSR
+  28:	e3c0101f 	bic	r1, r0, #31
+  2c:	e3811012 	orr	r1, r1, #18
+  30:	e129f001 	msr	CPSR_fc, r1
+  34:	e59fd024 	ldr	sp, [pc, #36]	; 60 <irq_stack_top>
+  38:	e3c00080 	bic	r0, r0, #128	; 0x80
+  3c:	e129f000 	msr	CPSR_fc, r0
+  40:	eb00000b 	bl	74 <main>
+  44:	eafffffe 	b	44 <reset_handler+0x24>
+
+00000048 <undef_handler>:
+  48:	eafffffe 	b	48 <undef_handler>
+
+0000004c <swi_handler>:
+  4c:	eafffffe 	b	4c <swi_handler>
+
+00000050 <pfa_handler>:
+  50:	eafffffe 	b	50 <pfa_handler>
+
+00000054 <da_handler>:
+  54:	eafffffe 	b	54 <da_handler>
+
+00000058 <fiq_handler>:
+  58:	eafffffe 	b	58 <fiq_handler>
+
+0000005c <stack_top>:
+  5c:	000ffff0 	.word	0x000ffff0
+
+00000060 <irq_stack_top>:
+  60:	001ffff0 	.word	0x001ffff0
+
+00000064 <PIC_IRQ_ENCLR>:
+  64:	1400000c 	.word	0x1400000c
+
+00000068 <UART0_IMSC>:
+  68:	16000038 	.word	0x16000038
+
+0000006c <PIC_IRQ_ENSET>:
+  6c:	14000008 	.word	0x14000008
+
+00000070 <irq_handler>:
+  70:	eafffffe 	b	70 <irq_handler>
+
+00000074 <main>:
+  74:	e52db004 	push	{fp}		; (str fp, [sp, #-4]!)
+  78:	e28db000 	add	fp, sp, #0
+  7c:	e51f3020 	ldr	r3, [pc, #-32]	; 64 <PIC_IRQ_ENCLR>
+  80:	e3a02002 	mov	r2, #2
+  84:	e5832000 	str	r2, [r3]
+  88:	e51f3028 	ldr	r3, [pc, #-40]	; 68 <UART0_IMSC>
+  8c:	e3a02010 	mov	r2, #16
+  90:	e5832000 	str	r2, [r3]
+  94:	e51f3030 	ldr	r3, [pc, #-48]	; 6c <PIC_IRQ_ENSET>
+  98:	e3a02002 	mov	r2, #2
+  9c:	e5832000 	str	r2, [r3]
+  a0:	e1a00000 	nop			; (mov r0, r0)
+  a4:	e1a00000 	nop			; (mov r0, r0)
+  a8:	e1a00000 	nop			; (mov r0, r0)
+
+000000ac <interrupt_0>:
+  ac:	e1a00000 	nop			; (mov r0, r0)
+  b0:	e1a00000 	nop			; (mov r0, r0)
+  b4:	e1a00000 	nop			; (mov r0, r0)
+  b8:	e1a00000 	nop			; (mov r0, r0)
+  bc:	e1a00000 	nop			; (mov r0, r0)
+  c0:	e1a00000 	nop			; (mov r0, r0)
+  c4:	e1a00000 	nop			; (mov r0, r0)
+  c8:	e1a00000 	nop			; (mov r0, r0)
+
+000000cc <interrupt_1>:
+  cc:	e1a00000 	nop			; (mov r0, r0)
+  d0:	e1a00000 	nop			; (mov r0, r0)
+  d4:	e1a00000 	nop			; (mov r0, r0)
+  d8:	e1a00000 	nop			; (mov r0, r0)
+  dc:	e1a00000 	nop			; (mov r0, r0)
+  e0:	e1a00000 	nop			; (mov r0, r0)
+  e4:	e1a00000 	nop			; (mov r0, r0)
+  e8:	e1a00000 	nop			; (mov r0, r0)
+  ec:	e1a00000 	nop			; (mov r0, r0)
+  f0:	e1a00000 	nop			; (mov r0, r0)
+  f4:	e1a00000 	nop			; (mov r0, r0)
+  f8:	eafffffe 	b	f8 <interrupt_1+0x2c>
