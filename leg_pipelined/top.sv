@@ -3,6 +3,8 @@ module top (
   output logic [31:0] WriteDataM, DataAdrM,
   output logic        MemWriteM
 );
+  
+  `define ECACHES 1'b0
 
   // ----- data cache -----
   logic        Valid, DStall, HWriteM, HRequestM, END, CLEAND;
@@ -57,13 +59,15 @@ module top (
     // Added for MMU
     StallD, FlushD, FlushE);
 
-  // assign INVI = 1'b0;
-  // assign INVD = 1'b0;
-  // assign ENI = 1'b0;
-  //assign END = 1'b1;
-  assign ENI    = control[12];
-  assign END    = control[2];
-  assign CLEAND = 1'b0;
+  `ifdef ECACHES
+    assign ENI = control[12];
+    assign END    = control[2];
+    assign CLEAND = 1'b0;
+  `else
+    assign ENI    = 1'b0;
+    assign END    = 1'b0;
+    assign CLEAND = 1'b0;
+  `endif
 
   coprocessor15 cp15 (
     .clk         (clk         ),
