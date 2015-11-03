@@ -55,6 +55,7 @@ module leg(input  logic        clk, reset,
   logic [7:0]  CPSR8_W;
   logic [31:0] PSR_W;
   logic [6:0]  PCVectorAddressW;
+  logic RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW;
 
   /// Output from AddressPath
   logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_1D_E, Match_2D_E, ExceptionVectorSelectW;

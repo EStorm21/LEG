@@ -87,7 +87,6 @@ module controller (
   logic        CoProc_MCR_D, CoProc_MRC_D, CoProc_FlagUpd_D, CoProc_WrEnD, CoProc_EnD;
   logic        CoProc_FlagUpd_E, CoProc_FlagUpd_M, CoProc_FlagUpd_W;
   logic        CoProc_WrEnE, CoProc_EnE, MCR_D;
-  logic        CoProc_En_EMW, CPSRtoReg_EMW, RegtoCPSR_EMW;
   logic [ 3:0] FlagsOutE, FlagsM;
   logic [31:0] SPSRW, CPSRW;
 
