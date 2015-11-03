@@ -1,11 +1,11 @@
+`define ECACHES 1
+
 module top (
   input  logic        clk, reset,
   output logic [31:0] WriteDataM, DataAdrM,
   output logic        MemWriteM
 );
   
-  `define ECACHES 1'b0
-
   // ----- data cache -----
   logic        Valid, DStall, HWriteM, HRequestM, END, CLEAND;
   logic [31:0] HRData, HWData, ReadDataM, DANew;
@@ -58,6 +58,13 @@ module top (
     CPUWriteData, CP15rd_M,
     // Added for MMU
     StallD, FlushD, FlushE);
+
+  initial
+    begin
+      `ifdef ECACHES
+        $display("Caches Enabled");
+      `endif
+    end
 
   `ifdef ECACHES
     assign ENI = control[12];

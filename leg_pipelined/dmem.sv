@@ -1,6 +1,7 @@
 // dmem.sv
 // mwaugaman@hmc.edu 8 August 2015
 // Byte Addressable Memory simulation for LEG v5
+`define RESETZEROS 10
 
 module dmem (
   input  logic        clk, we, re, HSEL,
@@ -18,13 +19,15 @@ module dmem (
   integer i;
   initial
     begin
+      `ifdef RESETZEROS
+        $display("Resetting memory to zero");
+        for(i = 0; i < MEM_SIZE; i = i + 1) begin
+          RAM[i] = 32'b0;
+        end
+      `endif
+
       $readmemh("../sim/simTest.dat", RAM);
       //$readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
-
-      // Initialize RAM to 0
-      // for(i = 0; i < MEM_SIZE; i = i + 1) begin
-      //   RAM[i] = 32'b0;
-      // end
       //readmemh("C:/Users/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
       // $readmemh("C:/Users/Max/Google Drive/Clay-Wolkin/SourceTree2/Tests/ldm.dat",RAM);

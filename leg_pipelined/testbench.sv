@@ -70,7 +70,7 @@
 //    1100  Signed greater                N = V & Z = 0
 //    1101  Signed less/equal             N != V | Z = 1
 //    1110  Always                        any
-
+//`define ECACHES 5
 
 module testbench();
 
@@ -119,6 +119,12 @@ module testbench();
   // initialize test
   initial
     begin
+/*      `ifdef ECACHES
+	 $display("Enabled caches");	
+      `else
+	 $display("Disabled caches");
+      `endif
+*/
       reset <= 1; # 220; reset <= 0;
     end
 
