@@ -8,6 +8,9 @@
 # 	["autorun"] - Run the test automatically, and quit when done.
 # 	["bugcheckpoint", bugfile, cppath] - Jump to the given bug,
 # 		then make a checkpoint there. Finally, quit.
+# 	["divideandconquer", rundir, start_pc, goal_pc] - Use the
+# 		given run directory. Jump to the start_pc, then debug
+# 		until reaching goal_pc. Finally, quit.
 
 import gdb
 import re
@@ -36,9 +39,6 @@ def setup():
 	if not os.path.isfile('util/convertBinToDat'):
 		subprocess.call(['make', '-C', 'util'])
 
-	gdb.execute("mem 0 0x10000000 rw")
-	gdb.execute("set mem inaccessible-by-default off")
-
 def get_open_port():
 	import socket
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -64,6 +64,7 @@ def preex_fn_stop_interrupt():
     # signal handler SIG_IGN.
     signal.signal(signal.SIGINT, signal.SIG_IGN)
 
+qemuSerialParser = re.compile('char device redirected to ([^ ]+) \(label .+')
 def initialize_qemu():
 	openport = get_open_port()
 
@@ -73,7 +74,7 @@ def initialize_qemu():
 		qemu_cmd += ['-kernel', '/proj/leg/kernel/system.bin']
 	
 	print "Starting qemu with port {}".format(openport)
-	qemu = subprocess.Popen(qemu_cmd, stdin=open(os.devnull), stdout=subprocess.PIPE, preexec_fn = os.setpgrp)
+	qemu = subprocess.Popen(qemu_cmd, stdin=open(os.devnull), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn = os.setpgrp)
 
 	print "Connecting to qemu..."
 	gdb.execute('target remote localhost:{}'.format(openport))
@@ -82,13 +83,23 @@ def initialize_qemu():
 	else:
 		print "Loading script {}".format(TEST_FILE)
 		gdb.execute('restore {} binary'.format(TEST_FILE))
+		symfile = TEST_FILE[:-4] + '.elf'
+		print "Looking for symbol file {}".format(symfile)
+		try:
+			gdb.execute('file {}'.format(symfile))
+		except gdb.error:
+			print "Symbol file {} not found".format(symfile)
+
+	serialmatch = qemuSerialParser.match(qemu.stderr.readline())
+	qemu.serial_in = serialmatch.group(1)
+	print "QEMU is redirecing UART output to {}".format(qemu.serial_in)
 
 	return qemu
 
 def cleanup():
 	print "Shutting down qemu"
 	qemu.terminate()
-	if not os.path.isfile(os.path.join(run_dir, "runlog")):
+	if should_cleanup_dir and not os.path.isfile(os.path.join(run_dir, "runlog")):
 		print "Cleaning up empty output directory"
 		shutil.rmtree(run_dir)
 
@@ -116,7 +127,7 @@ class LegLockstepGuiCommand (gdb.Command):
 	def invoke (self, arg, from_tty):
 		print "Starting lockstep from here, with GUI"
 		try:
-			lockstep.debugFromHere(True, qemu, TEST_FILE=="", found_bugs, run_dir)
+			lockstep.debugFromHere(True, qemu, TEST_FILE, found_bugs, run_dir)
 		except:
 			print traceback.format_exc()
 
@@ -133,13 +144,40 @@ class LegAutoCommand (gdb.Command):
 		while True:
 			print "Starting lockstep from:"
 			gdb.execute("where")
-			preventRestart = lockstep.debugFromHere(False, qemu, TEST_FILE=="", found_bugs, run_dir)
+			preventRestart = lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir)
 			if preventRestart:
 				print "Stopping automatic lockstep (run leg-lockstep-auto again to resume)"
 				break
 			print "Got a bug. Skipping over it"
 
 LegAutoCommand()
+
+
+class LegLockstepToGoalCommand (gdb.Command):
+	"""
+	Repeatedly lockstep and restart after bugs, and stop once we reach a defined goal.
+	Note that this is not a function users should call directly.
+	Usage: leg-lockstep-goal PCADDRESS (i.e. 0xdeadbeef)
+	"""
+
+	def __init__ (self):
+		super (LegLockstepToGoalCommand, self).__init__ ("leg-lockstep-goal", gdb.COMMAND_USER)
+
+	def invoke (self, arg, from_tty):
+		if arg == "":
+			print "Please pass a location"
+		else:
+			while True:
+				print "Starting lockstep from:"
+				gdb.execute("where")
+				print "Seeking goal {}, or {}".format(arg, hex(int(arg,0)))
+				preventRestart = lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir, int(arg, 0))
+				if preventRestart:
+					print "Stopping automatic lockstep (run leg-lockstep-goal again to resume)"
+					break
+				print "Got a bug. Skipping over it"
+
+LegLockstepToGoalCommand()
 
 class LegJumpCommand (gdb.Command):
 	""" Shortcut to skip to a function or address """
@@ -259,7 +297,15 @@ qemu = initialize_qemu()
 
 gdb.execute('set pagination off')
 
-run_dir = get_run_directory()
+if COMMAND[0]=="divideandconquer":
+	should_cleanup_dir = False
+	run_dir = COMMAND[1]
+else:
+	should_cleanup_dir = True
+	run_dir = get_run_directory()
+
+with open(os.path.join(run_dir,'pid'), 'w') as f:
+	f.write(str(os.getpid()) + '\n')
 
 found_bugs = set()
 
@@ -267,19 +313,26 @@ print "Connected!"
 if TEST_FILE and COMMAND[0]=="autorun":
 	# Non-interactive mode!
 	print "Automatically starting lockstepping"
-	gdb.execute("leg-lockstep");
+	gdb.execute("leg-lockstep")
 	print "Output saved in {}".format(run_dir)
-	gdb.execute("leg-stop");
+	gdb.execute("leg-stop")
 elif COMMAND[0]=="bugcheckpoint":
 	print "Automatically creating bug checkpoint"
 	try:
-		gdb.execute("leg-frombug {}".format(COMMAND[1]));
-		gdb.execute("leg-checkpoint temp_bug_checkpoint");
+		gdb.execute("leg-frombug {}".format(COMMAND[1]))
+		gdb.execute("leg-checkpoint temp_bug_checkpoint")
 		os.rename("output/checkpoints/temp_bug_checkpoint.checkpoint", COMMAND[2])
 	except:
 		import traceback
 		traceback.print_exc()
-	gdb.execute("leg-stop");
+	gdb.execute("leg-stop")
+elif COMMAND[0]=="divideandconquer":
+	start_pc = COMMAND[2]
+	goal_pc = COMMAND[3]
+	if start_pc != 0:
+		gdb.execute("leg-jump *{}".format(start_pc))
+	gdb.execute("leg-lockstep-goal {}".format(goal_pc))
+	gdb.execute("leg-stop")
 else:
 	print ""
 	print "Welcome to the interactive LEG debugger!"
