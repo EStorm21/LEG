@@ -47,6 +47,7 @@ module controller (
   output logic        RegWriteM, MemtoRegE, PCWrPendingF, SWI_E, SWI_D, SWI_M, SWI_W,
   output logic        undefD, undefE, undefM, undefW,
   output logic        RegtoCPSR, CPSRtoReg, CoProc_En,
+  output logic        RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW,
   /// For BX instruction
   output logic        BXInstrD, TFlagNextE   ,
   input  logic        TFlagE                 ,
@@ -86,6 +87,7 @@ module controller (
   logic        CoProc_MCR_D, CoProc_MRC_D, CoProc_FlagUpd_D, CoProc_WrEnD, CoProc_EnD;
   logic        CoProc_FlagUpd_E, CoProc_FlagUpd_M, CoProc_FlagUpd_W;
   logic        CoProc_WrEnE, CoProc_EnE, MCR_D;
+  logic        CoProc_En_EMW, CPSRtoReg_EMW, RegtoCPSR_EMW;
   logic [ 3:0] FlagsOutE, FlagsM;
   logic [31:0] SPSRW, CPSRW;
 
@@ -198,8 +200,10 @@ module controller (
   assign RegtoCPSRi_D      = (InstrD[27:23] == 5'b00110 & InstrD[21:20] == 2'b10 & InstrD[15:12] == 4'hF); // Move immediate to CPSR/SPSR (MSR instruction I type)
   assign RegtoCPSR_D       = RegtoCPSRr_D | RegtoCPSRi_D;
   assign RegtoCPSR         = RegtoCPSR_D | RegtoCPSR_E | RegtoCPSR_M | RegtoCPSR_W;
+  assign RegtoCPSR_EMW     = RegtoCPSR_E | RegtoCPSR_M | RegtoCPSR_W; // necessary to flushE in the correct place
   assign CPSRtoRegD        = (InstrD[27:23] == 5'b00010 & InstrD[21:16] == 6'b001111 & ~(|InstrD[11:0])); // MRS instruction
   assign CPSRtoReg         = CPSRtoRegD | CPSRtoRegE | CPSRtoRegM | CPSRtoRegW;
+  assign CPSRtoReg_EMW     = CPSRtoRegE | CPSRtoRegM | CPSRtoRegW; // necessary to flushE in the correct place
   assign MSRmaskD          = (RegtoCPSR_D) ? {InstrD[22], InstrD[19:16]} : 5'b0; // 5 bits are {R, field_mask}
   assign DataRestoreCPSR_D = ALUOpD & ((InstrD[24:12] == 13'b1101_1_0000_1111) | (InstrD[24:20] == 5'b00101 & InstrD[15:12] == 4'hF)); // Instruction for restoring CPSR (MOV/SUB)
   assign restoreCPSR_D     = DataRestoreCPSR_D | MicroOpCPSRrestoreD;
@@ -212,6 +216,7 @@ module controller (
   assign CoProc_EnD       = CoProc_MRC_D | CoProc_MCR_D;
   assign CoProc_WrEnD     = CoProc_MCR_D;
   assign CoProc_En        = CoProc_EnD | CoProc_EnE | CoProc_EnM | CoProc_FlagUpd_W;
+  assign CoProc_En_EMW    = CoProc_EnE | CoProc_EnM | CoProc_FlagUpd_W; // necessary to flushE in the correct place
   // === END ===
 
   // === EXCEPTION HANDLING ===

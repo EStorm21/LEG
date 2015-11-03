@@ -16,6 +16,7 @@ module hazard(input  logic       clk, reset,
               // For exceptions
               input logic        PrefetchAbort, DataAbort, IRQ, FIQ, UndefinedInstr, undefD, undefE, undefM, undefW,
               input logic        SWI, SWI_E, SWI_D, SWI_M, SWI_W, RegtoCPSR, CPSRtoReg,
+              input logic        RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW,
               output logic [1:0] PCInSelect);
                 
   // forwarding logic
@@ -64,7 +65,7 @@ module hazard(input  logic       clk, reset,
   assign StallW = DStall | IStall;
   assign StallM = DStall | IStall;
   // SD 11/2/2015 Should probably flush E in more cases when we flush D. Else WE signals stay high. FlushE is FlushD through a sequencer?
-  assign FlushE = ldrStallD | BranchTakenE | (SWI_M | undefM) | (SWI_E | SWI_M | SWI_W | undefE | undefM | undefW | RegtoCPSR | CPSRtoReg | CoProc_En); 
+  assign FlushE = ldrStallD | BranchTakenE | (SWI_M | undefM) | (SWI_E | SWI_M | SWI_W | undefE | undefM | undefW | RegtoCPSR_EMW | CPSRtoReg_EMW | CoProc_En_EMW); 
   assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | (SWI_E | SWI_M | SWI_W | undefE | undefM | undefW | RegtoCPSR | CPSRtoReg | CoProc_En);
   assign ExceptionSavePC = SWI_E | undefE; 
 
