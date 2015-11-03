@@ -63,7 +63,8 @@ module hazard(input  logic       clk, reset,
   assign FlushW = DStall | IStall;
   assign StallW = DStall | IStall;
   assign StallM = DStall | IStall;
-  assign FlushE = ldrStallD | BranchTakenE | (SWI_M | undefM); 
+  // SD 11/2/2015 Should probably flush E in more cases when we flush D. Else WE signals stay high. FlushE is FlushD through a sequencer?
+  assign FlushE = ldrStallD | BranchTakenE | (SWI_M | undefM) | (SWI_E | SWI_M | SWI_W | undefE | undefM | undefW | RegtoCPSR | CPSRtoReg | CoProc_En); 
   assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | (SWI_E | SWI_M | SWI_W | undefE | undefM | undefW | RegtoCPSR | CPSRtoReg | CoProc_En);
   assign ExceptionSavePC = SWI_E | undefE; 
 
