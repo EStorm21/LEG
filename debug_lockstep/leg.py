@@ -52,7 +52,7 @@ class NoDataBug(Exception):
 	pass
 
 class LegSim(object):
-	def __init__(self, dump_fn, gui=False):
+	def __init__(self, dump_fn, reset_mem=True, gui=False):
 		try:
 			print "    Making temp directory"
 			self.dumpdir = tempfile.mkdtemp()
@@ -79,7 +79,7 @@ class LegSim(object):
 				subprocess.call(['vlib','../sim/work'])
 
 			cmds = ['vsim']
-			cmds += ['-do', 'do lockstep.tcl {} {}'.format(os.path.abspath(self.dumpdir), "yes" if gui else "no")]
+			cmds += ['-do', 'do lockstep.tcl {} {} {}'.format(os.path.abspath(self.dumpdir), "1'b1" if reset_mem else "1'b0", "yes" if gui else "no")]
 			cmds += ['-do', 'quit -f']
 
 			self.modelsim = subprocess.Popen(cmds, stdin=(None if gui else open(os.devnull)), preexec_fn = os.setpgrp)

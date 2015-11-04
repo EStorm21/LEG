@@ -441,7 +441,7 @@ def handleBug(prev_state, state, bug_msg, found_bugs, run_dir, test_file):
 		print "Skipped writing this bug to file (already found)"
 
 def debugFromHere(with_gui, qemu, test_file, found_bugs, run_dir, goal_pc=None):
-	lsim = LegSim(qemuDump.fullDump, with_gui)
+	lsim = LegSim(qemuDump.fullDump, test_file=="", with_gui)
 	if with_gui:
 		print "Giving ModelSim control to do initial wave configuration"
 		lsim.gui_control()
