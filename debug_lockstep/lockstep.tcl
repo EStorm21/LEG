@@ -1,5 +1,6 @@
 set dumpDir $1/
-set guiEnabled $2
+set shouldResetMem $2
+set guiEnabled $3
 
 transcript file ""
 source qemuDumpRestore.tcl

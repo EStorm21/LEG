@@ -1,7 +1,8 @@
 // dmem.sv
 // mwaugaman@hmc.edu 8 August 2015
 // Byte Addressable Memory simulation for LEG v5
-`define RESETZEROS 10
+
+// `define USE_DEFAULT_MEMORY 10
 
 module dmem (
   input  logic        clk, we, re, HSEL,
@@ -19,14 +20,12 @@ module dmem (
   integer i;
   initial
     begin
-      `ifdef RESETZEROS
-        $display("Resetting memory to zero");
-        for(i = 0; i < MEM_SIZE; i = i + 1) begin
-          RAM[i] = 32'b0;
-        end
+      `ifdef USE_DEFAULT_MEMORY
+        string default_memory = "../sim/simtest.dat";
+        $display("Using default memory %s", default_memory);
+        $readmemh(default_memory, RAM);
       `endif
-
-      $readmemh("../sim/simTest.dat", RAM);
+      
       //$readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
       //readmemh("C:/Users/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
       // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
@@ -69,5 +68,17 @@ module dmem (
       end
     end
 
+  // Called from ModelSim using
+  // call sim:/testbench/dut/ahb/mem/loadMemory simFile clearFirst
+  function void loadMemory(string simFile, bit clearFirst);
+      if (clearFirst) begin
+        $display("Resetting memory to zero");
+        for(i = 0; i < MEM_SIZE; i = i + 1) begin
+          RAM[i] = 32'b0;
+        end
+      end
+      $display("Loading memory data from %s",simFile);
+      $readmemh(simFile, RAM);
+  endfunction
 
 endmodule
