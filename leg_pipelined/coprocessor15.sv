@@ -66,13 +66,18 @@ mux2 #(32) wdmux(CPUWriteData, MMUWriteData, MMUWriteEn, wd);
 assign StallCP = (CPUWriteEn & MMUWriteEn) | (CPUEn & MMUEn);
 
 always_ff @(negedge clk) begin
-  if (reset)
+  if (reset) begin
     rf <= {32'b0, 32'b0, 32'b0, 32'b0, 32'b0, 32'b0,
            32'b0, 32'b0, 32'b0, 32'b0, 32'b0, 32'b0,
-           32'b0, 32'b0, 32'h00090078, 32'h41069265};
+           32'b0, 32'b0, 32'h00090070, 32'h41069265};
+  end
   else begin
     for (j = 1; j < 16; j = j+1) begin // r0 is read only, so we start at r1
-      if(we & reg_select[j]) rf[j] <= wd;	
+      //if(we & reg_select[j]) rf[j] <= wd;	
+      if(we & reg_select[j]) begin
+          rf[j] <= wd;	
+          $display("we: reg %d at time %d", j, $time);
+      end
     end
   end
 end
