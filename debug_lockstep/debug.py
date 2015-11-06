@@ -322,6 +322,7 @@ elif COMMAND[0]=="bugcheckpoint":
 		gdb.execute("leg-frombug {}".format(COMMAND[1]))
 		gdb.execute("leg-checkpoint temp_bug_checkpoint")
 		os.rename("output/checkpoints/temp_bug_checkpoint.checkpoint", COMMAND[2])
+		print "Moved checkpoint to {}".format(COMMAND[2])
 	except:
 		import traceback
 		traceback.print_exc()
