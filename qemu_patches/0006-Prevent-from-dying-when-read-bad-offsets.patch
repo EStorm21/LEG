@@ -1,0 +1,62 @@
+From 9fba9b68664de7758748f3cb09818c05fe20ca40 Mon Sep 17 00:00:00 2001
+From: Daniel Johnson <hexahedria@gmail.com>
+Date: Sun, 25 Oct 2015 15:38:07 -0700
+Subject: [PATCH 6/7] Prevent from dying when read bad offsets
+
+---
+ hw/arm/integratorcp.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/hw/arm/integratorcp.c b/hw/arm/integratorcp.c
+index 0fbbf99..4f120ef 100644
+--- a/hw/arm/integratorcp.c
++++ b/hw/arm/integratorcp.c
+@@ -77,7 +77,8 @@ static uint64_t integratorcm_read(void *opaque, hwaddr offset,
+         }
+     case 6: /* CM_LMBUSCNT */
+         /* ??? High frequency timer.  */
+-        hw_error("integratorcm_read: CM_LMBUSCNT");
++        printf("integratorcm_read: CM_LMBUSCNT");
++        return 0;
+     case 7: /* CM_AUXOSC */
+         return s->cm_auxosc;
+     case 8: /* CM_SDRAM */
+@@ -116,7 +117,7 @@ static uint64_t integratorcm_read(void *opaque, hwaddr offset,
+         /* ??? Voltage control unimplemented.  */
+         return 0;
+     default:
+-        hw_error("integratorcm_read: Unimplemented offset 0x%x\n",
++        printf("integratorcm_read: Unimplemented offset 0x%x\n",
+                  (int)offset);
+         return 0;
+     }
+@@ -224,7 +225,7 @@ static void integratorcm_write(void *opaque, hwaddr offset,
+         /* ??? Voltage control unimplemented.  */
+         break;
+     default:
+-        hw_error("integratorcm_write: Unimplemented offset 0x%x\n",
++        printf("integratorcm_write: Unimplemented offset 0x%x\n",
+                  (int)offset);
+         break;
+     }
+@@ -442,7 +443,7 @@ static uint64_t icp_control_read(void *opaque, hwaddr offset,
+     case 3: /* CP_DECODE */
+         return 0x11;
+     default:
+-        hw_error("icp_control_read: Bad offset %x\n", (int)offset);
++        printf("icp_control_read: Bad offset %x\n", (int)offset);
+         return 0;
+     }
+ }
+@@ -462,7 +463,7 @@ static void icp_control_write(void *opaque, hwaddr offset,
+         /* Nothing interesting implemented yet.  */
+         break;
+     default:
+-        hw_error("icp_control_write: Bad offset %x\n", (int)offset);
++        printf("icp_control_write: Bad offset %x\n", (int)offset);
+     }
+ }
+ 
+-- 
+1.7.1
+

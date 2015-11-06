@@ -1,0 +1,29 @@
+From e62cd435128ccd64ff6dc007437cc2523842faf5 Mon Sep 17 00:00:00 2001
+From: Daniel Johnson <hexahedria@gmail.com>
+Date: Sun, 25 Oct 2015 11:44:48 -0700
+Subject: [PATCH 4/7] Add dummy def of bank_number to allow make all to work
+
+---
+ target-arm/helper.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
+
+diff --git a/target-arm/helper.c b/target-arm/helper.c
+index fc2f61a..4d270b5 100644
+--- a/target-arm/helper.c
++++ b/target-arm/helper.c
+@@ -4299,6 +4299,12 @@ void aarch64_sync_64_to_32(CPUARMState *env)
+     g_assert_not_reached();
+ }
+ 
++/* Dummy def to allow linking */
++int bank_number(int mode)
++{
++    g_assert_not_reached();
++}
++
+ #else
+ 
+ /* Map CPU modes onto saved register banks.  */
+-- 
+1.7.1
+
