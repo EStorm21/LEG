@@ -193,7 +193,7 @@ class LegJumpCommand (gdb.Command):
 			gdb.execute('continue', to_string=True)
 			gdb.execute('delete {}'.format(bpstr.split(' ')[1][:-1]))
 			print "Jumped to"
-			gdb.execute("where")
+			gdb.execute("where 1")
 
 LegJumpCommand()
 
