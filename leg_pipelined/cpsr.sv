@@ -6,8 +6,7 @@ module cpsr(input  logic        clk, reset,
               input logic       RestoreCPSR,
               input logic       NotStallW, CoProc_FlagUpd_W,
               output logic [31:0] CPSRdata, 
-              output logic [31:0] SPSRdata,
-              output logic [6:0] PCVectorAddressE);
+              output logic [31:0] SPSRdata);
 
  /***** Brief Description *******
  * Created by Ivan Wong for Clay Wolkin 2014-2015
@@ -62,38 +61,23 @@ module cpsr(input  logic        clk, reset,
   always_comb
     begin
       // ========== Exceptions ===========
-      if (reset) begin
+      if (reset)
         CPSR_update = {1'b1, 1'b1, 6'b01_0011}; // Supervisor Mode (Fast Interrupt disabled - why?)
-        PCVectorAddressE = 7'b000_0001;
-      end
-      else if (DataAbort) begin // data abort 
+      else if (DataAbort)// data abort 
         CPSR_update = {1'b1, cpsr[6], 6'b01_0111}; // Data Abort Mode
-        PCVectorAddressE = 7'b001_0000;
-      end
-      else if (FastInterrupt) begin // FIQ
+      else if (FastInterrupt) // FIQ
         CPSR_update = {1'b1, cpsr[6], 6'b01_0001}; // output fast interrupt (FIQ) mode
-        PCVectorAddressE = 7'b100_0000;
-      end
-      else if (Interrupt)begin // IRQ
+      else if (Interrupt)// IRQ
         CPSR_update = {1'b1, cpsr[6], 6'b01_0010}; // IRQ mode
-        PCVectorAddressE = 7'b010_0000;
-      end
-      else if (PrefetchAbort) begin // prefetch abort
+      else if (PrefetchAbort) // prefetch abort
         CPSR_update = {1'b1, cpsr[6], 6'b01_0111}; // Prefetch Abort Mode
-        PCVectorAddressE = 7'b000_1000;
-      end
-      else if (Undefined) begin // undef
+      else if (Undefined)// undef
         CPSR_update = {1'b1, cpsr[6], 6'b01_1011}; // Undefined Mode
-        PCVectorAddressE = 7'b000_0010;
-      end
-      else if (SoftwareInterrupt) begin // Software interrupt
+      else if (SoftwareInterrupt) // Software interrupt
         CPSR_update = {1'b1, cpsr[6], 6'b01_0011}; // Supervisor Mode
-        PCVectorAddressE = 7'b000_0100;
-      end
-      else begin
+      else
         CPSR_update = {cpsr[7:0]};
-        PCVectorAddressE = 7'b0;
-      end
+
       // ========= MSR instructions =========
       if (MSRmask[0] & (InAPrivilegedMode | CurrentModeHasSPSR) & LegalModeChange)  MSR_update[7:0] = ALUout[7:0];
       else if ((MSRmask[0] & (InAPrivilegedMode | CurrentModeHasSPSR) & ~LegalModeChange & MSRmask[4]))   

@@ -21,7 +21,7 @@ module leg(input  logic        clk, reset,
 
   /// Output from Hazard Unit
   logic [1:0]  ForwardAE, ForwardBE;
-  logic        StallF, StallE, StallM, FlushW, StallW, StalluOp;
+  logic        StallF, StallE, StallM, FlushM, FlushW, StallW, StalluOp;
   logic        ExceptionSavePC;
 
   /// Output from Datapath

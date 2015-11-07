@@ -42,7 +42,7 @@ module controller (
   output logic [ 3:0] RegFileRzD             ,
   output logic [31:0] uOpInstrD, PSR_W       ,
   /// ------ From Hazard ------
-  input  logic        FlushE, StallE, StallM, FlushW, StallW, StalluOp, ExceptionSavePC,
+  input  logic        FlushE, StallE, StallM, FlushM, FlushW, StallW, StalluOp, ExceptionSavePC,
   /// ------ To   Hazard ------
   output logic        RegWriteM, MemtoRegE, PCWrPendingF, SWI_E, SWI_D, SWI_M, SWI_W,
   output logic        undefD, undefE, undefM, undefW,
@@ -295,15 +295,15 @@ module controller (
   // ======================================= Memory Stage ===============================================
   // ====================================================================================================
 
-  flopenr #(2) msr_mrs_M(clk, reset, ~StallM, {restoreCPSR_E, RegtoCPSR_E},
+  flopenrc #(2) msr_mrs_M(clk, reset, ~StallM, FlushM, {restoreCPSR_E, RegtoCPSR_E},
                                               {restoreCPSR_M, RegtoCPSR_M});
-  flopenr #(2) undef_exceptionEM(clk, reset, ~StallM, {undefE, SWI_E}, {undefM, SWI_M});
-  flopenr #(11) flagM(clk, reset, ~StallM, {FlagsNextE,  SetNextFlagsE, PSRtypeE, MSRmaskE},
+  flopenrc #(2) undef_exceptionEM(clk, reset, ~StallM, FlushM, {undefE, SWI_E}, {undefM, SWI_M});
+  flopenrc #(11) flagM(clk, reset, ~StallM, FlushM, {FlagsNextE,  SetNextFlagsE, PSRtypeE, MSRmaskE},
                                            {FlagsNext0M, SetNextFlagsM, PSRtypeM, MSRmaskM});
-  flopenr #(14) CoProc_M(clk, reset, ~StallM,
+  flopenrc #(14) CoProc_M(clk, reset, ~StallM, FlushM,
     {InstrE[19:16], InstrE[7:5], InstrE[3:0], (CoProc_WrEnE & CondExE), (CoProc_EnE & CondExE), (CoProc_FlagUpd_E & CondExE)},
     {CoProc_AddrM,  CoProc_Op2M, CoProc_CRmM, CoProc_WrEnM,             CoProc_EnM,             CoProc_FlagUpd_M});
-  flopenr #(16) regsM(clk, reset, ~StallM,
+  flopenrc #(16) regsM(clk, reset, ~StallM, FlushM,
     {MemWriteGatedE, MemtoRegE, RegWriteGatedE, PCSrcGatedE, ByteMaskE, ByteOrWordE, ByteOffsetE, LdrHalfwordE, Ldr_SignBE, Ldr_SignHE, HalfwordOffsetE, CPSRtoRegE},
     {MemWriteM,      MemtoRegM, RegWriteM,      PCSrcM,      ByteMaskM, ByteOrWordM, ByteOffsetM, LdrHalfwordM, Ldr_SignBM, Ldr_SignHM, HalfwordOffsetM, CPSRtoRegM});
 
@@ -325,6 +325,7 @@ module controller (
   // === CPSR / SPSR relevant info ===
   cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefW, SWI_W, 4'b0}, restoreCPSR_W, ~StallW, CoProc_FlagUpd_W,
     CPSRW, SPSRW, PCVectorAddressW);
+  assign PCVectorAddressW = 
   assign CPSR8_W = {CPSRW[7:0]}; // Forward to Decode stage
   assign PSR_W   = PSRtypeW ? SPSRW : CPSRW;
   // === END ===

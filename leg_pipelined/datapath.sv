@@ -43,7 +43,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
 
                 /// ------ From Hazard ------
                   input  logic [1:0]  ForwardAE, ForwardBE,
-                  input  logic        StallF, StallD, FlushD, FlushE, StallE, StallM, FlushW, StallW, // Added StallE, StallM, FlushW for memory
+                  input  logic        StallF, StallD, FlushD, FlushE, StallE, StallM, FlushM, FlushW, StallW, // Added StallE, StallM, FlushW for memory
                   input  logic [1:0]  PCInSelect, // for exception handling
 
                 /// ------ To Hazard ------
@@ -158,15 +158,15 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // ====================================================================================
   // =============================== Memory Stage =======================================
   // ====================================================================================
-  flopenr #(32) aluresreg(clk, reset, ~StallM, ALUResultE, ALUOutM);
+  flopenrc #(32) aluresreg(clk, reset, ~StallM, FlushM, ALUResultE, ALUOutM);
   // pass on PC for debugging
-  flopenr #(32) pcmreg(clk, reset, ~StallM, PCE, PCM);
-  flopenr #(32) instrmreg(clk, reset, ~StallM, instrEdebug, instrMdebug);
-  flopenr #(1) validmreg(clk, reset, ~StallM, validEdebug, validMdebug);
-  flopenr #(1) uopprogmreg(clk, reset, ~StallM, uOpProgEdebug, uOpProgMdebug);
+  flopenrc #(32) pcmreg(clk, reset, ~StallM, FlushM, PCE, PCM);
+  flopenrc #(32) instrmreg(clk, reset, ~StallM, FlushM, instrEdebug, instrMdebug);
+  flopenrc #(1) validmreg(clk, reset, ~StallM, FlushM, validEdebug, validMdebug);
+  flopenrc #(1) uopprogmreg(clk, reset, ~StallM, FlushM, uOpProgEdebug, uOpProgMdebug);
 
   mux2 #(32) CP15_ALU_mux(ALUOutM, CP15rd_M, CoProc_EnM, ALUorCP15_M);
-  flopenr #(32) wdreg(clk, reset, ~StallM, WriteDataReplE, WriteDataM);
+  flopenrc #(32) wdreg(clk, reset, ~StallM, FlushM, WriteDataReplE, WriteDataM);
   
   // ====================================================================================
   // =============================== Writeback Stage ====================================
