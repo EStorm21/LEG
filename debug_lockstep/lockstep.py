@@ -267,6 +267,7 @@ LOCKSTEP_BUG_ABORT = 2
 LOCKSTEP_FINISHED = 3
 def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 
+	gdb.execute("set mem inaccessible-by-default on")
 	qmon = QemuMonitor(qemu_proc, NON_LOCKSTEP_INTERRUPTS)
 	interrupt_locs = find_interrupt_locs()
 
@@ -284,7 +285,8 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 			should_stop[0] = True
 			print "Registered Ctrl-C signal (SIGINT). Preparing to stop gracefully"
 
-	def fix_handler():
+	def cleanup():
+		gdb.execute("set mem inaccessible-by-default off")
 		signal.signal(signal.SIGINT, old_handler)
 
 	old_handler = signal.signal(signal.SIGINT, handler)
@@ -295,13 +297,13 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 		try:
 			time, advance_w_state, advance_e_state = lsim.advance()
 		except AdvanceStuckBug, e:
-			fix_handler()
+			cleanup()
 			return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
 				qmon.get_state_prev_writeback(),
 				qmon.get_state_writeback(),
 				build_bug_advance_timeout(qmon))
 		except NoDataBug, e:
-			fix_handler()
+			cleanup()
 			return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
 				qmon.get_state_prev_writeback(),
 				qmon.get_state_writeback(),
@@ -321,7 +323,7 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 					gdb.execute("where")
 
 				if goal_pc == expected_state[0]:
-					fix_handler()
+					cleanup()
 					return LOCKSTEP_FINISHED, None, None, "\nReached goal PC {}!\n\n".format(goal_pc)
 				elif expected_state[0] in interrupt_locs:
 					interrupt_locs.remove(expected_state[0])
@@ -330,7 +332,7 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 
 			else:
 				# Incorrect lockstep!
-				fix_handler()
+				cleanup()
 				return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
 					qmon.get_state_prev_writeback(),
 					qmon.get_state_writeback(),
@@ -354,7 +356,7 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 					print "Skipping execution of unexpected pc 0x{:x} (expected 0x{:x})".format(pc, expected_pc)
 					ios = []
 			except BadInterruptBug, e:
-				fix_handler()
+				cleanup()
 				return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
 					qmon.get_state_prev_writeback(),
 					qmon.get_state_writeback(),
@@ -367,7 +369,7 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 			lsim.set_interrupts(irq, fiq)
 
 			if (not is_linux) and qmon.same_instr_ct > 10:
-				fix_handler()
+				cleanup()
 				return LOCKSTEP_FINISHED, None, None, TEST_PASSED_MSG
 
 		# print '\n'.join([str(x) for x in qmon.states])
@@ -375,7 +377,7 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 		# print "EXEC_HEAD", qmon.execute_head
 
 		if should_stop[0]:
-			fix_handler()
+			cleanup()
 			return (LOCKSTEP_BUG_ABORT,
 					qmon.get_state_prev_writeback(),
 					qmon.get_state_writeback(),

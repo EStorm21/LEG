@@ -22,7 +22,11 @@ def getExpr(expr):
 
 addrParser = re.compile('.*:\t(.+)')
 def getDataAtExpr(expr):
+	was_on = gdb.execute("show mem inaccessible-by-default", to_string=True) == "Unknown memory addresses will be treated as inaccessible.\n"
+	gdb.execute("set mem inaccessible-by-default off")
 	addrMatch = addrParser.match(gdb.execute('x/x {}'.format(expr), to_string=True))
+	if was_on:
+		gdb.execute("set mem inaccessible-by-default on")
 	data = int(addrMatch.group(1),16)
 	return data
 
@@ -180,8 +184,3 @@ class QemuMonitor(object):
 		CPU_INTERRUPT_FIQ  = 0x0008
 		pending = int(gdbQueryCmd("qemu.irqpending"), 16)
 		return (pending & CPU_INTERRUPT_HARD) != 0, (pending & CPU_INTERRUPT_FIQ) != 0
-
-
-
-
-
