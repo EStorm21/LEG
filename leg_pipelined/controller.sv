@@ -324,8 +324,7 @@ module controller (
 
   // === CPSR / SPSR relevant info ===
   cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefW, SWI_W, 4'b0}, restoreCPSR_W, ~StallW, CoProc_FlagUpd_W,
-    CPSRW, SPSRW, PCVectorAddressW);
-  assign PCVectorAddressW = 
+    CPSRW, SPSRW);
   assign CPSR8_W = {CPSRW[7:0]}; // Forward to Decode stage
   assign PSR_W   = PSRtypeW ? SPSRW : CPSRW;
   // === END ===

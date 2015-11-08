@@ -30,7 +30,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic        noRotateD, InstrMuxD,
                   input  logic [3:0]  RegFileRzD,
                   input  logic [31:0] uOpInstrD,
-		  input logic         uOpStallD,
+		              input logic         uOpStallD,
                   input  logic        CoProc_EnM, 
 
                 /// ------ To Controller ------
