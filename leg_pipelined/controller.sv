@@ -42,7 +42,7 @@ module controller (
   output logic [ 3:0] RegFileRzD             ,
   output logic [31:0] uOpInstrD, PSR_W       ,
   /// ------ From Hazard ------
-  input  logic        FlushE, StallE, StallM, FlushM, FlushW, StallW, StalluOp, ExceptionSavePC,
+  input  logic        StallD, FlushD, FlushE, StallE, StallM, FlushM, FlushW, StallW, StalluOp, ExceptionSavePC,
   /// ------ To   Hazard ------
   output logic        RegWriteM, MemtoRegE, PCWrPendingF, SWI_E, SWI_D, SWI_M, SWI_W,
   output logic        undefD, undefE, undefM, undefW,
@@ -89,6 +89,7 @@ module controller (
   logic        CoProc_WrEnE, CoProc_EnE, MCR_D;
   logic [ 3:0] FlagsOutE, FlagsM;
   logic [31:0] SPSRW, CPSRW;
+  logic        nonFlushedInstr;
 
   /***** Brief Description *******
   * Created by Ivan Wong for Clay Wolkin 2014-2015
@@ -101,6 +102,10 @@ module controller (
   // ====================================================================================================
   // ======================================= Decode Stage ===============================================
   // ====================================================================================================
+
+  // Flush writeback signals when we flushD. 
+  flopenrc #(1) flushWBD(clk, reset, ~StallD, FlushD, 1'b1, nonFlushedInstr);
+
 
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevRSRstateD, 
     KeepVD, KeepZD, KeepCD, AddCarryD, AddZeroD, noRotateD, uOpRtypeLdrStrD, MultControlD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC);
@@ -137,7 +142,7 @@ module controller (
   // Notes: ldrstrALUopD gives Loads and Stores the ability to choose alu function add or subtract.
   assign {RegSrcD, ImmSrcD,     // 2 bits each
     ALUSrcD, MemtoRegD, RegWriteD, MemWriteD,
-    BranchD, ALUOpD, MultSelectD, ldrstrALUopD, BXInstrD} = ControlsD;
+    BranchD, ALUOpD, MultSelectD, ldrstrALUopD, BXInstrD} = ControlsD & {5'b11_11_1, {3{nonFlushedInstr}}, 5'b11111}; // And here to kill writeback in flush.
   // === END ===
 
   // === Controlling the ALU ===
