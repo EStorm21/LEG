@@ -1,9 +1,9 @@
 module exception_handler(input  logic reset, UndefinedInstrE, SWIE, PrefetchAbortE, DataAbort, IRQ, FIQ, 
-                          input  logic PipelineClearD, PipelineClearM,
-                          input  logic IRQEnabled, FIQEnabled,
-						              output logic IRQAssert, FIQAssert, PipelineClearF, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
-                          output logic [6:0] PCVectorAddress,
-                          output logic ExceptionSavePC);
+                         input  logic PipelineClearD, PipelineClearM,
+                         input  logic IRQEnabled, FIQEnabled,
+						             output logic IRQAssert, FIQAssert, PipelineClearF, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
+                         output logic [6:0] PCVectorAddress,
+                         output logic ExceptionSavePC, PCInSelect);
 
   // Notes
   // What if we get another exception before the mov r14, pc operation finishes? We still need to save it to the exception mode registers
@@ -72,6 +72,8 @@ module exception_handler(input  logic reset, UndefinedInstrE, SWIE, PrefetchAbor
 
   assign PCVectorAddress = {FIQAssert, IRQAssert, DataAbortCycle2, PrefetchAbortE, SWIE, UndefinedInstrE, reset};
   assign ExceptionSavePC = | PCVectorAddress; 
+
+  assign PCInSelect = (PrefetchAbortE | UndefinedInstrE | SWIE | DataAbortCycle2) ? 1 : 0
 
 
 

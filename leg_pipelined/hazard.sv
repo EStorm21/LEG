@@ -17,7 +17,7 @@ module hazard(input  logic       clk, reset,
               input logic        PrefetchAbortE, DataAbort, IRQ, FIQ, UndefinedInstrE,
               input logic        SWIE, RegtoCPSR, CPSRtoReg,
               input logic        RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW,
-              output logic [1:0] PCInSelect);
+              output logic       PCInSelect);
                 
   // forwarding logic
   always_comb 
@@ -70,16 +70,7 @@ module hazard(input  logic       clk, reset,
   assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | RegtoCPSR | CPSRtoReg | CoProc_En;
 
 
-  // exception handling
-  always_comb begin
-    if (PrefetchAbortE) PCInSelect = 2'b00;
-    else if (DataAbort) PCInSelect = 2'b10;
-    else if (IRQ) PCInSelect = 2'b00;
-    else if (FIQ) PCInSelect = 2'b00;
-    else if (UndefinedInstrE) PCInSelect = 2'b01;
-    else if (SWIE) PCInSelect = 2'b10; // PC+0 Because we are sending every 'mov r14_exc r15' one cycle late through the pipeline
-    else PCInSelect = 2'b00;
-  end
+
 
   // TODO: Add stalls for CP15 instructions (i.e. enabling I$)
   // TODO: Add stalls for self modifying code
