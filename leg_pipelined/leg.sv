@@ -66,8 +66,8 @@ module leg(input  logic        clk, reset,
   logic        BXInstrD, BXInstrE, TFlagNextE, TFlagE, IncrementE;
 
   // Exceptions
-  logic       UndefinedInstr, undefD, undefE, undefM, undefW;
-  logic       SWI, SWI_E, SWI_D, SWI_M, SWI_W;
+  logic       UndefinedInstr;
+  logic       SWI;
   logic       RegtoCPSR, CPSRtoReg;
   logic       PCInSelect;
 

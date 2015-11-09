@@ -54,9 +54,6 @@ module cpsr(input  logic        clk, reset,
       5'b11111: LegalModeChange = 1;
       default: LegalModeChange = 0;
     endcase  
-  // EXCEPTION BITS:
-  // {6'b000_000}
-  // {FIQ, IRQ, UNDEF _ PrefetchAbort, DataAbort, SWI}
 
   always_comb
     begin

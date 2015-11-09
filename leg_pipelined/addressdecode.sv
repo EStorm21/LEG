@@ -1,7 +1,6 @@
 module addressdecode(input  logic [3:0]  RA1_4b_D, RA2_4b_D, DestRegD,
                     input  logic [2:0]  RegFileRzD,			  
                     input  logic [7:0] StatusRegisterInput,
-                    input  logic        SWI_E, undefE,
                     output logic [31:0] RA1D, RA2D, WA3D);
  /***** Brief Description *******
  * First Created by Ivan Wong for Clay Wolkin 2014-2015
@@ -13,23 +12,13 @@ module addressdecode(input  logic [3:0]  RA1_4b_D, RA2_4b_D, DestRegD,
  ******************************/
  logic user_sys, fiq, irq, svc, abort, undef, system;
  logic [5:0] Mode;
- logic [4:0] StatusRegisterFinal;
 
-always_comb begin
-  if (SWI_E)
-    StatusRegisterFinal = 5'b10011;
-  else if(undefE)
-    StatusRegisterFinal = 5'b11011;
-  else
-    StatusRegisterFinal = StatusRegisterInput[4:0];
-end
-
- assign user_sys= (StatusRegisterFinal == 5'b10000 | StatusRegisterFinal == 5'b11111);
- assign fiq     = (StatusRegisterFinal == 5'b10001);
- assign irq     = (StatusRegisterFinal == 5'b10010);
- assign svc     = (StatusRegisterFinal == 5'b10011);
- assign abort   = (StatusRegisterFinal == 5'b10111);
- assign undef   = (StatusRegisterFinal == 5'b11011);
+ assign user_sys= (StatusRegisterInput == 5'b10000 | StatusRegisterInput == 5'b11111);
+ assign fiq     = (StatusRegisterInput == 5'b10001);
+ assign irq     = (StatusRegisterInput == 5'b10010);
+ assign svc     = (StatusRegisterInput == 5'b10011);
+ assign abort   = (StatusRegisterInput == 5'b10111);
+ assign undef   = (StatusRegisterInput == 5'b11011);
  assign Mode    = {user_sys, fiq, irq, svc, abort, undef};
 
 /* READ PORT RA1 */

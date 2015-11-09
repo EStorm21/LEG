@@ -44,15 +44,13 @@ module controller (
   /// ------ From Hazard ------
   input  logic        StallD, FlushD, FlushE, StallE, StallM, FlushM, FlushW, StallW, StalluOp, ExceptionSavePC,
   /// ------ To   Hazard ------
-  output logic        RegWriteM, MemtoRegE, PCWrPendingF, SWI_E, SWI_D, SWI_M, SWI_W,
-  output logic        undefD, undefE, undefM, undefW,
+  output logic        RegWriteM, MemtoRegE, PCWrPendingF,
   output logic        RegtoCPSR, CPSRtoReg, CoProc_En,
   output logic        RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW,
   /// For BX instruction
   output logic        BXInstrD, TFlagNextE   ,
   input  logic        TFlagE                 ,
   // For exceptions
-  output logic        UndefinedInstr, SWI    ,
   input  logic        PrefetchAbort, DataAbort, IRQ, FIQ
 );
 
@@ -89,7 +87,9 @@ module controller (
   logic        CoProc_WrEnE, CoProc_EnE, MCR_D;
   logic [ 3:0] FlagsOutE, FlagsM;
   logic [31:0] SPSRW, CPSRW;
-  logic        nonFlushedInstr;
+  logic        nonFlushedInstr, PipelineClearE;
+  logic        SWI_E, SWI_D;
+  logic        undefD, undefE;
 
   /***** Brief Description *******
   * Created by Ivan Wong for Clay Wolkin 2014-2015
@@ -105,6 +105,7 @@ module controller (
 
   // Flush writeback signals when we flushD. 
   flopenrc #(1) flushWBD(clk, reset, ~StallD, FlushD, 1'b1, nonFlushedInstr);
+  flopenr  #(1) pipelineclearDflop(clk, reset, ~StallD, PipelineClearF, PipelineClearD); // see exception_handler.sv
 
 
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevRSRstateD, 
@@ -226,8 +227,6 @@ module controller (
   // === EXCEPTION HANDLING ===
   assign SWI_D          = InstrD[27:24] == 4'hF;
   assign undefD         = InstrD[27:25] == 3'b011 & InstrD[4];
-  assign UndefinedInstr = undefD | undefE | undefM | undefW;
-  assign SWI            = SWI_D | SWI_E | SWI_M | SWI_W;
   // === END ===
 
   // ====================================================================================================
@@ -252,6 +251,7 @@ module controller (
   flopenrc #(14)  regsE(clk, reset, ~StallE, FlushE, {ALUSrcD, ALUControlD, MultControlD, MultEnableD, PSRtypeD, MSRmaskD},
                                                      {ALUSrcE, ALUControlE, MultControlE, MultEnableE, PSRtypeE, MSRmaskE});
   flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE, {(ALUOpD|ldrstrALUopD), InstrD}, {ALUOpE, InstrE});
+  flopenr  #(1) pipelineclearEflop(clk, reset, ~StallE, PipelineClearD, PipelineClearE); // see exception_handler.sv
 
 
   // < Handling all Multiplication Stalls Execute>
@@ -302,7 +302,6 @@ module controller (
 
   flopenrc #(2) msr_mrs_M(clk, reset, ~StallM, FlushM, {restoreCPSR_E, RegtoCPSR_E},
                                               {restoreCPSR_M, RegtoCPSR_M});
-  flopenrc #(2) undef_exceptionEM(clk, reset, ~StallM, FlushM, {undefE, SWI_E}, {undefM, SWI_M});
   flopenrc #(11) flagM(clk, reset, ~StallM, FlushM, {FlagsNextE,  SetNextFlagsE, PSRtypeE, MSRmaskE},
                                            {FlagsNext0M, SetNextFlagsM, PSRtypeM, MSRmaskM});
   flopenrc #(14) CoProc_M(clk, reset, ~StallM, FlushM,
@@ -311,6 +310,7 @@ module controller (
   flopenrc #(16) regsM(clk, reset, ~StallM, FlushM,
     {MemWriteGatedE, MemtoRegE, RegWriteGatedE, PCSrcGatedE, ByteMaskE, ByteOrWordE, ByteOffsetE, LdrHalfwordE, Ldr_SignBE, Ldr_SignHE, HalfwordOffsetE, CPSRtoRegE},
     {MemWriteM,      MemtoRegM, RegWriteM,      PCSrcM,      ByteMaskM, ByteOrWordM, ByteOffsetM, LdrHalfwordM, Ldr_SignBM, Ldr_SignHM, HalfwordOffsetM, CPSRtoRegM});
+  flopenr  #(1) pipelineclearMflop(clk, reset, ~StallM, PipelineClearE, PipelineClearM); // see exception_handler.sv
 
   mux2 #(4)  flagM_mux(FlagsNext0M, CPSRW[31:28], CoProc_FlagUpd_W, FlagsNextM);
 
@@ -320,7 +320,6 @@ module controller (
 
   flopenrc #(1) CoProc_W(clk, reset, ~StallW, FlushW, {CoProc_FlagUpd_M}, {CoProc_FlagUpd_W});
   flopenrc #(2) msr_mrs_W(clk, reset, ~StallW, FlushW, {restoreCPSR_M, RegtoCPSR_M}, {restoreCPSR_W, RegtoCPSR_W});
-  flopenrc #(2) undef_exceptionMW(clk, reset, ~StallW, FlushW, {undefM, SWI_M}, {undefW, SWI_W});
   flopenrc #(11) regsW(clk, reset, ~StallW, FlushW,
     {MemtoRegM, RegWriteM, PCSrcM, ByteOrWordM, ByteOffsetM, LdrHalfwordM, Ldr_SignBM, Ldr_SignHM, HalfwordOffsetM, CPSRtoRegM},
     {MemtoRegW, RegWriteW, PCSrcW, LoadLengthW, ByteOffsetW, LdrHalfwordW, Ldr_SignBW, Ldr_SignHW, HalfwordOffsetW, CPSRtoRegW});
@@ -328,7 +327,7 @@ module controller (
                                                     {FlagsNextW, SetNextFlagsW, PSRtypeW, MSRmaskW});
 
   // === CPSR / SPSR relevant info ===
-  cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefW, SWI_W, 4'b0}, restoreCPSR_W, ~StallW, CoProc_FlagUpd_W,
+  cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefE, SWI_E, 4'b0}, restoreCPSR_W, ~StallW, CoProc_FlagUpd_W,
     CPSRW, SPSRW);
   assign CPSR8_W = {CPSRW[7:0]}; // Forward to Decode stage
   assign PSR_W   = PSRtypeW ? SPSRW : CPSRW;

@@ -13,11 +13,7 @@ module hazard(input  logic       clk, reset,
               // For Micro-ops
               input logic        uOpStallD, LDMSTMforwardE,
               output logic       StalluOp, ExceptionSavePC,
-              // For exceptions
-              input logic        PrefetchAbortE, DataAbort, IRQ, FIQ, UndefinedInstrE,
-              input logic        SWIE, RegtoCPSR, CPSRtoReg,
-              input logic        RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW,
-              output logic       PCInSelect);
+              input logic        RegtoCPSR, CPSRtoReg);
                 
   // forwarding logic
   always_comb 
@@ -64,7 +60,7 @@ module hazard(input  logic       clk, reset,
   assign FlushW = DStall | IStall;
   assign StallW = DStall | IStall;
   assign StallM = DStall | IStall;
-  assign FlushM = ExceptionFlushM
+  assign FlushM = ExceptionFlushM;
   // FlushD cannot propagate bad stuff to E stage because writeback is killed in this case.
   assign FlushE = ldrStallD | BranchTakenE; 
   assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | RegtoCPSR | CPSRtoReg | CoProc_En;
