@@ -65,12 +65,10 @@ module hazard(input  logic       clk, reset,
   assign StallW = DStall | IStall;
   assign StallM = DStall | IStall;
   assign FlushM = ExceptionFlushM
-  // SD 11/2/2015 Currently don't need to FlushE in all the cases we FlushD since the zero instruction is andeq r0, r0, r0, which should do nothing
-  // Added cpsr instructions because these don't get a result until the W stage, so otherwise we would try to forward and get a WAW error when the zero instruction finishes. 
-  // CoProc probably not necessary to flush for, since it should forward correctly.
-  assign FlushE = ldrStallD | BranchTakenE | RegtoCPSR_EMW | CPSRtoReg_EMW; 
+  // FlushD cannot propagate bad stuff to E stage because writeback is killed in this case.
+  assign FlushE = ldrStallD | BranchTakenE; 
   assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | RegtoCPSR | CPSRtoReg | CoProc_En;
-  assign ExceptionSavePC = SWIE | UndefinedInstrE | PrefetchAbortE | DataAbort | IRQ | FIQ; 
+
 
   // exception handling
   always_comb begin

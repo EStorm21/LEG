@@ -1,7 +1,9 @@
-module exception_priority(input  logic reset, UndefinedInstrE, SWIE, PrefetchAbortE, DataAbort, IRQ, FIQ, PipelineClearW,
+module exception_priority(input  logic reset, UndefinedInstrE, SWIE, PrefetchAbortE, DataAbort, IRQ, FIQ, 
+                          input  logic PipelineClearD, PipelineClearM,
                           input  logic IRQEnabled, FIQEnabled,
-						              output logic IRQAssert, FIQAssert, PipelineClearD, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionStallD, ExceptionFlushW,
-                          output logic [6:0] PCVectorAddress);
+						              output logic IRQAssert, FIQAssert, PipelineClearF, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
+                          output logic [6:0] PCVectorAddress,
+                          output logic ExceptionSavePC);
 
   // Notes
   // What if we get another exception before the mov r14, pc operation finishes? We still need to save it to the exception mode registers
@@ -9,7 +11,6 @@ module exception_priority(input  logic reset, UndefinedInstrE, SWIE, PrefetchAbo
   //--Need to change load and store to use Base Restored Abort Model
   //--Need to update microp unit to be able to transition to ready and issue mov r14, pc from any state on data abort. Do this with reset on some signal
   // We may really only need to flush D and M in most cases: The inserted mov goes to E, we just need to make sure whatever was in E does not do anything, and whatever was in F does not do anything. 
-  // Also be careful about the seeminly innocuous zero instruction: If it happens in the wrong place it may read mode A and writeback to mode B. Flush E or something else to handle that.
 
   always_comb begin
     if (DataAbort) begin // data abort 
@@ -21,16 +22,6 @@ module exception_priority(input  logic reset, UndefinedInstrE, SWIE, PrefetchAbo
       assign  PipelineClearD = 1'b0;
       assign {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1111;
       assign  ExceptionStallD = 1'b0;
-    end
-
-    else if (FIQ) begin // FIQ
-    	// Only if FIQ enabled
-      // insert clear signal into F to advance with pipeline. When in D, FlushE except this signal so it passes through but is with the zero instruction, which cannot cause any type of exception. 
-      // When this signal get to M, all real instructions have done W. raise the interrupt, flush D and M, and rejoice. 
-    end
-
-    else if (IRQ)begin // IRQ
-    	// see FIQ
     end
 
     else if (PrefetchAbortE) begin // prefetch abort
@@ -60,6 +51,16 @@ module exception_priority(input  logic reset, UndefinedInstrE, SWIE, PrefetchAbo
       assign  ExceptionStallD = 1'b0;
     end
 
+    else if (FIQ) begin // FIQ
+    	// Only if FIQ enabled
+      // insert clear signal into F to advance with pipeline. When in D, FlushE except this signal so it passes through but is with the zero instruction, which cannot cause any type of exception. 
+      // When this signal get to M, all real instructions have done W. raise the interrupt, flush D and M, and rejoice. 
+    end
+
+    else if (IRQ)begin // IRQ
+    	// see FIQ
+    end
+
     else begin // Normal
       // don't stall or flush or FIQ or IRQ     
       assign {IRQAssert, FIQAssert} = 2'b00;
@@ -69,7 +70,8 @@ module exception_priority(input  logic reset, UndefinedInstrE, SWIE, PrefetchAbo
     end
   end
 
-  assign PCVectorAddress = {FIQAssert, IRQAssert, DataAbort, PrefetchAbortE, SWIE, UndefinedInstrE, reset};
+  assign PCVectorAddress = {FIQAssert, IRQAssert, DataAbortCycle2, PrefetchAbortE, SWIE, UndefinedInstrE, reset};
+  assign ExceptionSavePC = | PCVectorAddress; 
 
 
 
