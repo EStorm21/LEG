@@ -1,4 +1,4 @@
-module exception_priority(input  logic reset, UndefinedInstrE, SWIE, PrefetchAbortE, DataAbort, IRQ, FIQ, 
+module exception_handler(input  logic reset, UndefinedInstrE, SWIE, PrefetchAbortE, DataAbort, IRQ, FIQ, 
                           input  logic PipelineClearD, PipelineClearM,
                           input  logic IRQEnabled, FIQEnabled,
 						              output logic IRQAssert, FIQAssert, PipelineClearF, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
