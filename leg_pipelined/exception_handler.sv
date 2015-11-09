@@ -1,7 +1,8 @@
 module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, PrefetchAbortE, DataAbort, IRQ, FIQ, 
                          input  logic PipelineClearD, PipelineClearM,
                          input  logic IRQEnabled, FIQEnabled,
-                         output logic IRQAssert, FIQAssert, PipelineClearF, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
+                         output logic IRQAssert, FIQAssert, DataAbortCycle2, 
+                         output logic PipelineClearF, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
                          output logic [6:0] PCVectorAddress,
                          output logic ExceptionResetMicrop, ExceptionSavePC, PCInSelect);
 
@@ -11,19 +12,20 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   //--Need to change load and store to use Base Restored Abort Model
   
   logic DataAbortCycle2;
+  flopr #(1) DataAbortFlop(clk, reset, DataAbort, DataAbortCycle2);
 
   always_comb begin
-    if (DataAbort) begin // data abort 
+    if (DataAbort | DataAbortCycle2) begin // data abort 
       // Caught in M
       // Flush E, M, W
       // Stall D and reset microp
       // Next cycle save the PC and flush D
-      // Need to insert mov into decode NOW or won't read correct PC
-      // ! Flush disallowed during stall (e.g. during microps). Need insert mov micro op anyways. !
+      // DataAbortCycle2 serves as the abort signal for the rest of the processor
+      // Only one of DataAbort and DataAbortCycle2 can be asserted at any time, since we flushM
       assign {IRQAssert, FIQAssert} = 2'b00;
       assign  PipelineClearF = 1'b0;
-      assign {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1111;
-      assign  ExceptionStallD = 1'b0;
+      assign {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = {1, DataAbort, 2'b11};
+      assign  ExceptionStallD = DataAbort;
     end
 
     else if (PrefetchAbortE | UndefinedE | SWIE) begin // prefetch abort
@@ -64,7 +66,6 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
 
   assign PCVectorAddress = {FIQAssert, IRQAssert, DataAbortCycle2, PrefetchAbortE, SWIE, UndefinedInstrE, reset};
   assign ExceptionSavePC = |PCVectorAddress; 
-
   assign PCInSelect = (PrefetchAbortE | UndefinedInstrE | SWIE | DataAbortCycle2) ? 1 : 0
 
 

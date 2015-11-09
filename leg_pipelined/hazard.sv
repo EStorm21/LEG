@@ -3,6 +3,7 @@ module hazard(input  logic       clk, reset,
               input  logic       RegWriteM, RegWriteW,
               input  logic       BranchTakenE, MemtoRegE,
               input  logic       PCWrPendingF, PCSrcW, 
+              input logic        ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
               output logic [1:0] ForwardAE, ForwardBE,
               output logic       StallF, StallD, 
               // Added DStall, StallE, StallM, and FlushW for memory
@@ -53,17 +54,17 @@ module hazard(input  logic       clk, reset,
 
   assign ldrStallD = Match_12D_E & MemtoRegE;
   
-  assign StallD = ldrStallD | DStall | uOpStallD | IStall;
+  assign StallD = ldrStallD | DStall | uOpStallD | IStall | ExceptionStallD;
   assign StalluOp = ldrStallD | DStall | IStall ;
   assign StallF = ldrStallD | PCWrPendingF | DStall | IStall | uOpStallD | RegtoCPSR | CPSRtoReg | CoProc_En);
   assign StallE = DStall | IStall;
-  assign FlushW = DStall | IStall;
+  assign FlushW = DStall | IStall | ExceptionFlushW;
   assign StallW = DStall | IStall;
   assign StallM = DStall | IStall;
   assign FlushM = ExceptionFlushM;
   // FlushD cannot propagate bad stuff to E stage because writeback is killed in this case.
-  assign FlushE = ldrStallD | BranchTakenE; 
-  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | RegtoCPSR | CPSRtoReg | CoProc_En;
+  assign FlushE = ldrStallD | BranchTakenE | ExceptionFlushE; 
+  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | RegtoCPSR | CPSRtoReg | CoProc_En | ExceptionFlushD;
 
 
 

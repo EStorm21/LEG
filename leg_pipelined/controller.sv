@@ -42,17 +42,18 @@ module controller (
   output logic [ 3:0] RegFileRzD             ,
   output logic [31:0] uOpInstrD, PSR_W       ,
   /// ------ From Hazard ------
-  input  logic        StallD, FlushD, FlushE, StallE, StallM, FlushM, FlushW, StallW, StalluOp, ExceptionSavePC,
+  input  logic        StallD, FlushD, FlushE, StallE, StallM, FlushM, FlushW, StallW, StalluOp,
   /// ------ To   Hazard ------
   output logic        RegWriteM, MemtoRegE, PCWrPendingF,
   output logic        RegtoCPSR, CPSRtoReg, CoProc_En,
   output logic        RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW,
+  output logic        ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
   /// For BX instruction
   output logic        BXInstrD, TFlagNextE   ,
   input  logic        TFlagE                 ,
   // For exceptions
-  input  logic        PrefetchAbort, DataAbort, IRQ, FIQ
-);
+  input  logic        PrefetchAbort, DataAbort, IRQ, FIQ,
+  output logic      );
 
   logic [12:0] ControlsD          ;
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
@@ -87,9 +88,11 @@ module controller (
   logic        CoProc_WrEnE, CoProc_EnE, MCR_D;
   logic [ 3:0] FlagsOutE, FlagsM;
   logic [31:0] SPSRW, CPSRW;
-  logic        nonFlushedInstr, PipelineClearE;
-  logic        SWI_E, SWI_D;
+  logic        nonFlushedInstr, PipelineClearD, PipelineClearM, PipelineClearE, PipelineClearF;
+  logic        SWI_0E, SWI_E, SWI_D;
   logic        undefD, undefE;
+  logic        IRQAssert, FIQAssert, DataAbortAssert;
+  logic        ExceptionResetMicrop, ExceptionSavePC;
 
   /***** Brief Description *******
   * Created by Ivan Wong for Clay Wolkin 2014-2015
@@ -104,7 +107,7 @@ module controller (
   // ====================================================================================================
 
   // Flush writeback signals when we flushD. 
-  flopenrc #(1) flushWBD(clk, reset, ~StallD, FlushD, 1'b1, nonFlushedInstr);
+  flopenrc #(1) flushWBD(clk, reset | ExceptionResetMicrop, ~StallD, FlushD, 1'b1, nonFlushedInstr);
   flopenr  #(1) pipelineclearDflop(clk, reset, ~StallD, PipelineClearF, PipelineClearD); // see exception_handler.sv
 
 
@@ -289,11 +292,20 @@ module controller (
   assign SetNextFlagsE   = (FlagWriteE != 2'b00) & CondExE;
   assign CPSRtoRegE      = CPSRtoReg0E & CondExE;
   assign RegtoCPSR_E     = RegtoCPSR_0E & CondExE;
+  assign SWI_E           = SWI_0E & CondExE;
   // disable write to register for flag-setting instructions
   assign RegWriteKillE = ~CPSRtoRegE & DoNotWriteRegE;
   assign RegWriteGatedE   = RegWriteKillE ? 1'b0 : RegWritepreMuxE;
   // === END ===
 
+
+ exception_handler exh(clk, reset, undefE, SWI_E, PrefetchAbort, DataAbort, IRQ, FIQ, 
+                       PipelineClearD, PipelineClearM,
+                       ~CPSRW[7], ~CPSRW[6],
+                       IRQAssert, FIQAssert, DataAbortAssert, 
+                       PipelineClearF, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
+                       PCVectorAddress,
+                       ExceptionResetMicrop, ExceptionSavePC;
 
 
   // ====================================================================================================
@@ -327,7 +339,7 @@ module controller (
                                                     {FlagsNextW, SetNextFlagsW, PSRtypeW, MSRmaskW});
 
   // === CPSR / SPSR relevant info ===
-  cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefE, SWI_E, 4'b0}, restoreCPSR_W, ~StallW, CoProc_FlagUpd_W,
+  cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefE, SWI_E, PrefetchAbort, DataAbortAssert, IRQAssert, FIQAssert}, restoreCPSR_W, ~StallW, CoProc_FlagUpd_W,
     CPSRW, SPSRW);
   assign CPSR8_W = {CPSRW[7:0]}; // Forward to Decode stage
   assign PSR_W   = PSRtypeW ? SPSRW : CPSRW;
