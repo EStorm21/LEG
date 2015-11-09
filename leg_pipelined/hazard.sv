@@ -56,7 +56,7 @@ module hazard(input  logic       clk, reset,
   
   assign StallD = ldrStallD | DStall | uOpStallD | IStall | ExceptionStallD;
   assign StalluOp = ldrStallD | DStall | IStall ;
-  assign StallF = ldrStallD | PCWrPendingF | DStall | IStall | uOpStallD | RegtoCPSR | CPSRtoReg | CoProc_En);
+  assign StallF = ldrStallD | PCWrPendingF | DStall | IStall | uOpStallD | RegtoCPSR | CPSRtoReg | CoProc_En;
   assign StallE = DStall | IStall;
   assign FlushW = DStall | IStall | ExceptionFlushW;
   assign StallW = DStall | IStall;

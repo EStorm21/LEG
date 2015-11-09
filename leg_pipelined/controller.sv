@@ -7,7 +7,7 @@ module controller (
   output logic [ 2:0] CoProc_Op2M            ,
   /// ------ To   Addresspath ------
   output logic [ 7:0] CPSR8_W                ,
-  output logic [ 6:0] PCVectorAddressW       ,
+  output logic [ 6:0] PCVectorAddress        ,
   output logic        Reg_usr_D              ,
   /// ------ From Datapath ------
   input  logic [31:0] InstrD, ALUOutW        ,
@@ -53,7 +53,7 @@ module controller (
   input  logic        TFlagE                 ,
   // For exceptions
   input  logic        PrefetchAbort, DataAbort, IRQ, FIQ,
-  output logic      );
+  output logic      PCInSelect);
 
   logic [12:0] ControlsD          ;
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
@@ -242,7 +242,7 @@ module controller (
   flopenrc #(1) shftrCarryOut(clk, reset, ~StallE, FlushE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
   flopenrc #(1) restoreCPSR_DE(clk, reset, ~StallE, FlushE, restoreCPSR_D, restoreCPSR_E);
   flopenrc #(1) longMultRegWritePt2(clk, reset, ~StallE, FlushE, CondExE, CondExE2);
-  flopenrc #(2) undef_exception(clk, reset, ~StallE, FlushE, {undefD, SWI_D}, {undefE, SWI_E});
+  flopenrc #(2) undef_exception(clk, reset, ~StallE, FlushE, {undefD, SWI_D}, {undefE, SWI_0E});
   flopenrc #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);
   flopenrc #(3) CoprocE(clk, reset, ~StallE, FlushE, {CoProc_FlagUpd_D, CoProc_EnD, CoProc_WrEnD}, {CoProc_FlagUpd_E, CoProc_EnE, CoProc_WrEnE});
   flopenrc #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
@@ -305,7 +305,7 @@ module controller (
                        IRQAssert, FIQAssert, DataAbortAssert, 
                        PipelineClearF, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
                        PCVectorAddress,
-                       ExceptionResetMicrop, ExceptionSavePC;
+                       ExceptionResetMicrop, ExceptionSavePC, PCInSelect);
 
 
   // ====================================================================================================

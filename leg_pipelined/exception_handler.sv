@@ -11,7 +11,6 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   //--LDM: When loading into base register without writeback, must load into Rz. Last operation should then be mov Rn, Rz. This is to be consistent with data abort, which requires that base register not be updated if data abort occurs at any point.
   //--Need to change load and store to use Base Restored Abort Model
   
-  logic DataAbortCycle2;
   flopr #(1) DataAbortFlop(clk, reset, DataAbort, DataAbortCycle2);
 
   always_comb begin
@@ -28,7 +27,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
       assign  ExceptionStallD = DataAbort;
     end
 
-    else if (PrefetchAbortE | UndefinedE | SWIE) begin // prefetch abort
+    else if (PrefetchAbortE | UndefinedInstrE | SWIE) begin // prefetch abort
       // Caught in E
       // Flush D, M
       assign {IRQAssert, FIQAssert} = 2'b00;
@@ -49,7 +48,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
 
     else if (IRQ & IRQEnabled)begin // IRQ
       // see FIQ
-      assign {IRQAssert, FIQAssert} = {PipelineClearM, 0};
+      assign {IRQAssert, FIQAssert} = {PipelineClearM, 1'b0};
       assign  PipelineClearF = ~PipelineClearM; // Stop asserting when we are done with this process
       assign {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = {PipelineClearD & PipelineClearM, PipelineClearD & ~PipelineClearM, 2'b0};
       assign  ExceptionStallD = PipelineClearD & ~PipelineClearM;
@@ -66,8 +65,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
 
   assign PCVectorAddress = {FIQAssert, IRQAssert, DataAbortCycle2, PrefetchAbortE, SWIE, UndefinedInstrE, reset};
   assign ExceptionSavePC = |PCVectorAddress; 
-  assign PCInSelect = (PrefetchAbortE | UndefinedInstrE | SWIE | DataAbortCycle2) ? 1 : 0
+  assign PCInSelect = (PrefetchAbortE | UndefinedInstrE | SWIE | DataAbortCycle2) ? 1 : 0;
 
-
-
+endmodule
 

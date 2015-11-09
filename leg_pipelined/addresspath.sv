@@ -6,7 +6,7 @@ module addresspath( /// ------ From TOP ------
                     input  logic [3:0]  RegFileRzD,
                     input  logic [1:0]  RegSrcD,
                     input  logic [7:0]  CPSR8_W, 
-                    input  logic [6:0]  PCVectorAddressW, 
+                    input  logic [6:0]  PCVectorAddress, 
 
           					/// To Controller 
 
@@ -81,6 +81,6 @@ module addresspath( /// ------ From TOP ------
   eqcmp #(32) m4a(WA3E, RA1D, Match_1D_E);
   eqcmp #(32) m4b(WA3E, RA2D, Match_2D_E);
 
-  exception_vector_address exception_vector(PCVectorAddressW, VectorPCnextF, ExceptionVectorSelectW); // near the fetch stage
+  exception_vector_address exception_vector(PCVectorAddress, VectorPCnextF, ExceptionVectorSelectW); // near the fetch stage
 
 endmodule 
