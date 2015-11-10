@@ -18,7 +18,7 @@ module addresspath( /// ------ From TOP ------
                     output logic         ExceptionVectorSelectW,
 
           					/// From Hazard
-                    input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, 
+                    input  logic        StallF, StallD, FlushD, StallE, StallM, FlushM, FlushW, StallW, 
 
           					/// To Hazard
                     output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, 
@@ -50,7 +50,7 @@ module addresspath( /// ------ From TOP ------
   mux3 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], InstrD[11:8], {MultSelectD, RegSrcD[1]}, RA2_4b_D);
   mux2 #(4)   destregmux(InstrD[15:12], InstrD[19:16], MultSelectD, DestRegD);
 
-  addressdecode address_decoder(RA1_4b_D, RA2_4b_D, DestRegD, RegFileRzD[2:0], CPSR8_W, RA1D, RA2D, WA3D);
+  addressdecode address_decoder(RA1_4b_D, RA2_4b_D, DestRegD, RegFileRzD[2:0], CPSR8_W[4:0], RA1D, RA2D, WA3D);
 
   // ====================================================================================
   // ================================ Execute Stage =====================================
@@ -68,7 +68,7 @@ module addresspath( /// ------ From TOP ------
   // ====================================================================================
   // ================================ Memory Stage ======================================
   // ====================================================================================
-  flopenr #(32)  wa3mreg(clk, reset, ~StallM, WA3E, WA3M);
+  flopenrc #(32)  wa3mreg(clk, reset, ~StallM, FlushM, WA3E, WA3M);
 
   // ====================================================================================
   // ================================ Writeback Stage ===================================

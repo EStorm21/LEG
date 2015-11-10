@@ -66,6 +66,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   assign PCVectorAddress = {FIQAssert, IRQAssert, DataAbortCycle2, PrefetchAbortE, SWIE, UndefinedInstrE, reset};
   assign ExceptionSavePC = |PCVectorAddress; 
   assign PCInSelect = (PrefetchAbortE | UndefinedInstrE | SWIE | DataAbortCycle2) ? 1 : 0;
+  assign ExceptionResetMicrop = DataAbort;
 
 endmodule
 
