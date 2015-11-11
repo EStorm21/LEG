@@ -1,0 +1,30 @@
+From baf4c62daa6027eba953a9ec001181f12e0d0d15 Mon Sep 17 00:00:00 2001
+From: Daniel Johnson <hexahedria@gmail.com>
+Date: Sun, 13 Sep 2015 15:44:00 -0700
+Subject: [PATCH 1/7] Add qemu.irqpending query to qemu gdb server stub
+
+---
+ gdbstub.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
+
+diff --git a/gdbstub.c b/gdbstub.c
+index ffe7e6e..ee07674 100644
+--- a/gdbstub.c
++++ b/gdbstub.c
+@@ -1085,6 +1085,13 @@ static int gdb_handle_packet(GDBState *s, const char *line_buf)
+             sstep_flags = type;
+             put_packet(s, "OK");
+             break;
++        } else if (!strcmp(p,"qemu.irqpending")) {
++            /* Check if any external interrupts are pending. See cpu-all.h
++             * and target-X/cpu.h for the meaning of these flags. */
++            snprintf(buf, sizeof(buf), "0x%x",
++                first_cpu->interrupt_request & CPU_INTERRUPT_SSTEP_MASK);
++            put_packet(s, buf);
++            break;
+         } else if (strcmp(p,"C") == 0) {
+             /* "Current thread" remains vague in the spec, so always return
+              *  the first CPU (gdb returns the first thread). */
+-- 
+1.7.1
+

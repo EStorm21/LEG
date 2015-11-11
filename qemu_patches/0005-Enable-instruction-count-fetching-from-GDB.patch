@@ -1,0 +1,40 @@
+From bad373a242f4995b2396284cba60c5064b54b4e3 Mon Sep 17 00:00:00 2001
+From: Daniel Johnson <hexahedria@gmail.com>
+Date: Sun, 25 Oct 2015 11:45:48 -0700
+Subject: [PATCH 5/7] Enable instruction count fetching from GDB
+
+---
+ gdbstub.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/gdbstub.c b/gdbstub.c
+index 8b09742..c35124c 100644
+--- a/gdbstub.c
++++ b/gdbstub.c
+@@ -41,6 +41,7 @@
+ #include "qemu/sockets.h"
+ #include "sysemu/kvm.h"
+ #include "exec/semihost.h"
++#include "qemu/timer.h"
+ 
+ #ifdef CONFIG_USER_ONLY
+ #define GDB_ATTACHED "0"
+@@ -1100,6 +1101,15 @@ static int gdb_handle_packet(GDBState *s, const char *line_buf)
+             fclose(f);
+             put_packet(s, "OK");
+             break;
++        } else if (strcmp(p,"qemu.icount") == 0) {
++#ifdef CONFIG_USER_ONLY
++            int64_t ict = 0;
++#else
++            int64_t ict = qemu_clock_get_ns(QEMU_CLOCK_VIRTUAL);
++#endif
++            snprintf(buf, sizeof(buf), "%" PRId64, ict);
++            put_packet(s, buf);
++            break;
+         } else if (strcmp(p,"C") == 0) {
+             /* "Current thread" remains vague in the spec, so always return
+              *  the first CPU (gdb returns the first thread). */
+-- 
+1.7.1
+

@@ -39,6 +39,10 @@ def setup():
 	if not os.path.isfile('util/convertBinToDat'):
 		subprocess.call(['make', '-C', 'util'])
 
+	gdb.execute("mem 0 0xffffffff wo")
+	gdb.execute("disable mem 1")
+	gdb.execute("set mem inaccessible-by-default off")
+
 def get_open_port():
 	import socket
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -193,7 +197,7 @@ class LegJumpCommand (gdb.Command):
 			gdb.execute('continue', to_string=True)
 			gdb.execute('delete {}'.format(bpstr.split(' ')[1][:-1]))
 			print "Jumped to"
-			gdb.execute("where")
+			gdb.execute("where 1")
 
 LegJumpCommand()
 
@@ -322,6 +326,7 @@ elif COMMAND[0]=="bugcheckpoint":
 		gdb.execute("leg-frombug {}".format(COMMAND[1]))
 		gdb.execute("leg-checkpoint temp_bug_checkpoint")
 		os.rename("output/checkpoints/temp_bug_checkpoint.checkpoint", COMMAND[2])
+		print "Moved checkpoint to {}".format(COMMAND[2])
 	except:
 		import traceback
 		traceback.print_exc()

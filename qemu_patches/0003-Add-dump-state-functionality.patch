@@ -1,0 +1,222 @@
+From 9b3a0cfba88c9271dcc9afd6e1b9fbc4026bc390 Mon Sep 17 00:00:00 2001
+From: Daniel Johnson <hexahedria@gmail.com>
+Date: Thu, 22 Oct 2015 20:43:31 -0700
+Subject: [PATCH 3/7] Add dump-state functionality
+
+Enables dumping of state in a form readable by ModelSim. This is implemented
+as a GDB server query packet, which triggers a modified version of
+arm_cpu_dump_state. Some includes were shifted to expose coprocessor registers.
+
+Unfortunately, this change breaks non-system builds. However, all we need is
+the qemu-system-arm, generated using `make arm-softmmu`
+---
+ gdbstub.c              |    8 ++++
+ include/qom/cpu.h      |    3 +
+ target-arm/cpu.h       |    4 ++
+ target-arm/helper.c    |    2 +-
+ target-arm/translate.c |  109 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 125 insertions(+), 1 deletions(-)
+
+diff --git a/gdbstub.c b/gdbstub.c
+index ee07674..8b09742 100644
+--- a/gdbstub.c
++++ b/gdbstub.c
+@@ -1092,6 +1092,14 @@ static int gdb_handle_packet(GDBState *s, const char *line_buf)
+                 first_cpu->interrupt_request & CPU_INTERRUPT_SSTEP_MASK);
+             put_packet(s, buf);
+             break;
++        } else if (!strncmp(p,"qemu.dumpstate ", 15)) {
++            /* Dumps CPU state */
++            p+=15;
++            FILE *f = fopen(p,"w");
++            cpu_dump_state(first_cpu,f,fprintf,CPU_DUMP_ARM_ALLSTORED);
++            fclose(f);
++            put_packet(s, "OK");
++            break;
+         } else if (strcmp(p,"C") == 0) {
+             /* "Current thread" remains vague in the spec, so always return
+              *  the first CPU (gdb returns the first thread). */
+diff --git a/include/qom/cpu.h b/include/qom/cpu.h
+index 20aabc9..7058aa0 100644
+--- a/include/qom/cpu.h
++++ b/include/qom/cpu.h
+@@ -396,11 +396,14 @@ int cpu_write_elf32_qemunote(WriteCoreDumpFunction f, CPUState *cpu,
+  * @CPU_DUMP_CODE:
+  * @CPU_DUMP_FPU: dump FPU register state, not just integer
+  * @CPU_DUMP_CCOP: dump info about TCG QEMU's condition code optimization state
++ * @CPU_DUMP_ARM_ALLSTORED: in ARM, dump all SPSRs and stored information
++ *     instead of dumping normally
+  */
+ enum CPUDumpFlags {
+     CPU_DUMP_CODE = 0x00010000,
+     CPU_DUMP_FPU  = 0x00020000,
+     CPU_DUMP_CCOP = 0x00040000,
++    CPU_DUMP_ARM_ALLSTORED = 0x00080000,
+ };
+ 
+ /**
+diff --git a/target-arm/cpu.h b/target-arm/cpu.h
+index 7e89152..f523125 100644
+--- a/target-arm/cpu.h
++++ b/target-arm/cpu.h
+@@ -1445,6 +1445,10 @@ static inline bool cp_access_ok(int current_el,
+     return (ri->access >> ((current_el * 2) + isread)) & 1;
+ }
+ 
++
++/* Raw read of a coprocessor register (as needed for migration, etc) */
++uint64_t read_raw_cp_reg(CPUARMState *env, const ARMCPRegInfo *ri);
++
+ /**
+  * write_list_to_cpustate
+  * @cpu: ARMCPU
+diff --git a/target-arm/helper.c b/target-arm/helper.c
+index 01f0d0d..fc2f61a 100644
+--- a/target-arm/helper.c
++++ b/target-arm/helper.c
+@@ -144,7 +144,7 @@ static void *raw_ptr(CPUARMState *env, const ARMCPRegInfo *ri)
+     return (char *)env + ri->fieldoffset;
+ }
+ 
+-static uint64_t read_raw_cp_reg(CPUARMState *env, const ARMCPRegInfo *ri)
++uint64_t read_raw_cp_reg(CPUARMState *env, const ARMCPRegInfo *ri)
+ {
+     /* Raw read of a coprocessor register (as needed for migration, etc). */
+     if (ri->type & ARM_CP_CONST) {
+diff --git a/target-arm/translate.c b/target-arm/translate.c
+index 69ac18c..5038ae5 100644
+--- a/target-arm/translate.c
++++ b/target-arm/translate.c
+@@ -51,6 +51,9 @@
+ 
+ #define ARCH(x) do { if (!ENABLE_ARCH_##x) goto illegal_op; } while(0)
+ 
++#include "cpu.h"
++#include "internals.h"
++
+ #include "translate.h"
+ static uint32_t gen_opc_condexec_bits[OPC_BUF_SIZE];
+ 
+@@ -11522,6 +11525,46 @@ static const char *cpu_mode_names[16] = {
+   "usr", "fiq", "irq", "svc", "???", "???", "mon", "abt",
+   "???", "???", "hyp", "und", "???", "???", "???", "sys"
+ };
++ 
++
++unsigned int get_register_in_mode(CPUARMState *env, int mode, int i);
++unsigned int get_spsr_in_mode(CPUARMState *env, int mode);
++unsigned int get_coprocessor_reg(ARMCPU *cpu, int crn);
++
++unsigned int get_register_in_mode(CPUARMState *env, int mode, int i) {
++    int cur_mode;
++
++    cur_mode = env->uncached_cpsr & CPSR_M;
++
++    if (mode == -1)
++        mode = cur_mode;
++
++    if (mode == cur_mode || i < 8) {
++        return env->regs[i];
++    } else if (i < 13) {
++        if (mode == ARM_CPU_MODE_FIQ)
++            return env->fiq_regs[i-8];
++        else if (cur_mode == ARM_CPU_MODE_FIQ)
++            return env->usr_regs[i-8];
++        else
++            return env->regs[i];
++    } else if (i == 13){
++        return env->banked_r13[bank_number(mode)];
++    } else if (i == 14){
++        return env->banked_r14[bank_number(mode)];
++    }
++    return env->regs[i];
++}
++unsigned int get_spsr_in_mode(CPUARMState *env, int mode) {
++    return env->banked_spsr[bank_number(mode)];
++}
++
++unsigned int get_coprocessor_reg(ARMCPU *cpu, int crn) {
++    CPUARMState *env = &cpu->env;
++    const ARMCPRegInfo *ri = get_arm_cp_reginfo(cpu->cp_regs, ENCODE_CP_REG(15,0,0,crn,0,0,0));
++
++    return read_raw_cp_reg(env, ri);
++}
+ 
+ void arm_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
+                         int flags)
+@@ -11531,6 +11574,72 @@ void arm_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
+     int i;
+     uint32_t psr;
+ 
++    if (flags & CPU_DUMP_ARM_ALLSTORED) {
++        int cur_mode;
++
++        cur_mode = env->uncached_cpsr & CPSR_M;
++
++        // PC
++        cpu_fprintf(f, "32'h%08x\n", (unsigned int)get_register_in_mode(env, -1, 15));
++
++        // CPSR
++        cpu_fprintf(f, "32'h%08x\n", cpsr_read(env));
++
++        cpu_fprintf(f, "\n");
++
++        // SPSRs
++        //     #10011 - Supervisor mode - 0x13
++        cpu_fprintf(f, "32'h%08x\n", get_spsr_in_mode(env, 0x13));
++        //     #10111 - Abort mode - 0x17
++        cpu_fprintf(f, "32'h%08x\n", get_spsr_in_mode(env, 0x17));
++        //     #11011 - Undefined mode - 0x1b
++        cpu_fprintf(f, "32'h%08x\n", get_spsr_in_mode(env, 0x1b));
++        //     #10010 - IRQ mode - 0x12
++        cpu_fprintf(f, "32'h%08x\n", get_spsr_in_mode(env, 0x12));
++        //     #10001 - FIQ mode - 0x11
++        cpu_fprintf(f, "32'h%08x\n", get_spsr_in_mode(env, 0x11));
++
++        cpu_fprintf(f, "\n");
++
++        // User mode registers
++        for (i = 0; i < 16; ++i) {
++            cpu_fprintf(f, "32'h%08x\n", get_register_in_mode(env, 0x10, i));
++        }
++        // Supervisor
++        for (i = 13; i < 15; ++i) {
++            cpu_fprintf(f, "32'h%08x\n", get_register_in_mode(env, 0x13, i));
++        }
++        // Abort
++        for (i = 13; i < 15; ++i) {
++            cpu_fprintf(f, "32'h%08x\n", get_register_in_mode(env, 0x17, i));
++        }
++        // Undef
++        for (i = 13; i < 15; ++i) {
++            cpu_fprintf(f, "32'h%08x\n", get_register_in_mode(env, 0x1b, i));
++        }
++        // IRQ
++        for (i = 13; i < 15; ++i) {
++            cpu_fprintf(f, "32'h%08x\n", get_register_in_mode(env, 0x12, i));
++        }
++        // FIQ
++        for (i = 8; i < 15; ++i) {
++            cpu_fprintf(f, "32'h%08x\n", get_register_in_mode(env, 0x11, i));
++        }
++        // Padding
++        cpu_fprintf(f, "32'h%08x\n", 0);
++
++        cpu_fprintf(f, "\n");
++
++        // Coprocessor Registers
++        cpu_fprintf(f, "32'h%08x\n", get_coprocessor_reg(cpu, 1));
++        cpu_fprintf(f, "32'h%08x\n", get_coprocessor_reg(cpu, 2));
++        cpu_fprintf(f, "32'h%08x\n", get_coprocessor_reg(cpu, 3));
++        cpu_fprintf(f, "32'h%08x\n", get_coprocessor_reg(cpu, 5));
++        cpu_fprintf(f, "32'h%08x\n", get_coprocessor_reg(cpu, 6));
++
++        return;
++    }
++
+     if (is_a64(env)) {
+         aarch64_cpu_dump_state(cs, f, cpu_fprintf, flags);
+         return;
+-- 
+1.7.1
+
