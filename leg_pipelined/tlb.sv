@@ -31,7 +31,7 @@ cam #(tbits, size)
 tlb_cam(clk, reset, enable, CRead, we, CAdr, CData, Match);
 
 match_ram #(tlb_word_size, size) 
-tlb_ram(clk, reset, enable, RRead, we, Match, RData);
+tlb_ram(clk, reset, enable, RRead, we, Match, CAdr,  RData);
 
 tlb_controller #(size, tbits) tc(.*);
 

@@ -1,4 +1,4 @@
-`define ECACHES 1
+//`define ECACHES 0
 
 module top (
   input  logic        clk, reset,

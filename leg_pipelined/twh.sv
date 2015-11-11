@@ -80,9 +80,14 @@ case (state)
                   nextstate <= COARSEFETCH;
                 end else if(HRData[1:0] == 2'b11) begin
                   nextstate <= FINEFETCH;
-                end else begin
-                  nextstate <= SECTIONTRANS;
-                end
+		end else begin
+		    nextstate <= SECTIONTRANS;
+		end
+                //end else if(HRData[10] == 2'b10) begin
+                //  nextstate <= SECTIONTRANS;
+                //end else begin
+		 // nextstate <= DataAccess ? FAULTFSR : INSTRFAULT;
+		//end
   SECTIONTRANS: if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
                 end else begin

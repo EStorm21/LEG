@@ -64,6 +64,13 @@ module mmu #(parameter tbits = 22) (
   assign SBit = control[7];
   assign RBit = control[9];
 
+  // TODO: Remove, this is for debugging
+  always_ff @(posedge clk) begin
+    if(Fault) begin
+      $display("Mem fault detected at %d. FaultCode = %h", $time, FaultCode);
+    end
+  end
+
   // Bypass translation
   mux2 #(35) enableMux({CPUHAddr, CPUHRequest, CPUHWrite, HReady},
                        {HAddrOut, HRequestMid, HWriteMid, CPUHReadyMid}, 
