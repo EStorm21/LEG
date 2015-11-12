@@ -47,6 +47,22 @@ def print_inspect(subprocs, divisions, target):
 	else:
 		print "Couldn't find that target!"
 
+def restart_division(test_file, rundir, subprocs, divisions, target):
+	for i, ((sp, sdir), division) in enumerate(zip(subprocs,divisions)):
+		identifier = "{}-{}".format(hex(division[0]), hex(division[1]))
+		if identifier == target:
+			if sp.poll() is None:
+				print "{} is still running! Sending ctrl-c. Run this again to restart once it dies".format(target)
+				send_ctrlc(sdir)
+			else:
+				print "Restarting {}".format(target)
+				dt = datetime.datetime.today()
+				os.rename(sdir, sdir+"_old_{}".format(dt.strftime("%Y-%m-%d_%H:%M:%S_%f")))
+				subprocs[i] = start_division(test_file, division, rundir)
+			break
+	else:
+		print "Couldn't find that target!"
+
 def overview_msg(subprocs):
 	msg = "Overview:\n"
 	num_done = sum(1 if sp.poll() is not None else 0 for sp,_ in subprocs)
@@ -69,7 +85,13 @@ def statuslist_msg(subprocs, divisions, running_only):
 		if running_only and sp.poll() is not None:
 			continue
 		identifier = "{}-{}".format(hex(division[0]), hex(division[1]))
-		run_status = "working" if sp.poll() is None else "FINISHED"
+		is_working = os.path.isfile(os.path.join(sdir,"working"))
+		if sp.poll() is not None:
+			run_status = "FINISHED"
+		elif is_working:
+			run_status = "working"
+		else:
+			run_status = "(waiting...)"
 		try:
 			nbugs = len(os.listdir(os.path.join(sdir,"bugs")))
 		except OSError:
@@ -78,13 +100,17 @@ def statuslist_msg(subprocs, divisions, running_only):
 	return msg
 
 def send_ctrlc(sdir):
-	with open(os.path.join(sdir,'pid'), 'r') as f:
-		pid = int(f.readline())
 	try:
-		os.kill(pid, signal.SIGINT)
-	except OSError:
+		with open(os.path.join(sdir,'pid'), 'r') as f:
+			pid = int(f.readline())
+		try:
+			os.kill(pid, signal.SIGINT)
+		except OSError:
+			pass
+			#print "SIGINT of {} ({}) failed!".format(pid, sdir)
+	except IOError:
 		pass
-		#print "SIGINT of {} ({}) failed!".format(pid, sdir)
+		# print "note: Couldn't find pid for ", sdir
 
 def killall(subprocs):
 	for sp, sdir in subprocs:
@@ -105,6 +131,12 @@ def killall(subprocs):
 			except OSError: pass
 	time.sleep(0.1)
 
+def cleanup():
+	try:
+		os.remove("../sim/work/_lock")
+	except OSError:
+		pass
+
 def print_help():
 	print "Available commands:"
 	print "  overview        - Overall status"
@@ -112,6 +144,7 @@ def print_help():
 	print "  list-running    - List status of each division"
 	print "  interrupt       - Stop all divisions immediately"
 	print "  inspect TARGET  - Show target's bugs and command to view stdout"
+	print "  restart TARGET  - Kill or restart a given target"
 
 def run_divisions(test_file, divisions):
 	rundir = get_run_directory(test_file)
@@ -150,10 +183,15 @@ def run_divisions(test_file, divisions):
 			elif command.startswith("inspect "):
 				target = command[8:]
 				print_inspect(subprocs, divisions, target)
+			elif command.startswith("restart "):
+				target = command[8:]
+				restart_division(test_file, rundir, subprocs, divisions, target)
 	except:
 		print "Got an exception!"
 		killall(subprocs)
 		raise
+	finally:
+		cleanup()
 
 
 if __name__ == '__main__':

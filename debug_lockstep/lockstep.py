@@ -11,7 +11,7 @@ from leg import LegSim, AdvanceStuckBug, NoDataBug
 from qemu_monitor import QemuMonitor, BadInterruptBug, getExpr, getDataAtExpr, getQemuInstrCt, gdbQueryCmd
 import qemuDump
 
-NON_LOCKSTEP_INTERRUPTS = True
+NON_LOCKSTEP_INTERRUPTS = False
 
 def build_bug(message, lsim, qmon):
 	return message, qmon.get_state_writeback()
@@ -155,6 +155,9 @@ def build_bug_writeback_mismatch(qmon, bad_state):
 	msg += build_state_msg(qmon.get_state_prev_writeback())
 	msg += "\n"
 	msg += "Current conflict:\n"
+	if qmon.get_state_writeback() is None:
+		msg += "(Warning: ModelSim did not execute the right instruction! Assuming no interrupts)\n"
+		qmon.advance_execute()
 	msg += build_state_diff(qmon.get_state_prev_writeback(),
 							qmon.get_state_writeback(),
 							bad_state)
@@ -400,6 +403,17 @@ def getBugIDAndFiles(run_dir):
 
 	return bugDirCt, os.path.join(bugDir,"{}.buglog".format(bugDirCt)), os.path.join(bugDir,"{}.checkpoint".format(bugDirCt))
 
+def markWorking(run_dir, working):
+	flagfile = os.path.join(run_dir,'working')
+	if working:
+		with open(flagfile, 'w') as f:
+			f.write("WORKING\n")
+	else:
+		try:
+			os.remove(flagfile)
+		except OSError:
+			pass
+
 asmInstrParser = re.compile(".+:\\s+(.+)")
 def handleBug(prev_state, state, bug_msg, found_bugs, run_dir, test_file):
 	if state is None:
@@ -447,6 +461,8 @@ def debugFromHere(with_gui, qemu, test_file, found_bugs, run_dir, goal_pc=None):
 	if with_gui:
 		print "Giving ModelSim control to do initial wave configuration"
 		lsim.gui_control()
+
+	markWorking(run_dir, True)
 	try:
 		reason, prev_state, state, msg = lockstep(lsim, qemu, test_file=="", goal_pc)
 		print msg
@@ -458,6 +474,8 @@ def debugFromHere(with_gui, qemu, test_file, found_bugs, run_dir, goal_pc=None):
 		traceback.print_exc()
 		reason = LOCKSTEP_BUG_ABORT
 		print "Terminated due to exception."
+	markWorking(run_dir, False)
+
 	if with_gui:
 		print "Giving ModelSim control for debugging"
 		lsim.gui_control()

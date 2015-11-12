@@ -75,9 +75,6 @@ class LegSim(object):
 			dump_fn(self.dumpdir)
 
 			print "Starting ModelSim..."
-			if not os.path.isdir('../sim/work'):
-				subprocess.call(['vlib','../sim/work'])
-
 			cmds = ['vsim']
 			cmds += ['-do', 'do lockstep.tcl {} {} {}'.format(os.path.abspath(self.dumpdir), "1'b1" if reset_mem else "1'b0", "yes" if gui else "no")]
 			cmds += ['-do', 'quit -f']

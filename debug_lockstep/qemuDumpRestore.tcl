@@ -5,7 +5,10 @@ transcript off
 project open "../sim/pipelined_processor.mpf"; list
 #compile project
 
-vlog +acc ../leg_pipelined/*.sv ; list
+set workName "work"
+set workDir $dumpDir$workName
+vlib $workDir
+vlog -work $workDir +acc ../leg_pipelined/*.sv ; list
 
 # set dumpDir $1 (essentialy)
 set dumpDataName "qemu_mem_dump"
@@ -17,7 +20,7 @@ set ignoredLogName "wlffile.wlf"
 set ignoredLogFile $dumpDir$ignoredLogName
 
 # file copy -force $dumpDataFile "../sim/simTest.dat"; list
-vsim -quiet -wlf "$ignoredLogFile" -wlftlim {1 ns} work.testbench; list
+vsim -quiet -wlf "$ignoredLogFile" -wlftlim {1 ns} $workDir.testbench; list
 
 call sim:/testbench/dut/ahb/mem/loadMemory "$dumpDataFile" $shouldResetMem
 
