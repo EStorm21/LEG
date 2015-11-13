@@ -174,3 +174,4 @@ def compile():
 	if not os.path.isdir('../sim/work'):
 		subprocess.call(['vlib','../sim/work'])
 	subprocess.call(['vlog','+acc','../leg_pipelined/*.sv'], cwd='../sim')
+	subprocess.call(['vopt','work.testbench', '-o', 'testbench_opt'], cwd='../sim')

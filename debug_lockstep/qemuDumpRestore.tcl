@@ -14,7 +14,7 @@ set ignoredLogName "wlffile.wlf"
 set ignoredLogFile $dumpDir$ignoredLogName
 
 # file copy -force $dumpDataFile "../sim/simTest.dat"; list
-vsim -quiet -wlf "$ignoredLogFile" -wlftlim {1 ns} work.testbench; list
+vsim -quiet -wlf "$ignoredLogFile" -wlftlim {1 ns} work.testbench_opt; list
 
 call sim:/testbench/dut/ahb/mem/loadMemory "$dumpDataFile" $shouldResetMem
 
