@@ -43,7 +43,7 @@ def print_inspect(subprocs, divisions, target):
 				with open(runlog, 'r') as f:
 					print f.read()
 			print "To view stdout:"
-			print "$ tail -f \"{}\" -n 20".format(os.path.abspath(os.path.join(sdir,'stdout')))
+			print "$ less +F \"{}\" ".format(os.path.abspath(os.path.join(sdir,'stdout')))
 			break
 	else:
 		print "Couldn't find that target!"
