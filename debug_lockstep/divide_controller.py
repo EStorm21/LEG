@@ -1,6 +1,7 @@
 #!/usr/local/bin/python2.7
 
 import os, subprocess, datetime, sys, signal, time
+import leg
 
 OUTPUT_DIR = "output"
 
@@ -195,6 +196,8 @@ def run_divisions(test_file, divisions):
 
 
 if __name__ == '__main__':
+	leg.compile()
+
 	division_file = sys.argv[1]
 	test_file = sys.argv[2] if len(sys.argv) > 2 else ""
 

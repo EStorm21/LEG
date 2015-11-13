@@ -26,7 +26,10 @@ import datetime
 import atexit
 import pickle
 
-import lockstep, checkpoint, qemu_monitor
+import lockstep
+import checkpoint
+import qemu_monitor
+import leg
 
 OUTPUT_DIR = "output"
 
@@ -309,6 +312,7 @@ if COMMAND[0]=="divideandconquer":
 else:
 	should_cleanup_dir = True
 	run_dir = get_run_directory()
+	leg.compile()
 
 with open(os.path.join(run_dir,'pid'), 'w') as f:
 	f.write(str(os.getpid()) + '\n')

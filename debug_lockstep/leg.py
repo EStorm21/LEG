@@ -169,3 +169,8 @@ class LegSim(object):
 		path = os.path.abspath("output/checkpoints/{}.checkpoint".format(name))
 		self.toMSFifo.write(path + "\n")
 		print "Saved to {}".format(path)
+
+def compile():
+	if not os.path.isdir('../sim/work'):
+		subprocess.call(['vlib','../sim/work'])
+	subprocess.call(['vlog','+acc','../leg_pipelined/*.sv'], cwd='../sim')
