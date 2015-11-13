@@ -10,8 +10,13 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   // What if we get another exception before the mov r14, pc operation finishes? We still need to save it to the exception mode registers
   //--LDM: When loading into base register without writeback, must load into Rz. Last operation should then be mov Rn, Rz. This is to be consistent with data abort, which requires that base register not be updated if data abort occurs at any point.
   //--Need to change load and store to use Base Restored Abort Model
+
+  logic IRQEn_sync, FIQEn_sync;
   
+  // DataAbortCycle2 serves as the abort signal for the rest of the processor
   flopr #(1) DataAbortFlop(clk, reset, DataAbort, DataAbortCycle2);
+  // CPSR acts like it is in the register file and changes on negedge clk. We want to delay these changes to the positive edge.
+  flopr #(2) IRQ_FIQ_Sync(clk, reset, {IRQEnabled, FIQEnabled}, {IRQEn_sync, FIQEn_sync})
 
   always_comb begin
     if (DataAbort | DataAbortCycle2) begin // data abort 
@@ -19,7 +24,6 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
       // Flush E, M, W
       // Stall D and reset microp
       // Next cycle save the PC and flush D
-      // DataAbortCycle2 serves as the abort signal for the rest of the processor
       // Only one of DataAbort and DataAbortCycle2 can be asserted at any time, since we flushM
       assign {IRQAssert, FIQAssert} = 2'b00;
       assign  PipelineClearF = 1'b0;
@@ -36,7 +40,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
       assign  ExceptionStallD = 1'b0;
     end
 
-    else if (FIQ & FIQEnabled) begin // FIQ
+    else if (FIQ & FIQEn_sync) begin // FIQ
       // Only if FIQ enabled
       // insert clear signal into F to advance with pipeline. When in D, FlushE except this signal so it passes through but is with the zero instruction, which cannot cause any type of exception. 
       // When this signal get to M, all real instructions have done W. raise the interrupt, flush D, and rejoice. 
@@ -46,7 +50,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
       assign  ExceptionStallD = PipelineClearD & ~PipelineClearM;
     end
 
-    else if (IRQ & IRQEnabled)begin // IRQ
+    else if (IRQ & IRQEn_sync)begin // IRQ
       // see FIQ
       assign {IRQAssert, FIQAssert} = {PipelineClearM, 1'b0};
       assign  PipelineClearF = ~PipelineClearM; // Stop asserting when we are done with this process
@@ -66,6 +70,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   assign PCVectorAddress = {FIQAssert, IRQAssert, DataAbortCycle2, PrefetchAbortE, SWIE, UndefinedInstrE, reset};
   assign ExceptionSavePC = |PCVectorAddress; 
   assign PCInSelect = (PrefetchAbortE | UndefinedInstrE | SWIE | DataAbortCycle2) ? 1 : 0;
+  assign ExceptionResetMicrop = DataAbort;
 
 endmodule
 
