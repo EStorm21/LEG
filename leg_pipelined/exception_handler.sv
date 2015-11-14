@@ -16,7 +16,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   // DataAbortCycle2 serves as the abort signal for the rest of the processor
   flopr #(1) DataAbortFlop(clk, reset, DataAbort, DataAbortCycle2);
   // CPSR acts like it is in the register file and changes on negedge clk. We want to delay these changes to the positive edge.
-  flopr #(2) IRQ_FIQ_Sync(clk, reset, {IRQEnabled, FIQEnabled}, {IRQEn_sync, FIQEn_sync})
+  flopr #(2) IRQ_FIQ_Sync(clk, reset, {IRQEnabled, FIQEnabled}, {IRQEn_sync, FIQEn_sync});
 
   always_comb begin
     if (DataAbort | DataAbortCycle2) begin // data abort 
