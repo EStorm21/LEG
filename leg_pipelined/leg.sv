@@ -70,7 +70,7 @@ module leg(input  logic        clk, reset,
   logic       UndefinedInstr;
   logic       SWI;
   logic       RegtoCPSR, CPSRtoReg;
-  logic       PCInSelect;
+  logic [1:0] PCInSelect;
 
   controller c (.*);
   datapath dp (.*); 

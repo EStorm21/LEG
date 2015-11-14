@@ -53,7 +53,7 @@ module controller (
   input  logic        TFlagE                 ,
   // For exceptions
   input  logic        PrefetchAbort, DataAbort, IRQ, FIQ,
-  output logic      PCInSelect);
+  output logic  [1:0]    PCInSelect);
 
   logic [12:0] ControlsD          ;
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
