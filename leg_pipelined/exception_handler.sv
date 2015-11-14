@@ -43,7 +43,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
     else if (FIQ & FIQEn_sync) begin // FIQ
       // Only if FIQ enabled
       // insert clear signal into F to advance with pipeline. When in D, FlushE except this signal so it passes through but is with the zero instruction, which cannot cause any type of exception. 
-      // When this signal get to M, all real instructions have done W. raise the interrupt, flush D, and rejoice. 
+      // When this signal get to M, all real instructions have done W. raise the interrupt, save PCD+4 
       assign {IRQAssert, FIQAssert} = {0, PipelineClearM};
       assign  PipelineClearF = ~PipelineClearM; // Stop asserting when we are done with this process
       assign {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = {PipelineClearD & PipelineClearM, PipelineClearD & ~PipelineClearM, 2'b0};
