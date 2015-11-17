@@ -74,7 +74,7 @@ module mmu #(parameter tbits = 22) (
   // Bypass translation
   mux2 #(35) enableMux({CPUHAddr, CPUHRequest, CPUHWrite, HReady},
                        {HAddrOut, HRequestMid, HWriteMid, CPUHReadyMid}, 
-                       Enable & ~CPUHWrite, {HAddr, HRequest, HWrite, CPUHReady});
+                       Enable, {HAddr, HRequest, HWrite, CPUHReady});
   // TODO: fix this name
   assign HAddrOut = HAddrMid;
   assign PhysTag = TableEntry[tbits+8:9];

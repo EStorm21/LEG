@@ -168,17 +168,15 @@ assign HRequestMid = (state == COARSEFETCH) |
                 ( (state == READY) & CPUHRequest );
 
 // CPUHReady Logic  
-assign CPUHReadyMid = (state == SECTIONTRANS) & HReady | 
-                    (state == LARGETRANS)   & HReady |
-                    (state == TINYTRANS)    & HReady |
-                    (state == READY)        & PAReady |
-                    (state == SMALLTRANS)   & HReady;
+assign CPUHReadyMid = PAReady;
+//assign CPUHReadyMid = (state == SECTIONTRANS) & HReady | 
+//                    (state == LARGETRANS)   & HReady |
+//                    (state == TINYTRANS)    & HReady |
+//                    (state == READY)        & PAReady |
+//                    (state == SMALLTRANS)   & HReady;
 
 // HWriteMid Logic
-assign HWriteMid = ( (state == SECTIONTRANS) |
-                (state == LARGETRANS)   |
-                (state == SMALLTRANS) |
-                (state == TINYTRANS) ) & CPUHWrite;
+assign HWriteMid = PAReady & CPUHWrite;
 
 // PAReady logic
 // assign PAReady = MMUEn |

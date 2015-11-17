@@ -16,6 +16,9 @@ module dmem (
   logic [31:0] RAM[MEM_SIZE:0];
   assign Valid = re | we;
 
+  // MEMORY DEBUGGING
+  logic [31:0] watchmem [$] = {32'h00585f4c};
+
   // ------------------ Actual Memory ----------------------
   integer i;
   initial
@@ -66,6 +69,16 @@ module dmem (
           default: $display("dmem unknown HSIZE[1:0] = %b, at %d", HSIZE[1:0], $time);
         endcase
       end
+
+      // MEMORY DEBUGGING
+      if(a inside {watchmem}) begin
+	 if(we) begin
+           $display("Writing %h to addr %h at time %d", wd, a, $time);
+	 end else begin
+           $display("Reading %h from addr %h at time %d", rd, a, $time);
+	 end
+      end
+      // end MEMORY DEBUGGING
     end
 
   // Called from ModelSim using

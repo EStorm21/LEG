@@ -1,4 +1,4 @@
-//`define ECACHES 0
+`include "cfg.vh"
 
 module top (
   input  logic        clk, reset,
