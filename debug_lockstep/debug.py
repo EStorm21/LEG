@@ -26,7 +26,10 @@ import datetime
 import atexit
 import pickle
 
-import lockstep, checkpoint, qemu_monitor
+import lockstep
+import checkpoint
+import qemu_monitor
+import leg
 
 OUTPUT_DIR = "output"
 
@@ -38,10 +41,6 @@ def setup():
 		os.mkdir(cpdir)
 	if not os.path.isfile('util/convertBinToDat'):
 		subprocess.call(['make', '-C', 'util'])
-
-	gdb.execute("mem 0 0xffffffff wo")
-	gdb.execute("disable mem 1")
-	gdb.execute("set mem inaccessible-by-default off")
 
 def get_open_port():
 	import socket
@@ -81,7 +80,13 @@ def initialize_qemu():
 	qemu = subprocess.Popen(qemu_cmd, stdin=open(os.devnull), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn = os.setpgrp)
 
 	print "Connecting to qemu..."
-	gdb.execute('target remote localhost:{}'.format(openport))
+	while True:
+		try:
+			gdb.execute('target remote localhost:{}'.format(openport))
+			break
+		except gdb.error, e:
+			print e
+			print "Port connect error. Retrying..."
 	if TEST_FILE is "":
 		gdb.execute('file /proj/leg/kernel/vmlinux')
 	else:
@@ -148,8 +153,8 @@ class LegAutoCommand (gdb.Command):
 		while True:
 			print "Starting lockstep from:"
 			gdb.execute("where")
-			preventRestart = lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir)
-			if preventRestart:
+			reason = lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir)
+			if reason == lockstep.LOCKSTEP_BUG_RESUMABLE:
 				print "Stopping automatic lockstep (run leg-lockstep-auto again to resume)"
 				break
 			print "Got a bug. Skipping over it"
@@ -175,8 +180,8 @@ class LegLockstepToGoalCommand (gdb.Command):
 				print "Starting lockstep from:"
 				gdb.execute("where")
 				print "Seeking goal {}, or {}".format(arg, hex(int(arg,0)))
-				preventRestart = lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir, int(arg, 0))
-				if preventRestart:
+				reason = lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir, int(arg, 0))
+				if reason == lockstep.LOCKSTEP_BUG_RESUMABLE:
 					print "Stopping automatic lockstep (run leg-lockstep-goal again to resume)"
 					break
 				print "Got a bug. Skipping over it"
@@ -197,7 +202,7 @@ class LegJumpCommand (gdb.Command):
 			gdb.execute('continue', to_string=True)
 			gdb.execute('delete {}'.format(bpstr.split(' ')[1][:-1]))
 			print "Jumped to"
-			gdb.execute("where 1")
+			gdb.execute("where")
 
 LegJumpCommand()
 
@@ -307,6 +312,7 @@ if COMMAND[0]=="divideandconquer":
 else:
 	should_cleanup_dir = True
 	run_dir = get_run_directory()
+	leg.compile()
 
 with open(os.path.join(run_dir,'pid'), 'w') as f:
 	f.write(str(os.getpid()) + '\n')
@@ -326,7 +332,6 @@ elif COMMAND[0]=="bugcheckpoint":
 		gdb.execute("leg-frombug {}".format(COMMAND[1]))
 		gdb.execute("leg-checkpoint temp_bug_checkpoint")
 		os.rename("output/checkpoints/temp_bug_checkpoint.checkpoint", COMMAND[2])
-		print "Moved checkpoint to {}".format(COMMAND[2])
 	except:
 		import traceback
 		traceback.print_exc()

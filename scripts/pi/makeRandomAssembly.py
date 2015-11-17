@@ -55,6 +55,11 @@ if __name__ == "__main__":
 						help="Number of instructions to generate",
 						default=100)
 
+	parser.add_argument("--interrupt_ratio",
+						type=float,
+						default=0,
+						help="What proportion of instructions should trigger interrupts")
+
 
 	args = vars(parser.parse_args())
 	assert not (len(args["include"]) > 0 and len(args["exclude"]) > 0)
@@ -64,6 +69,7 @@ if __name__ == "__main__":
 	nowb = args["nowb"]
 	conds = args["conds"]
 	numInstru = args["count"]
+	interrupt_ratio = args["interrupt_ratio"]
 
 # Condition codes
 Conditions = ["EQ","NE","CS","CC","MI","PL","VS","VC","HI","LS","GE","LT","GT","LE"]+[""]*10
@@ -150,8 +156,9 @@ instrs = [subl for subl in instrs if len(subl) > 0]
 
 
 def makeProgram(numInstru):
-	program = initializeProgram() #initializes  and stack to random values
+	program_initial = initializeProgram() #initializes  and stack to random values
 	counter = 1
+	program = ""
 	program += "# MAIN PROGRAM\n"
 	program += "\n"
 
@@ -197,6 +204,15 @@ def makeProgram(numInstru):
 
 		counter += 1
 	program += "end: b end\n"
+
+	if interrupt_ratio > 0:
+		split_prog = program.split("\n")
+		num_interrupts = int(interrupt_ratio*len(split_prog))
+		for i, line in enumerate(sample(range(len(split_prog)), num_interrupts)):
+			split_prog[line] = 'interrupt_{}: '.format(i) + split_prog[line]
+		program = "\n".join(split_prog)
+
+	program = program_initial+program
 	print program
 
 
@@ -591,10 +607,35 @@ def ror(value, amt, bits = 32):
 # Set up the stack and registers. The instruction sequence looks strange,
 # but lets us ldr [pc] for each val
 def initializeProgram():
-	global lower, upper, sp
+	global lower, upper, sp, interrupt_ratio
 	stackSize = 21
 
 	program = ""
+
+	if interrupt_ratio > 0:
+		program += "vectors_start:\n"
+		program += "b main\n"
+		program += "b .\n"
+		program += "b .\n"
+		program += "b .\n"
+		program += "b .\n"
+		program += "b .\n"
+		program += "b irq_handler\n"
+		program += "b .\n"
+		program += "\n"
+
+		program += "UART_DR: .word 0x16000000\n"
+		program += "irq_handler:\n"
+		program += "ldr r1, UART_DR\n"
+		program += "ldr r1, [r1]\n"
+		program += "nop\n"
+		program += "nop\n"
+		program += "nop\n"
+		program += "nop\n"
+		program += "subs pc,r14,#4\n"
+		program += "\n"
+		program += "\n"
+
 	program += ".global main\n"
 	program += "main:\n"
 	program += "\n"
@@ -634,6 +675,32 @@ def initializeProgram():
 		program += "next{}:".format(i+15)
 		program += "str R1, [sp, #{}]\n".format(spOffset)
 	program += "\n"
+	if interrupt_ratio > 0:
+		program += "# INITIALIZING INTERRUPTS\n"
+		program += "\n"
+		program += "b next{}\n".format(15+stackSize)
+		program += "val{}: .word 0x1ffff0\n".format(15+stackSize)
+		program += "PIC_IRQ_ENCLR: .word 0x1400000c\n"
+		program += "UART0_IMSC: .word 0x16000038\n"
+		program += "PIC_IRQ_ENSET: .word 0x14000008\n"
+		program += "next{}: ".format(15+stackSize)
+		program += "MRS r0, cpsr\n"
+		program += "BIC r1, r0, #0x1F\n" # go in IRQ mode
+		program += "ORR r1, r1, #0x12\n"
+		program += "MSR cpsr, r1\n"
+		program += "LDR sp, val{}\n".format(15+stackSize) # set IRQ stack
+		program += "BIC r0, r0, #0x80\n" # Enable IRQs
+		program += "MSR cpsr, r0\n" # go back in Supervisor mode
+		program += "ldr	r3, PIC_IRQ_ENCLR\n"
+		program += "mov	r2, #2\n"
+		program += "str	r2, [r3]\n"
+		program += "ldr	r3, UART0_IMSC\n"
+		program += "mov	r2, #16\n"
+		program += "str	r2, [r3]\n"
+		program += "ldr	r3, PIC_IRQ_ENSET\n"
+		program += "mov	r2, #2\n"
+		program += "str	r2, [r3]\n"
+		program += "\n"
 	return program
 
 
