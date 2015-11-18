@@ -11,7 +11,7 @@ from leg import LegSim, AdvanceStuckBug, NoDataBug
 from qemu_monitor import QemuMonitor, BadInterruptBug, getExpr, getDataAtExpr, getQemuInstrCt, gdbQueryCmd
 import qemuDump
 
-NON_LOCKSTEP_INTERRUPTS = False
+NON_LOCKSTEP_INTERRUPTS = True
 
 def build_bug(message, lsim, qmon):
 	return message, qmon.get_state_writeback()
