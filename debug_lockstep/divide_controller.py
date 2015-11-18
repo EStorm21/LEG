@@ -27,7 +27,7 @@ def start_division(test_file, division, rundir):
 	division_dir = os.path.join(rundir,"{}-{}".format(hex(division[0]), hex(division[1])))
 	os.mkdir(division_dir)
 	division_cmd += ['--divideandconquer', division_dir, hex(division[0]), hex(division[1])]
-	return subprocess.Popen(division_cmd, stdin=open(os.devnull, 'r'), stdout=open(os.path.join(division_dir,'stdout'),'w'), stderr=subprocess.STDOUT), division_dir
+	return subprocess.Popen(division_cmd, stdin=open(os.devnull, 'r'), stdout=open(os.path.join(division_dir,'stdout'),'w'), stderr=subprocess.STDOUT, preexec_fn=os.setpgrp), division_dir
 
 def record_pids(rundir, subprocs):
 	pids = [str(sp.pid) for sp,_ in subprocs]
@@ -196,6 +196,8 @@ def run_divisions(test_file, divisions):
 
 
 if __name__ == '__main__':
+	os.nice(10)
+
 	leg.compile()
 
 	division_file = sys.argv[1]

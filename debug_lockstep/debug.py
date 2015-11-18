@@ -42,6 +42,10 @@ def setup():
 	if not os.path.isfile('util/convertBinToDat'):
 		subprocess.call(['make', '-C', 'util'])
 
+	gdb.execute("mem 0 0xffffffff wo")
+	gdb.execute("disable mem 1")
+	gdb.execute("set mem inaccessible-by-default off")
+
 def get_open_port():
 	import socket
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -152,7 +156,7 @@ class LegAutoCommand (gdb.Command):
 	def invoke (self, arg, from_tty):
 		while True:
 			print "Starting lockstep from:"
-			gdb.execute("where")
+			gdb.execute("where 20")
 			reason = lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir)
 			if reason == lockstep.LOCKSTEP_BUG_RESUMABLE:
 				print "Stopping automatic lockstep (run leg-lockstep-auto again to resume)"
@@ -178,7 +182,7 @@ class LegLockstepToGoalCommand (gdb.Command):
 		else:
 			while True:
 				print "Starting lockstep from:"
-				gdb.execute("where")
+				gdb.execute("where 20")
 				print "Seeking goal {}, or {}".format(arg, hex(int(arg,0)))
 				reason = lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir, int(arg, 0))
 				if reason == lockstep.LOCKSTEP_BUG_RESUMABLE:
@@ -202,7 +206,7 @@ class LegJumpCommand (gdb.Command):
 			gdb.execute('continue', to_string=True)
 			gdb.execute('delete {}'.format(bpstr.split(' ')[1][:-1]))
 			print "Jumped to"
-			gdb.execute("where")
+			gdb.execute("where 20")
 
 LegJumpCommand()
 
@@ -292,7 +296,7 @@ class LegFromBugCommand (gdb.Command):
 		qemu_monitor.jumpToState(initial_state)
 
 		print "Current location:"
-		gdb.execute('where')
+		gdb.execute('where 20')
 
 LegFromBugCommand()
 
@@ -332,6 +336,7 @@ elif COMMAND[0]=="bugcheckpoint":
 		gdb.execute("leg-frombug {}".format(COMMAND[1]))
 		gdb.execute("leg-checkpoint temp_bug_checkpoint")
 		os.rename("output/checkpoints/temp_bug_checkpoint.checkpoint", COMMAND[2])
+		print "Moved checkpoint to {}".format(COMMAND[2])
 	except:
 		import traceback
 		traceback.print_exc()

@@ -11,7 +11,7 @@ from leg import LegSim, AdvanceStuckBug, NoDataBug
 from qemu_monitor import QemuMonitor, BadInterruptBug, getExpr, getDataAtExpr, getQemuInstrCt, gdbQueryCmd
 import qemuDump
 
-NON_LOCKSTEP_INTERRUPTS = False
+NON_LOCKSTEP_INTERRUPTS = True
 
 def build_bug(message, lsim, qmon):
 	return message, qmon.get_state_writeback()
@@ -95,7 +95,7 @@ def build_qemu_msg():
 	msg = ""
 	msg += "GDB says:\n"
 	msg += gdb.execute('info reg', to_string=True)  + "\n"
-	msg += gdb.execute('where', to_string=True)  + "\n"
+	msg += gdb.execute('where 20', to_string=True)  + "\n"
 	msg += "\n"
 	msg += "Adjacent instructions are\n"
 	frompt = '0x0' if getExpr('$pc') < 0x30 else '$pc-0x30'
@@ -323,7 +323,7 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 					print ".",
 				if checked_count % 500 == 0:
 					print "\nChecked about {} instructions! Just checked 0x{:x}. Currently executing:".format(checked_count, expected_state[0])
-					gdb.execute("where")
+					gdb.execute("where 20")
 
 				if goal_pc == expected_state[0]:
 					cleanup()
@@ -366,6 +366,7 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 					build_bug_bad_interrupt(qmon, e.args[1]))
 
 			for ioaddr, ioval in ios:
+				print "Enqueuing IO read at 0x{:x} of data 0x{:x}".format(ioaddr, ioval)
 				lsim.enqueue_io_read(ioaddr, ioval)
 
 			irq, fiq = qmon.get_irq_lines()
