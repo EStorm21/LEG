@@ -196,6 +196,8 @@ def run_divisions(test_file, divisions):
 
 
 if __name__ == '__main__':
+	os.nice(10)
+
 	leg.compile()
 
 	division_file = sys.argv[1]
