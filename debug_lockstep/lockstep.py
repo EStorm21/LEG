@@ -95,7 +95,7 @@ def build_qemu_msg():
 	msg = ""
 	msg += "GDB says:\n"
 	msg += gdb.execute('info reg', to_string=True)  + "\n"
-	msg += gdb.execute('where', to_string=True)  + "\n"
+	msg += gdb.execute('where 20', to_string=True)  + "\n"
 	msg += "\n"
 	msg += "Adjacent instructions are\n"
 	frompt = '0x0' if getExpr('$pc') < 0x30 else '$pc-0x30'
@@ -323,7 +323,7 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 					print ".",
 				if checked_count % 500 == 0:
 					print "\nChecked about {} instructions! Just checked 0x{:x}. Currently executing:".format(checked_count, expected_state[0])
-					gdb.execute("where")
+					gdb.execute("where 20")
 
 				if goal_pc == expected_state[0]:
 					cleanup()
