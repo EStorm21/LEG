@@ -366,6 +366,7 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 					build_bug_bad_interrupt(qmon, e.args[1]))
 
 			for ioaddr, ioval in ios:
+				print "Enqueuing IO read at 0x{:x} of data 0x{:x}".format(ioaddr, ioval)
 				lsim.enqueue_io_read(ioaddr, ioval)
 
 			irq, fiq = qmon.get_irq_lines()
