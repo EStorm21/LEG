@@ -10,12 +10,10 @@ b .
 
 UART_DR: .word 0x16000000
 irq_handler:
+str r1, [sp, #0]
 ldr r1, UART_DR
 ldr r1, [r1]
-nop
-nop
-nop
-nop
+ldr r1, [sp, #0]
 subs pc,r14,#4
 
 
