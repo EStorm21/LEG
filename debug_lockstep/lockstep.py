@@ -267,7 +267,7 @@ def trigger_interrupt(qemu_proc, qmon):
 	ser.close()
 
 def check_cpsr(a, b):
-	if (not isinstance(a, int)) or (not isinstance(b, int)):
+	if isinstance(a, str) or isinstance(b, str):
 		return False
 	return (a & 0xf80000ff) == (b & 0xf80000ff)
 
