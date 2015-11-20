@@ -1,7 +1,7 @@
 From 9b3a0cfba88c9271dcc9afd6e1b9fbc4026bc390 Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Thu, 22 Oct 2015 20:43:31 -0700
-Subject: [PATCH 3/7] Add dump-state functionality
+Subject: [PATCH 3/8] Add dump-state functionality
 
 Enables dumping of state in a form readable by ModelSim. This is implemented
 as a GDB server query packet, which triggers a modified version of
