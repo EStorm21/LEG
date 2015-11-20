@@ -29,6 +29,7 @@ import pickle
 import lockstep
 import checkpoint
 import qemu_monitor
+import qemuDump
 import leg
 
 OUTPUT_DIR = "output"
@@ -234,6 +235,17 @@ class LegInstrCtCommand (gdb.Command):
 
 LegInstrCtCommand()
 
+class LegQemuStateCommand (gdb.Command):
+	""" Print qemu's current state """
+
+	def __init__ (self):
+		super (LegQemuStateCommand, self).__init__ ("leg-qemu-state", gdb.COMMAND_USER)
+
+	def invoke (self, arg, from_tty):
+		print qemuDump.showQemuState()
+
+LegQemuStateCommand()
+
 class LegCheckpointCommand (gdb.Command):
 	""" Create a ModelSim checkpoint corresponding to the current state """
 
@@ -355,9 +367,11 @@ else:
 	print "    leg-lockstep: Start lockstepping from here"
 	print "    leg-lockstep-auto: Repeatedly lockstep and restart after bugs"
 	print "    leg-lockstep-gui: Start lockstepping from here with the ModelSim GUI, and stop for debugging."
+	print "    leg-lockstep-goal PCADDRESS: Like leg-lockstep-auto, but stop when we reach PCADDRESS"
 	print "    leg-jump BREAK_LOC: Shortcut to skip to a function or address using breakpoints"
 	print "    leg-frombug BUGFILE: Jump to the last matching state before a bug "
 	print "    leg-count: Print the current instruction count"
+	print "    leg-qemu-state: Print qemu's current state"
 	print "    leg-checkpoint NAME: Create a ModelSim checkpoint corresponding to the current state"
 	print "    leg-restart: Restart qemu"
 	print "    leg-stop: Shut down the debug session gracefully"
