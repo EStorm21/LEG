@@ -94,6 +94,12 @@ module controller (
   logic        IRQAssert, FIQAssert, DataAbortAssert;
   logic        ExceptionResetMicrop, ExceptionSavePC;
 
+  // For debugging
+  logic        validDdebug, validEdebug, validMdebug, validWdebug;
+  logic        validDdebug_pre;
+  logic        uOpProgEdebug, uOpProgMdebug, uOpProgWdebug;
+  logic        advancingEdebug, advancingWdebug;
+
   /***** Brief Description *******
   * Created by Ivan Wong for Clay Wolkin 2014-2015
   * Controller contains all control signals (no predefined width)
@@ -233,6 +239,11 @@ module controller (
   assign undefD         = InstrD[27:25] == 3'b011 & InstrD[4];
   // === END ===
 
+  // === DEBUGGING ===
+  flopenrc #(1) validdreg(clk, reset, ~StallD, FlushD, 1'h1, validDdebug_pre);
+  assign validDdebug = validDdebug_pre || IRQAssert;
+  // === END ===
+
   // ====================================================================================================
   // ======================================= Execute Stage ==============================================
   // ====================================================================================================
@@ -308,6 +319,11 @@ module controller (
                        PCVectorAddress,
                        ExceptionResetMicrop, ExceptionSavePC, PCInSelect);
 
+  // === DEBUGGING ===
+  flopenrc #(1) validereg(clk, reset, ~StallE, FlushE, validDdebug, validEdebug);
+  flopenrc #(1) uopprogereg(clk, reset, ~StallE, FlushE, uOpStallD, uOpProgEdebug);
+  floprc #(1) advancingereg(clk, reset, FlushE, validDdebug && ~uOpStallD && ~StallE, advancingEdebug);
+  // === END ===
 
   // ====================================================================================================
   // ======================================= Memory Stage ===============================================
@@ -326,6 +342,11 @@ module controller (
   flopenr  #(1) pipelineclearMflop(clk, reset, ~StallM, PipelineClearE, PipelineClearM); // see exception_handler.sv
 
   mux2 #(4)  flagM_mux(FlagsNext0M, CPSRW[31:28], CoProc_FlagUpd_W, FlagsNextM);
+
+  // === DEBUGGING ===
+  flopenrc #(1) validmreg(clk, reset, ~StallM, FlushM, validEdebug, validMdebug);
+  flopenrc #(1) uopprogmreg(clk, reset, ~StallM, FlushM, uOpProgEdebug, uOpProgMdebug);
+  // === END ===
 
   // ====================================================================================================
   // ======================================= Writeback Stage ============================================
@@ -347,5 +368,11 @@ module controller (
   // === END ===
 
   assign PCWrPendingF = PCSrcD | PCSrcE | PCSrcM;
+
+  // === DEBUGGING ===
+  flopenrc #(1) validwreg(clk, reset, ~StallW, FlushW, validMdebug, validWdebug);
+  flopenrc #(1) uopprogwreg(clk, reset, ~StallW, FlushW, uOpProgMdebug, uOpProgWdebug);
+  assign advancingWdebug = validWdebug && ~uOpProgWdebug && ~StallW;
+  // === END ===
 
 endmodule

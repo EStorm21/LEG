@@ -85,7 +85,7 @@ def build_state_diff(pstate,qstate, msstate):
 
 	build_part("PC:          ",ql,msl,		ppc, qpc, mspc)
 	build_part("   instr:    ",ql,msl,		pinstr, qinstr, msinstr)
-	build_part("CPSR:        ",ql,msl,		pcpsr, qcpsr, mscpsr)
+	build_part("CPSR:        ",ql,msl,		pcpsr, qcpsr, mscpsr, True)
 	ql.append("-----------------------")
 	msl.append("-----------------------")
 	for i, (preg,qreg,msreg) in enumerate(zip(pregs,qregs, msregs)):
@@ -277,6 +277,8 @@ def check_cpsr(a, b):
 def check_states(state_a, state_b, interrupting):
 	# Note: If we are interrupting, we ignore the CPSR and registers, since those will be incorrect.
 	# We assume we will catch those later if they are buggy
+	if state_a is None or state_b is None:
+		return False
 	if state_a[0:2] != state_b[0:2]:
 		return False
 	if interrupting:
@@ -315,14 +317,13 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 
 	checked_count = 0
 
-	interrupt_ignore_next_e = False
 	interrupt_ignore_next_w = False
 	irq_assert_next_e = False
 	fiq_assert_next_e = False
 
 	while True:
 		try:
-			time, advance_w_state_plus_irq, advance_e_state = lsim.advance()
+			time, advance_w_state_plus_irq, advance_e_state_plus_irq = lsim.advance()
 		except AdvanceStuckBug, e:
 			cleanup()
 			return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
@@ -350,12 +351,6 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 					# Correct lockstep!
 					qmon.advance_writeback()
 
-					if interrupting:
-						print "ModelSim interrupting!"
-						interrupt_ignore_next_e = True
-						interrupt_ignore_next_w = True
-						irq_assert_next_e = irq_assert
-						fiq_assert_next_e = fiq_assert
 					# print "Writeback Match: {}".format(expected_state)
 					checked_count += 1
 					if not is_linux:
@@ -379,46 +374,50 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 						qmon.get_state_writeback(),
 						build_bug_writeback_mismatch(qmon,advance_w_state))
 
-		if advance_e_state is not None:
-			if interrupt_ignore_next_e:
-				interrupt_ignore_next_e = False
-				interrupt_do_next_e = True
-			else:
-				pc, instr = advance_e_state
-				expected_pc = qmon.execute_lookahead_pc
+		if advance_e_state_plus_irq is not None:
+			advance_e_state, irq_assert_trigger, fiq_assert_trigger = advance_e_state_plus_irq
+			pc, instr = advance_e_state
+			expected_pc = qmon.execute_lookahead_pc
 
-				try:
-					if irq_assert_next_e:
-						print "Executing IRQ"
-						irq_assert_next_e = False
-						ios = qmon.do_interrupt(False)
-					elif fiq_assert_next_e:
-						print "Executing FIQ"
-						fiq_assert_next_e = False
-						ios = qmon.do_interrupt(True)
-					elif pc == expected_pc:
-						# print "Executing at 0x{:x}".format(pc)
-						ios = qmon.advance_execute()
-					else:
-						print "Skipping execution of unexpected pc 0x{:x} (expected 0x{:x})".format(pc, expected_pc)
-						ios = []
-				except BadInterruptBug, e:
-					cleanup()
-					return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
-						qmon.get_state_prev_writeback(),
-						qmon.get_state_writeback(),
-						build_bug_bad_interrupt(qmon, e.args[1]))
+			try:
+				if irq_assert_next_e:
+					print "Executing IRQ"
+					irq_assert_next_e = False
+					ios = qmon.do_interrupt(False)
+				elif fiq_assert_next_e:
+					print "Executing FIQ"
+					fiq_assert_next_e = False
+					ios = qmon.do_interrupt(True)
+				elif irq_assert_trigger or fiq_assert_trigger:
+					print "ModelSim interrupting!"
+					# Ignore this instruction
+					interrupt_ignore_next_w = True
+					irq_assert_next_e = irq_assert_trigger
+					fiq_assert_next_e = fiq_assert_trigger
+					ios = []
+				elif pc == expected_pc:
+					# print "Executing at 0x{:x}".format(pc)
+					ios = qmon.advance_execute()
+				else:
+					print "Skipping execution of unexpected pc 0x{:x} (expected 0x{:x})".format(pc, expected_pc)
+					ios = []
+			except BadInterruptBug, e:
+				cleanup()
+				return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
+					qmon.get_state_prev_writeback(),
+					qmon.get_state_writeback(),
+					build_bug_bad_interrupt(qmon, e.args[1]))
 
-				for ioaddr, ioval in ios:
-					print "Enqueuing IO read at 0x{:x} of data 0x{:x}".format(ioaddr, ioval)
-					lsim.enqueue_io_read(ioaddr, ioval)
+			for ioaddr, ioval in ios:
+				print "Enqueuing IO read at 0x{:x} of data 0x{:x}".format(ioaddr, ioval)
+				lsim.enqueue_io_read(ioaddr, ioval)
 
-				irq, fiq = qmon.get_irq_lines()
-				lsim.set_interrupts(irq, fiq)
+			irq, fiq = qmon.get_irq_lines()
+			lsim.set_interrupts(irq, fiq)
 
-				if (not is_linux) and qmon.same_instr_ct > 10:
-					cleanup()
-					return LOCKSTEP_FINISHED, None, None, TEST_PASSED_MSG
+			if (not is_linux) and qmon.same_instr_ct > 10:
+				cleanup()
+				return LOCKSTEP_FINISHED, None, None, TEST_PASSED_MSG
 
 		# print '\n'.join([str(x) for x in qmon.states])
 		# print "WRITEBACK_HEAD", qmon.writeback_head

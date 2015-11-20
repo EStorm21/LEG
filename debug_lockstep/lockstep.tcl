@@ -63,18 +63,25 @@ proc extractRegisters {regList cpsr} {
 	}
 }
 
-proc check_advancing_e {t} {
-	return [examine -time $t -radix hex sim:/testbench/dut/leg/dp/advancingEdebug]
+proc check_irq {t} {
+	return [examine -time $t -radix hex sim:/testbench/dut/leg/c/IRQAssert]
 }
-proc inspect_e {t} {
+proc check_fiq {t} {
+	return [examine -time $t -radix hex sim:/testbench/dut/leg/c/FIQAssert]
+}
+
+proc check_advancing_e {t} {
+	return [examine -time $t -radix hex sim:/testbench/dut/leg/c/advancingEdebug]
+}
+proc inspect_e {t irq_assert_trigger fiq_assert_trigger} {
 	set pc_e [examine -time $t -radix hex sim:/testbench/dut/leg/dp/PCE]; list
 	set instr_e [examine -time $t -radix hex sim:/testbench/dut/leg/dp/instrEdebug]; list
 
-	return [list $pc_e $instr_e]
+	return [list $pc_e $instr_e $irq_assert_trigger $fiq_assert_trigger]
 }
 
 proc check_advancing_w {t} {
-	return [examine -time $t -radix hex sim:/testbench/dut/leg/dp/advancingWdebug]
+	return [examine -time $t -radix hex sim:/testbench/dut/leg/c/advancingWdebug]
 }
 proc inspect_w {t} {
 	set pc_w [examine -time $t -radix hex sim:/testbench/dut/leg/dp/PCW]; list
@@ -111,6 +118,9 @@ set nextClearTime 10000
 set time 227; list
 run @$time ps
 
+set irq_assert_pending 0
+set fiq_assert_pending 0
+
 while {1} {
 	gets $inFifo cmd
 	switch $cmd {
@@ -133,6 +143,21 @@ while {1} {
 				incr time $STEPSIZE
 				run @$time ps
 
+				if {$irq_assert_pending == 0} {
+					if {[check_irq $time] == "1"} {
+						incr irq_assert_pending
+					}
+				} elseif {$irq_assert_pending == 1} {
+					incr irq_assert_pending
+				}
+				if {$fiq_assert_pending == 0} {
+					if {[check_fiq $time] == "1"} {
+						incr fiq_assert_pending
+					}
+				} elseif {$fiq_assert_pending == 1} {
+					incr fiq_assert_pending
+				}
+
 				set advance_e [check_advancing_e $time]; list
 				set advance_w [check_advancing_w $time]; list
 
@@ -153,7 +178,15 @@ while {1} {
 					}
 					if {$advance_e} {
 						puts $outFifo "advance_e"
-						puts $outFifo [inspect_e $time]
+						set irq_trigger [expr {$irq_assert_pending == 2}]
+						set fiq_trigger [expr {$fiq_assert_pending == 2}]
+						puts $outFifo [inspect_e $time $irq_trigger $fiq_trigger]
+						if {$irq_trigger} {
+							set irq_assert_pending 0
+						}
+						if {$fiq_trigger} {
+							set fiq_assert_pending 0
+						}
 					} else {
 						puts $outFifo "no advance_e"
 					}
