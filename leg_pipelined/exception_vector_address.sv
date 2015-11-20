@@ -1,6 +1,6 @@
-module exception_vector_address (input logic  [6:0] VectorAddressW,
-																output logic [31:0] VectorPCnextF, 
-																output logic  			ExceptionVectorSelectW);
+module exception_vector_address (input logic  [6:0]  VectorAddressW,
+								 output logic [31:0] VectorPCnextF, 
+								 output logic  		 ExceptionVectorSelectW);
 
 /*
 Created by Ivan Wong for Clay Wolkin 2014-2015

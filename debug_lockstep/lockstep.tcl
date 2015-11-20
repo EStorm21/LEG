@@ -80,6 +80,8 @@ proc inspect_w {t} {
 	set pc_w [examine -time $t -radix hex sim:/testbench/dut/leg/dp/PCW]; list
 	set instr_w [examine -time $t -radix hex sim:/testbench/dut/leg/dp/instrWdebug]; list
 	set cpsr_w [examine -time $t -radix hex sim:/testbench/dut/leg/c/CPSRW]; list
+	set irq_assert [examine -time $t -radix hex sim:/testbench/dut/leg/c/IRQAssert]; list
+	set fiq_assert [examine -time $t -radix hex sim:/testbench/dut/leg/c/FIQAssert]; list
 
 	set r [examine -time $t -radix hex sim:/testbench/dut/leg/dp/rf/rf]; list
 	set r [string map {\{ {}} $r]; list
@@ -87,7 +89,7 @@ proc inspect_w {t} {
 	set allRegsList [regexp -all -inline {\S+} $r]; list
 	set registers_w [extractRegisters $allRegsList $cpsr_w]; list
 
-	return [list $pc_w $instr_w $cpsr_w $registers_w]
+	return [list $pc_w $instr_w $cpsr_w $irq_assert $fiq_assert $registers_w]
 }
 
 ############# RUNNING ##############

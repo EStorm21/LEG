@@ -121,7 +121,8 @@ always_comb
 		 * READY STATE 
 		 */
 		ready: begin
-			// Exception handling (sufficiently handles SWI so far... still in progress)
+			// Exception handling: mov r14, pc. By the time this comes back to wb we will be in
+			// the exception mode and thus will use the correct registers
 			if (ExceptionSavePC) begin
 				InstrMuxD = 1;
 				uOpStallD = 0; 
