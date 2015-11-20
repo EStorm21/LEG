@@ -115,7 +115,7 @@ module cpsr(input  logic        clk, reset,
       // ========== Exceptions ===========
       if (reset) begin
         spsr <= '{5{32'b0}};
-        cpsr <= {cpsr[31:28], 19'b0, 1'b1, CPSR_update}; // go to supervisor mode (On Reset, set Endianness to Big - LEGv7)
+        cpsr <= {4'b0000, 19'b0, 1'b1, CPSR_update}; // go to supervisor mode (On Reset, set Endianness to Big - LEGv7)
       end
       else if (NotStallW)
         if (DataAbort & ~(cpsr[4:0]==5'b10111)) begin // data abort 
