@@ -1,6 +1,6 @@
 module micropsfsm(input  logic        clk, reset,
                input  logic [31:0] defaultInstrD,
-               output logic        InstrMuxD, uOpStallD, LDMSTMforward, Reg_usr_D, MicroOpCPSRrestoreD,
+               output logic        InstrMuxD, uOpStallD, LDMSTMforward, Reg_usr_D, MicroOpCPSRrestoreD, PipelineClearD,
                output logic 	   prevRSRstate, KeepVD, KeepZD, KeepCD, addCarry, AddZeroD, noRotate, ldrstrRtype, 
                output logic [1:0]  multControlD, 
                output logic [3:0]  regFileRz,
@@ -142,6 +142,28 @@ always_comb
 				nextState = ready;
 				uOpInstrD = 32'b1110_000_1101_0_0000_1110_00000000_1111; // mov r14, pc
 			end
+
+			else if (PipelineClearD) begin 
+				debugText = "stay in ready";
+				nextState = ready;
+				InstrMuxD = 0;
+				uOpStallD = 0;
+				prevRSRstate = 0;
+				KeepVD = 0;
+				addCarry = 0;
+				KeepZD = 0;
+				AddZeroD = 0;
+				regFileRz = {1'b0, // Control inital mux for RA1D
+							3'b000}; // 5th bit of RA2D and RA1D
+				uOpInstrD = {defaultInstrD};
+				LDMSTMforward = 0;
+				noRotate = 0;
+				ldrstrRtype = 0;
+				Reg_usr_D = 0;
+				MicroOpCPSRrestoreD = 0;
+				KeepCD = 0;     
+			end
+
 			//start RSR type instructions
 			else if (defaultInstrD[27:25] == 3'b0 & defaultInstrD[7] == 0 & defaultInstrD[4] == 1 
 				// don't treat opcode 10xx with s==0 as RSR. instead misc. instructions. c.f. note2, A3-3
