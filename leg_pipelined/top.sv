@@ -59,10 +59,13 @@ module top (
     // Added for MMU
     StallD, FlushD, FlushE);
 
+  `define ECACHES 1
   initial
     begin
       `ifdef ECACHES
         $display("Caches Enabled");
+      `else
+	$display("Caches Disabled");
       `endif
     end
 

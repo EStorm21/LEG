@@ -44,6 +44,8 @@ module data_writeback_associative_cache_way
       v         <= 'b0;
       DirtyBits <= 'b0;
     end else if (WE) begin
+      // TODO: REmove (used for debugging)
+      $display("Wrote %h to tag[set] at time %d. set = %h", PhysTag, $time, set);
       tag[set]      <= PhysTag; // Write the tag
       v[set]        <= vin;               // write the valid bit
       

@@ -57,7 +57,7 @@ module data_writeback_associative_cache_controller
 
   //-----------------TAG LOGIC--------------------
   flopenr #(tbits) tagReg(clk, reset, PAReady, PhysTag, PrevPTag);
-  mux2 #(tbits) tagMux(PrevPTag, PhysTag, PAReady, Tag);
+  mux2 #(tbits) tagMux(PrevPTag, PhysTag, (Counter == 'h0), Tag);
 
   //------------HIT, DIRTY, VALID-----------------
   // Create Dirty Signal
@@ -119,7 +119,7 @@ module data_writeback_associative_cache_controller
         // else if ( Hit | (~MemWriteM & ~MemtoRegM) & enable) begin
         nextstate <= READY;
       end
-      else if(IStall & enable & ~clean & ~Hit & PAReady) begin
+      else if(IStall & enable & ~clean &  PAReady & Hit) begin
         nextstate <= WAIT;
       end
       else if( ~Dirty ) begin

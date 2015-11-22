@@ -24,6 +24,10 @@ logic [lines-1:0] LRU;     // LRU Table
 // Create LRU Table
 assign set = ANew[bsize+setbits-1:bsize];  // ANew only modifies the block offset
 always_ff @(posedge clk, posedge reset)
+//TODO: DEBUGGING REMOVE
+if(W1WE | W2WE) begin
+ $display("Writing CacheWD = %h at ANew = %h and time %d, W1WE = %b", CacheWD, ANew, $time, W1We);
+end
     if(reset) begin
         LRU <= 'b0;
     end else if (W1WE | W2WE) begin
