@@ -13,6 +13,7 @@
 # 		until reaching goal_pc. Finally, quit.
 
 import gdb
+import pdb
 import re
 import os
 import ast
@@ -25,6 +26,7 @@ import time
 import datetime
 import atexit
 import pickle
+import argparse
 
 import lockstep
 import checkpoint
@@ -210,6 +212,42 @@ class LegJumpCommand (gdb.Command):
 
 LegJumpCommand()
 
+# Callable function used by ArgumentParser to parse hexadecimal values
+def auto_int(x):
+	return int(x, 0)
+
+class LegMemwatchCommand (gdb.Command):
+	""" Shortcut to skip to a function or address """
+
+	def __init__ (self):
+		super (LegMemwatchCommand, self).__init__ ("leg-memwatch", gdb.COMMAND_USER)
+
+	def invoke (self, arg, from_tty):
+		if arg == "":
+			print "Please pass a location and a memory address"
+		else:
+			addrs_str = arg.split()
+
+			if(len(addrs_str) < 3):
+				print "Please pass three addreses to leg-memwatch"
+				print "leg-memwatch STARTADDR STOPADDR WATCHADDR1 [WATCHADDR2 ...]"
+			else:
+				startA = addrs_str[0]
+				stopA = addrs_str[1]
+				watchA = addrs_str[2:]
+
+				gdb.execute('leg-jump {}'.format(startA))
+				
+				# Set one watch point for each watch address
+				for a in watchA:
+					gdb.execute('awatch {}'.format(a))
+
+				gdb.execute('continue')
+				#pdb.set_trace()
+
+LegMemwatchCommand()
+
+
 class LegStopCommand (gdb.Command):
 	""" Shut down the debug session gracefully """
 
@@ -222,6 +260,70 @@ class LegStopCommand (gdb.Command):
 		gdb.execute('quit')
 
 LegStopCommand()
+
+class LegRecordCommand (gdb.Command):
+	""" Shut down the debug session gracefully """
+
+	def __init__ (self):
+		super (LegRecordCommand, self).__init__ ("leg-rec", gdb.COMMAND_USER)
+
+	def invoke (self, arg, from_tty):
+
+		args = arg.split()
+		print "Recording instructions the debug session"
+		print "filename = ", args[1], "N = ", int(args[0])
+
+		if(len(args) >= 2):
+			N = int(args[0])
+			if(N > 0):
+				f = open('output/recinstr/' + args[1], 'w')
+				for i in range(N):
+					output = gdb.execute('stepi', to_string=True)
+					f.write(output)
+				f.close()
+			else:
+				print "leg-rec N FILENAME: N must be a value greater than zero"
+		else:
+			print "leg-rec N FILENAME"
+
+LegRecordCommand()
+
+class LegBugSearchCommand (gdb.Command):
+	""" Shut down the debug session gracefully """
+
+	def __init__ (self):
+		super (LegBugSearchCommand, self).__init__ ("leg-bugsearch", gdb.COMMAND_USER)
+
+	def invoke (self, arg, from_tty):
+		args = arg.split()
+		finame = args[0]
+		print "filename = ", 'output/bugsearch/' + finame
+		tpath = 'output/bugsearch/tmp/'
+
+		if(len(args) >= 1):
+			fin = open('output/bugsearch/' + finame, 'r')
+			foutnames = [] # Collect a list fo the file out namtes
+			for line in fin:
+				print 'starting new lockstep'
+				foutname = finame + '.' + line.rstrip() + '.txt'
+				foutnames.append(foutname)
+				fout = open(tpath + foutname, 'w')
+				
+				print 'jumping to ' + line.rstrip()
+				gdb.execute('leg-jump {}'.format(line.rstrip()))
+				output = gdb.execute('leg-lockstep', to_string=True)
+				fout.write(output)
+				fout.close()
+				gdb.execute('leg-restart')
+			fin.close() 
+			print foutnames
+			# After compare the output of each lockstep
+			# TODO: Implement - right now this is a manual process
+		else:
+			print "leg-bugsearch FILENAME"
+
+LegBugSearchCommand()
+
 
 class LegInstrCtCommand (gdb.Command):
 	""" Print the current instruction count """
@@ -274,54 +376,14 @@ class LegFromBugCommand (gdb.Command):
 		super (LegFromBugCommand, self).__init__ ("leg-frombug", gdb.COMMAND_USER)
 
 	def complete(self, text, word):
-		return gdb.COMPLETE_FILENAME
-
-	def invoke (self, arg, from_tty):
-		if arg == "":
-			print "Please pass a bug file"
-			return
-
-		if not os.path.isfile(arg):
-			print "Please pass a valid bug file"
-			return
-
-		print "Jumping to right before {}".format(arg)
-		with open(arg, 'r') as f:
-			initial_state = pickle.load(f)
-		print initial_state
-		if isinstance(initial_state[0], str):
-			print "Sorry, cannot start from that bug! Not enough information."
-			return
-
-		qemu_monitor.jumpToState(initial_state)
-
-		print "Current location:"
-		gdb.execute('where 20')
-
-LegFromBugCommand()
-
-### Things to run ###
-
-atexit.register(cleanup)
-
-setup()
-
-qemu = initialize_qemu()
-
-gdb.execute('set pagination off')
-
-if COMMAND[0]=="divideandconquer":
-	should_cleanup_dir = False
-	run_dir = COMMAND[1]
-else:
+		should_cleanup_dir = False
+		run_dir = COMMAND[1]
 	should_cleanup_dir = True
 	run_dir = get_run_directory()
 	leg.compile()
-
-with open(os.path.join(run_dir,'pid'), 'w') as f:
-	f.write(str(os.getpid()) + '\n')
-
-found_bugs = set()
+	with open(os.path.join(run_dir,'pid'), 'w') as f:
+		f.write(str(os.getpid()) + '\n')
+	found_bugs = set()
 
 print "Connected!"
 if TEST_FILE and COMMAND[0]=="autorun":
@@ -358,6 +420,7 @@ else:
 	print "    leg-jump BREAK_LOC: Shortcut to skip to a function or address using breakpoints"
 	print "    leg-frombug BUGFILE: Jump to the last matching state before a bug "
 	print "    leg-count: Print the current instruction count"
+	print "    leg-memwatch STOP_LOC WATCH_ADDR(S): Run qemu with memory watchpoints"
 	print "    leg-checkpoint NAME: Create a ModelSim checkpoint corresponding to the current state"
 	print "    leg-restart: Restart qemu"
 	print "    leg-stop: Shut down the debug session gracefully"

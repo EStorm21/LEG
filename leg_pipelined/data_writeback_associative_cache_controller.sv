@@ -51,7 +51,7 @@ module data_writeback_associative_cache_controller
   //----------------ENABLING----------------------
   // Counter Disable Mux
   mux2 #(2) cenMux(WordOffset, CounterMid, 
-                   (enable | (state == WRITEBACK)), Counter);
+    (enable & (state != NEXTINSTR) | (state == WRITEBACK)), Counter);
   // Word Access
   assign WordAccess = (ByteMask == 4'b1111);
 
