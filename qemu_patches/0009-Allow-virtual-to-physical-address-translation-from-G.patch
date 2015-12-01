@@ -1,7 +1,7 @@
 From f38596e77f5b146d7f38220f04f9245a114c4fee Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Mon, 30 Nov 2015 17:18:07 -0800
-Subject: [PATCH 9/9] Allow virtual to physical address translation from GDB (hacky!)
+Subject: [PATCH 09/10] Allow virtual to physical address translation from GDB (hacky!)
 
 Allows a query command to query qemu's virtual-to-physical address
 translation. To get around the fact that gdb is supposed to be

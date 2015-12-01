@@ -1,7 +1,7 @@
 From bad373a242f4995b2396284cba60c5064b54b4e3 Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Sun, 25 Oct 2015 11:45:48 -0700
-Subject: [PATCH 5/9] Enable instruction count fetching from GDB
+Subject: [PATCH 05/10] Enable instruction count fetching from GDB
 
 ---
  gdbstub.c |   10 ++++++++++
