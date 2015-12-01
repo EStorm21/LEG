@@ -246,6 +246,17 @@ class LegQemuStateCommand (gdb.Command):
 
 LegQemuStateCommand()
 
+class LegVirtToPhysCommand (gdb.Command):
+	""" Translate a virtual address to a physical one """
+
+	def __init__ (self):
+		super (LegVirtToPhysCommand, self).__init__ ("leg-virt-to-phys", gdb.COMMAND_USER)
+
+	def invoke (self, arg, from_tty):
+		gdb.execute('maint packet qqemu.virttophys {}'.format(arg))
+
+LegVirtToPhysCommand()
+
 class LegCheckpointCommand (gdb.Command):
 	""" Create a ModelSim checkpoint corresponding to the current state """
 
@@ -372,6 +383,7 @@ else:
 	print "    leg-frombug BUGFILE: Jump to the last matching state before a bug "
 	print "    leg-count: Print the current instruction count"
 	print "    leg-qemu-state: Print qemu's current state"
+	print "    leg-virt-to-phys VIRTUAL_ADDRESS: Translate a virtual address to a physical one"
 	print "    leg-checkpoint NAME: Create a ModelSim checkpoint corresponding to the current state"
 	print "    leg-restart: Restart qemu"
 	print "    leg-stop: Shut down the debug session gracefully"
