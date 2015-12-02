@@ -270,13 +270,14 @@ class LegRecordCommand (gdb.Command):
 	def invoke (self, arg, from_tty):
 
 		args = arg.split()
-		print "Recording instructions the debug session"
-		print "filename = ", args[1], "N = ", int(args[0])
+		
 
 		if(len(args) >= 2):
 			N = int(args[0])
 			if(N > 0):
-				f = open('output/recinstr/' + args[1], 'w')
+				fname = 'output/recinstr/' + args[1]
+				print "Recording {} instructions to {}".format(args[0], fname)
+				f = open(fname, 'w')
 				for i in range(N):
 					output = gdb.execute('stepi', to_string=True)
 					f.write(output)
@@ -301,6 +302,7 @@ class LegBugSearchCommand (gdb.Command):
 		tpath = 'output/bugsearch/tmp/'
 
 		if(len(args) >= 1):
+			gdb.execute('leg-restart')
 			fin = open('output/bugsearch/' + finame, 'r')
 			foutnames = [] # Collect a list fo the file out namtes
 			for line in fin:
@@ -376,14 +378,54 @@ class LegFromBugCommand (gdb.Command):
 		super (LegFromBugCommand, self).__init__ ("leg-frombug", gdb.COMMAND_USER)
 
 	def complete(self, text, word):
-		should_cleanup_dir = False
-		run_dir = COMMAND[1]
+		return gdb.COMPLETE_FILENAME
+	
+	def invoke(self, arg, from_tty):
+		if arg == "":
+			print "Please pass a bug file"
+			return
+		
+		if not os.path.isfile(arg):
+			print "Please pass a valid bug file"
+			return
+		
+		print "Jumping to right before {}".format(arg)
+		with open(arg, 'r') as f:
+			initial_state = pickle.load(f)
+		print initial_state
+		if isinstance(initial_state[0], str):
+			print "Sorry, cannot state from that bug! Not enough information"
+			return
+
+		qemu_monitor.jumpToState(initial_state)
+
+		print "Current location:"
+		gdb.execute('where 20')
+
+LegFromBugCommand()
+
+### Things to run ###
+
+atexit.register(cleanup)
+
+setup()
+
+qemu = initialize_qemu()
+
+gdb.execute('set pagination off')
+
+if COMMAND[0]=="divideandconquer":		
+	should_cleanup_dir = False
+	run_dir = COMMAND[1]
+else:
 	should_cleanup_dir = True
 	run_dir = get_run_directory()
 	leg.compile()
-	with open(os.path.join(run_dir,'pid'), 'w') as f:
-		f.write(str(os.getpid()) + '\n')
-	found_bugs = set()
+
+with open(os.path.join(run_dir,'pid'), 'w') as f:
+	f.write(str(os.getpid()) + '\n')
+	
+found_bugs = set()
 
 print "Connected!"
 if TEST_FILE and COMMAND[0]=="autorun":

@@ -1,9 +1,9 @@
 module mmu #(parameter tbits = 22) (
-  input  logic        clk, reset, MMUExtInt, CPUHRequest,
+  input  logic        clk, reset, MMUExtInt, CPUHRequest, DRequestPA,
   input  logic        CPUHWrite, HReady, DataAccess, CPSR4,
   input  logic        SupMode, WordAccess, DStall, IStall,
   input  logic        StallD, FlushD, FlushE,
-  input  logic [31:0] CPUHAddr, HRData,
+  input  logic [31:0] CPUHAddr, HRData, DataAdrM, PCF, // TODO: Remove DataAdrM, PCF
   // TODO: fixe control signal name
   input  logic [31:0] control, CP15rd_M, // control[0] is the enable bit
   input  logic [17:0] TBase    ,
@@ -43,7 +43,7 @@ module mmu #(parameter tbits = 22) (
   logic [3:0]  Domain;
   logic [31:0] FSR, FAR, Dom;
   // Translation Signals
-  logic [31:0] HAddrMid, PHAddr, HAddrOut;
+  logic [31:0] HAddrMid, PHAddr, HAddrOut, VirtAdr; // TODO Remove VirtAdr
   logic [31:0] PHRData;
   logic        HRequestMid, CPUHReadyMid, HWriteMid; // Output signals from MMU
   logic [3:0]  statebits; // Carry state from twh to tfh
@@ -67,7 +67,7 @@ module mmu #(parameter tbits = 22) (
   // TODO: Remove, this is for debugging
   always_ff @(posedge clk) begin
     if(Fault) begin
-      $display("Mem fault detected at %d. FaultCode = %h", $time, FaultCode);
+      $display("Mem fault detected at %d. VirtAdr = %h, FaultCode = %h", $time, VirtAdr, FaultCode);
     end
   end
 
@@ -82,6 +82,10 @@ module mmu #(parameter tbits = 22) (
   // MMUWriteData Mux
   mux2 #(32) WDMux(FAR, FSR, WDSel, MMUWriteData);
 
+  // Virtual Address MUX TODO: Remove and just use CPUHAddr
+  // This mux was placed here to protoype a bug fix
+  mux2 #(32) VirtAdrMux(PCF, DataAdrM, DRequestPA, VirtAdr);
+
   // Instruction Tracker
   // --- Track whether an instruction was executed.
   // --- If an instruction that causes a memory fault is executed, 
@@ -95,7 +99,7 @@ module mmu #(parameter tbits = 22) (
     .reset     (reset     ),
     .enable    (Enable),
     .we        (TLBwe ),
-    .VirtTag   (CPUHAddr[31:32-tbits]),
+    .VirtTag   (VirtAdr[31:32-tbits]), // TODO: Use CPUHAddr
     .TableEntry(TableEntry), 
     .PAReady   (PAReady)
   );
