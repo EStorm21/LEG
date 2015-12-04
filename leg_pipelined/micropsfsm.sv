@@ -1549,6 +1549,8 @@ always_comb
 		end
 
 		default: begin
+			// TODO Remove for debugging
+			$display("hit the default micro-op case")
 			nextState = ready;
 			InstrMuxD = 0;
 			KeepVD = 0;

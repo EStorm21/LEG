@@ -1,4 +1,4 @@
-`include "cfg.vh"
+//`include "cfg.vh"
 
 module top (
   input  logic        clk, reset,
