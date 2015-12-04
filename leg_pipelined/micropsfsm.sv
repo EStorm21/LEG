@@ -146,7 +146,7 @@ always_comb
 			else if (PipelineClearD) begin 
 				debugText = "stay in ready";
 				nextState = ready;
-				InstrMuxD = 0;
+				InstrMuxD = 1;
 				uOpStallD = 0;
 				prevRSRstate = 0;
 				KeepVD = 0;
@@ -155,7 +155,7 @@ always_comb
 				AddZeroD = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of RA2D and RA1D
-				uOpInstrD = {defaultInstrD};
+				uOpInstrD = {32'b0};
 				LDMSTMforward = 0;
 				noRotate = 0;
 				ldrstrRtype = 0;
