@@ -1,11 +1,11 @@
 module micropsfsm(input  logic        clk, reset,
                input  logic [31:0] defaultInstrD,
-               output logic        InstrMuxD, uOpStallD, LDMSTMforward, Reg_usr_D, MicroOpCPSRrestoreD, PipelineClearD,
+               output logic        InstrMuxD, uOpStallD, LDMSTMforward, Reg_usr_D, MicroOpCPSRrestoreD,
                output logic 	   prevRSRstate, KeepVD, KeepZD, KeepCD, addCarry, AddZeroD, noRotate, ldrstrRtype, 
                output logic [1:0]  multControlD, 
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
-			   input  logic		   StalluOp, ExceptionSavePC);
+			   input  logic		   StalluOp, ExceptionSavePC, PipelineClearD);
 
  /***** Brief Description *******
  * First Created by Ivan Wong for Clay Wolkin 2014-2015
