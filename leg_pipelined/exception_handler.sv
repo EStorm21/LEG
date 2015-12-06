@@ -15,7 +15,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   logic IRQEn_sync, FIQEn_sync;
   
   // DataAbortCycle2 serves as the abort signal for the rest of the processor
-  flopr #(4) DataAbortFlop(clk, reset, {DataAbort,       SWIE, PrefetchAbortE, UndefinedInstrE}
+  flopr #(4) DataAbortFlop(clk, reset, {DataAbort,       SWIE, PrefetchAbortE, UndefinedInstrE},
                                        {DataAbortCycle2, SWIM, PrefetchAbortM, UndefinedInstrM});
   // CPSR acts like it is in the register file and changes on negedge clk. We want to delay these changes to the positive edge.
   flopr #(2) IRQ_FIQ_Sync(clk, reset, {IRQEnabled, FIQEnabled}, {IRQEn_sync, FIQEn_sync});
