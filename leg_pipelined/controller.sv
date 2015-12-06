@@ -89,8 +89,9 @@ module controller (
   logic [ 3:0] FlagsOutE, FlagsM;
   logic [31:0] SPSRW, CPSRW;
   logic        nonFlushedInstr, PipelineClearD, PipelineClearM, PipelineClearE, PipelineClearF;
-  logic        SWI_0E, SWI_E, SWI_D;
-  logic        undefD, undefE;
+  logic        SWI_0E, SWI_E, SWI_D, SWI_M;
+  logic        undefD, undefE, undefM;
+  logic        PrefetchAbortM;
   logic        IRQAssert, FIQAssert, DataAbortAssert;
   logic        ExceptionResetMicrop, ExceptionSavePC;
 
@@ -314,7 +315,7 @@ module controller (
  exception_handler exh(clk, reset, undefE, SWI_E, PrefetchAbort, DataAbort, IRQ, FIQ, 
                        PipelineClearD, PipelineClearM,
                        ~CPSRW[7], ~CPSRW[6],
-                       IRQAssert, FIQAssert, DataAbortAssert, 
+                       undefM, SWI_M, PrefetchAbortM, DataAbortAssert, IRQAssert, FIQAssert, // undefM, SWI_M, and PrefetchAbortM are for saving CPSR only.
                        PipelineClearF, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
                        PCVectorAddress,
                        ExceptionResetMicrop, ExceptionSavePC, PCInSelect);
@@ -330,9 +331,9 @@ module controller (
   // ====================================================================================================
 
   flopenrc #(2) msr_mrs_M(clk, reset, ~StallM, FlushM, {restoreCPSR_E, RegtoCPSR_E},
-                                              {restoreCPSR_M, RegtoCPSR_M});
+                                                       {restoreCPSR_M, RegtoCPSR_M});
   flopenrc #(11) flagM(clk, reset, ~StallM, FlushM, {FlagsNextE,  SetNextFlagsE, PSRtypeE, MSRmaskE},
-                                           {FlagsNext0M, SetNextFlagsM, PSRtypeM, MSRmaskM});
+                                                    {FlagsNext0M, SetNextFlagsM, PSRtypeM, MSRmaskM});
   flopenrc #(14) CoProc_M(clk, reset, ~StallM, FlushM,
     {InstrE[19:16], InstrE[7:5], InstrE[3:0], (CoProc_WrEnE & CondExE), (CoProc_EnE & CondExE), (CoProc_FlagUpd_E & CondExE)},
     {CoProc_AddrM,  CoProc_Op2M, CoProc_CRmM, CoProc_WrEnM,             CoProc_EnM,             CoProc_FlagUpd_M});
@@ -361,7 +362,7 @@ module controller (
                                                     {FlagsNextW, SetNextFlagsW, PSRtypeW, MSRmaskW});
 
   // === CPSR / SPSR relevant info ===
-  cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefE, SWI_E, PrefetchAbort, DataAbortAssert, IRQAssert, FIQAssert}, restoreCPSR_W, ~StallW, CoProc_FlagUpd_W,
+  cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefM, SWI_M, PrefetchAbortM, DataAbortAssert, IRQAssert, FIQAssert}, restoreCPSR_W, ~StallW, CoProc_FlagUpd_W,
     CPSRW, SPSRW);
   assign CPSR8_W = {CPSRW[7:0]}; // Forward to Decode stage
   assign PSR_W   = PSRtypeW ? SPSRW : CPSRW;
