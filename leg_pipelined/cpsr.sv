@@ -98,17 +98,15 @@ module cpsr(input  logic        clk, reset,
     end
 
 
-  //  The goal here is to see if a signal high triggers any one of these mode changes. However, if the signal is kept high,
-  //  one can see the chance of the CPSR continuously changing the values inside the SPSR. Would we need to make a state machine
-  //  such that we can restore the correct value of the SPSR back to the CPSR upon the MOVS PC R14 or SUBS PC R14 #4 instruction?
-
   //  In Summary, here's what we will want to do:
   // 1) On interrupt trigger, save SPSR_mode <= CPSR
   // 2) Save R14_mode <== Address of next/aborted/undef instruction
   // 3) Change Mode type in current CPSR (I assume this is done after the SPSR_mode is saved)
   // 4) Change PC to some value 0x4,8,c,10,18,1c
 
-  // To return (SPSR moved to CPSR and R14 moved to PC), we either (1) want to do SUBS or MOVS or (2) use Load multiple and restore PSR
+  // A sneaky case: If the last instruction through the datapath before
+  // the interrupt set flags, we want to save the flags to the CPSR and SPSR
+  // but still not save the new mode to the SPSR.
 
   always_ff @(negedge clk, posedge reset)
     begin

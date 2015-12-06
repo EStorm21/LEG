@@ -1,7 +1,7 @@
 module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, PrefetchAbortE, DataAbort, IRQ, FIQ, 
                          input  logic PipelineClearD, PipelineClearM,
                          input  logic IRQEnabled, FIQEnabled,
-                         output logic IRQAssert, FIQAssert, DataAbortCycle2, 
+                         output logic UndefinedInstrM, SWIM, PrefetchAbortM, DataAbortCycle2, IRQAssert, FIQAssert,
                          output logic PipelineClearF, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
                          output logic [6:0] PCVectorAddress,
                          output logic ExceptionResetMicrop, ExceptionSavePC, 
@@ -15,14 +15,15 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   logic IRQEn_sync, FIQEn_sync;
   
   // DataAbortCycle2 serves as the abort signal for the rest of the processor
-  flopr #(1) DataAbortFlop(clk, reset, DataAbort, DataAbortCycle2);
+  flopr #(4) DataAbortFlop(clk, reset, {DataAbort,       SWIE, PrefetchAbortE, UndefinedInstrE}
+                                       {DataAbortCycle2, SWIM, PrefetchAbortM, UndefinedInstrM});
   // CPSR acts like it is in the register file and changes on negedge clk. We want to delay these changes to the positive edge.
   flopr #(2) IRQ_FIQ_Sync(clk, reset, {IRQEnabled, FIQEnabled}, {IRQEn_sync, FIQEn_sync});
 
   always_comb begin
     if (DataAbort | DataAbortCycle2) begin // data abort 
       // Caught in M
-      // Flush E, M, W
+      // Flush E, M, W (stall overrides flush for D)
       // Stall D and reset microp
       // Next cycle save the PC and flush D
       // Only one of DataAbort and DataAbortCycle2 can be asserted at any time, since we flushM
@@ -35,6 +36,8 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
     else if (PrefetchAbortE | UndefinedInstrE | SWIE) begin // prefetch abort
       // Caught in E
       // Flush D, M
+      // In order to save the correct CPSR state, saving CPSR is delayed until
+      // the exception is in M. This lets last good instruction set flags if it needs to.
       assign {IRQAssert, FIQAssert} = 2'b00;
       assign  PipelineClearF = 1'b0;
       assign {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1010;
@@ -74,11 +77,11 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
 
   always_comb
     if (IRQAssert | FIQAssert)
-      PCInSelect = 2'b10;
+      PCInSelect = 2'b10; // PCD + 4
     else if (PrefetchAbortE | UndefinedInstrE | SWIE | DataAbortCycle2)
-      PCInSelect = 2'b01;
+      PCInSelect = 2'b01; // PCD + 0
     else 
-      PCInSelect = 2'b00;
+      PCInSelect = 2'b00; // PCD + 8
 
 endmodule
 
