@@ -125,7 +125,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   mux3 #(32)  byp2mux(Rd2E, ResultW, ALUorCP15_M, ForwardBE, WriteDataE);
   mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcB4E);
   mux2 #(32)  shifterAin(SrcAE, ExtImmE, RselectE, ShifterAinE); 
-  mux2 #(32)  select4(ALUSrcB4E, 32'h4, IncrementE, ALUSrcBE);
+  mux2 #(32)  select4(ALUSrcB4E, 32'h4, IncrementE, ALUSrcBE); // SD 12/7/2015: Useless after re-done micro op?
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
 
   // Thumb
