@@ -21,6 +21,9 @@
 *.bak
 *.sv~
 
+## Generated files
+wlft*
+
 ## Always ignore the pdf for documentation
 documentation/main.pdf
 /autoSimSD.tcl
