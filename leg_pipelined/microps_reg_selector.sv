@@ -78,6 +78,5 @@ always_comb
     RegisterListNext = {16'b0};
     Rd = 4'd0;
   end
-end
 
 endmodule

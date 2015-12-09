@@ -59,10 +59,10 @@ always_comb
 	// Note: page A5-48 in ARMv5 ARM is INCORRECT. Pages A5-50 to A5-53 are correct.
 	// start_imm is added or subtracted from Rn based on defaultInstrD[23] to generate the first address.
 	casex(defaultInstrD[24:23])
-	  2'b00:   start_imm = ((numones-1)<<2); // DA: Rn is highest address 
-	  2'b01:   start_imm = 0;                // IA: Rn is lowest address
-	  2'b10:   start_imm = ((numones)<<2);   // DB: Rn is one past highest address
-	  2'b11:   start_imm = 4;                // IB: Rn is one before lowest address
+	  2'b00:   start_imm = ((numones)<<2); // DA: Rn is highest address 
+	  2'b01:   start_imm = 4;                // IA: Rn is lowest address
+	  2'b10:   start_imm = ((numones+1)<<2);   // DB: Rn is one past highest address
+	  2'b11:   start_imm = 0;                // IB: Rn is one before lowest address
 	  default: start_imm = 0;
 	endcase
   end
@@ -366,7 +366,7 @@ always_comb
 				uOpInstrD = {defaultInstrD[31:28], // Cond
 							 3'b001, 			   // ADD/SUB  I-type
 							 1'b0, 				   // part of opcode
-							 defaultInstrD[23], ~defaultInstrD[23], // ADD if this bit is 1. (U bit in ldm/stm)
+							 1'b0, 1'b1, // ADD if this bit is 1. (U bit in ldm/stm)
 							 2'b00,					// don't set flags 
 							 defaultInstrD[19:16],	// Read from Rn
 							 4'b1111,				// Put result in Rz
@@ -1122,7 +1122,7 @@ always_comb
 			addCarry = 0;
 			prevRSRstate = 0;
 			regFileRz = {1'b0, // Control inital mux for RA1D
-							3'b010}; // 5th bit of WA3, RA2D and RA1D
+							3'b001}; // 5th bit of WA3, RA2D and RA1D
 			LDMSTMforward = 0;
 			Reg_usr_D = 0; 
 			MicroOpCPSRrestoreD = 0;
@@ -1130,11 +1130,16 @@ always_comb
 			KeepCD = 0;  
 			ldrstrRtype = 0;  
 			multControlD = 2'b00; 
-			uOpInstrD = {defaultInstrD[31:28], 3'b000, // Condition bits and RSR-type
-						4'b1101, 1'b0, // MOV instruction, Do not update flags [24:20]
-						4'b0000, defaultInstrD[19:16], // Store to Rn
-						8'b0, 4'b1111}; // from Rz
-			end
+			uOpInstrD = {defaultInstrD[31:28], // Cond
+							 3'b001, 			   // ADD/SUB  I-type
+							 1'b0, 				   // part of opcode
+							 1'b1, 1'b0, // ADD if this bit is 1. (U bit in ldm/stm)
+							 2'b00,					// don't set flags 
+							 4'b1111,	// Read from Rn
+							 defaultInstrD[19:16],				// Put result in Rz
+							 8'b00000, 4'b0100	// 5+7 bits of start_imm, calculated from above
+							 };
+			
 		end
 
 		bl:begin
