@@ -1,0 +1,25 @@
+From ef4a243b545f49f1a7d09a6ec327ab60aed6a770 Mon Sep 17 00:00:00 2001
+From: Daniel Johnson <hexahedria@gmail.com>
+Date: Mon, 30 Nov 2015 18:56:16 -0800
+Subject: [PATCH 10/10] Make initial value be 0
+
+---
+ target-arm/translate.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/target-arm/translate.c b/target-arm/translate.c
+index 18226fb..c0f0b59 100644
+--- a/target-arm/translate.c
++++ b/target-arm/translate.c
+@@ -11582,7 +11582,7 @@ unsigned int get_coprocessor_reg(ARMCPU *cpu, int crn) {
+ hwaddr virt_to_phys(CPUState *cs, target_ulong virt_addr) {
+     ARMCPU *cpu = ARM_CPU(cs);
+     CPUARMState *env = &cpu->env;
+-    hwaddr res;
++    hwaddr res = 0;
+     MemTxAttrs attrs;
+     int prot;
+     target_ulong page_size;
+-- 
+1.7.1
+

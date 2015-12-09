@@ -5,6 +5,7 @@
  *
  * nothing to worry about if cancelled, need to abort if executing.
  */
+ // SD 11/8/2015: Rewrite this to use flopenrc
 module instr_tracker(input logic clk, instr_abort, StallD, FlushD, FlushE,
                     output logic InstrCancelled, InstrExecuting);
 

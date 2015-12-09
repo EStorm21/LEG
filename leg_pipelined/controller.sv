@@ -7,7 +7,7 @@ module controller (
   output logic [ 2:0] CoProc_Op2M            ,
   /// ------ To   Addresspath ------
   output logic [ 7:0] CPSR8_W                ,
-  output logic [ 6:0] PCVectorAddressW       ,
+  output logic [ 6:0] PCVectorAddress        ,
   output logic        Reg_usr_D              ,
   /// ------ From Datapath ------
   input  logic [31:0] InstrD, ALUOutW        ,
@@ -42,19 +42,18 @@ module controller (
   output logic [ 3:0] RegFileRzD             ,
   output logic [31:0] uOpInstrD, PSR_W       ,
   /// ------ From Hazard ------
-  input  logic        FlushE, StallE, StallM, FlushW, StallW, StalluOp, ExceptionSavePC,
+  input  logic        StallD, FlushD, FlushE, StallE, StallM, FlushM, FlushW, StallW, StalluOp,
   /// ------ To   Hazard ------
-  output logic        RegWriteM, MemtoRegE, PCWrPendingF, SWI_E, SWI_D, SWI_M, SWI_W,
-  output logic        undefD, undefE, undefM, undefW,
+  output logic        RegWriteM, MemtoRegE, PCWrPendingF,
   output logic        RegtoCPSR, CPSRtoReg, CoProc_En,
   output logic        RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW,
+  output logic        ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
   /// For BX instruction
   output logic        BXInstrD, TFlagNextE   ,
   input  logic        TFlagE                 ,
   // For exceptions
-  output logic        UndefinedInstr, SWI    ,
-  input  logic        PrefetchAbort, DataAbort, IRQ, FIQ
-);
+  input  logic        PrefetchAbort, DataAbort, IRQ, FIQ,
+  output logic  [1:0]    PCInSelect);
 
   logic [12:0] ControlsD          ;
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
@@ -89,6 +88,18 @@ module controller (
   logic        CoProc_WrEnE, CoProc_EnE, MCR_D;
   logic [ 3:0] FlagsOutE, FlagsM;
   logic [31:0] SPSRW, CPSRW;
+  logic        nonFlushedInstr, PipelineClearD, PipelineClearM, PipelineClearE, PipelineClearF;
+  logic        SWI_0E, SWI_E, SWI_D, SWI_M;
+  logic        undefD, undefE, undefM;
+  logic        PrefetchAbortM;
+  logic        IRQAssert, FIQAssert, DataAbortAssert;
+  logic        ExceptionResetMicrop, ExceptionSavePC;
+
+  // For debugging
+  logic        validDdebug, validEdebug, validMdebug, validWdebug;
+  logic        validDdebug_pre;
+  logic        uOpProgEdebug, uOpProgMdebug, uOpProgWdebug;
+  logic        advancingEdebug, advancingWdebug;
 
   /***** Brief Description *******
   * Created by Ivan Wong for Clay Wolkin 2014-2015
@@ -102,8 +113,13 @@ module controller (
   // ======================================= Decode Stage ===============================================
   // ====================================================================================================
 
+  // Flush writeback signals when we flushD. 
+  flopenrc #(1) flushWBD(clk, reset | ExceptionResetMicrop, ~StallD, FlushD, 1'b1, nonFlushedInstr);
+  flopenr  #(1) pipelineclearDflop(clk, reset, ~StallD, PipelineClearF, PipelineClearD); // see exception_handler.sv
+
+
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevRSRstateD, 
-    KeepVD, KeepZD, KeepCD, AddCarryD, AddZeroD, noRotateD, uOpRtypeLdrStrD, MultControlD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC);
+    KeepVD, KeepZD, KeepCD, AddCarryD, AddZeroD, noRotateD, uOpRtypeLdrStrD, MultControlD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, PipelineClearD);
 
   // === Control Logic for Datapath ===
   always_comb
@@ -137,7 +153,7 @@ module controller (
   // Notes: ldrstrALUopD gives Loads and Stores the ability to choose alu function add or subtract.
   assign {RegSrcD, ImmSrcD,     // 2 bits each
     ALUSrcD, MemtoRegD, RegWriteD, MemWriteD,
-    BranchD, ALUOpD, MultSelectD, ldrstrALUopD, BXInstrD} = ControlsD;
+    BranchD, ALUOpD, MultSelectD, ldrstrALUopD, BXInstrD} = ControlsD & {5'b11_11_1, {3{nonFlushedInstr}}, 5'b11111}; // And here to kill writeback in flush.
   // === END ===
 
   // === Controlling the ALU ===
@@ -176,6 +192,7 @@ module controller (
   assign RselectD      = (InstrD[27:25] == 3'b000 & InstrD[4] == 0) | (LdrStrRtypeD & ~LDMSTMforwardD); // Is a R-type instruction or R-type load store
   //                      DP RSR-type                 rest of bits: These look like RSR, but are not. c.f. note 2, page A3-3
   assign RSRselectD    = (InstrD[27:25] == 3'b000 & ~InstrD[7] & InstrD[4] == 1) & ~(InstrD[24:23] == 2'b10 & ~InstrD[20]);
+  // SD 11/19/2015 Should this really be | BranchD? This has the effect of stalling everything when there may be a branch
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~RegFileRzD[2] & ~CPSRtoRegD & ~RegtoCPSR_D) | BranchD); // Chooses program counter either from DMEM or from ALU calculation
   assign PSRtypeD      = (CPSRtoRegD & InstrD[22]);
   assign ResultSelectD = {MultSelectD, RSRselectD};
@@ -221,8 +238,11 @@ module controller (
   // === EXCEPTION HANDLING ===
   assign SWI_D          = InstrD[27:24] == 4'hF;
   assign undefD         = InstrD[27:25] == 3'b011 & InstrD[4];
-  assign UndefinedInstr = undefD | undefE | undefM | undefW;
-  assign SWI            = SWI_D | SWI_E | SWI_M | SWI_W;
+  // === END ===
+
+  // === DEBUGGING ===
+  flopenrc #(1) validdreg(clk, reset, ~StallD, FlushD, 1'h1, validDdebug_pre);
+  assign validDdebug = validDdebug_pre || IRQAssert;
   // === END ===
 
   // ====================================================================================================
@@ -235,7 +255,7 @@ module controller (
   flopenrc #(1) shftrCarryOut(clk, reset, ~StallE, FlushE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
   flopenrc #(1) restoreCPSR_DE(clk, reset, ~StallE, FlushE, restoreCPSR_D, restoreCPSR_E);
   flopenrc #(1) longMultRegWritePt2(clk, reset, ~StallE, FlushE, CondExE, CondExE2);
-  flopenrc #(2) undef_exception(clk, reset, ~StallE, FlushE, {undefD, SWI_D}, {undefE, SWI_E});
+  flopenrc #(2) undef_exception(clk, reset, ~StallE, FlushE, {undefD, SWI_D}, {undefE, SWI_0E});
   flopenrc #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);
   flopenrc #(3) CoprocE(clk, reset, ~StallE, FlushE, {CoProc_FlagUpd_D, CoProc_EnD, CoProc_WrEnD}, {CoProc_FlagUpd_E, CoProc_EnE, CoProc_WrEnE});
   flopenrc #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
@@ -247,6 +267,7 @@ module controller (
   flopenrc #(14)  regsE(clk, reset, ~StallE, FlushE, {ALUSrcD, ALUControlD, MultControlD, MultEnableD, PSRtypeD, MSRmaskD},
                                                      {ALUSrcE, ALUControlE, MultControlE, MultEnableE, PSRtypeE, MSRmaskE});
   flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE, {(ALUOpD|ldrstrALUopD), InstrD}, {ALUOpE, InstrE});
+  flopenr  #(1) pipelineclearEflop(clk, reset, ~StallE, PipelineClearD, PipelineClearE); // see exception_handler.sv
 
 
   // < Handling all Multiplication Stalls Execute>
@@ -284,30 +305,49 @@ module controller (
   assign SetNextFlagsE   = (FlagWriteE != 2'b00) & CondExE;
   assign CPSRtoRegE      = CPSRtoReg0E & CondExE;
   assign RegtoCPSR_E     = RegtoCPSR_0E & CondExE;
+  assign SWI_E           = SWI_0E & CondExE;
   // disable write to register for flag-setting instructions
   assign RegWriteKillE = ~CPSRtoRegE & DoNotWriteRegE;
   assign RegWriteGatedE   = RegWriteKillE ? 1'b0 : RegWritepreMuxE;
   // === END ===
 
 
+ exception_handler exh(clk, reset, undefE, SWI_E, PrefetchAbort, DataAbort, IRQ, FIQ, 
+                       PipelineClearD, PipelineClearM,
+                       ~CPSRW[7], ~CPSRW[6],
+                       undefM, SWI_M, PrefetchAbortM, DataAbortAssert, IRQAssert, FIQAssert, // undefM, SWI_M, and PrefetchAbortM are for saving CPSR only.
+                       PipelineClearF, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
+                       PCVectorAddress,
+                       ExceptionResetMicrop, ExceptionSavePC, PCInSelect);
+
+  // === DEBUGGING ===
+  flopenrc #(1) validereg(clk, reset, ~StallE, FlushE, validDdebug, validEdebug);
+  flopenrc #(1) uopprogereg(clk, reset, ~StallE, FlushE, uOpStallD, uOpProgEdebug);
+  floprc #(1) advancingereg(clk, reset, FlushE, validDdebug && ~uOpStallD && ~StallE, advancingEdebug);
+  // === END ===
 
   // ====================================================================================================
   // ======================================= Memory Stage ===============================================
   // ====================================================================================================
 
-  flopenr #(2) msr_mrs_M(clk, reset, ~StallM, {restoreCPSR_E, RegtoCPSR_E},
-                                              {restoreCPSR_M, RegtoCPSR_M});
-  flopenr #(2) undef_exceptionEM(clk, reset, ~StallM, {undefE, SWI_E}, {undefM, SWI_M});
-  flopenr #(11) flagM(clk, reset, ~StallM, {FlagsNextE,  SetNextFlagsE, PSRtypeE, MSRmaskE},
-                                           {FlagsNext0M, SetNextFlagsM, PSRtypeM, MSRmaskM});
-  flopenr #(14) CoProc_M(clk, reset, ~StallM,
+  flopenrc #(2) msr_mrs_M(clk, reset, ~StallM, FlushM, {restoreCPSR_E, RegtoCPSR_E},
+                                                       {restoreCPSR_M, RegtoCPSR_M});
+  flopenrc #(11) flagM(clk, reset, ~StallM, FlushM, {FlagsNextE,  SetNextFlagsE, PSRtypeE, MSRmaskE},
+                                                    {FlagsNext0M, SetNextFlagsM, PSRtypeM, MSRmaskM});
+  flopenrc #(14) CoProc_M(clk, reset, ~StallM, FlushM,
     {InstrE[19:16], InstrE[7:5], InstrE[3:0], (CoProc_WrEnE & CondExE), (CoProc_EnE & CondExE), (CoProc_FlagUpd_E & CondExE)},
     {CoProc_AddrM,  CoProc_Op2M, CoProc_CRmM, CoProc_WrEnM,             CoProc_EnM,             CoProc_FlagUpd_M});
-  flopenr #(16) regsM(clk, reset, ~StallM,
+  flopenrc #(16) regsM(clk, reset, ~StallM, FlushM,
     {MemWriteGatedE, MemtoRegE, RegWriteGatedE, PCSrcGatedE, ByteMaskE, ByteOrWordE, ByteOffsetE, LdrHalfwordE, Ldr_SignBE, Ldr_SignHE, HalfwordOffsetE, CPSRtoRegE},
     {MemWriteM,      MemtoRegM, RegWriteM,      PCSrcM,      ByteMaskM, ByteOrWordM, ByteOffsetM, LdrHalfwordM, Ldr_SignBM, Ldr_SignHM, HalfwordOffsetM, CPSRtoRegM});
+  flopenr  #(1) pipelineclearMflop(clk, reset, ~StallM, PipelineClearE, PipelineClearM); // see exception_handler.sv
 
   mux2 #(4)  flagM_mux(FlagsNext0M, CPSRW[31:28], CoProc_FlagUpd_W, FlagsNextM);
+
+  // === DEBUGGING ===
+  flopenrc #(1) validmreg(clk, reset, ~StallM, FlushM, validEdebug, validMdebug);
+  flopenrc #(1) uopprogmreg(clk, reset, ~StallM, FlushM, uOpProgEdebug, uOpProgMdebug);
+  // === END ===
 
   // ====================================================================================================
   // ======================================= Writeback Stage ============================================
@@ -315,7 +355,6 @@ module controller (
 
   flopenrc #(1) CoProc_W(clk, reset, ~StallW, FlushW, {CoProc_FlagUpd_M}, {CoProc_FlagUpd_W});
   flopenrc #(2) msr_mrs_W(clk, reset, ~StallW, FlushW, {restoreCPSR_M, RegtoCPSR_M}, {restoreCPSR_W, RegtoCPSR_W});
-  flopenrc #(2) undef_exceptionMW(clk, reset, ~StallW, FlushW, {undefM, SWI_M}, {undefW, SWI_W});
   flopenrc #(11) regsW(clk, reset, ~StallW, FlushW,
     {MemtoRegM, RegWriteM, PCSrcM, ByteOrWordM, ByteOffsetM, LdrHalfwordM, Ldr_SignBM, Ldr_SignHM, HalfwordOffsetM, CPSRtoRegM},
     {MemtoRegW, RegWriteW, PCSrcW, LoadLengthW, ByteOffsetW, LdrHalfwordW, Ldr_SignBW, Ldr_SignHW, HalfwordOffsetW, CPSRtoRegW});
@@ -323,12 +362,18 @@ module controller (
                                                     {FlagsNextW, SetNextFlagsW, PSRtypeW, MSRmaskW});
 
   // === CPSR / SPSR relevant info ===
-  cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefW, SWI_W, 4'b0}, restoreCPSR_W, ~StallW, CoProc_FlagUpd_W,
-    CPSRW, SPSRW, PCVectorAddressW);
+  cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefM, SWI_M, PrefetchAbortM, DataAbortAssert, IRQAssert, FIQAssert}, restoreCPSR_W, ~StallW, CoProc_FlagUpd_W,
+    CPSRW, SPSRW);
   assign CPSR8_W = {CPSRW[7:0]}; // Forward to Decode stage
   assign PSR_W   = PSRtypeW ? SPSRW : CPSRW;
   // === END ===
 
   assign PCWrPendingF = PCSrcD | PCSrcE | PCSrcM;
+
+  // === DEBUGGING ===
+  flopenrc #(1) validwreg(clk, reset, ~StallW, FlushW, validMdebug, validWdebug);
+  flopenrc #(1) uopprogwreg(clk, reset, ~StallW, FlushW, uOpProgMdebug, uOpProgWdebug);
+  assign advancingWdebug = validWdebug && ~uOpProgWdebug && ~StallW;
+  // === END ===
 
 endmodule

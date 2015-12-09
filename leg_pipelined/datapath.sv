@@ -30,7 +30,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic        noRotateD, InstrMuxD,
                   input  logic [3:0]  RegFileRzD,
                   input  logic [31:0] uOpInstrD,
-		  input logic         uOpStallD,
+		              input logic         uOpStallD,
                   input  logic        CoProc_EnM, 
 
                 /// ------ To Controller ------
@@ -43,8 +43,8 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
 
                 /// ------ From Hazard ------
                   input  logic [1:0]  ForwardAE, ForwardBE,
-                  input  logic        StallF, StallD, FlushD, FlushE, StallE, StallM, FlushW, StallW, // Added StallE, StallM, FlushW for memory
-                  input  logic [1:0]  PCInSelect, // for exception handling
+                  input  logic        StallF, StallD, FlushD, FlushE, StallE, StallM, FlushM, FlushW, StallW, // Added StallE, StallM, FlushW for memory
+                  input  logic  [1:0] PCInSelect, // for exception handling
 
                 /// ------ To Hazard ------
                 /// ------ To Address Path ------
@@ -68,10 +68,6 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // Keep PC and instruction in each stage for debugging
   logic [31:0] PCD, PCE, PCM, PCW;
   logic [31:0] instrEdebug, instrMdebug, instrWdebug;
-  // Also track whether or not each instruction is valid (not flushed)
-  logic        validDdebug, validEdebug, validMdebug, validWdebug;
-  logic        uOpProgEdebug, uOpProgMdebug, uOpProgWdebug;
-  logic        advancingEdebug, advancingWdebug;
   
 /***** Brief Description *******
  * Modified by Ivan Wong for Clay Wolkin 2014-2015 
@@ -101,9 +97,8 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
   // pass on PC for debugging
   flopenrc #(32) pcdreg(clk, reset, ~StallD, FlushD, PCF, PCD);
-  flopenrc #(1) validdreg(clk, reset, ~StallD, FlushD, 1'h1, validDdebug);
 
-  mux3 #(32)  exceptionPC(PCPlus8D, PCPlus4D, PCPlus0D, PCInSelect, PC_in);
+  mux3 #(32)  exceptionPC(PCPlus8D, PCPlus0D, PCPlus4D, PCInSelect, PC_in);
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
   
   regfile     rf(clk, reset, RegWriteW, RA1D, RA2D,
@@ -125,9 +120,6 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // pass on PC for debugging
   flopenrc #(32) pcereg(clk, reset, ~StallE, FlushE, PCD, PCE);
   flopenrc #(32) instrereg(clk, reset, ~StallE, FlushE, DefaultInstrD, instrEdebug);
-  flopenrc #(1) validereg(clk, reset, ~StallE, FlushE, validDdebug, validEdebug);
-  flopenrc #(1) uopprogereg(clk, reset, ~StallE, FlushE, uOpStallD, uOpProgEdebug);
-  floprc #(1) advancingereg(clk, reset, FlushE, validDdebug && ~uOpStallD && ~StallE, advancingEdebug);
 
   mux3 #(32)  byp1mux(Rd1E, ResultW, ALUorCP15_M, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(Rd2E, ResultW, ALUorCP15_M, ForwardBE, WriteDataE);
@@ -158,15 +150,13 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // ====================================================================================
   // =============================== Memory Stage =======================================
   // ====================================================================================
-  flopenr #(32) aluresreg(clk, reset, ~StallM, ALUResultE, ALUOutM);
+  flopenrc #(32) aluresreg(clk, reset, ~StallM, FlushM, ALUResultE, ALUOutM);
   // pass on PC for debugging
-  flopenr #(32) pcmreg(clk, reset, ~StallM, PCE, PCM);
-  flopenr #(32) instrmreg(clk, reset, ~StallM, instrEdebug, instrMdebug);
-  flopenr #(1) validmreg(clk, reset, ~StallM, validEdebug, validMdebug);
-  flopenr #(1) uopprogmreg(clk, reset, ~StallM, uOpProgEdebug, uOpProgMdebug);
+  flopenrc #(32) pcmreg(clk, reset, ~StallM, FlushM, PCE, PCM);
+  flopenrc #(32) instrmreg(clk, reset, ~StallM, FlushM, instrEdebug, instrMdebug);
 
   mux2 #(32) CP15_ALU_mux(ALUOutM, CP15rd_M, CoProc_EnM, ALUorCP15_M);
-  flopenr #(32) wdreg(clk, reset, ~StallM, WriteDataReplE, WriteDataM);
+  flopenrc #(32) wdreg(clk, reset, ~StallM, FlushM, WriteDataReplE, WriteDataM);
   
   // ====================================================================================
   // =============================== Writeback Stage ====================================
@@ -176,9 +166,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // pass on PC for debugging
   flopenrc #(32) pcwreg(clk, reset, ~StallW, FlushW, PCM, PCW);
   flopenrc #(32) instrwreg(clk, reset, ~StallW, FlushW, instrMdebug, instrWdebug);
-  flopenrc #(1) validwreg(clk, reset, ~StallW, FlushW, validMdebug, validWdebug);
-  flopenrc #(1) uopprogwreg(clk, reset, ~StallW, FlushW, uOpProgMdebug, uOpProgWdebug);
-  assign advancingWdebug = validWdebug && ~uOpProgWdebug && ~StallW;
+
 
   mux2 #(32)  resmux(ALUOutW, ReadDataW, MemtoRegW, Result1_W);
   mux2 #(32)  msr_mrs_mux(Result1_W, PSR_W, CPSRtoRegW, ResultW);

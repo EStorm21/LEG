@@ -21,7 +21,7 @@ module leg(input  logic        clk, reset,
 
   /// Output from Hazard Unit
   logic [1:0]  ForwardAE, ForwardBE;
-  logic        StallF, StallE, StallM, FlushW, StallW, StalluOp;
+  logic        StallF, StallE, StallM, FlushM, FlushW, StallW, StalluOp;
   logic        ExceptionSavePC;
 
   /// Output from Datapath
@@ -54,8 +54,9 @@ module leg(input  logic        clk, reset,
   logic        ShifterCarryOut_cycle2E, CoProc_En, AddZeroE, ClzSelectE;
   logic [7:0]  CPSR8_W;
   logic [31:0] PSR_W;
-  logic [6:0]  PCVectorAddressW;
+  logic [6:0]  PCVectorAddress;
   logic RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW;
+  logic        ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD;
 
   /// Output from AddressPath
   logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_1D_E, Match_2D_E, ExceptionVectorSelectW;
@@ -66,8 +67,8 @@ module leg(input  logic        clk, reset,
   logic        BXInstrD, BXInstrE, TFlagNextE, TFlagE, IncrementE;
 
   // Exceptions
-  logic       UndefinedInstr, undefD, undefE, undefM, undefW;
-  logic       SWI, SWI_E, SWI_D, SWI_M, SWI_W;
+  logic       UndefinedInstr;
+  logic       SWI;
   logic       RegtoCPSR, CPSRtoReg;
   logic [1:0] PCInSelect;
 

@@ -1,0 +1,181 @@
+From f38596e77f5b146d7f38220f04f9245a114c4fee Mon Sep 17 00:00:00 2001
+From: Daniel Johnson <hexahedria@gmail.com>
+Date: Mon, 30 Nov 2015 17:18:07 -0800
+Subject: [PATCH 09/10] Allow virtual to physical address translation from GDB (hacky!)
+
+Allows a query command to query qemu's virtual-to-physical address
+translation. To get around the fact that gdb is supposed to be
+general to multiple architectures, we do this by hackily
+- making a static function non-static
+- adding a parameter to the dump_state function that makes it treat
+  its FILE pointer as a function pointer, and set it to a specific
+  function
+- use this horrible misuse of functions to call the specific function
+  from the GDB server
+---
+ gdbstub.c              |   15 +++++++++++++++
+ include/qom/cpu.h      |    3 +++
+ target-arm/helper.c    |   18 +++++++++++++-----
+ target-arm/internals.h |    4 ++++
+ target-arm/translate.c |   20 ++++++++++++++++++++
+ 5 files changed, 55 insertions(+), 5 deletions(-)
+
+diff --git a/gdbstub.c b/gdbstub.c
+index c35124c..dc3c651 100644
+--- a/gdbstub.c
++++ b/gdbstub.c
+@@ -781,6 +781,8 @@ static int is_query_packet(const char *p, const char *query, char separator)
+         (p[query_len] == '\0' || p[query_len] == separator);
+ }
+ 
++typedef hwaddr (*virt_to_phys_fn)(CPUState*, target_ulong);
++
+ static int gdb_handle_packet(GDBState *s, const char *line_buf)
+ {
+     CPUState *cpu;
+@@ -1110,6 +1112,19 @@ static int gdb_handle_packet(GDBState *s, const char *line_buf)
+             snprintf(buf, sizeof(buf), "%" PRId64, ict);
+             put_packet(s, buf);
+             break;
++        } else if (!strncmp(p,"qemu.virttophys ", 16)) {
++            target_ulong virt_addr;
++            virt_to_phys_fn vtp_fn;
++            hwaddr phys_addr;
++
++            p+=16;
++            virt_addr = strtoul(p, (char **)&p, 16);
++
++            cpu_dump_state(first_cpu,(FILE*)&vtp_fn,NULL,CPU_DUMP_ARM_FN_PTR__VIRT_TO_PHYS);
++            phys_addr = vtp_fn(first_cpu, virt_addr);
++
++            snprintf(buf, sizeof(buf), "0x%x", (unsigned int)phys_addr);
++            put_packet(s, buf);
+         } else if (strcmp(p,"C") == 0) {
+             /* "Current thread" remains vague in the spec, so always return
+              *  the first CPU (gdb returns the first thread). */
+diff --git a/include/qom/cpu.h b/include/qom/cpu.h
+index 7058aa0..eeb5d96 100644
+--- a/include/qom/cpu.h
++++ b/include/qom/cpu.h
+@@ -398,12 +398,15 @@ int cpu_write_elf32_qemunote(WriteCoreDumpFunction f, CPUState *cpu,
+  * @CPU_DUMP_CCOP: dump info about TCG QEMU's condition code optimization state
+  * @CPU_DUMP_ARM_ALLSTORED: in ARM, dump all SPSRs and stored information
+  *     instead of dumping normally
++ * @CPU_DUMP_ARM_FN_PTR__VIRT_TO_PHYS: in ARM, super hacky way to obtain a
++ *     specific function pointer to the virtual-to-physical address translation.
+  */
+ enum CPUDumpFlags {
+     CPU_DUMP_CODE = 0x00010000,
+     CPU_DUMP_FPU  = 0x00020000,
+     CPU_DUMP_CCOP = 0x00040000,
+     CPU_DUMP_ARM_ALLSTORED = 0x00080000,
++    CPU_DUMP_ARM_FN_PTR__VIRT_TO_PHYS = 0x00100000,
+ };
+ 
+ /**
+diff --git a/target-arm/helper.c b/target-arm/helper.c
+index 4d270b5..69e415a 100644
+--- a/target-arm/helper.c
++++ b/target-arm/helper.c
+@@ -13,10 +13,10 @@
+ #include "exec/semihost.h"
+ 
+ #ifndef CONFIG_USER_ONLY
+-static inline bool get_phys_addr(CPUARMState *env, target_ulong address,
+-                                 int access_type, ARMMMUIdx mmu_idx,
+-                                 hwaddr *phys_ptr, MemTxAttrs *attrs, int *prot,
+-                                 target_ulong *page_size, uint32_t *fsr);
++// static inline bool get_phys_addr(CPUARMState *env, target_ulong address,
++//                                  int access_type, ARMMMUIdx mmu_idx,
++//                                  hwaddr *phys_ptr, MemTxAttrs *attrs, int *prot,
++//                                  target_ulong *page_size, uint32_t *fsr);
+ 
+ /* Definitions for the PMCCNTR and PMCR registers */
+ #define PMCRD   0x8
+@@ -4304,6 +4304,14 @@ int bank_number(int mode)
+ {
+     g_assert_not_reached();
+ }
++bool get_phys_addr(CPUARMState *env, target_ulong address,
++                                 int access_type, ARMMMUIdx mmu_idx,
++                                 hwaddr *phys_ptr, MemTxAttrs *attrs, int *prot,
++                                 target_ulong *page_size, uint32_t *fsr)
++{
++    g_assert_not_reached();
++}
++  
+ 
+ #else
+ 
+@@ -6102,7 +6110,7 @@ static bool get_phys_addr_pmsav5(CPUARMState *env, uint32_t address,
+  * @page_size: set to the size of the page containing phys_ptr
+  * @fsr: set to the DFSR/IFSR value on failure
+  */
+-static inline bool get_phys_addr(CPUARMState *env, target_ulong address,
++bool get_phys_addr(CPUARMState *env, target_ulong address,
+                                  int access_type, ARMMMUIdx mmu_idx,
+                                  hwaddr *phys_ptr, MemTxAttrs *attrs, int *prot,
+                                  target_ulong *page_size, uint32_t *fsr)
+diff --git a/target-arm/internals.h b/target-arm/internals.h
+index 924aff9..9a939d5 100644
+--- a/target-arm/internals.h
++++ b/target-arm/internals.h
+@@ -98,6 +98,10 @@ static inline unsigned int aarch64_banked_spsr_index(unsigned int el)
+ }
+ 
+ int bank_number(int mode);
++bool get_phys_addr(CPUARMState *env, target_ulong address,
++                                 int access_type, ARMMMUIdx mmu_idx,
++                                 hwaddr *phys_ptr, MemTxAttrs *attrs, int *prot,
++                                 target_ulong *page_size, uint32_t *fsr);
+ void switch_mode(CPUARMState *, int);
+ void arm_cpu_register_gdb_regs_for_features(ARMCPU *cpu);
+ void arm_translate_init(void);
+diff --git a/target-arm/translate.c b/target-arm/translate.c
+index db53ca3..18226fb 100644
+--- a/target-arm/translate.c
++++ b/target-arm/translate.c
+@@ -11530,6 +11530,7 @@ static const char *cpu_mode_names[16] = {
+ unsigned int get_register_in_mode(CPUARMState *env, int mode, int i);
+ unsigned int get_spsr_in_mode(CPUARMState *env, int mode);
+ unsigned int get_coprocessor_reg(ARMCPU *cpu, int crn);
++hwaddr virt_to_phys(CPUState *cs, target_ulong virt_addr);
+ 
+ unsigned int get_register_in_mode(CPUARMState *env, int mode, int i) {
+     int cur_mode;
+@@ -11578,6 +11579,20 @@ unsigned int get_coprocessor_reg(ARMCPU *cpu, int crn) {
+     return res;
+ }
+ 
++hwaddr virt_to_phys(CPUState *cs, target_ulong virt_addr) {
++    ARMCPU *cpu = ARM_CPU(cs);
++    CPUARMState *env = &cpu->env;
++    hwaddr res;
++    MemTxAttrs attrs;
++    int prot;
++    target_ulong page_size;
++    uint32_t fsr;
++    get_phys_addr(env, virt_addr, 0, ARMMMUIdx_S12NSE0, &res, &attrs, &prot, &page_size, &fsr);
++    return res;
++}
++typedef hwaddr (*virt_to_phys_fn)(CPUState*, target_ulong);
++
++
+ void arm_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
+                         int flags)
+ {
+@@ -11650,6 +11665,11 @@ void arm_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
+         cpu_fprintf(f, "32'h%08x\n", get_coprocessor_reg(cpu, 6));
+ 
+         return;
++    } else if (flags & CPU_DUMP_ARM_FN_PTR__VIRT_TO_PHYS) {
++        // f is not actually a file pointer, it's a pointer to a function pointer
++        virt_to_phys_fn *fptr = (virt_to_phys_fn *)f;
++        *fptr = virt_to_phys;
++        return;
+     }
+ 
+     if (is_a64(env)) {
+-- 
+1.7.1
+

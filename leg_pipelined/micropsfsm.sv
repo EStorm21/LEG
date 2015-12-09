@@ -5,7 +5,7 @@ module micropsfsm(input  logic        clk, reset,
                output logic [1:0]  multControlD, 
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
-			   input  logic		   StalluOp, ExceptionSavePC);
+			   input  logic		   StalluOp, ExceptionSavePC, PipelineClearD);
 
  /***** Brief Description *******
  * First Created by Ivan Wong for Clay Wolkin 2014-2015
@@ -121,7 +121,8 @@ always_comb
 		 * READY STATE 
 		 */
 		ready: begin
-			// Exception handling (sufficiently handles SWI so far... still in progress)
+			// Exception handling: mov r14, pc. By the time this comes back to wb we will be in
+			// the exception mode and thus will use the correct registers
 			if (ExceptionSavePC) begin
 				InstrMuxD = 1;
 				uOpStallD = 0; 
@@ -141,6 +142,28 @@ always_comb
 				nextState = ready;
 				uOpInstrD = 32'b1110_000_1101_0_0000_1110_00000000_1111; // mov r14, pc
 			end
+
+			else if (PipelineClearD) begin 
+				debugText = "stay in ready";
+				nextState = ready;
+				InstrMuxD = 1;
+				uOpStallD = 0;
+				prevRSRstate = 0;
+				KeepVD = 0;
+				addCarry = 0;
+				KeepZD = 0;
+				AddZeroD = 0;
+				regFileRz = {1'b0, // Control inital mux for RA1D
+							3'b000}; // 5th bit of RA2D and RA1D
+				uOpInstrD = {32'b0};
+				LDMSTMforward = 0;
+				noRotate = 0;
+				ldrstrRtype = 0;
+				Reg_usr_D = 0;
+				MicroOpCPSRrestoreD = 0;
+				KeepCD = 0;     
+			end
+
 			//start RSR type instructions
 			else if (defaultInstrD[27:25] == 3'b0 & defaultInstrD[7] == 0 & defaultInstrD[4] == 1 
 				// don't treat opcode 10xx with s==0 as RSR. instead misc. instructions. c.f. note2, A3-3
@@ -1549,8 +1572,6 @@ always_comb
 		end
 
 		default: begin
-			// TODO Remove for debugging
-			$display("hit the default micro-op case")
 			nextState = ready;
 			InstrMuxD = 0;
 			KeepVD = 0;

@@ -20,19 +20,19 @@ module io_fwd_shim(input  logic        HCLK,
     always_ff @(posedge HCLK ) begin
         if(HREQUEST & HSEL) begin
             if(HWRITE) begin
-                $display("IO write data %h to %h", HWDATA, HADDR);
+                $displayh("IO write data %h to %h", HWDATA, HADDR);
                 // Ignore writes (Qemu can handle it)
             end else begin
                 // $display("IO read data from %h", HADDR);
                 if(readAddrs[0] == HADDR) begin
                     // Pop the recorded read off, to match Qemu
+                    $displayh("IO read data %h from %h", readVals[0], readAddrs[0]);
                     void'( readAddrs.pop_front() );
                     HRDATA <= readVals.pop_front();
-                    $display("IO read data %h from %h", HRDATA, HADDR);
                 end else begin
                     // This is an invalid read. Give garbage data
+                    $displayh("IO read invalid data (xxxxxxxx) from %h", HADDR);
                     HRDATA <= 32'hxxxxxxxx;
-                    $display("IO read invalid data from %h", HRDATA, HADDR);
                 end
             end
         end

@@ -6,8 +6,7 @@ module addresspath( /// ------ From TOP ------
                     input  logic [3:0]  RegFileRzD,
                     input  logic [1:0]  RegSrcD,
                     input  logic [7:0]  CPSR8_W, 
-                    input  logic [6:0]  PCVectorAddressW, 
-                    input  logic        SWI_E, undefE,
+                    input  logic [6:0]  PCVectorAddress, 
 
           					/// To Controller 
 
@@ -19,7 +18,7 @@ module addresspath( /// ------ From TOP ------
                     output logic         ExceptionVectorSelectW,
 
           					/// From Hazard
-                    input  logic        StallF, StallD, FlushD, StallE, StallM, FlushW, StallW, 
+                    input  logic        StallF, StallD, FlushD, StallE, StallM, FlushM, FlushW, StallW, 
 
           					/// To Hazard
                     output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, 
@@ -51,7 +50,7 @@ module addresspath( /// ------ From TOP ------
   mux3 #(4)   ra2mux(InstrD[3:0], InstrD[15:12], InstrD[11:8], {MultSelectD, RegSrcD[1]}, RA2_4b_D);
   mux2 #(4)   destregmux(InstrD[15:12], InstrD[19:16], MultSelectD, DestRegD);
 
-  addressdecode address_decoder(RA1_4b_D, RA2_4b_D, DestRegD, RegFileRzD[2:0], CPSR8_W, SWI_E, undefE, RA1D, RA2D, WA3D);
+  addressdecode address_decoder(RA1_4b_D, RA2_4b_D, DestRegD, RegFileRzD[2:0], CPSR8_W[4:0], RA1D, RA2D, WA3D);
 
   // ====================================================================================
   // ================================ Execute Stage =====================================
@@ -69,7 +68,7 @@ module addresspath( /// ------ From TOP ------
   // ====================================================================================
   // ================================ Memory Stage ======================================
   // ====================================================================================
-  flopenr #(32)  wa3mreg(clk, reset, ~StallM, WA3E, WA3M);
+  flopenrc #(32)  wa3mreg(clk, reset, ~StallM, FlushM, WA3E, WA3M);
 
   // ====================================================================================
   // ================================ Writeback Stage ===================================
@@ -82,6 +81,6 @@ module addresspath( /// ------ From TOP ------
   eqcmp #(32) m4a(WA3E, RA1D, Match_1D_E);
   eqcmp #(32) m4b(WA3E, RA2D, Match_2D_E);
 
-  exception_vector_address exception_vector(PCVectorAddressW, VectorPCnextF, ExceptionVectorSelectW); // near the fetch stage
+  exception_vector_address exception_vector(PCVectorAddress, VectorPCnextF, ExceptionVectorSelectW); // near the fetch stage
 
 endmodule 

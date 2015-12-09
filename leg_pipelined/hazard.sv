@@ -3,21 +3,18 @@ module hazard(input  logic       clk, reset,
               input  logic       RegWriteM, RegWriteW,
               input  logic       BranchTakenE, MemtoRegE,
               input  logic       PCWrPendingF, PCSrcW, 
+              input logic        ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
               output logic [1:0] ForwardAE, ForwardBE,
               output logic       StallF, StallD, 
               // Added DStall, StallE, StallM, and FlushW for memory
               output logic       FlushD, FlushE, IncrementE,
               input  logic       DStall, IStall,
               input  logic       CoProc_En,
-              output logic       StallE, StallM, FlushW, StallW,
+              output logic       StallE, StallM, FlushM, FlushW, StallW,
               // For Micro-ops
               input logic        uOpStallD, LDMSTMforwardE,
               output logic       StalluOp, ExceptionSavePC,
-              // For exceptions
-              input logic        PrefetchAbort, DataAbort, IRQ, FIQ, UndefinedInstr, undefD, undefE, undefM, undefW,
-              input logic        SWI, SWI_E, SWI_D, SWI_M, SWI_W, RegtoCPSR, CPSRtoReg,
-              input logic        RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW,
-              output logic [1:0] PCInSelect);
+              input logic        RegtoCPSR, CPSRtoReg);
                 
   // forwarding logic
   always_comb 
@@ -57,28 +54,20 @@ module hazard(input  logic       clk, reset,
 
   assign ldrStallD = Match_12D_E & MemtoRegE;
   
-  assign StallD = ldrStallD | DStall | uOpStallD | IStall | (SWI_E | undefE);
+  assign StallD = ldrStallD | DStall | uOpStallD | IStall | ExceptionStallD;
   assign StalluOp = ldrStallD | DStall | IStall ;
-  assign StallF = ldrStallD | PCWrPendingF | DStall | IStall | uOpStallD | (SWI_D | SWI_E | SWI_M | undefD | undefE | undefM | RegtoCPSR | CPSRtoReg | CoProc_En);
+  assign StallF = ldrStallD | PCWrPendingF | DStall | IStall | uOpStallD | RegtoCPSR | CPSRtoReg | CoProc_En;
   assign StallE = DStall | IStall;
-  assign FlushW = DStall | IStall;
+  assign FlushW = DStall | IStall | ExceptionFlushW;
   assign StallW = DStall | IStall;
   assign StallM = DStall | IStall;
-  // SD 11/2/2015 Should probably flush E in more cases when we flush D. Else WE signals stay high. FlushE is FlushD through a sequencer?
-  assign FlushE = ldrStallD | BranchTakenE | (SWI_M | undefM) | (SWI_E | SWI_M | SWI_W | undefE | undefM | undefW | RegtoCPSR_EMW | CPSRtoReg_EMW | CoProc_En_EMW); 
-  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | (SWI_E | SWI_M | SWI_W | undefE | undefM | undefW | RegtoCPSR | CPSRtoReg | CoProc_En);
-  assign ExceptionSavePC = SWI_E | undefE; 
+  assign FlushM = ExceptionFlushM;
+  // FlushD cannot propagate bad stuff to E stage because writeback is killed in this case.
+  assign FlushE = ldrStallD | BranchTakenE | ExceptionFlushE; 
+  assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | RegtoCPSR | CPSRtoReg | CoProc_En | ExceptionFlushD;
 
-  // exception handling
-  always_comb begin
-    if (PrefetchAbort) PCInSelect = 2'b00;
-    else if (DataAbort) PCInSelect = 2'b10;
-    else if (IRQ) PCInSelect = 2'b00;
-    else if (FIQ) PCInSelect = 2'b00;
-    else if (UndefinedInstr) PCInSelect = 2'b01;
-    else if (SWI) PCInSelect = 2'b10; // PC+0 Because we are sending every 'mov r14_exc r15' one cycle late through the pipeline
-    else PCInSelect = 2'b00;
-  end
+
+
 
   // TODO: Add stalls for CP15 instructions (i.e. enabling I$)
   // TODO: Add stalls for self modifying code

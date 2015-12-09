@@ -20,27 +20,31 @@ def msIdxToRIdx(idx):
 	#return 15-idx
 	return 14-idx
 
-stateWParser = re.compile("(.+) (.+) (.+) {(.*)}")
+stateWParser = re.compile("(.+) (.+) (.+) (.+) (.+) {(.*)}")
 def parseStateW(msState):
 	try:
 		stateMatch = stateWParser.match(msState)
 		pc = parseVal(stateMatch.group(1))
 		instr = parseVal(stateMatch.group(2))
 		cpsr = parseVal(stateMatch.group(3))
-		regparts = stateMatch.group(4).split(' ')
+		irq_assert = stateMatch.group(4) == '1'
+		fiq_assert = stateMatch.group(5) == '1'
+		regparts = stateMatch.group(6).split(' ')
 		regs = [parseVal(regparts[rIdxToMSIdx(i)]) for i in range(15)]
-		return pc, instr, cpsr, regs
+		return (pc, instr, cpsr, regs), irq_assert, fiq_assert
 	except Exception, e:
 		print "Invalid writeback state {}".format(msState)
 		raise
 
-stateEParser = re.compile("(.+) (.+)")
+stateEParser = re.compile("(.+) (.+) (.+) (.+)")
 def parseStateE(msState):
 	try:
 		stateMatch = stateEParser.match(msState)
 		pc = parseVal(stateMatch.group(1))
 		instr = parseVal(stateMatch.group(2))
-		return pc, instr
+		irq_assert_delay = stateMatch.group(3) == '1'
+		fiq_assert_delay = stateMatch.group(4) == '1'
+		return (pc, instr), irq_assert_delay, fiq_assert_delay
 	except Exception, e:
 		print "Invalid execute state {}".format(msState)
 		raise

@@ -1,7 +1,7 @@
 From 9fba9b68664de7758748f3cb09818c05fe20ca40 Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Sun, 25 Oct 2015 15:38:07 -0700
-Subject: [PATCH 6/7] Prevent from dying when read bad offsets
+Subject: [PATCH 06/10] Prevent from dying when read bad offsets
 
 ---
  hw/arm/integratorcp.c |   11 ++++++-----

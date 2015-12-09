@@ -6,8 +6,7 @@ module cpsr(input  logic        clk, reset,
               input logic       RestoreCPSR,
               input logic       NotStallW, CoProc_FlagUpd_W,
               output logic [31:0] CPSRdata, 
-              output logic [31:0] SPSRdata,
-              output logic [6:0] PCVectorAddressE);
+              output logic [31:0] SPSRdata);
 
  /***** Brief Description *******
  * Created by Ivan Wong for Clay Wolkin 2014-2015
@@ -55,45 +54,27 @@ module cpsr(input  logic        clk, reset,
       5'b11111: LegalModeChange = 1;
       default: LegalModeChange = 0;
     endcase  
-  // EXCEPTION BITS:
-  // {6'b000_000}
-  // {FIQ, IRQ, UNDEF _ PrefetchAbort, DataAbort, SWI}
 
   always_comb
     begin
       // ========== Exceptions ===========
-      if (reset) begin
+      if (reset)
         CPSR_update = {1'b1, 1'b1, 6'b01_0011}; // Supervisor Mode (Fast Interrupt disabled - why?)
-        PCVectorAddressE = 7'b000_0001;
-      end
-      else if (DataAbort) begin // data abort 
+      else if (DataAbort)// data abort 
         CPSR_update = {1'b1, cpsr[6], 6'b01_0111}; // Data Abort Mode
-        PCVectorAddressE = 7'b001_0000;
-      end
-      else if (FastInterrupt) begin // FIQ
+      else if (FastInterrupt) // FIQ
         CPSR_update = {1'b1, cpsr[6], 6'b01_0001}; // output fast interrupt (FIQ) mode
-        PCVectorAddressE = 7'b100_0000;
-      end
-      else if (Interrupt)begin // IRQ
+      else if (Interrupt)// IRQ
         CPSR_update = {1'b1, cpsr[6], 6'b01_0010}; // IRQ mode
-        PCVectorAddressE = 7'b010_0000;
-      end
-      else if (PrefetchAbort) begin // prefetch abort
+      else if (PrefetchAbort) // prefetch abort
         CPSR_update = {1'b1, cpsr[6], 6'b01_0111}; // Prefetch Abort Mode
-        PCVectorAddressE = 7'b000_1000;
-      end
-      else if (Undefined) begin // undef
+      else if (Undefined)// undef
         CPSR_update = {1'b1, cpsr[6], 6'b01_1011}; // Undefined Mode
-        PCVectorAddressE = 7'b000_0010;
-      end
-      else if (SoftwareInterrupt) begin // Software interrupt
+      else if (SoftwareInterrupt) // Software interrupt
         CPSR_update = {1'b1, cpsr[6], 6'b01_0011}; // Supervisor Mode
-        PCVectorAddressE = 7'b000_0100;
-      end
-      else begin
+      else
         CPSR_update = {cpsr[7:0]};
-        PCVectorAddressE = 7'b0;
-      end
+
       // ========= MSR instructions =========
       if (MSRmask[0] & (InAPrivilegedMode | CurrentModeHasSPSR) & LegalModeChange)  MSR_update[7:0] = ALUout[7:0];
       else if ((MSRmask[0] & (InAPrivilegedMode | CurrentModeHasSPSR) & ~LegalModeChange & MSRmask[4]))   
@@ -117,64 +98,63 @@ module cpsr(input  logic        clk, reset,
     end
 
 
-  //  The goal here is to see if a signal high triggers any one of these mode changes. However, if the signal is kept high,
-  //  one can see the chance of the CPSR continuously changing the values inside the SPSR. Would we need to make a state machine
-  //  such that we can restore the correct value of the SPSR back to the CPSR upon the MOVS PC R14 or SUBS PC R14 #4 instruction?
-
   //  In Summary, here's what we will want to do:
   // 1) On interrupt trigger, save SPSR_mode <= CPSR
   // 2) Save R14_mode <== Address of next/aborted/undef instruction
   // 3) Change Mode type in current CPSR (I assume this is done after the SPSR_mode is saved)
   // 4) Change PC to some value 0x4,8,c,10,18,1c
 
-  // To return (SPSR moved to CPSR and R14 moved to PC), we either (1) want to do SUBS or MOVS or (2) use Load multiple and restore PSR
+  // A sneaky case: If the last instruction through the datapath before
+  // the interrupt set flags, we want to save the flags to the CPSR and SPSR
+  // but still not save the new mode to the SPSR.
 
   always_ff @(negedge clk, posedge reset)
     begin
       // ========== Exceptions ===========
       if (reset) begin
         spsr <= '{5{32'b0}};
-        cpsr <= {cpsr[11:8], 19'b0, 1'b1, CPSR_update}; // go to supervisor mode (On Reset, set Endianness to Big - LEGv7)
+        cpsr <= {4'b0000, 19'b0, 1'b1, CPSR_update}; // go to supervisor mode (On Reset, set Endianness to Big - LEGv7)
       end
-      else if (DataAbort & ~(cpsr[4:0]==5'b10111)) begin // data abort 
-        spsr[1] <= cpsr;
-        cpsr <= {cpsr[11:8], 20'b0, CPSR_update}; // go to abort mode
-      end
-      else if (FastInterrupt & ~(cpsr[4:0]==5'b10001)) begin // FIQ
-        spsr[4] <= cpsr;
-        cpsr <= {cpsr[11:8], 20'b0, CPSR_update}; // go to FIQ mode
-      end
-      else if (Interrupt & ~(cpsr[4:0]==5'b10010)) begin // IRQ
-        spsr[3] <= cpsr;
-        cpsr <= {cpsr[11:8], 20'b0, CPSR_update}; // go to irq mode
-      end
-      else if (PrefetchAbort & ~(cpsr[4:0]==5'b10111)) begin // prefetch abort
-        spsr[1] <= cpsr;
-        cpsr <= {cpsr[11:8], 20'b0, CPSR_update}; // go to abort mode
-      end
-      else if (Undefined & ~(cpsr[4:0]==5'b11011)) begin // undef
-        spsr[2] <= cpsr;
-        cpsr <= {cpsr[11:8], 20'b0, CPSR_update}; // go to undef mode 
-      end
-      else if (SoftwareInterrupt & ~(cpsr[4:0]==5'b10011)) begin // Software interrupt
-        spsr[0] <= cpsr;
-        cpsr <= {cpsr[11:8], 20'b0, CPSR_update}; // go to supervisor mode
-      end
-      // ========= MSR instructions =========
-      // IF R == 0 and InAPrivilegedMode
-      else if (MSRmask[3:0] != 4'b0000 & ~MSRmask[4])
-        cpsr <= MSR_update;
-      // IF R == 1 and CurrentModeHasSPSR
-      else if (MSRmask[3:0] != 4'b0000 & MSRmask[4])
-        spsr[regnumber] <= MSR_update;
+      else if (NotStallW)
+        if (DataAbort & ~(cpsr[4:0]==5'b10111)) begin // data abort 
+          spsr[1] <= {FlagsUpdate, cpsr[27:0]};
+          cpsr <= {FlagsUpdate, 20'b0, CPSR_update}; // go to abort mode
+        end
+        else if (FastInterrupt & ~(cpsr[4:0]==5'b10001)) begin // FIQ
+          spsr[4] <= {FlagsUpdate, cpsr[27:0]};
+          cpsr <= {FlagsUpdate, 20'b0, CPSR_update}; // go to FIQ mode
+        end
+        else if (Interrupt & ~(cpsr[4:0]==5'b10010)) begin // IRQ
+          spsr[3] <= {FlagsUpdate, cpsr[27:0]};
+          cpsr <= {FlagsUpdate, 20'b0, CPSR_update}; // go to irq mode
+        end
+        else if (PrefetchAbort & ~(cpsr[4:0]==5'b10111)) begin // prefetch abort
+          spsr[1] <= {FlagsUpdate, cpsr[27:0]};
+          cpsr <= {FlagsUpdate, 20'b0, CPSR_update}; // go to abort mode
+        end
+        else if (Undefined & ~(cpsr[4:0]==5'b11011)) begin // undef
+          spsr[2] <= {FlagsUpdate, cpsr[27:0]};
+          cpsr <= {FlagsUpdate, 20'b0, CPSR_update}; // go to undef mode 
+        end
+        else if (SoftwareInterrupt & ~(cpsr[4:0]==5'b10011)) begin // Software interrupt
+          spsr[0] <= {FlagsUpdate, cpsr[27:0]};
+          cpsr <= {FlagsUpdate, 20'b0, CPSR_update}; // go to supervisor mode
+        end
+        // ========= MSR instructions =========
+        // IF R == 0 and InAPrivilegedMode
+        else if (MSRmask[3:0] != 4'b0000 & ~MSRmask[4])
+          cpsr <= MSR_update;
+        // IF R == 1 and CurrentModeHasSPSR
+        else if (MSRmask[3:0] != 4'b0000 & MSRmask[4])
+          spsr[regnumber] <= MSR_update;
 
-      // ========= Instructions that cpsr <= spsr ==========
-      else if (RestoreCPSR)
-        cpsr <= spsr[regnumber];
-      // ========= Just update flags =========
-      else if (NotStallW) begin
-        cpsr <= {FlagsUpdate, cpsr[27:0]};
-      end
+        // ========= Instructions that cpsr <= spsr ==========
+        else if (RestoreCPSR)
+          cpsr <= spsr[regnumber];
+        // ========= Just update flags =========
+        else begin
+          cpsr <= {FlagsUpdate, cpsr[27:0]};
+        end
     end
 
   // OUTPUT CPSR DATA

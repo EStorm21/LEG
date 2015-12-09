@@ -5,10 +5,10 @@ sim:/testbench/dut/leg/c/CPSRW \
 sim:/testbench/dut/leg/dp/rf/rf
 
 add wave -position insertpoint -group valid \
-sim:/testbench/dut/leg/dp/validDdebug \
-sim:/testbench/dut/leg/dp/validEdebug \
-sim:/testbench/dut/leg/dp/validMdebug \
-sim:/testbench/dut/leg/dp/validWdebug
+sim:/testbench/dut/leg/c/validDdebug \
+sim:/testbench/dut/leg/c/validEdebug \
+sim:/testbench/dut/leg/c/validMdebug \
+sim:/testbench/dut/leg/c/validWdebug
 
 add wave -position insertpoint -group PC \
 sim:/testbench/dut/leg/dp/PCF \
@@ -39,13 +39,13 @@ sim:/testbench/dut/leg/dp/instrWdebug
 
 add wave -position insertpoint -group uOp \
 sim:/testbench/dut/leg/dp/uOpStallD \
-sim:/testbench/dut/leg/dp/uOpProgEdebug \
-sim:/testbench/dut/leg/dp/uOpProgMdebug \
-sim:/testbench/dut/leg/dp/uOpProgWdebug
+sim:/testbench/dut/leg/c/uOpProgEdebug \
+sim:/testbench/dut/leg/c/uOpProgMdebug \
+sim:/testbench/dut/leg/c/uOpProgWdebug
 
 add wave -position insertpoint -group advancing \
-sim:/testbench/dut/leg/dp/advancingEdebug \
-sim:/testbench/dut/leg/dp/advancingWdebug
+sim:/testbench/dut/leg/c/advancingEdebug \
+sim:/testbench/dut/leg/c/advancingWdebug
 
 add wave -position insertpoint -group ioShim \
 sim:/testbench/dut/ahb/ioShim/HADDR \
