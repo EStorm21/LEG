@@ -58,6 +58,7 @@ always_comb
 	ZeroRegsLeft = RegistersListNext == 0;
 	// Note: page A5-48 in ARMv5 ARM is INCORRECT. Pages A5-50 to A5-53 are correct.
 	// start_imm is added or subtracted from Rn based on defaultInstrD[23] to generate ONE BEFORE the first address.
+	// SD 12/9/2015: Don't need to shift here. Do it by adding 00 in uopinstrD
 	casex(defaultInstrD[24:23])
 	  2'b00:   start_imm = ((numones)<<2); // DA: Rn is highest address, writeback subtracts numones<<2
 	  2'b01:   start_imm = 4;                // IA: Rn is lowest address, writeback adds numones<<2
@@ -1085,7 +1086,7 @@ always_comb
 				InstrMuxD = 1;
 				KeepZD = 0;
 				AddZeroD = 0;
-				uOpStallD = 1;
+				uOpStallD = ZeroRegsLeft & ~defaultInstrD[21];
 				addCarry = 0;
 				prevRSRstate = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
