@@ -22,8 +22,10 @@
 		MSR cpsr, r1
 		/* set IRQ stack */
 		LDR sp, =irq_stack_top
-		/* Enable IRQs */
-		BIC r0, r0, #0x80
+
+		BIC r0, r0, #0x80 /* Enable IRQs */
+		# BIC r0, r0, #0x40 /* Enable FIQs */
+
 		/* go back in Supervisor mode */
 		MSR cpsr, r0
 		/* jump to main */
