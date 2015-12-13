@@ -1086,7 +1086,7 @@ always_comb
 				InstrMuxD = 1;
 				KeepZD = 0;
 				AddZeroD = 0;
-				uOpStallD = ZeroRegsLeft & ~defaultInstrD[21];
+				uOpStallD = ~(ZeroRegsLeft & ~defaultInstrD[21]);
 				addCarry = 0;
 				prevRSRstate = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
