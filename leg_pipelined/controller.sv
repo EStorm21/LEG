@@ -17,7 +17,7 @@ module controller (
   input  logic        ShifterCarryOutE,
   /// ------ To   Datapath ------
   output logic [ 1:0] RegSrcD, ImmSrcD       ,
-  output logic        ALUSrcE, BranchTakenE  ,
+  output logic        ALUSrcE, ALUSrcD, BranchTakenE  ,
   output logic [ 3:0] ALUControlE            ,
   output logic [ 1:0] MultControlE           ,
   output logic        MemWriteM              ,
@@ -61,7 +61,7 @@ module controller (
   logic [ 4:0] MSRmaskD, MSRmaskE, MSRmaskM, MSRmaskW;
   logic [ 1:0] MultControlD       ;
   logic        MultEnableD        ;
-  logic        ALUSrcD, MemtoRegD, CondExE2;
+  logic        MemtoRegD, CondExE2;
   logic        RegWriteD, RegWriteE, RegWriteGatedE;
   logic        MemWriteD, MemWriteE, MemWriteGatedE;
   logic        SetNextFlagsE, SetNextFlagsM, SetNextFlagsW;
