@@ -7,7 +7,14 @@ module ahb_lite (
   input  logic        HWRITE  ,
   input  logic [31:0] HWDATA  ,
   output logic [31:0] HRDATA  ,
-  output logic        HREADY, fiq, irq
+  output logic        HREADY, fiq, irq,
+
+  //UART
+  input logic UARTCLK,
+  input logic nUARTRST,
+  output logic UARTTXD,
+  input logic UARTRXD
+
 );
               
   // TODO: Make memRE functional
@@ -47,5 +54,21 @@ io_fwd_shim ioShim(  .*,
   .HSEL  (HSEL[1]   ),
   .HRDATA(HRDATA1   )
 );
+
+uart uart (
+  .PCLK (HCLK),
+  .PRESETn (HRESETn),
+  .PSEL (HSEL),
+  .PENABLE (HREQUEST),
+  .PWRITE (HWRITE),
+  .PADDR (HADDR[11:0]),
+  .PWDATA (HWDATA[15:0]),
+
+  // Todo external clock UARTCLK
+  .UARTCLK (UARTCLK), // input
+  .nUARTRST (nUARTRST), // input
+  .UARTTXD (UARTTXD), // input
+  .UARTRXD (UARTRXD) // output
+  );
   
 endmodule
