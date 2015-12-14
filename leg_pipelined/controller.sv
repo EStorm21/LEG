@@ -17,7 +17,7 @@ module controller (
   input  logic        ShifterCarryOutE,
   /// ------ To   Datapath ------
   output logic [ 1:0] RegSrcD, ImmSrcD       ,
-  output logic        ALUSrcE, BranchTakenE  ,
+  output logic        ALUSrcE, ALUSrcD, BranchTakenE  ,
   output logic [ 3:0] ALUControlE            ,
   output logic [ 1:0] MultControlE           ,
   output logic        MemWriteM              ,
@@ -27,7 +27,7 @@ module controller (
   output logic        DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryInE,
   output logic [ 3:0] FlagsE                 ,
   // For micro-op decoding
-  output logic        RselectE, LDRSTRshiftE, LDMSTMforwardE,
+  output logic        RselectE, LDRSTRshiftE, LDMSTMforwardD, LDMSTMforwardE,
   output logic [ 1:0] ResultSelectE          ,
   output logic [ 6:4] ShiftOpCode_E          ,
   output logic        MultSelectD, MultEnableE,
@@ -61,7 +61,7 @@ module controller (
   logic [ 4:0] MSRmaskD, MSRmaskE, MSRmaskM, MSRmaskW;
   logic [ 1:0] MultControlD       ;
   logic        MultEnableD        ;
-  logic        ALUSrcD, MemtoRegD, CondExE2;
+  logic        MemtoRegD, CondExE2;
   logic        RegWriteD, RegWriteE, RegWriteGatedE;
   logic        MemWriteD, MemWriteE, MemWriteGatedE;
   logic        SetNextFlagsE, SetNextFlagsM, SetNextFlagsW;
@@ -81,7 +81,7 @@ module controller (
   logic        ByteOrWordE, ByteOrWordM, LdrStr_HalfD, LdrStr_HalfE, LdrHalfwordE, LdrHalfwordM;
   logic        Ldr_SignBD, Ldr_SignHD, Ldr_SignBE, Ldr_SignHE, Ldr_SignBM, Ldr_SignHM;
   logic [ 1:0] ByteOffsetE, ByteOffsetM;
-  logic        LDMSTMforwardD, PrevRSRstateD, uOpRtypeLdrStrD;
+  logic        PrevRSRstateD, uOpRtypeLdrStrD;
   logic        RegWriteKillE   ;
   logic        CoProc_MCR_D, CoProc_MRC_D, CoProc_FlagUpd_D, CoProc_WrEnD, CoProc_EnD;
   logic        CoProc_FlagUpd_E, CoProc_FlagUpd_M, CoProc_FlagUpd_W;
