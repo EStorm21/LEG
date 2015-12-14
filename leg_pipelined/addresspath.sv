@@ -87,9 +87,9 @@ module addresspath( /// ------ From TOP ------
   eqcmp #(32) m4a(WA3E, RA1D, Match_1D_E);
   eqcmp #(32) m4b(WA3E, RA2D, Match_2D_E_0);
 
-  assign Match_2E_M = Match_2E_M_0 & regR2_E;
-  assign Match_2E_W = Match_2E_W_0 & regR2_E;
-  assign Match_2D_E = Match_2D_E_0 & regR2_D;
+  assign Match_2E_M = Match_2E_M_0;
+  assign Match_2E_W = Match_2E_W_0;
+  assign Match_2D_E = Match_2D_E_0;
 
   exception_vector_address exception_vector(PCVectorAddress, VectorPCnextF, ExceptionVectorSelectW); // near the fetch stage
 

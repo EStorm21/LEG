@@ -12,7 +12,7 @@ module hazard(input  logic       clk, reset,
               input  logic       CoProc_En,
               output logic       StallE, StallM, FlushM, FlushW, StallW,
               // For Micro-ops
-              input logic        uOpStallD, LDMSTMforwardE,
+              input logic        uOpStallD, LDMSTMforwardD, LDMSTMforwardE,
               output logic       StalluOp, ExceptionSavePC,
               input logic        RegtoCPSR, CPSRtoReg);
                 
@@ -34,7 +34,7 @@ module hazard(input  logic       clk, reset,
       ForwardBE = 2'b00;
   end
 
-  assign IncrementE = LDMSTMforwardE;
+  assign IncrementE = 0;
   
   // stalls and flushes
   // Load RAW
@@ -52,7 +52,7 @@ module hazard(input  logic       clk, reset,
   // assign WriteMultLoD = MultStallD;
   assign Match_12D_E = Match_1D_E | Match_2D_E;
 
-  assign ldrStallD = Match_12D_E & MemtoRegE;
+  assign ldrStallD = Match_12D_E & MemtoRegE & ~LDMSTMforwardD;
   
   assign StallD = ldrStallD | DStall | uOpStallD | IStall | ExceptionStallD;
   assign StalluOp = ldrStallD | DStall | IStall ;
