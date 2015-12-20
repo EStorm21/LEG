@@ -76,7 +76,7 @@ always_ff @(negedge clk) begin
       //if(we & reg_select[j]) rf[j] <= wd;	
       if(we & reg_select[j]) begin
           rf[j] <= wd;	
-          $display("we: reg %d at time %d", j, $time);
+          //$display("we: reg %d at time %d", j, $time);
       end
     end
   end
