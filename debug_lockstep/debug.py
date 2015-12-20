@@ -433,10 +433,6 @@ atexit.register(cleanup)
 
 setup()
 
-qemu = initialize_qemu()
-
-gdb.execute('set pagination off')
-
 if COMMAND[0]=="divideandconquer":		
 	should_cleanup_dir = False
 	run_dir = COMMAND[1]
@@ -444,6 +440,10 @@ else:
 	should_cleanup_dir = True
 	run_dir = get_run_directory()
 	leg.compile()
+
+qemu = initialize_qemu()
+
+gdb.execute('set pagination off')
 
 with open(os.path.join(run_dir,'pid'), 'w') as f:
 	f.write(str(os.getpid()) + '\n')
