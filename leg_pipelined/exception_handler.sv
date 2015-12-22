@@ -3,7 +3,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
                          input  logic IRQEnabled, FIQEnabled,
                          output logic UndefinedInstrM, SWIM, PrefetchAbortM, DataAbortCycle2, IRQAssert, FIQAssert,
                          output logic PipelineClearF, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
-                         output logic [31:0] VectorPCnextF,
+                         output logic [2:0] VectorPCnextF,
                          output logic ExceptionResetMicrop, ExceptionSavePC, 
                          output logic [1:0] PCInSelect);
 

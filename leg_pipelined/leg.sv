@@ -59,7 +59,7 @@ module leg(input  logic        clk, reset,
 
   /// Output from AddressPath
   logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_1D_E, Match_2D_E, ExceptionVectorSelectW;
-  logic [31:0]  WA3W, WA3E, RA1D, RA2D, VectorPCnextF;
+  logic [31:0]  WA3W, WA3E, RA1D, RA2D;
   logic [3:0]  DestRegD;
 
   // Thumb 
@@ -70,6 +70,7 @@ module leg(input  logic        clk, reset,
   logic       SWI;
   logic       RegtoCPSR, CPSRtoReg;
   logic [1:0] PCInSelect;
+  logic [2:0] VectorPCnextF;
 
   controller c (.*);
   datapath dp (.*); 
