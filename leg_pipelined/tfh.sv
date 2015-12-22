@@ -41,7 +41,7 @@ module tfh (
                             ESNLINEFAULT = 4'b1000,
                             EPNLINEFAULT = 4'b1010
                             } faulttype;
-  faulttype FaultCode, FaultCodeMid;
+  faulttype FaultCodeMid;
 
 
   // Fault Signals

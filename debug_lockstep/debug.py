@@ -33,6 +33,7 @@ import checkpoint
 import qemu_monitor
 import qemuDump
 import leg
+import bin_bugsearch
 
 OUTPUT_DIR = "output"
 
@@ -312,11 +313,11 @@ class LegRecordCommand (gdb.Command):
 
 LegRecordCommand()
 
-class LegBugSearchCommand (gdb.Command):
-	""" Shut down the debug session gracefully """
+class LegFileBugSearchCommand (gdb.Command):
+	""" Search for a bug using starting points from a file """
 
 	def __init__ (self):
-		super (LegBugSearchCommand, self).__init__ ("leg-bugsearch", gdb.COMMAND_USER)
+		super (LegFileBugSearchCommand, self).__init__ ("leg-filebugsearch", gdb.COMMAND_USER)
 
 	def invoke (self, arg, from_tty):
 		args = arg.split()
@@ -361,9 +362,75 @@ class LegBugSearchCommand (gdb.Command):
 			# After compare the output of each lockstep
 			# TODO: Implement - right now this is a manual process
 		else:
-			print "leg-bugsearch FILENAME"
+			print "leg-filebugsearch FILENAME"
+
+LegFileBugSearchCommand()
+
+class LegBugSearchCommand (gdb.Command):
+	""" Search for a bug using starting points using binary search"""
+
+	def __init__ (self):
+		super (LegBugSearchCommand, self).__init__ ("leg-bugsearch", gdb.COMMAND_USER)
+
+	def invoke (self, arg, from_tty):
+		args = arg.split()
+		maxcount = 10000
+
+		if(len(args) == 3):
+			# Parse inputs
+			jumploc = args[0]
+			start = int(args[1])
+			end = int(args[2])
+			
+			# Initialize counters and indices
+			count = 0 # runtime counter
+			index = 0
+			same = False
+			orig_output = ''
+			bs = bin_bugsearch.bugsearcher()
+
+			# Binary search for the troublesome instruction
+			while((end-start) > 1 & count < maxcount):
+				if(count == 0):
+					index = start
+				else:
+					index = int((end-start)/2 + start)
+
+				gdb.execute('leg-restart')
+				gdb.execute('leg-jump {}'.format(jumploc))
+				
+				# Stepi the number of times specified in the file
+				print 'stepping {} instructions'.format(index)
+				stepout = ''
+				for k in range(index):
+					stepout = gdb.execute('stepi', to_string=True)
+				print 'stepped to {}'.format(stepout)
+				
+				# Star lockstepping
+				print 'starting new lockstep'
+				output = gdb.execute('leg-lockstep', to_string=True)
+
+				# Save the original debug output to compare
+				if(count == 0):
+					orig_output = output
+
+				# Check whether the same bug was encountered
+				same = bs.isEqLockstepOutput(output, orig_output)
+				if(same):
+					start = index
+				else:
+					end = index
+				count = count + 1
+			
+			if(same):
+				print 'failed at step {}'.format(index+1)
+			else:
+				print 'failed at step {}'.format(index)
+		else:
+			print "leg-bugsearch STARTJUMPLOC STARTOFFSET ENDOFFSET"
 
 LegBugSearchCommand()
+
 
 
 class LegInstrCtCommand (gdb.Command):
@@ -523,6 +590,7 @@ else:
 	print "    leg-lockstep-goal PCADDRESS: Like leg-lockstep-auto, but stop when we reach PCADDRESS"
 	print "    leg-jump BREAK_LOC: Shortcut to skip to a function or address using breakpoints"
 	print "    leg-frombug BUGFILE: Jump to the last matching state before a bug "
+	print "    leg-filebugsearch FILENAME: Run lockstep from all locations listed in the file "
 	print "    leg-count: Print the current instruction "
 	print "    leg-memwatch [-w, -r] WATCH_ADDR(S): Run qemu with memory watchpoints"
 	print "    leg-qemu-state: Print qemu's current state"
