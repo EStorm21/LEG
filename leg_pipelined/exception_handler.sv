@@ -3,7 +3,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
                          input  logic IRQEnabled, FIQEnabled,
                          output logic UndefinedInstrM, SWIM, PrefetchAbortM, DataAbortCycle2, IRQAssert, FIQAssert,
                          output logic PipelineClearF, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
-                         output logic [6:0] PCVectorAddress,
+                         output logic [31:0] VectorPCnextF,
                          output logic ExceptionResetMicrop, ExceptionSavePC, 
                          output logic [1:0] PCInSelect);
 
@@ -63,7 +63,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
     end
 
     else begin // Normal
-      // don't stall or flush or FIQ or IRQ     
+      // don't stall or flush or FIQ or IRQ or anything    
       assign {IRQAssert, FIQAssert} = 2'b00;
       assign  PipelineClearF = 1'b0;
       assign {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b0000;
@@ -71,10 +71,15 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
     end
   end
 
+  // PC vectoring
   assign PCVectorAddress = {FIQAssert, IRQAssert, DataAbortCycle2, PrefetchAbortE, SWIE, UndefinedInstrE, reset};
   assign ExceptionSavePC = |PCVectorAddress; 
+  exception_vector_address pcvec(PCVectorAddress, VectorPCnextF);
+
+  // Data abort means abort microp too
   assign ExceptionResetMicrop = DataAbort;
 
+  // Select correct PC to save (or normal behavior)
   always_comb
     if (IRQAssert | FIQAssert)
       PCInSelect = 2'b10; // PCD + 4

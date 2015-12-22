@@ -53,7 +53,8 @@ module controller (
   input  logic        TFlagE                 ,
   // For exceptions
   input  logic        PrefetchAbort, DataAbort, IRQ, FIQ,
-  output logic  [1:0]    PCInSelect);
+  output logic  [1:0]    PCInSelect,
+  output logic        ExceptionSavePC);
 
   logic [12:0] ControlsD          ;
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
@@ -93,7 +94,7 @@ module controller (
   logic        undefD, undefE, undefM;
   logic        PrefetchAbortM;
   logic        IRQAssert, FIQAssert, DataAbortAssert;
-  logic        ExceptionResetMicrop, ExceptionSavePC;
+  logic        ExceptionResetMicrop;
 
   // For debugging
   logic        validDdebug, validEdebug, validMdebug, validWdebug;

@@ -54,7 +54,6 @@ module leg(input  logic        clk, reset,
   logic        ShifterCarryOut_cycle2E, CoProc_En, AddZeroE, ClzSelectE;
   logic [7:0]  CPSR8_W;
   logic [31:0] PSR_W;
-  logic [6:0]  PCVectorAddress;
   logic RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW;
   logic        ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD;
 

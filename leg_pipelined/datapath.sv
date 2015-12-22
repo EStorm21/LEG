@@ -12,7 +12,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic [3:0]  ALUControlE, 
                   input  logic [1:0]  MultControlE,
                   input  logic        MultEnableE,
-                  input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE,
+                  input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE, ExceptionSavePC
                   input  logic [31:0] InstrE, PSR_W, 
                   // Handling data-processing Instrs (ALU)
                   input  logic [3:0]  FlagsE,
@@ -80,7 +80,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // ====================================================================================
   mux2 #(32) pcnextmux(PCPlus4F, ResultW, PCSrcW, PCnext1F);
   mux2 #(32) branchmux(PCnext1F, ALUResultE, BranchTakenE, PCnext2F);
-  mux2 #(32) exceptionmux(PCnext2F, VectorPCnextF, ExceptionVectorSelectW, PCnextF);
+  mux2 #(32) exceptionmux(PCnext2F, VectorPCnextF, ExceptionSavePC, PCnextF);
   flopenr #(32) pcreg(clk, reset, ~StallF, PCnextF, PCF);
   adder #(32) pcaddfour(PCF, 32'h4, PCPlus4F);
   // For thumb mode
