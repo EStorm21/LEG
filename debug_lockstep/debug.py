@@ -218,7 +218,7 @@ def auto_int(x):
 	return int(x, 0)
 
 class LegMemwatchCommand (gdb.Command):
-	""" Shortcut to skip to a function or address """
+	""" Run until memory watchpoints are triggered """
 
 	def __init__ (self):
 		super (LegMemwatchCommand, self).__init__ ("leg-memwatch", gdb.COMMAND_USER)
@@ -229,22 +229,35 @@ class LegMemwatchCommand (gdb.Command):
 		else:
 			addrs_str = arg.split()
 
-			if(len(addrs_str) < 3):
-				print "Please pass three addreses to leg-memwatch"
-				print "leg-memwatch STARTADDR STOPADDR WATCHADDR1 [WATCHADDR2 ...]"
+			if(len(addrs_str) < 1):
+				print "Please pass one or more addreses to leg-memwatch"
+				print "leg-memwatch [-w -r] WATCHADDR1 [WATCHADDR2 ...]"
+				print "-r indicates watch for reads only"
+				print "-w indicates watch for writes only"
+				print "Don't use -r and -w"
 			else:
-				startA = addrs_str[0]
-				stopA = addrs_str[1]
-				watchA = addrs_str[2:]
+				command = "awatch" # Watch for both read and write
+				watchA = addrs_str[0:]
 
-				gdb.execute('leg-jump {}'.format(startA))
+				if(addrs_str[0] == "-r"):
+					command = "rwatch" # Watch for reads only
+
+				if(addrs_str[0] == "-w"):
+					command = "watch"	
 				
+				if(command != "awatch"):
+					if(len(addrs_str) < 2):
+						print "Please pass one or more addreses to leg-memwatch"
+						print "leg-memwatch [-w -r] WATCHADDR1 [WATCHADDR2 ...]"
+					else:
+						watchA = addrs_str[1:]
+
 				# Set one watch point for each watch address
 				for a in watchA:
-					gdb.execute('awatch {}'.format(a))
+					print '{} {}'.format(command, a)
+					gdb.execute('{} {}'.format(command, a))
 
 				gdb.execute('continue')
-				#pdb.set_trace()
 
 LegMemwatchCommand()
 
@@ -263,7 +276,7 @@ class LegStopCommand (gdb.Command):
 LegStopCommand()
 
 class LegRecordCommand (gdb.Command):
-	""" Shut down the debug session gracefully """
+	""" Record N instructions """
 
 	def __init__ (self):
 		super (LegRecordCommand, self).__init__ ("leg-rec", gdb.COMMAND_USER)
@@ -271,7 +284,12 @@ class LegRecordCommand (gdb.Command):
 	def invoke (self, arg, from_tty):
 
 		args = arg.split()
-		
+		dispInstr = False
+
+		# Handle the display instruction flag
+		if(len(args) >= 3):
+			if(args[2] == '-d'):
+				dispInstr = True
 
 		if(len(args) >= 2):
 			N = int(args[0])
@@ -280,7 +298,11 @@ class LegRecordCommand (gdb.Command):
 				print "Recording {} instructions to {}".format(args[0], fname)
 				f = open(fname, 'w')
 				for i in range(N):
-					output = gdb.execute('stepi', to_string=True)
+					if(dispInstr == True):
+						dummy = gdb.execute('stepi', to_string=True)
+						output = gdb.execute('x/1i $pc', to_string=True)
+					else:
+						output = gdb.execute('stepi', to_string=True)
 					f.write(output)
 				f.close()
 			else:
@@ -307,13 +329,29 @@ class LegBugSearchCommand (gdb.Command):
 			fin = open('output/bugsearch/' + finame, 'r')
 			foutnames = [] # Collect a list fo the file out namtes
 			for line in fin:
-				print 'starting new lockstep'
-				foutname = finame + '.' + line.rstrip() + '.txt'
+
+				n = ''.join(line.rstrip().split())
+				foutname = finame + '.' + n  + '.txt'
 				foutnames.append(foutname)
 				fout = open(tpath + foutname, 'w')
 				
-				print 'jumping to ' + line.rstrip()
-				gdb.execute('leg-jump {}'.format(line.rstrip()))
+				# Extract the jump address from the current line
+				lineargs = line.rstrip().split()
+				jadr = lineargs[0]
+
+				# Jump to the appropriate address
+				print 'jumping to ' + jadr 
+				gdb.execute('leg-jump {}'.format(jadr))
+				
+				# Stepi the number of times specified in the file
+				if(len(line.rstrip().split()) > 1):
+					print 'stepping {} instructions'.format(int(lineargs[1]))
+					stepout = ''
+					for k in range(int(lineargs[1])):
+						stepout = gdb.execute('stepi', to_string=True)
+					print 'stepped to {}'.format(stepout)
+				
+				print 'starting new lockstep'
 				output = gdb.execute('leg-lockstep', to_string=True)
 				fout.write(output)
 				fout.close()
@@ -486,11 +524,12 @@ else:
 	print "    leg-jump BREAK_LOC: Shortcut to skip to a function or address using breakpoints"
 	print "    leg-frombug BUGFILE: Jump to the last matching state before a bug "
 	print "    leg-count: Print the current instruction "
-	print "    leg-memwatch STOP_LOC WATCH_ADDR(S): Run qemu with memory watchpoints"
+	print "    leg-memwatch [-w, -r] WATCH_ADDR(S): Run qemu with memory watchpoints"
 	print "    leg-qemu-state: Print qemu's current state"
 	print "    leg-virt-to-phys VIRTUAL_ADDRESS: Translate a virtual address to a physical "
 	print "    leg-checkpoint NAME: Create a ModelSim checkpoint corresponding to the current state"
 	print "    leg-restart: Restart qemu"
+	print "    leg-rec N FILENAME [-d]: Record N instrucitons to a file. -d records the instructions addresses and decoded instructions"
 	print "    leg-stop: Shut down the debug session gracefully"
 	print ""
 	print "You can also run any GDB command to step through the kernel normally."
