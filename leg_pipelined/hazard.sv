@@ -7,7 +7,7 @@ module hazard(input  logic       clk, reset,
               output logic [1:0] ForwardAE, ForwardBE,
               output logic       StallF, StallD, 
               // Added DStall, StallE, StallM, and FlushW for memory
-              output logic       FlushD, FlushE, IncrementE,
+              output logic       FlushD, FlushE,
               input  logic       DStall, IStall,
               input  logic       CoProc_En,
               output logic       StallE, StallM, FlushM, FlushW, StallW,
@@ -33,8 +33,6 @@ module hazard(input  logic       clk, reset,
     else                             
       ForwardBE = 2'b00;
   end
-
-  assign IncrementE = 0;
   
   // stalls and flushes
   // Load RAW

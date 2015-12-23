@@ -36,6 +36,7 @@ logic [15:0] RegistersListNow, RegistersListNext;
 /* Gives you the next register to Load/Store during LDM or STM, even handles first cycle
  */
 microps_reg_selector regSelect(RegistersListNow, RegistersListNext, Rd);
+countones cntones(defaultInstrD[15:0], numones);
 
 /* Updates the Current Registers List that we need to select from. 
  * In the first cycle this list is from the instruction
@@ -54,7 +55,6 @@ always_ff @ (posedge clk)
 
 always_comb 
   begin
-	numones = $countones(defaultInstrD[15:0]);
 	ZeroRegsLeft = RegistersListNext == 0;
 	// Note: page A5-48 in ARMv5 ARM is INCORRECT. Pages A5-50 to A5-53 are correct.
 	// start_imm is added or subtracted from Rn based on defaultInstrD[23] to generate ONE BEFORE the first address.

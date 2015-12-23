@@ -25,7 +25,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   // To handle load-store half-words and bytes
                   input  logic        LoadLengthW, HalfwordOffsetW, Ldr_SignBW, Ldr_SignHW,
                   input  logic [1:0]  ByteOffsetW,
-                  input  logic        WriteByteE, StrHalfwordE, LdrHalfwordW, IncrementE, //HalfwordOffset, 
+                  input  logic        WriteByteE, StrHalfwordE, LdrHalfwordW,
                   // Added for moving MicroOpFSM to Controller decode
                   input  logic        noRotateD, InstrMuxD,
                   input  logic [3:0]  RegFileRzD,
@@ -123,9 +123,8 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
 
   mux3 #(32)  byp1mux(Rd1E, ResultW, ALUorCP15_M, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(Rd2E, ResultW, ALUorCP15_M, ForwardBE, WriteDataE);
-  mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcB4E);
+  mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcBE);
   mux2 #(32)  shifterAin(SrcAE, ExtImmE, RselectE, ShifterAinE); 
-  mux2 #(32)  select4(ALUSrcB4E, 32'h4, IncrementE, ALUSrcBE); // SD 12/7/2015: Useless after re-done micro op?
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
 
   // Thumb
