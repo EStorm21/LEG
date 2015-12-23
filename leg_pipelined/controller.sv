@@ -68,7 +68,7 @@ module controller (
   logic        SetNextFlagsE, SetNextFlagsM, SetNextFlagsW;
   logic        BranchD, BranchE, HalfwordOffsetE, HalfwordOffsetM;
   logic        MicroOpCPSRrestoreD, DataRestoreCPSR_D;
-  logic        TFlag, restoreCPSR_D, restoreCPSR_E, restoreCPSR_M, restoreCPSR_W;
+  logic        restoreCPSR_D, restoreCPSR_E, restoreCPSR_M, restoreCPSR_W;
   logic        CPSRtoRegD, CPSRtoReg0E, CPSRtoRegE, CPSRtoRegM;
   logic        PSRtypeD, PSRtypeE, PSRtypeM;
   logic [2:0]  CVUpdateE;
@@ -86,15 +86,15 @@ module controller (
   logic        RegWriteKillE   ;
   logic        CoProc_MCR_D, CoProc_MRC_D, CoProc_FlagUpd_D, CoProc_WrEnD, CoProc_EnD;
   logic        CoProc_FlagUpd_E, CoProc_FlagUpd_M, CoProc_FlagUpd_W;
-  logic        CoProc_WrEnE, CoProc_EnE, MCR_D;
-  logic [ 3:0] FlagsOutE, FlagsM;
+  logic        CoProc_WrEnE, CoProc_EnE;
+  logic [ 3:0] FlagsOutE;
   logic [31:0] SPSRW, CPSRW;
-  logic        nonFlushedInstr, PipelineClearD, PipelineClearM, PipelineClearE, PipelineClearF;
+  logic        nonFlushedInstr;
   logic        SWI_0E, SWI_E, SWI_D, SWI_M;
   logic        undefD, undefE, undefM;
   logic        PrefetchAbortM;
   logic        IRQAssert, FIQAssert, DataAbortAssert;
-  logic        ExceptionResetMicrop;
+  logic        ExceptionResetMicrop, interrupting;
 
   // For debugging
   logic        validDdebug, validEdebug, validMdebug, validWdebug;
@@ -116,11 +116,10 @@ module controller (
 
   // Flush writeback signals when we flushD. 
   flopenrc #(1) flushWBD(clk, reset | ExceptionResetMicrop, ~StallD, FlushD, 1'b1, nonFlushedInstr);
-  flopenr  #(1) pipelineclearDflop(clk, reset, ~StallD, PipelineClearF, PipelineClearD); // see exception_handler.sv
 
 
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevRSRstateD, 
-    KeepVD, KeepZD, KeepCD, AddCarryD, AddZeroD, noRotateD, uOpRtypeLdrStrD, MultControlD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, PipelineClearD);
+    KeepVD, KeepZD, KeepCD, AddCarryD, AddZeroD, noRotateD, uOpRtypeLdrStrD, MultControlD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, interrupting);
 
   // === Control Logic for Datapath ===
   always_comb
@@ -314,10 +313,9 @@ module controller (
 
 
  exception_handler exh(clk, reset, undefE, SWI_E, PrefetchAbort, DataAbort, IRQ, FIQ, 
-                       PipelineClearD, PipelineClearM,
-                       ~CPSRW[7], ~CPSRW[6],
+                       ~CPSRW[7], ~CPSRW[6], StallD, StallE,
                        undefM, SWI_M, PrefetchAbortM, DataAbortAssert, IRQAssert, FIQAssert, // undefM, SWI_M, and PrefetchAbortM are for saving CPSR only.
-                       PipelineClearF, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
+                       interrupting, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
                        VectorPCnextF,
                        ExceptionResetMicrop, ExceptionSavePC, PCInSelect);
 
@@ -341,7 +339,6 @@ module controller (
   flopenrc #(16) regsM(clk, reset, ~StallM, FlushM,
     {MemWriteGatedE, MemtoRegE, RegWriteGatedE, PCSrcGatedE, ByteMaskE, ByteOrWordE, ByteOffsetE, LdrHalfwordE, Ldr_SignBE, Ldr_SignHE, HalfwordOffsetE, CPSRtoRegE},
     {MemWriteM,      MemtoRegM, RegWriteM,      PCSrcM,      ByteMaskM, ByteOrWordM, ByteOffsetM, LdrHalfwordM, Ldr_SignBM, Ldr_SignHM, HalfwordOffsetM, CPSRtoRegM});
-  flopenr  #(1) pipelineclearMflop(clk, reset, ~StallM, PipelineClearE, PipelineClearM); // see exception_handler.sv
 
   mux2 #(4)  flagM_mux(FlagsNext0M, CPSRW[31:28], CoProc_FlagUpd_W, FlagsNextM);
 
