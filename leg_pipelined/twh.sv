@@ -16,7 +16,7 @@ module twh #(parameter tagbits = 16) (
   input  logic               InstrExecuting,
   input  logic               InstrCancelled,
   input  logic [       17:0] TBase         ,
-  input  logic [       31:0] CPUHAddr      ,
+  input  logic [       31:0] VirtAdr      ,
   input  logic [       31:0] HRData        ,
   input  logic [       31:0] PHRData       ,
   output logic [       31:0] HAddrMid      ,
@@ -144,14 +144,14 @@ endcase
 // TODO: Make this structural
 always_comb
 case (state)
-  READY:        HAddrMid = PAReady ? {TableEntry[tagbits+8:9], CPUHAddr[31-tagbits:0]} : 
-                           {TBase,  CPUHAddr[31:20], 2'b00};
-  SECTIONTRANS: HAddrMid = {PHRData[31:20], CPUHAddr[19:0]}; 
-  COARSEFETCH:  HAddrMid = {PHRData[31:10], CPUHAddr[19:12], 2'b0};
-  FINEFETCH:    HAddrMid = {PHRData[31:12], CPUHAddr[19:10], 2'b0};
-  SMALLTRANS:   HAddrMid = {PHRData[31:12], CPUHAddr[11:0]};
-  TINYTRANS:    HAddrMid = {PHRData[31:10], CPUHAddr[9:0]};
-  LARGETRANS:   HAddrMid = {PHRData[31:16], CPUHAddr[15:0]};
+  READY:        HAddrMid = PAReady ? {TableEntry[tagbits+8:9], VirtAdr[31-tagbits:0]} : 
+                           {TBase,  VirtAdr[31:20], 2'b00};
+  SECTIONTRANS: HAddrMid = {PHRData[31:20], VirtAdr[19:0]}; 
+  COARSEFETCH:  HAddrMid = {PHRData[31:10], VirtAdr[19:12], 2'b0};
+  FINEFETCH:    HAddrMid = {PHRData[31:12], VirtAdr[19:10], 2'b0};
+  SMALLTRANS:   HAddrMid = {PHRData[31:12], VirtAdr[11:0]};
+  TINYTRANS:    HAddrMid = {PHRData[31:10], VirtAdr[9:0]};
+  LARGETRANS:   HAddrMid = {PHRData[31:16], VirtAdr[15:0]};
   default: HAddrMid = 32'h9999_9999;
 endcase
 
