@@ -7,7 +7,6 @@ module controller (
   output logic [ 2:0] CoProc_Op2M            ,
   /// ------ To   Addresspath ------
   output logic [ 7:0] CPSR8_W                ,
-  output logic [ 6:0] PCVectorAddress        ,
   output logic        Reg_usr_D              ,
   /// ------ From Datapath ------
   input  logic [31:0] InstrD, ALUOutW        ,
@@ -54,7 +53,8 @@ module controller (
   // For exceptions
   input  logic        PrefetchAbort, DataAbort, IRQ, FIQ,
   output logic  [1:0]    PCInSelect,
-  output logic        ExceptionSavePC);
+  output logic        ExceptionSavePC,
+  output logic  [2:0] VectorPCnextF);
 
   logic [12:0] ControlsD          ;
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
@@ -318,7 +318,7 @@ module controller (
                        ~CPSRW[7], ~CPSRW[6],
                        undefM, SWI_M, PrefetchAbortM, DataAbortAssert, IRQAssert, FIQAssert, // undefM, SWI_M, and PrefetchAbortM are for saving CPSR only.
                        PipelineClearF, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
-                       PCVectorAddress,
+                       VectorPCnextF,
                        ExceptionResetMicrop, ExceptionSavePC, PCInSelect);
 
   // === DEBUGGING ===

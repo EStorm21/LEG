@@ -13,6 +13,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   //--Need to change load and store to use Base Restored Abort Model
 
   logic IRQEn_sync, FIQEn_sync;
+  logic [6:0] PCVectorAddress;
   
   // DataAbortCycle2 serves as the abort signal for the rest of the processor
   flopr #(4) DataAbortFlop(clk, reset, {DataAbort,       SWIE, PrefetchAbortE, UndefinedInstrE},

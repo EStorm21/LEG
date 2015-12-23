@@ -13,7 +13,7 @@ module hazard(input  logic       clk, reset,
               output logic       StallE, StallM, FlushM, FlushW, StallW,
               // For Micro-ops
               input logic        uOpStallD, LDMSTMforwardD, LDMSTMforwardE,
-              output logic       StalluOp, ExceptionSavePC,
+              output logic       StalluOp,
               input logic        RegtoCPSR, CPSRtoReg);
                 
   // forwarding logic

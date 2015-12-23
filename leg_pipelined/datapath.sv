@@ -12,7 +12,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic [3:0]  ALUControlE, 
                   input  logic [1:0]  MultControlE,
                   input  logic        MultEnableE,
-                  input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE, ExceptionSavePC
+                  input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE, ExceptionSavePC,
                   input  logic [31:0] InstrE, PSR_W, 
                   input  logic [2:0]  VectorPCnextF,
                   // Handling data-processing Instrs (ALU)
