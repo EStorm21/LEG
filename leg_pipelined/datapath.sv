@@ -9,9 +9,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                 ///  ------- From Controller ------
                   input  logic [1:0]  ImmSrcD,
                   input  logic        ALUSrcE, BranchTakenE,
-                  input  logic [3:0]  ALUControlE, 
                   input  logic [1:0]  MultControlE,
-                  input  logic        MultEnableE,
                   input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE, ExceptionSavePC,
                   input  logic [31:0] InstrE, PSR_W, 
                   input  logic [2:0]  VectorPCnextF,
@@ -29,9 +27,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic        WriteByteE, StrHalfwordE, LdrHalfwordW,
                   // Added for moving MicroOpFSM to Controller decode
                   input  logic        noRotateD, InstrMuxD,
-                  input  logic [3:0]  RegFileRzD,
                   input  logic [31:0] uOpInstrD,
-		              input logic         uOpStallD,
                   input  logic        CoProc_EnM, 
 
                 /// ------ To Controller ------
@@ -51,7 +47,6 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                 /// ------ To Address Path ------
                 /// ------ From Address Path ------
                   input  logic [31:0] WA3W, RA1D, RA2D,
-                  input  logic        ExceptionVectorSelectW,
 
                 /// ------ added for thumb instructions ------
                   input  logic        TFlagNextE, 
