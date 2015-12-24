@@ -36,14 +36,13 @@ sim:/testbench/dut/leg/dp/InstrD \
 sim:/testbench/dut/leg/dp/InstrE \
 sim:/testbench/dut/leg/dp/instrEdebug \
 sim:/testbench/dut/leg/dp/instrMdebug \
-sim:/testbench/dut/leg/dp/instrWdebug \ 
-sim:/testbench/dut/leg/c/CondExE \ 
+sim:/testbench/dut/leg/dp/instrWdebug
 
 add wave -position insertpoint -group uOp \
 sim:/testbench/dut/leg/c/uOpFSM/uOpStallD \
 sim:/testbench/dut/leg/c/uOpFSM/state \
 sim:/testbench/dut/leg/c/uOpFSM/nextState \
-sim:/testbench/dut/leg/c/uOpFSM/reset \ 
+sim:/testbench/dut/leg/c/uOpFSM/reset 
 
 add wave -position insertpoint -group exception \
 sim:/testbench/dut/leg/c/exh/UndefinedInstrE \
@@ -53,12 +52,14 @@ sim:/testbench/dut/leg/c/exh/DataAbort \
 sim:/testbench/dut/leg/c/exh/interruptPending \
 sim:/testbench/dut/leg/c/exh/IRQ \
 sim:/testbench/dut/leg/c/exh/IRQEn_sync \
+sim:/testbench/dut/leg/c/exh/IRQAssert \
 sim:/testbench/dut/leg/c/exh/FIQ \
 sim:/testbench/dut/leg/c/exh/FIQEn_sync \
+sim:/testbench/dut/leg/c/exh/FIQAssert \
 sim:/testbench/dut/leg/c/exh/state \
 sim:/testbench/dut/leg/c/exh/nextState \
 sim:/testbench/dut/leg/c/exh/ExceptionSavePC \
-sim:/testbench/dut/leg/c/exh/PCVectorAddress \
+sim:/testbench/dut/leg/c/exh/PCVectorAddress 
 
 
 add wave -position insertpoint -group advancing \
