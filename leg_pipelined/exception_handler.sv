@@ -1,5 +1,5 @@
 module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, PrefetchAbortE, DataAbort, IRQ, FIQ, 
-                         input  logic IRQEnabled, FIQEnabled, StallD, StallE,
+                         input  logic IRQEnabled, FIQEnabled, StallD, StallE, BranchTakenM,
                          output logic UndefinedInstrM, SWIM, PrefetchAbortM, DataAbortCycle2, IRQAssert, FIQAssert,
                          output logic interrupting, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
                          output logic [2:0] VectorPCnextF,
@@ -104,7 +104,10 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   assign DataAbortCycle2 = state == DataAbort2;
   assign FIQAssert = (state == Int_W) & FIQ & FIQEn_sync;
   assign IRQAssert = (state == Int_W) & IRQ & IRQEn_sync & ~FIQAssert;
-  assign ExceptionStallD = (state == Int_E) | (state == Int_M) | ((state == ready) & DataAbort);
+  // Normally we StallD in interrupts so the next instruction address is preserved. 
+  // But when an interrupt follows a branch we need to get the BTA into the decode stage.
+  // By unstalling at the right time the PC gets in and the rest of the stuff is still thrown out.
+  assign ExceptionStallD = (((state == Int_E) | (state == Int_M)) & ~BranchTakenM) | ((state == ready) & DataAbort);
 
 
   // PC vectoring
