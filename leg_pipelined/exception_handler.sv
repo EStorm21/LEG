@@ -15,7 +15,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   logic [6:0] PCVectorAddress;
   
   // Save some exception signals for M so CPSR works properly (see case in the FSM below)
-  flopr #(4) exceptionflop(clk, reset, {SWIE, PrefetchAbortE, UndefinedInstrE},
+  flopr #(3) exceptionflop(clk, reset, {SWIE, PrefetchAbortE, UndefinedInstrE},
                                        {SWIM, PrefetchAbortM, UndefinedInstrM});
 
   // CPSR acts like it is in the register file and changes on negedge clk. We want to delay these changes to the positive edge.
@@ -43,7 +43,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
         // Flush E, M, W (stall overrides flush for D, so don't care)
         // Stall D and reset microp
         // Next cycle save the PC and flush D
-        {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = {4'b1111};
+        {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1111;
         nextState = DataAbort2;
       end
       else if (PrefetchAbortE | UndefinedInstrE | SWIE) begin // single cycle exceptions
@@ -59,7 +59,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
         // Only if FIQ or IRQ enabled
         // Wait for last instruction to exit D. When it is in E, FlushE. The zero instruction cannot cause any exception.
         // When the final instruction get to W raise the interrupt, save PCD+4 
-        {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = {4'b0000};
+        {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b0000;
         nextState = StallD ? ready : Int_E;
       end
       else begin // Normal
@@ -70,32 +70,33 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
     end
 
     // NEXT CYCLE OF DATA ABORT
-    case(DataAbort2): begin
-      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = {4'b1011};
+    DataAbort2: begin
+      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1011;
       nextState = ready;
     end
 
     // IRQ / FIQ: Final instruction in E
-    case(Int_E): begin
-      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = {4'b0100};
+    Int_E: begin
+      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b0100;
       nextState = interruptPending ? (StallE ? Int_E : Int_M) : ready;
     end
 
     // IRQ / FIQ: Final instruction in M
-    case(Int_M): begin
-      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = {4'b0100};
+    Int_M: begin
+      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b0100;
       nextState = interruptPending ? (StallE ? Int_M : Int_W) : ready;
     end
 
-    // IRQ / FIQ: Final instruction in E
-    case(Int_W): begin
-      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = {4'b1000};
+    // IRQ / FIQ: Final instruction in W
+    Int_W: begin
+      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1000;
       nextState = interruptPending ? (StallE ? Int_W : ready) : ready;
     end
 
-    default:
-      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = {4'b0000};
+    default: begin
+      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b0000;
       nextState = ready;
+    end
   endcase
 
   // (some) FSM Output logic
