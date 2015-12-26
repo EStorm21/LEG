@@ -1,5 +1,5 @@
 module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, PrefetchAbortE, DataAbort, IRQ, FIQ, 
-                         input  logic IRQEnabled, FIQEnabled, StallD, StallE, BranchTakenM,
+                         input  logic IRQEnabled, FIQEnabled, StallD, StallE, PCWrPendingF, PCUpdateW,
                          output logic UndefinedInstrM, SWIM, PrefetchAbortM, DataAbortCycle2, IRQAssert, FIQAssert,
                          output logic interrupting, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
                          output logic [2:0] VectorPCnextF,
@@ -11,12 +11,14 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   //--LDM: When loading into base register without writeback, must load into Rz. Last operation should then be mov Rn, Rz. This is to be consistent with data abort, which requires that base register not be updated if data abort occurs at any point.
   //--Need to change load and store to use Base Restored Abort Model
 
-  logic IRQEn_sync, FIQEn_sync, interruptPending;
+  logic IRQEn_sync, FIQEn_sync, interruptPending, UnstallD;
   logic [6:0] PCVectorAddress;
   
   // Save some exception signals for M so CPSR works properly (see case in the FSM below)
   flopr #(3) exceptionflop(clk, reset, {SWIE, PrefetchAbortE, UndefinedInstrE},
                                        {SWIM, PrefetchAbortM, UndefinedInstrM});
+
+  flopenr #(1) pcwrflop(clk, reset, ~StallE, PCUpdateW, UnstallD);
 
   // CPSR acts like it is in the register file and changes on negedge clk. We want to delay these changes to the positive edge.
   flopr #(2) IRQ_FIQ_Sync(clk, reset, {IRQEnabled, FIQEnabled}, {IRQEn_sync, FIQEn_sync});
@@ -75,10 +77,12 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
       nextState = ready;
     end
 
-    // IRQ / FIQ: Final instruction in E
+    // IRQ / FIQ: Final instruction in E. 
+    // Stay here during PC writes because instead of any forwarding all PC writes stop everything until W. 
+    // In those cases, W looks like E. RIP. Also the relevant signal is called PCWrPendingF. Why.
     Int_E: begin
       {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b0100;
-      nextState = interruptPending ? (StallE ? Int_E : Int_M) : ready;
+      nextState = interruptPending ? ( (StallE | PCWrPendingF) ? Int_E : Int_M) : ready;
     end
 
     // IRQ / FIQ: Final instruction in M
@@ -107,7 +111,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   // Normally we StallD in interrupts so the next instruction address is preserved. 
   // But when an interrupt follows a branch we need to get the BTA into the decode stage.
   // By unstalling at the right time the PC gets in and the rest of the stuff is still thrown out.
-  assign ExceptionStallD = (((state == Int_E) | (state == Int_M)) & ~BranchTakenM) | ((state == ready) & DataAbort);
+  assign ExceptionStallD = (state == Int_E) | ((state == Int_M) & ~UnstallD) | ((state == ready) & DataAbort);
 
 
   // PC vectoring

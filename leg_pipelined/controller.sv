@@ -95,7 +95,7 @@ module controller (
   logic        PrefetchAbortM;
   logic        IRQAssert, FIQAssert, DataAbortAssert;
   logic        ExceptionResetMicrop, interrupting;
-  logic        BranchTakenM;
+  logic        CondExM, CondExW;
 
   // For debugging
   logic        validDdebug, validEdebug, validMdebug, validWdebug;
@@ -314,7 +314,7 @@ module controller (
 
 
  exception_handler exh(clk, reset, undefE, SWI_E, PrefetchAbort, DataAbort, IRQ, FIQ, 
-                       ~CPSRW[7], ~CPSRW[6], StallD, StallE, BranchTakenM,
+                       ~CPSRW[7], ~CPSRW[6], StallD, StallE, PCWrPendingF, PCSrcW & CondExW,
                        undefM, SWI_M, PrefetchAbortM, DataAbortAssert, IRQAssert, FIQAssert, // undefM, SWI_M, and PrefetchAbortM are for saving CPSR only.
                        interrupting, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
                        VectorPCnextF,
@@ -332,8 +332,8 @@ module controller (
 
   flopenrc #(2) msr_mrs_M(clk, reset, ~StallM, FlushM, {restoreCPSR_E, RegtoCPSR_E},
                                                        {restoreCPSR_M, RegtoCPSR_M});
-  flopenrc #(1) branch_M(clk, reset, ~StallM, FlushM, BranchTakenE,
-                                                      BranchTakenM);
+  flopenrc #(1) pcupd_M(clk, reset, ~StallM, FlushM, CondExE,
+                                                     CondExM);
   flopenrc #(11) flagM(clk, reset, ~StallM, FlushM, {FlagsNextE,  SetNextFlagsE, PSRtypeE, MSRmaskE},
                                                     {FlagsNext0M, SetNextFlagsM, PSRtypeM, MSRmaskM});
   flopenrc #(14) CoProc_M(clk, reset, ~StallM, FlushM,
@@ -361,6 +361,8 @@ module controller (
     {MemtoRegW, RegWriteW, PCSrcW, LoadLengthW, ByteOffsetW, LdrHalfwordW, Ldr_SignBW, Ldr_SignHW, HalfwordOffsetW, CPSRtoRegW});
   flopenrc #(11) flagW(clk, reset, ~StallW, FlushW, {FlagsNextM, SetNextFlagsM, PSRtypeM, MSRmaskM},
                                                     {FlagsNextW, SetNextFlagsW, PSRtypeW, MSRmaskW});
+ flopenrc #(1) pcupd_W(clk, reset, ~StallM, FlushM, CondExM,
+                                                    CondExW);
 
   // === CPSR / SPSR relevant info ===
   cpsr          cpsr_W(clk, reset, FlagsNextW, ALUOutW, MSRmaskW, {undefM, SWI_M, PrefetchAbortM, DataAbortAssert, IRQAssert, FIQAssert}, restoreCPSR_W, ~StallW, CoProc_FlagUpd_W,
