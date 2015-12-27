@@ -5,7 +5,7 @@ module micropsfsm(input  logic        clk, reset,
                output logic [1:0]  multControlD, 
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
-			   input  logic		   StalluOp, ExceptionSavePC, PipelineClearD);
+			   input  logic		   StalluOp, ExceptionSavePC, interrupting);
 
  /***** Brief Description *******
  * First Created by Ivan Wong for Clay Wolkin 2014-2015
@@ -125,7 +125,7 @@ always_comb
 				uOpInstrD = 32'b1110_000_1101_0_0000_1110_00000000_1111; // mov r14, pc
 			end
 
-			else if (PipelineClearD) begin 
+			else if (interrupting) begin 
 				debugText = "stay in ready";
 				nextState = ready;
 				InstrMuxD = 1;
