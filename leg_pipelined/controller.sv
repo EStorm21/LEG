@@ -115,7 +115,7 @@ module controller (
   // ======================================= Decode Stage ===============================================
   // ====================================================================================================
 
-  // Flush writeback signals when we flushD. 
+  // Flush writeback signals when we flushD, unless we are actually doing a micro op. See usage of this below.
   flopenrc #(1) flushWBD(clk, reset | ExceptionResetMicrop, ~StallD, FlushD, 1'b1, nonFlushedInstr);
 
 
@@ -154,7 +154,7 @@ module controller (
   // Notes: ldrstrALUopD gives Loads and Stores the ability to choose alu function add or subtract.
   assign {RegSrcD, ImmSrcD,     // 2 bits each
     ALUSrcD, MemtoRegD, RegWriteD, MemWriteD,
-    BranchD, ALUOpD, MultSelectD, ldrstrALUopD, BXInstrD} = ControlsD & {5'b11_11_1, {3{nonFlushedInstr}}, 5'b11111}; // And here to kill writeback in flush.
+    BranchD, ALUOpD, MultSelectD, ldrstrALUopD, BXInstrD} = ControlsD & {5'b11_11_1, {3{nonFlushedInstr | InstrMuxD}}, 5'b11111}; // And here to kill writeback in flush.
   // === END ===
 
   // === Controlling the ALU ===

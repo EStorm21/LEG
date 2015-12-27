@@ -88,11 +88,11 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // ====================================================================================
 
   assign PCPlus8D = PCPlus4F; // skip register *change to PCPlusXF for thumb
-  flopenrc #(32) pcplus4(clk, reset, ~StallD, FlushD, PCPlus4F, PCPlus4D);
-  flopenrc #(32) pcplus0(clk, reset, ~StallD, FlushD, PCPlus4D, PCPlus0D);
+  flopenr #(32) pcplus4(clk, reset, ~StallD, PCPlus4F, PCPlus4D);
+  flopenr #(32) pcplus0(clk, reset, ~StallD, PCPlus4D, PCPlus0D);
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
   // pass on PC for debugging
-  flopenrc #(32) pcdreg(clk, reset, ~StallD, FlushD, PCF, PCD);
+  flopenr #(32) pcdreg(clk, reset, ~StallD, PCF, PCD);
 
   mux3 #(32)  exceptionPC(PCPlus8D, PCPlus0D, PCPlus4D, PCInSelect, PC_in);
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);
