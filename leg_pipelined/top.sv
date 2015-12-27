@@ -59,7 +59,7 @@ module top (
     // Added for MMU
     StallD, FlushD, FlushE);
 
-  `define ECACHES 1
+  //`define ECACHES 1
   initial
     begin
       `ifdef ECACHES
