@@ -19,12 +19,9 @@ module twh #(parameter tagbits = 16) (
   input  logic [       31:0] VirtAdr      ,
   input  logic [       31:0] HRData        ,
   input  logic [       31:0] PHRData       ,
-  output logic [       31:0] HAddrMid      ,
+  output logic [       31:0] HAddrT ,
   output logic [        3:0] statebits     ,
   //output logic               SelPrevAddr   ,
-  output logic               HRequestMid   ,
-  output logic               HWriteMid     ,
-  output logic               CPUHReadyMid  ,
   output logic               TLBwe         ,
   output logic               MMUEn         ,
   output logic               MMUWriteEn    ,
@@ -48,7 +45,7 @@ assign C = 1'b1;
 assign B = 1'b1;
 assign AP = 2'b11;
 assign Domain = 4'b1111;
-assign TableEntry = TLBwe ? {HAddrMid[31:32-tagbits], C, B, AP, Domain, 1'b1} : 'bz;
+assign TableEntry = TLBwe ? {HAddrT[31:32-tagbits], C, B, AP, Domain, 1'b1} : 'bz;
 
 
 // ===========================================================================
@@ -140,19 +137,19 @@ endcase
 // ========================= Translation Output Logic ========================
 // ===========================================================================
 
-// HAddrMid logic
+// HAddrT logic
 // TODO: Make this structural
 always_comb
 case (state)
-  READY:        HAddrMid = PAReady ? {TableEntry[tagbits+8:9], VirtAdr[31-tagbits:0]} : 
+  READY:        HAddrT = PAReady ? {TableEntry[tagbits+8:9], VirtAdr[31-tagbits:0]} : 
                            {TBase,  VirtAdr[31:20], 2'b00};
-  SECTIONTRANS: HAddrMid = {PHRData[31:20], VirtAdr[19:0]}; 
-  COARSEFETCH:  HAddrMid = {PHRData[31:10], VirtAdr[19:12], 2'b0};
-  FINEFETCH:    HAddrMid = {PHRData[31:12], VirtAdr[19:10], 2'b0};
-  SMALLTRANS:   HAddrMid = {PHRData[31:12], VirtAdr[11:0]};
-  TINYTRANS:    HAddrMid = {PHRData[31:10], VirtAdr[9:0]};
-  LARGETRANS:   HAddrMid = {PHRData[31:16], VirtAdr[15:0]};
-  default: HAddrMid = 32'h9999_9999;
+  SECTIONTRANS: HAddrT = {PHRData[31:20], VirtAdr[19:0]}; 
+  COARSEFETCH:  HAddrT = {PHRData[31:10], VirtAdr[19:12], 2'b0};
+  FINEFETCH:    HAddrT = {PHRData[31:12], VirtAdr[19:10], 2'b0};
+  SMALLTRANS:   HAddrT = {PHRData[31:12], VirtAdr[11:0]};
+  TINYTRANS:    HAddrT = {PHRData[31:10], VirtAdr[9:0]};
+  LARGETRANS:   HAddrT = {PHRData[31:16], VirtAdr[15:0]};
+  default: HAddrT = 32'h9999_9999;
 endcase
 
 // SelPrevAddr 
@@ -162,13 +159,10 @@ endcase
 assign HRequestMid = (state == COARSEFETCH) |
                 (state == FINEFETCH)    & CPUHRequest |
                 (state == SMALLTRANS)   & CPUHRequest |
-                (state == TINYTRANS)    & CPUHRequest |
-                (state == LARGETRANS)   & CPUHRequest |
-                (state == SECTIONTRANS) & CPUHRequest | 
-                ( (state == READY) & CPUHRequest );
+               ( (state == READY) & CPUHRequest );
 
 // CPUHReady Logic  
-assign CPUHReadyMid = PAReady;
+//assign CPUHReadyMid = PAReady;
 //assign CPUHReadyMid = (state == SECTIONTRANS) & HReady | 
 //                    (state == LARGETRANS)   & HReady |
 //                    (state == TINYTRANS)    & HReady |

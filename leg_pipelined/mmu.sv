@@ -3,14 +3,14 @@ module mmu #(parameter tbits = 22) (
   input  logic        CPUHWrite, HReady, DataAccess, CPSR4,
   input  logic        SupMode, WordAccess, DStall, IStall,
   input  logic        StallD, FlushD, FlushE,
-  input  logic [31:0] CPUHAddr, HRData, DataAdrM, PCF, // TODO: Remove DataAdrM, PCF
+  input  logic [31:0] HRData, DataAdrM, PCF, // TODO: Remove DataAdrM, PCF
   // TODO: fixe control signal name
   input  logic [31:0] control, CP15rd_M, // control[0] is the enable bit
   input  logic [17:0] TBase    ,
-  output logic [31:0] HAddr, MMUWriteData,
+  output logic [31:0] MMUWriteData,
   output logic [tbits-1:0] PhysTag,
   output logic [ 3:0] CP15A    ,
-  output logic        HRequest, HWrite, CPUHReady, MMUWriteEn,
+  output logic        MMUWriteEn,
   PrefetchAbort, DataAbort, MMUEn, PAReady
 );
                         // PrefetchAbort, DataAbort, MMUEn);
@@ -43,9 +43,8 @@ module mmu #(parameter tbits = 22) (
   logic [3:0]  Domain, FaultCode;
   logic [31:0] FSR, FAR, Dom;
   // Translation Signals
-  logic [31:0] HAddrMid, HAddrOut, VirtAdr; // TODO Remove VirtAdr
+  logic [31:0] HAddrT, VirtAdr; // TODO Remove VirtAdr
   logic [31:0] PHRData;
-  logic        HRequestMid, CPUHReadyMid, HWriteMid; // Output signals from MMU
   logic [3:0]  statebits; // Carry state from twh to tfh
   // Signals for the Instruction Counter
   logic        InstrExecuting;
@@ -59,7 +58,7 @@ module mmu #(parameter tbits = 22) (
   flopenr #(32) HRDataFlop(clk, reset, HReady, HRData, PHRData);
   
   assign FSR[7:4] = Domain;    // Define the location of the domain
-  assign FAR = CPUHAddr;       // Set the FAR
+  assign FAR = VirtAdr;       // Set the FAR
   assign Enable = control[0];  // Add enable, disable
   assign SBit = control[7];
   assign RBit = control[9];
@@ -72,17 +71,16 @@ module mmu #(parameter tbits = 22) (
   end
 
   // Bypass translation
-  mux2 #(35) enableMux({CPUHAddr, CPUHRequest, CPUHWrite, HReady},
-                       {HAddrOut, HRequestMid, HWriteMid, CPUHReadyMid}, 
-                       Enable, {HAddr, HRequest, HWrite, CPUHReady});
+  //mux2 #(35) enableMux({VirtAdr, CPUHRequest, CPUHWrite, HReady},
+  //                     {HAddrT, HRequestMid, HWriteMid, CPUHReadyMid}, 
+  //                    Enable, {HAddr, HRequest, HWrite, CPUHReady});
   // TODO: fix this name
-  assign HAddrOut = HAddrMid;
   assign PhysTag = TableEntry[tbits+8:9];
 
   // MMUWriteData Mux
   mux2 #(32) WDMux(FAR, FSR, WDSel, MMUWriteData);
 
-  // Virtual Address MUX TODO: Remove and just use CPUHAddr
+  // Virtual Address MUX TODO: Remove and just use VirtAdr
   // This mux was placed here to protoype a bug fix
   mux2 #(32) VirtAdrMux(PCF, DataAdrM, DRequestPA, VirtAdr);
 
@@ -99,7 +97,7 @@ module mmu #(parameter tbits = 22) (
     .reset     (reset     ),
     .enable    (Enable),
     .we        (TLBwe ),
-    .VirtTag   (VirtAdr[31:32-tbits]), // TODO: Use CPUHAddr
+    .VirtTag   (VirtAdr[31:32-tbits]), // TODO: Use VirtAdr
     .TableEntry(TableEntry), 
     .PAReady   (PAReady)
   );

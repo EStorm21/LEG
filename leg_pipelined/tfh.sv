@@ -16,7 +16,7 @@ module tfh (
   input logic CPUHRequest,
   input logic CPUHWrite,
 	input logic [31:0] PHRData,
-  input logic [31:0] CPUHAddr,
+  input logic [31:0] VirtAdr,
   input logic [31:0] HAddrMid,
 	output logic PrefetchAbort, DataAbort, WDSel,
 	output logic [3:0] CP15A,
@@ -72,7 +72,7 @@ module tfh (
           FaultCodeMid <= ALIGNFAULT;
           FaultMid     <= 1'b0;
         // Alignment fault on a word access
-        end else if (~(CPUHAddr[1:0]==2'b00) & WordAccess) begin
+        end else if (~(VirtAdr[1:0]==2'b00) & WordAccess) begin
           FaultCodeMid <= ALIGNFAULT;
           FaultMid     <= 1'b1;
         end else if (MMUExtInt & CPUHRequest) begin
@@ -219,14 +219,14 @@ module tfh (
   always_comb
     case(state)
       SECTIONTRANS: CurrAP <= PHRData[11:10];
-      SMALLTRANS:   case(CPUHAddr[11:10])
+      SMALLTRANS:   case(VirtAdr[11:10])
                       2'b00: CurrAP <= PHRData[5:4];
                       2'b01: CurrAP <= PHRData[7:6];
                       2'b10: CurrAP <= PHRData[9:8];
                       2'b11: CurrAP <= PHRData[11:10];
                     endcase
       TINYTRANS:    CurrAP <= PHRData[5:4];
-      LARGETRANS:   case(CPUHAddr[15:14])
+      LARGETRANS:   case(VirtAdr[15:14])
                       2'b00: CurrAP <= PHRData[5:4];
                       2'b01: CurrAP <= PHRData[7:6];
                       2'b10: CurrAP <= PHRData[9:8];

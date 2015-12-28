@@ -14,7 +14,7 @@ module top (
   logic [2:0]  HSIZE;
 
   // ----- instr cache -----
-  logic        BusReadyF, HRequestF, IStall, ENI;
+  logic        HReadyF, HRequestF, IStall, ENI;
   logic [31:0] PCF, InstrF;
 
   // ----- arbiter and ahb_lite -----
@@ -112,7 +112,7 @@ module top (
     .reset     (reset       ),
     .enable    (ENI         ),
     .invalidate(INVI        ),
-    .BusReady  (BusReadyF   ),
+    .BusReady  (HReadyF   ),
     .A         (PCF         ),
     .HRData    (HRData      ),
     .RD        (InstrF      ),
@@ -154,7 +154,7 @@ module top (
     .HWriteM   (HWriteM     )
   );
 
-  // Create ahb arbiter
+  /*// Create ahb arbiter
   ahb_arbiter ahb_arb (
     .HWriteM   (HWriteM    ),
     .IStall    (IStall     ),
@@ -168,12 +168,15 @@ module top (
     .PAReadyF  (PAReadyF   ),
     .PAReadyM  (PAReadyM   ),
     .DRequestPA(DRequestPA ),
-    .HReadyF   (BusReadyF  ),
+    .HReadyF   (HReadyF  ),
     .HReadyM   (BusReadyM  ),
     .CPUHAddr     (CPUHAddr   ),
     .CPUHWrite    (CPUHWrite  ),
     .CPUHRequest  (CPUHRequest)
-  );
+  );*/
+  ahb_arbiter_3way ahb_arb(.*);
+
+  tlb_arbiter tarb(.*);
 
   // Create an ahb memory
   // TODO: Partition into on chip and off chip
