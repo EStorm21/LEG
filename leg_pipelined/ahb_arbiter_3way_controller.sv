@@ -15,7 +15,7 @@ module ahb_arbiter_3way_controller (
     output logic       HRequest,
     output logic       HWrite,
     output logic [1:0] HAddrSel,
-    output logic [2:0] HSize
+    output logic [2:0] HSIZE
 );
 
     logic TSel, MSel, FSel;    // Indicate stage in use
@@ -97,12 +97,12 @@ module ahb_arbiter_3way_controller (
     assign HReadyM = PMSel & HReady;
     assign HReadyF = PFSel & HReady;
 
-    // HSize
+    // HSIZE
     always_comb
         if(MSel) begin
-            HSize = HSizeM;
+            HSIZE = HSizeM;
         end else begin
-            HSize = 3'b010; // 32-bit word transaction
+            HSIZE = 3'b010; // 32-bit word transaction
         end   
 
 endmodule

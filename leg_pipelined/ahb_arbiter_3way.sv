@@ -23,7 +23,8 @@ module ahb_arbiter_3way (
     input  logic [31:0] HWDataM  ,
     output logic        HReadyF, HReadyM, HReadyT,
     output logic        HWrite   ,
-    output logic [ 2:0] HSize    ,
+    output logic        HRequest,
+    output logic [ 2:0] HSIZE    ,
     output logic [31:0] HWData, HAddr
 );
     

@@ -5,8 +5,7 @@ module twh #(parameter tagbits = 16) (
   input  logic               Enable        ,
   input  logic               Fault         ,
   input  logic               PAReady       ,
-  input  logic               PARequest   ,
-  input  logic               CPUHWrite     ,
+  input  logic               RequestPA   ,
   input  logic               DataAccess    ,
   input  logic               PrefetchAbort ,
   input  logic               HReady        ,
@@ -20,6 +19,7 @@ module twh #(parameter tagbits = 16) (
   output logic [        3:0] statebits     ,
   //output logic               SelPrevAddr   ,
   output logic               TLBwe         ,
+  output logic               HRequestT,
   output logic               MMUEn         ,
   output logic               MMUWriteEn    ,
   output logic               WDSel         ,
@@ -68,7 +68,7 @@ always_comb
 case (state)
   READY:        if ( Enable & Fault ) begin
                   nextstate <= DataAccess ? FAULTFSR : INSTRFAULT;
-                end else if (~HReady | ~PARequest | ~Enable | Fault | reset | PAReady) begin 
+                end else if (~HReady | ~RequestPA | ~Enable | Fault | reset | PAReady) begin 
                   nextstate <= READY;
                 end else if(HRData[1:0] == 2'b01) begin
                   nextstate <= COARSEFETCH;
@@ -85,7 +85,7 @@ case (state)
   SECTIONTRANS: if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
                 end else begin
-                  nextstate <= (HReady | ~PARequest) ?  READY : SECTIONTRANS;
+                  nextstate <= (HReady | ~RequestPA) ?  READY : SECTIONTRANS;
                 end
   COARSEFETCH:  if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
@@ -108,17 +108,17 @@ case (state)
   SMALLTRANS:   if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
                 end else begin
-                  nextstate <= (HReady | ~PARequest) ? READY : SMALLTRANS;
+                  nextstate <= (HReady | ~RequestPA) ? READY : SMALLTRANS;
                 end
   LARGETRANS:   if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
                 end else begin
-                  nextstate <= (HReady | ~PARequest) ? READY : LARGETRANS;
+                  nextstate <= (HReady | ~RequestPA) ? READY : LARGETRANS;
                 end
   TINYTRANS:    if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
                 end else begin 
-                  nextstate <= (HReady | ~PARequest) ? READY : TINYTRANS;
+                  nextstate <= (HReady | ~RequestPA) ? READY : TINYTRANS;
                 end
   INSTRFAULT:   if (InstrExecuting | InstrCancelled) begin
                   nextstate <= READY;
@@ -152,11 +152,11 @@ endcase
 // SelPrevAddr 
 //assign SelPrevAddr = (state == READY) & (PStall & ~IStall & ~DStall);
 
-// HRequestMid Logic
-assign HRequestMid = (state == COARSEFETCH) |
-                (state == FINEFETCH)    & PARequest |
-                (state == SMALLTRANS)   & PARequest |
-               ( (state == READY) & PARequest );
+// HRequestT Logic
+assign HRequuestT = (state == COARSEFETCH) |
+                (state == FINEFETCH)    & RequestPA |
+                (state == SMALLTRANS)   & RequestPA |
+               ( (state == READY) & RequestPA );
 
 // CPUHReady Logic  
 //assign CPUHReadyMid = PAReady;
@@ -165,9 +165,6 @@ assign HRequestMid = (state == COARSEFETCH) |
 //                    (state == TINYTRANS)    & HReady |
 //                    (state == READY)        & PAReady |
 //                    (state == SMALLTRANS)   & HReady;
-
-// HWriteMid Logic
-assign HWriteMid = PAReady & CPUHWrite;
 
 // PAReady logic
 // assign PAReady = MMUEn |

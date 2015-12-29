@@ -1,16 +1,17 @@
 module mmu #(parameter tbits = 22) (
-  input  logic        clk, reset, MMUExtInt, PARequest, DRequestPA,
-  input  logic        CPUHWrite, HReady, DataAccess, CPSR4,
+  input  logic        clk, reset, MMUExtInt, RequestPA, DRequestPA,
+  input  logic        HWrite,
+  input  logic        HReady, DataAccess, CPSR4,
   input  logic        SupMode, WordAccess,
   input  logic        StallD, FlushD, FlushE,
   input  logic [31:0] HRData, DataAdrM, PCF, // TODO: Remove DataAdrM, PCF
-  // TODO: fixe control signal name
+  // TODO: fix control signal name
   input  logic [31:0] control, CP15rd_M, // control[0] is the enable bit
   input  logic [17:0] TBase    ,
-  output logic [31:0] MMUWriteData,
+  output logic [31:0] MMUWriteData, HAddrT,
   output logic [tbits-1:0] PhysTag,
   output logic [ 3:0] CP15A    ,
-  output logic        MMUWriteEn,
+  output logic        MMUWriteEn,HRequestT,
   PrefetchAbort, DataAbort, MMUEn, PAReady
 );
                         // PrefetchAbort, DataAbort, MMUEn);
@@ -39,11 +40,10 @@ module mmu #(parameter tbits = 22) (
   // Fault Signals
   logic        Enable;
   logic        Fault;
-  //logic        PStall;
   logic [3:0]  Domain, FaultCode;
   logic [31:0] FSR, FAR, Dom;
   // Translation Signals
-  logic [31:0] HAddrT, VirtAdr; // TODO Remove VirtAdr
+  logic [31:0] VirtAdr; // TODO Remove VirtAdr
   logic [31:0] PHRData;
   logic [3:0]  statebits; // Carry state from twh to tfh
   // Signals for the Instruction Counter

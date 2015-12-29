@@ -6,20 +6,27 @@ module top (
   output logic        MemWriteM
 );
   
+  // ----- arbiter and ahb_lite -----
+  logic        HWrite, HWriteM;
+  logic        HRequest, HRequestM, HRequestF, HRequestT;
+  logic        HReady, HReadyM, HReadyF, HReadyT;
+  logic [ 2:0] HSIZE, HSizeM;
+  logic [31:0] HAddrT, HAddrM, HAddrF, HAddr;
+  logic [31:0] HWData, HWDataM;
+  logic [31:0] HRData; 
+
+  // ----- tlb arbiter -----
+  logic RequestPA, DRequestPA, IRequestPA;
+  logic PAReady, PAReadyF, PAReadyM;
+
   // ----- data cache -----
-  logic        Valid, DStall, HWriteM, HRequestM, END, CLEAND;
-  logic [31:0] HRData, HWData, ReadDataM, DANew;
+  logic        Valid, DStall, END, CLEAND;
+  logic [31:0] ReadDataM, DANew;
   logic [3:0]  ByteMaskM;
-  // FIXME: get HSIZE FROM controller
-  logic [2:0]  HSIZE;
 
   // ----- instr cache -----
-  logic        HReadyF, HRequestF, IStall, ENI;
+  logic        IStall, ENI;
   logic [31:0] PCF, InstrF;
-
-  // ----- arbiter and ahb_lite -----
-  logic        HWrite, CPUHWrite, HReady, CPUHReady, HRequest, CPUHRequest;
-  logic [31:0] HAddrM, HAddrF, HAddr, CPUHAddr;
 
   // ----- Exception signals -----
   logic DataAbort, PrefetchAbort; // TODO: signals come from MMU
@@ -28,7 +35,7 @@ module top (
   // ----- MMU Signals -----
   parameter tbits = 22;
   logic        MMUExtInt, DataAccess, CPSR4, SBit, RBit;
-  logic        SupMode, WordAccess, PAReady, DRequestPA;
+  logic        SupMode, WordAccess;
   // logic        SupMode, WordAccess;
   logic [31:0] Dom;
   logic [6:0]  TLBCont, Cont;
@@ -146,7 +153,7 @@ module top (
     .WD        (WriteDataM  ),
     .HRData    (HRData      ),
     .ByteMask  (ByteMaskM   ),
-    .HWData    (HWData      ),
+    .HWData    (HWDataM     ),
     .RD        (ReadDataM   ),
     .HAddr     (HAddrM      ),
     .Stall     (DStall      ),
@@ -199,7 +206,7 @@ module top (
 
   // Set HSIZE from bytemask
   // FIXME: Use signals from control unit
-  mask_to_hsize mth(ByteMaskM, HSIZE);
+  mask_to_hsize mth(ByteMaskM, HSizeM);
 
   assign WordAccess = 1'b0;   // Assuming byte or halfword accesses
   assign SupMode    = 1'b1;   // in supervisor mode
