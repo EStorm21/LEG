@@ -12,6 +12,7 @@ module ahb_arbiter_3way_controller (
     input  logic       HRequestM, HRequestF, HRequestT,
     input  logic [2:0] HSizeM   ,
     output logic       HReadyF, HReadyM, HReadyT,
+    output logic       HRequest,
     output logic       HWrite,
     output logic [1:0] HAddrSel,
     output logic [2:0] HSize
@@ -30,6 +31,7 @@ module ahb_arbiter_3way_controller (
     // TM:  T --> M 
     // TF:  T --> F 
     // MF:  M --> F
+    assign HRequest = HRequestM | HRequestT | HRequestF;
 
     // Each state corresponds to an arbitration sequence 
     typedef enum logic[2:0] 
@@ -84,6 +86,9 @@ module ahb_arbiter_3way_controller (
             default: HAddrSel = 2'b00;
         endcase
 
+    // HWrite
+    assign HWrite = HWriteM & MSel;
+
     // =============== Data Phase Logic ================
 
     // Data phase logic is based on the previous address phase
@@ -98,9 +103,6 @@ module ahb_arbiter_3way_controller (
             HSize = HSizeM;
         end else begin
             HSize = 3'b010; // 32-bit word transaction
-        end
-
-    // HWrite
-    flopenr #(1) prevHWrite(clk, reset, HReady, HWriteM, HWrite);
+        end   
 
 endmodule

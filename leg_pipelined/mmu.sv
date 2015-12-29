@@ -1,7 +1,7 @@
 module mmu #(parameter tbits = 22) (
-  input  logic        clk, reset, MMUExtInt, CPUHRequest, DRequestPA,
+  input  logic        clk, reset, MMUExtInt, PARequest, DRequestPA,
   input  logic        CPUHWrite, HReady, DataAccess, CPSR4,
-  input  logic        SupMode, WordAccess, DStall, IStall,
+  input  logic        SupMode, WordAccess,
   input  logic        StallD, FlushD, FlushE,
   input  logic [31:0] HRData, DataAdrM, PCF, // TODO: Remove DataAdrM, PCF
   // TODO: fixe control signal name
@@ -88,7 +88,7 @@ module mmu #(parameter tbits = 22) (
   // --- Track whether an instruction was executed.
   // --- If an instruction that causes a memory fault is executed, 
   // --- raise a prefetch abort
-  instr_tracker it(.*);
+  //instr_tracker it(.*);
 
   parameter tlb_size = 16;
 

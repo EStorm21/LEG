@@ -4,11 +4,8 @@ module twh #(parameter tagbits = 16) (
   input  logic               reset         , // Asynchronous reset active low
   input  logic               Enable        ,
   input  logic               Fault         ,
-  //input  logic               PStall        ,
-  input  logic               IStall        ,
-  input  logic               DStall        ,
   input  logic               PAReady       ,
-  input  logic               CPUHRequest   ,
+  input  logic               PARequest   ,
   input  logic               CPUHWrite     ,
   input  logic               DataAccess    ,
   input  logic               PrefetchAbort ,
@@ -71,7 +68,7 @@ always_comb
 case (state)
   READY:        if ( Enable & Fault ) begin
                   nextstate <= DataAccess ? FAULTFSR : INSTRFAULT;
-                end else if (~HReady | ~CPUHRequest | ~Enable | Fault | reset | PAReady) begin 
+                end else if (~HReady | ~PARequest | ~Enable | Fault | reset | PAReady) begin 
                   nextstate <= READY;
                 end else if(HRData[1:0] == 2'b01) begin
                   nextstate <= COARSEFETCH;
@@ -88,7 +85,7 @@ case (state)
   SECTIONTRANS: if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
                 end else begin
-                  nextstate <= (HReady | ~CPUHRequest) ?  READY : SECTIONTRANS;
+                  nextstate <= (HReady | ~PARequest) ?  READY : SECTIONTRANS;
                 end
   COARSEFETCH:  if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
@@ -111,17 +108,17 @@ case (state)
   SMALLTRANS:   if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
                 end else begin
-                  nextstate <= (HReady | ~CPUHRequest) ? READY : SMALLTRANS;
+                  nextstate <= (HReady | ~PARequest) ? READY : SMALLTRANS;
                 end
   LARGETRANS:   if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
                 end else begin
-                  nextstate <= (HReady | ~CPUHRequest) ? READY : LARGETRANS;
+                  nextstate <= (HReady | ~PARequest) ? READY : LARGETRANS;
                 end
   TINYTRANS:    if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
                 end else begin 
-                  nextstate <= (HReady | ~CPUHRequest) ? READY : TINYTRANS;
+                  nextstate <= (HReady | ~PARequest) ? READY : TINYTRANS;
                 end
   INSTRFAULT:   if (InstrExecuting | InstrCancelled) begin
                   nextstate <= READY;
@@ -157,9 +154,9 @@ endcase
 
 // HRequestMid Logic
 assign HRequestMid = (state == COARSEFETCH) |
-                (state == FINEFETCH)    & CPUHRequest |
-                (state == SMALLTRANS)   & CPUHRequest |
-               ( (state == READY) & CPUHRequest );
+                (state == FINEFETCH)    & PARequest |
+                (state == SMALLTRANS)   & PARequest |
+               ( (state == READY) & PARequest );
 
 // CPUHReady Logic  
 //assign CPUHReadyMid = PAReady;

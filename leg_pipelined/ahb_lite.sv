@@ -31,17 +31,30 @@ module ahb_lite (
   //                     .a(HADDR), .wd(HWDATA), .rd(HRDATA0), .Valid(HREADY));
 
 // Byte Addressable memory simulation
-dmem mem (
-  .clk  (HCLK              ),
-  .we   (HWRITE            ),
-  .re   (HREQUEST & ~HWRITE),
-  .a    (HADDR             ),
-  .wd   (HWDATA            ),
-  .rd   (HRDATA0           ),
-  .Valid(HREADY            ),
-  .HSEL (HSEL[0]           ),
-  .HSIZE(HSIZE             )
-);
+// dmem mem (
+//   .clk  (HCLK              ),
+//   .we   (HWRITE            ),
+//   .re   (HREQUEST & ~HWRITE),
+//   .a    (HADDR             ),
+//   .wd   (HWDATA            ),
+//   .rd   (HRDATA0           ),
+//   .Valid(HREADY            ),
+//   .HSEL (HSEL[0]           ),
+//   .HSIZE(HSIZE             )
+// );
+  dmem_ahb mem (
+    .clk  (HCLK              ),
+    .we   (HWRITE            ),
+    .re   (HREQUEST & ~HWRITE),
+    .HSEL (HSEL[0]           ),
+    .HReady(HREADY),
+    .HResetn(HRESETn),
+    .a    (HADDR             ),
+    .wd   (HWDATA            ),
+    .HSIZE(HSIZE             ),
+    .rd   (HRDATA0           ),
+    .Valid(HREADY            )
+  );
 
 io_fwd_shim ioShim(  .*,
   .HSEL  (HSEL[1]   ),
