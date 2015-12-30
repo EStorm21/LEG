@@ -34,16 +34,16 @@ module mmu #(parameter tbits = 22) (
     ESNLINEFAULT = 4'b1000,
     EPNLINEFAULT = 4'b1010
   } faulttype;
-  faulttype FaultCode, FaultCodeMid;
+  faulttype FaultCodeMid;
 
   // Fault Signals
   logic        Enable;
   logic        Fault;
   //logic        PStall;
-  logic [3:0]  Domain;
+  logic [3:0]  Domain, FaultCode;
   logic [31:0] FSR, FAR, Dom;
   // Translation Signals
-  logic [31:0] HAddrMid, PHAddr, HAddrOut, VirtAdr; // TODO Remove VirtAdr
+  logic [31:0] HAddrMid, HAddrOut, VirtAdr; // TODO Remove VirtAdr
   logic [31:0] PHRData;
   logic        HRequestMid, CPUHReadyMid, HWriteMid; // Output signals from MMU
   logic [3:0]  statebits; // Carry state from twh to tfh

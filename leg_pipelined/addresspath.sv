@@ -6,7 +6,6 @@ module addresspath( /// ------ From TOP ------
                     input  logic [3:0]  RegFileRzD,
                     input  logic [1:0]  RegSrcD,
                     input  logic [7:0]  CPSR8_W, 
-                    input  logic [6:0]  PCVectorAddress, 
 
           					/// To Controller 
 
@@ -14,8 +13,7 @@ module addresspath( /// ------ From TOP ------
                     input logic [31:0]  InstrD,
 
           					/// To Datapath
-                    output logic [31:0]  WA3W, RA1D, RA2D, VectorPCnextF,
-                    output logic         ExceptionVectorSelectW,
+                    output logic [31:0]  WA3W, RA1D, RA2D,
 
           					/// From Hazard
                     input  logic        StallF, StallD, FlushD, StallE, StallM, FlushM, FlushW, StallW, 
@@ -90,7 +88,5 @@ module addresspath( /// ------ From TOP ------
   assign Match_2E_M = Match_2E_M_0;
   assign Match_2E_W = Match_2E_W_0;
   assign Match_2D_E = Match_2D_E_0;
-
-  exception_vector_address exception_vector(PCVectorAddress, VectorPCnextF, ExceptionVectorSelectW); // near the fetch stage
 
 endmodule 

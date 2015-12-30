@@ -9,11 +9,10 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                 ///  ------- From Controller ------
                   input  logic [1:0]  ImmSrcD,
                   input  logic        ALUSrcE, BranchTakenE,
-                  input  logic [3:0]  ALUControlE, 
                   input  logic [1:0]  MultControlE,
-                  input  logic        MultEnableE,
-                  input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE,
+                  input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE, ExceptionSavePC,
                   input  logic [31:0] InstrE, PSR_W, 
+                  input  logic [2:0]  VectorPCnextF,
                   // Handling data-processing Instrs (ALU)
                   input  logic [3:0]  FlagsE,
                   input  logic [2:0]  ALUOperationE,
@@ -28,9 +27,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic        WriteByteE, StrHalfwordE, LdrHalfwordW,
                   // Added for moving MicroOpFSM to Controller decode
                   input  logic        noRotateD, InstrMuxD,
-                  input  logic [3:0]  RegFileRzD,
                   input  logic [31:0] uOpInstrD,
-		              input logic         uOpStallD,
                   input  logic        CoProc_EnM, 
 
                 /// ------ To Controller ------
@@ -49,8 +46,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                 /// ------ To Hazard ------
                 /// ------ To Address Path ------
                 /// ------ From Address Path ------
-                  input  logic [31:0] WA3W, RA1D, RA2D, VectorPCnextF,
-                  input  logic        ExceptionVectorSelectW,
+                  input  logic [31:0] WA3W, RA1D, RA2D,
 
                 /// ------ added for thumb instructions ------
                   input  logic        TFlagNextE, 
@@ -80,7 +76,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // ====================================================================================
   mux2 #(32) pcnextmux(PCPlus4F, ResultW, PCSrcW, PCnext1F);
   mux2 #(32) branchmux(PCnext1F, ALUResultE, BranchTakenE, PCnext2F);
-  mux2 #(32) exceptionmux(PCnext2F, VectorPCnextF, ExceptionVectorSelectW, PCnextF);
+  mux2 #(32) exceptionmux(PCnext2F, {27'b0, VectorPCnextF, 2'b0}, ExceptionSavePC, PCnextF);
   flopenr #(32) pcreg(clk, reset, ~StallF, PCnextF, PCF);
   adder #(32) pcaddfour(PCF, 32'h4, PCPlus4F);
   // For thumb mode
@@ -92,11 +88,11 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // ====================================================================================
 
   assign PCPlus8D = PCPlus4F; // skip register *change to PCPlusXF for thumb
-  flopenrc #(32) pcplus4(clk, reset, ~StallD, FlushD, PCPlus4F, PCPlus4D);
-  flopenrc #(32) pcplus0(clk, reset, ~StallD, FlushD, PCPlus4D, PCPlus0D);
+  flopenr #(32) pcplus4(clk, reset, ~StallD, PCPlus4F, PCPlus4D);
+  flopenr #(32) pcplus0(clk, reset, ~StallD, PCPlus4D, PCPlus0D);
   flopenrc #(32) instrreg(clk, reset, ~StallD, FlushD, InstrF, DefaultInstrD);
   // pass on PC for debugging
-  flopenrc #(32) pcdreg(clk, reset, ~StallD, FlushD, PCF, PCD);
+  flopenr #(32) pcdreg(clk, reset, ~StallD, PCF, PCD);
 
   mux3 #(32)  exceptionPC(PCPlus8D, PCPlus0D, PCPlus4D, PCInSelect, PC_in);
   mux2 #(32)  instrDmux(DefaultInstrD, uOpInstrD, InstrMuxD, InstrD);

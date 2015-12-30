@@ -120,12 +120,6 @@ module testbench();
   // initialize test
   initial
     begin
-      `ifdef ECACHES
-	 $display("Enabled caches");	
-      `else
-	 $display("Disabled caches");
-      `endif
-
       reset <= 1; # 220; reset <= 0;
     end
 

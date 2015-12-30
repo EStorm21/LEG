@@ -20,7 +20,7 @@ module tfh (
   input logic [31:0] HAddrMid,
 	output logic PrefetchAbort, DataAbort, WDSel,
 	output logic [3:0] CP15A,
-  output logic [3:0] Domain,
+  output logic [3:0] Domain, FaultCode,
   output logic Fault
 );
 
@@ -41,7 +41,7 @@ module tfh (
                             ESNLINEFAULT = 4'b1000,
                             EPNLINEFAULT = 4'b1010
                             } faulttype;
-  faulttype FaultCode, FaultCodeMid;
+  faulttype FaultCodeMid;
 
 
   // Fault Signals
