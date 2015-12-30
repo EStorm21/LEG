@@ -75,7 +75,7 @@ module mmu #(parameter tbits = 22) (
   //                     {HAddrT, HRequestMid, HWriteMid, CPUHReadyMid}, 
   //                    Enable, {HAddr, HRequest, HWrite, CPUHReady});
   // TODO: fix this name
-  assign PhysTag = TableEntry[tbits+8:9];
+  mux2 #(tbits) PhsyTagEn(VirtAdr[31:32-tbits], TableEntry[tbits+8:9], MMUEn, PhysTag);
 
   // MMUWriteData Mux
   mux2 #(32) WDMux(FAR, FSR, WDSel, MMUWriteData);

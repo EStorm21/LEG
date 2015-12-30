@@ -189,7 +189,7 @@ module top (
   // TODO: Partition into on chip and off chip
   ahb_lite ahb (
     .HCLK    (clk     ),
-    .HRESETn (reset   ),
+    .HRESETn (~reset   ),
     .HADDR   (HAddr   ),
     .HWRITE  (HWrite  ),
     .HREQUEST(HRequest),
@@ -212,7 +212,6 @@ module top (
   assign SupMode    = 1'b1;   // in supervisor mode
   // assign SBit = control[7];         // Give the most permissions with S and R
   // assign RBit = control[9];
-  // assign control = 32'h0000_0000; // Fake Control signal
   assign DataAccess = 1'b1;   // Trying to access data memory, not instruction memory
   assign CPSR4      = 1'b1;
   // assign FullTBase = 32'h0030_0000; // Fix the translation base

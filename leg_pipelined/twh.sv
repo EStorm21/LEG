@@ -153,10 +153,10 @@ endcase
 //assign SelPrevAddr = (state == READY) & (PStall & ~IStall & ~DStall);
 
 // HRequestT Logic
-assign HRequuestT = (state == COARSEFETCH) |
+assign HRequestT = (state == COARSEFETCH) |
                 (state == FINEFETCH)    & RequestPA |
                 (state == SMALLTRANS)   & RequestPA |
-               ( (state == READY) & RequestPA );
+               ( (state == READY) & RequestPA & MMUEn);
 
 // CPUHReady Logic  
 //assign CPUHReadyMid = PAReady;
