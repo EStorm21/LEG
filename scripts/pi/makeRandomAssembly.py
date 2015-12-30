@@ -604,6 +604,61 @@ def ror(value, amt, bits = 32):
 	result = ((value & (2**bits-1)) >> amt%bits) | (value << (bits - (amt%bits)) & (2**bits-1))
 	return ctypes.c_long(result).value
 
+
+def init_fiq_handler(name):
+	program = "{}:\n".format(name)
+	program += "stmfd sp!, {r4-r9, r12}\n"
+	program += "ldmfd sp!, {r5-r10, r12}^\n" # load user mode
+	program += "subs pc,r14,#4\n"
+	program += "\n\n"
+	return program
+
+def init_undef_handler(name):
+	program = "{}:\n".format(name)
+	program += "ldr r13, [r14, #-4]\n"
+	program += "movs pc, r14\n"
+	program += "\n\n"
+	return program
+
+def init_swi_handler(name):
+	program = "{}:\n".format(name)
+	program += "stmfd sp!, {r0-r3, r12, r14}\n"
+	program += "ldr r0, [r14, #-4]\n"  # recover swi argument
+	program += "bic r0, r0, #0xff000000\n"
+	program += "cmp r0, #0x00400000\n" # trigger some exception 1/4 of the time
+	program += "bge ret_swi\n"
+	program += makeUndefInstr(0)
+	program += "ret_swi: ldmfd sp!, {r0-r3, r12, pc}^\n" # a fairly complicated instruction
+	program += "\n\n"
+	return program
+
+# don't really do anything except make sure we can get to this code
+def init_prefetch_handler(name):
+	program = "{}:\n".format(name)
+	program += "ldr r13, [r14, #-4]\n"
+	program += "mov r13, #0\n"
+	program += "orrs pc, r14, r13\n"
+	program += "\n\n"
+	return program
+
+# don't really do anything except make sure we can get to this code
+def init_dataAbt_handler(name):
+	program = "{}:\n".format(name)
+	program += "ldr r13, [r14, #-8]\n"
+	program += "subs pc, r14, #4\n"
+	program += "\n\n"
+	return program
+
+def init_irq_handler(name):
+	program = "{}:\n".format(name)
+	program += "str r1, [sp, #0]\n"
+	program += "ldr r1, UART_DR\n"
+	program += "str r1, [r1]\n"
+	program += "ldr r1, [sp, #0]\n"
+	program += "subs pc,r14,#4\n"
+	program += "\n\n"
+	return program
+
 # Set up the stack and registers. The instruction sequence looks strange,
 # but lets us ldr [pc] for each val
 def initializeProgram():
@@ -612,43 +667,43 @@ def initializeProgram():
 
 	program = ""
 
-	if interrupt_ratio > 0:
-		program += "vectors_start:\n"
-		program += "b main\n"
-		program += "b .\n"
-		program += "b .\n"
-		program += "b .\n"
-		program += "b .\n"
-		program += "b .\n"
-		program += "b irq_handler\n"
-		program += "b .\n"
-		program += "\n"
+	program += "vectors_start:\n"
+	program += "b main\n"
+	program += "b undef_handler\n"
+	program += "b swi_handler\n"
+	program += "b prefetch_handler\n"
+	program += "b dataAbt_handler\n"
+	program += "b . # Unused vector 0x14\n"
+	program += "b irq_handler\n"
+	program += "# FIQ handler immediately after vector table\n"
 
-		program += "UART_DR: .word 0x16000000\n"
-		program += "irq_handler:\n"
-		program += "str r1, [sp, #0]\n"
-		program += "ldr r1, UART_DR\n"
-		program += "ldr r1, [r1]\n"
-		program += "ldr r1, [sp, #0]\n"
-		program += "subs pc,r14,#4\n"
-		program += "\n"
-		program += "\n"
+
+	program += init_fiq_handler("fiq_handler")
+	program += init_undef_handler("undef_handler") 
+	program += init_swi_handler("swi_handler") 
+	program += init_prefetch_handler("prefetch_handler")
+	program += init_dataAbt_handler("dataAbt_handler")
+	program += "UART_DR: .word 0x16000000\n"
+	program += init_irq_handler("irq_handler")
+
 
 	program += ".global main\n"
 	program += "main:\n"
 	program += "\n"
-	program += "# INITIALIZING R0 and SP\n"
+	program += "# INITIALIZING USER MODE\n"
 	program += "\n"
-	program += "subs R0, R15, R15\n"				# Initializing R0 to 0
-	program += "ldr sp, val\n"						# Initializing stack pointer
+	program += "MRS r0, cpsr\n"
+	program += "BIC r1, r0, #0x1F\n" # go in IRQ mode
+	program += "ORR r1, r1, #0x10\n"
+	program += "MSR cpsr, r1\n"
+	program += "ldr sp, val\n"		 # Initializing stack pointer
 	program += "b next\n"
 	sp = 0xffff0
 	upper = sp + 0
 	lower = sp - (stackSize - 1) * 4
-	program += "val: .word 0xffff0\n"
-	program += "\n"
-	program += "# INITIALIZING REGISTERS\n"
-	program += "\n"
+	program += "val: .word 0xffff0\n\n"
+
+	program += "# INITIALIZING REGISTERS\n\n"
 	program += "next: "
 	for i in range(1,13): 							# Initializing registers
 		program += "ldr R{0}, val{0}\n".format(i)
@@ -659,6 +714,7 @@ def initializeProgram():
 	program += "b next14\n"
 	program += "val14: .word {}\n".format(randint(1,4294967295))
 	program += "\n"
+
 	program += "# INITIALIZING STACK\n"
 	program += "\n"
 	program += "next14: "
@@ -673,32 +729,47 @@ def initializeProgram():
 		program += "next{}:".format(i+15)
 		program += "str R1, [sp, #{}]\n".format(spOffset)
 	program += "\n"
-	if interrupt_ratio > 0:
-		program += "# INITIALIZING INTERRUPTS\n"
-		program += "\n"
-		program += "b next{}\n".format(15+stackSize)
-		program += "val{}: .word 0x1ffff0\n".format(15+stackSize)
-		program += "PIC_IRQ_ENCLR: .word 0x1400000c\n"
-		program += "UART0_IMSC: .word 0x16000038\n"
-		program += "PIC_IRQ_ENSET: .word 0x14000008\n"
-		program += "next{}: ".format(15+stackSize)
-		program += "MRS r0, cpsr\n"
-		program += "BIC r1, r0, #0x1F\n" # go in IRQ mode
-		program += "ORR r1, r1, #0x12\n"
-		program += "MSR cpsr, r1\n"
-		program += "LDR sp, val{}\n".format(15+stackSize) # set IRQ stack
-		program += "BIC r0, r0, #0x80\n" # Enable IRQs
-		program += "MSR cpsr, r0\n" # go back in Supervisor mode
-		program += "ldr	r3, PIC_IRQ_ENCLR\n"
-		program += "mov	r2, #2\n"
-		program += "str	r2, [r3]\n"
-		program += "ldr	r3, UART0_IMSC\n"
-		program += "mov	r2, #16\n"
-		program += "str	r2, [r3]\n"
-		program += "ldr	r3, PIC_IRQ_ENSET\n"
-		program += "mov	r2, #2\n"
-		program += "str	r2, [r3]\n"
-		program += "\n"
+
+	program += "# INITIALIZING INTERRUPTS\n"
+	program += "\n"
+	program += "b next{}\n".format(15+stackSize)
+	program += "val{}: .word 0x1ffff0\n".format(15+stackSize) # IRQ sp
+	program += "val{}: .word 0x2ffff0\n".format(16+stackSize) # FIQ sp
+	program += "val{}: .word 0x3ffff0\n".format(17+stackSize) # SWI (svc) sp
+	program += "PIC_IRQ_ENCLR: .word 0x1400000c\n"
+	program += "UART0_IMSC: .word 0x16000038\n"
+	program += "PIC_IRQ_ENSET: .word 0x14000008\n"
+	program += "next{}: ".format(15+stackSize)
+	program += "MRS r0, cpsr\n"
+	# go in IRQ mode
+	program += "BIC r1, r0, #0x1F\n" 
+	program += "ORR r1, r1, #0x12\n"
+	program += "MSR cpsr, r1\n"
+	program += "LDR sp, val{}\n".format(15+stackSize) # set IRQ stack
+	# go into FIQ mode
+	program += "BIC r1, r0, #0x1F\n" 
+	program += "ORR r1, r1, #0x11\n"
+	program += "MSR cpsr, r1\n"
+	program += "LDR sp, val{}\n".format(16+stackSize) # set FIQ stack
+	# go into FIQ mode
+	program += "BIC r1, r0, #0x1F\n" 
+	program += "ORR r1, r1, #0x13\n"
+	program += "MSR cpsr, r1\n"
+	program += "LDR sp, val{}\n".format(17+stackSize) # set FIQ stack
+	# go into user mode
+	program += "BIC r0, r0, #0x80\n" # Enable IRQs
+	program += "MSR cpsr, r0\n" # go back in Supervisor mode
+	program += "ldr	r3, PIC_IRQ_ENCLR\n"
+	program += "mov	r2, #2\n"
+	program += "str	r2, [r3]\n"
+	program += "ldr	r3, UART0_IMSC\n"
+	program += "mov	r2, #16\n"
+	program += "str	r2, [r3]\n"
+	program += "ldr	r3, PIC_IRQ_ENSET\n"
+	program += "mov	r2, #2\n"
+	program += "str	r2, [r3]\n"
+	program += "\n"
+
 	return program
 
 
