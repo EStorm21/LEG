@@ -156,10 +156,10 @@ instrs = [subl for subl in instrs if len(subl) > 0]
 
 
 def makeProgram(numInstru):
-	program_initial = initializeProgram() #initializes  and stack to random values
+	program_initial = initializeProgram() #initializes registers and stack to random values
 	counter = 1
 	program = ""
-	program += "# MAIN PROGRAM\n"
+	program_initial += "# MAIN PROGRAM\n"
 	program += "\n"
 
 	while counter <= numInstru:
@@ -588,6 +588,12 @@ def makeNopInstr(counter):
 	program = "l{}: nop\n".format(counter)
 	return program
 
+def makeUndefInstr(counter):
+	return makeNopInstr(counter)
+
+def makeSWIInstr(counter):
+	return makeNopInstr(counter)
+
 
 def makeAddr1ShiftImm(shifter):
 	if shifter == "ROR":
@@ -610,14 +616,16 @@ def init_fiq_handler(name):
 	program += "stmfd sp!, {r4-r9, r12}\n"
 	program += "ldmfd sp!, {r5-r10, r12}^\n" # load user mode
 	program += "subs pc,r14,#4\n"
-	program += "\n\n"
+	program += "\n"
 	return program
 
 def init_undef_handler(name):
 	program = "{}:\n".format(name)
-	program += "ldr r13, [r14, #-4]\n"
+	program += "push {r4}\n"
+	program += "ldr r4, [r14, #-4]\n"
+	program += "pop {r4}\n"
 	program += "movs pc, r14\n"
-	program += "\n\n"
+	program += "\n"
 	return program
 
 def init_swi_handler(name):
@@ -629,44 +637,106 @@ def init_swi_handler(name):
 	program += "bge ret_swi\n"
 	program += makeUndefInstr(0)
 	program += "ret_swi: ldmfd sp!, {r0-r3, r12, pc}^\n" # a fairly complicated instruction
-	program += "\n\n"
+	program += "\n"
 	return program
 
 # don't really do anything except make sure we can get to this code
 def init_prefetch_handler(name):
 	program = "{}:\n".format(name)
-	program += "ldr r13, [r14, #-4]\n"
-	program += "mov r13, #0\n"
-	program += "orrs pc, r14, r13\n"
-	program += "\n\n"
+	program += "push {r3}\n"
+	program += "ldr r3, [r14, #-4]\n"
+	program += "pop {r3}\n"
+	program += "movs pc, r14\n"
+	program += "\n"
 	return program
 
-# don't really do anything except make sure we can get to this code
+# Fix the cause of the data abort
 def init_dataAbt_handler(name):
 	program = "{}:\n".format(name)
-	program += "ldr r13, [r14, #-8]\n"
-	program += "subs pc, r14, #4\n"
-	program += "\n\n"
+	program += "push {r5}\n"
+	program += "ldr r5, [r14, #-8]\n"
+	program += "mov r5, #0\n"
+	program += "str r5, [r14, #-8]\n"
+	program += "pop {r5}\n"
+	program += "subs pc, r14, #8\n"
+	program += "\n"
 	return program
 
 def init_irq_handler(name):
 	program = "{}:\n".format(name)
-	program += "str r1, [sp, #0]\n"
+	program += "push {r1}\n"
 	program += "ldr r1, UART_DR\n"
 	program += "str r1, [r1]\n"
-	program += "ldr r1, [sp, #0]\n"
+	program += "pop {r1}\n"
 	program += "subs pc,r14,#4\n"
-	program += "\n\n"
+	program += "\n"
 	return program
 
-# Set up the stack and registers. The instruction sequence looks strange,
-# but lets us ldr [pc] for each val
+
+# initialize the value in one register
+def init_reg(regnum, label, nextReg=None, value=None):
+	program = "reg_{0}_{1}: ".format(regnum, label)
+	program += "ldr R{0}, reg_{0}_{1}_val\n".format(regnum, label)
+	if nextReg is not None:
+		program += "b reg_{0}_{1}\n".format(nextReg, label)
+	else:
+		program += "b reg_{0}_{1}_end\n".format(regnum, label)
+	imm = value
+	if imm is None:
+		imm = randint(1,4294967295)
+	program += "reg_{0}_{1}_val: .word {2}\n".format(regnum, label, imm)
+	if nextReg is None:
+		program += "reg_{0}_{1}_end: nop\n".format(regnum, label)
+	return program
+
+# initializes a stack with random values, but leaves sp untouched
+def init_stack(entries, label, sp):
+	program = ""
+	for i in range(entries): 
+		program += "ldr R1, {0}_{1}_val\n".format(label, i)
+		program += "b {0}_{1}\n".format(label, i)
+		item = randint(1,4294967295)
+		address = sp - i * 4
+		spOffset = address - sp # should be -i*4
+		addresses.update(set([address]))
+		program += "{0}_{1}_val: .word {2}\n".format(label, i, item)
+		program += "{0}_{1}: ".format(label, i)
+		program += "str R1, [sp, #{}]\n".format(spOffset)
+	program += "\n"
+	return program
+
+# switch to some mode. Puts cpsr in r0. Enables possible interrupts
+# recall that interrupts are disabled when the bit is set
+def goto_mode(mode, reg = None):
+	modebits = "0x10" # usr
+	if mode == "fiq":
+		modebits = "0xd1" # no fiq or irq
+	if mode == "irq":
+		modebits = "0x92" # no fiq
+	if mode == "svc":
+		modebits = "0x13"
+	if mode == "abort":
+		modebits = "0x17"
+	if mode == "undef":
+		modebits = "0x1b"
+	if mode == "sys":
+		modebits = "0x1f"
+	program = "# Switching to mode {}\n".format(mode)
+	program += "MRS r0, cpsr\n"
+	program += "BIC r0, r0, #0xDF\n" # clear interrupt and mode
+	program += "ORR r0, r0, #{}\n".format(modebits)
+	program += "MSR cpsr, r0\n"
+	return program
+
+# Set up the stack and registers. 
 def initializeProgram():
 	global lower, upper, sp, interrupt_ratio
 	stackSize = 21
+	sp = 0xffff0
+	upper = sp + 0
+	lower = sp - (stackSize - 1) * 4
 
 	program = ""
-
 	program += "vectors_start:\n"
 	program += "b main\n"
 	program += "b undef_handler\n"
@@ -683,82 +753,16 @@ def initializeProgram():
 	program += init_swi_handler("swi_handler") 
 	program += init_prefetch_handler("prefetch_handler")
 	program += init_dataAbt_handler("dataAbt_handler")
-	program += "UART_DR: .word 0x16000000\n"
 	program += init_irq_handler("irq_handler")
-
-
-	program += ".global main\n"
-	program += "main:\n"
-	program += "\n"
-	program += "# INITIALIZING USER MODE\n"
-	program += "\n"
-	program += "MRS r0, cpsr\n"
-	program += "BIC r1, r0, #0x1F\n" # go in IRQ mode
-	program += "ORR r1, r1, #0x10\n"
-	program += "MSR cpsr, r1\n"
-	program += "ldr sp, val\n"		 # Initializing stack pointer
-	program += "b next\n"
-	sp = 0xffff0
-	upper = sp + 0
-	lower = sp - (stackSize - 1) * 4
-	program += "val: .word 0xffff0\n\n"
-
-	program += "# INITIALIZING REGISTERS\n\n"
-	program += "next: "
-	for i in range(1,13): 							# Initializing registers
-		program += "ldr R{0}, val{0}\n".format(i)
-		program += "b next{}\n".format(i)
-		program += "val{}: .word {}\n".format(i, randint(1,4294967295))
-		program += "next{}:".format(i)
-	program += "ldr R14, val14\n"
-	program += "b next14\n"
-	program += "val14: .word {}\n".format(randint(1,4294967295))
 	program += "\n"
 
-	program += "# INITIALIZING STACK\n"
-	program += "\n"
-	program += "next14: "
-	for i in range(stackSize): 							# Aribtrarily initializing stack so we can compare exact values
-		program += "ldr R1, val{}\n".format(i+15)
-		program += "b next{}\n".format(i+15)
-		item = randint(1,4294967295)
-		address = sp - i * 4
-		spOffset = address - sp # should be -i*4
-		addresses.update(set([address]))
-		program += "val{}: .word {}\n".format(i+15, item)
-		program += "next{}:".format(i+15)
-		program += "str R1, [sp, #{}]\n".format(spOffset)
-	program += "\n"
-
-	program += "# INITIALIZING INTERRUPTS\n"
-	program += "\n"
-	program += "b next{}\n".format(15+stackSize)
-	program += "val{}: .word 0x1ffff0\n".format(15+stackSize) # IRQ sp
-	program += "val{}: .word 0x2ffff0\n".format(16+stackSize) # FIQ sp
-	program += "val{}: .word 0x3ffff0\n".format(17+stackSize) # SWI (svc) sp
+	program += "UART_DR: .word 0x16000000\n"
 	program += "PIC_IRQ_ENCLR: .word 0x1400000c\n"
 	program += "UART0_IMSC: .word 0x16000038\n"
-	program += "PIC_IRQ_ENSET: .word 0x14000008\n"
-	program += "next{}: ".format(15+stackSize)
-	program += "MRS r0, cpsr\n"
-	# go in IRQ mode
-	program += "BIC r1, r0, #0x1F\n" 
-	program += "ORR r1, r1, #0x12\n"
-	program += "MSR cpsr, r1\n"
-	program += "LDR sp, val{}\n".format(15+stackSize) # set IRQ stack
-	# go into FIQ mode
-	program += "BIC r1, r0, #0x1F\n" 
-	program += "ORR r1, r1, #0x11\n"
-	program += "MSR cpsr, r1\n"
-	program += "LDR sp, val{}\n".format(16+stackSize) # set FIQ stack
-	# go into FIQ mode
-	program += "BIC r1, r0, #0x1F\n" 
-	program += "ORR r1, r1, #0x13\n"
-	program += "MSR cpsr, r1\n"
-	program += "LDR sp, val{}\n".format(17+stackSize) # set FIQ stack
-	# go into user mode
-	program += "BIC r0, r0, #0x80\n" # Enable IRQs
-	program += "MSR cpsr, r0\n" # go back in Supervisor mode
+	program += "PIC_IRQ_ENSET: .word 0x14000008\n\n"
+
+	program += "main:\n"
+	program += "# INTERRUPT I/O INITIALIZATION\n"
 	program += "ldr	r3, PIC_IRQ_ENCLR\n"
 	program += "mov	r2, #2\n"
 	program += "str	r2, [r3]\n"
@@ -767,9 +771,45 @@ def initializeProgram():
 	program += "str	r2, [r3]\n"
 	program += "ldr	r3, PIC_IRQ_ENSET\n"
 	program += "mov	r2, #2\n"
-	program += "str	r2, [r3]\n"
+	program += "str	r2, [r3]\n\n"
+
+	program += "# INITIALIZING REGISTERS\n"
+	program += goto_mode("sys")
+	for i in range(0,13):
+		program += init_reg(i, "sys", nextReg = i+1)
+	program += init_reg(13, "sys", nextReg = 14, value = "0x0ffff0")
+	program += init_reg(14, "sys")
+
+	program += goto_mode("fiq")
+	for i in range(8,13):
+		program += init_reg(i, "fiq", nextReg = i+1)
+	program += init_reg(13, "fiq", nextReg = 14, value = "0x1ffff0")
+	program += init_reg(14, "fiq")
+
+	program += goto_mode("irq")
+	program += init_reg(13, "irq", nextReg = 14, value = "0x2ffff0")
+	program += init_reg(14, "irq")
+
+	program += goto_mode("undef")
+	program += init_reg(13, "undef", nextReg = 14, value = "0x3ffff0")
+	program += init_reg(14, "undef")
+
+	program += goto_mode("abort")
+	program += init_reg(13, "abort", nextReg = 14, value = "0x4ffff0")
+	program += init_reg(14, "abort")
+
+	program += goto_mode("svc")
+	program += init_reg(13, "svc", nextReg = 14, value = "0x5ffff0")
+	program += init_reg(14, "svc")
 	program += "\n"
 
+	program += "# INITIALIZING STACK\n"
+	program += goto_mode("sys")
+	program += init_stack(stackSize, "stack", sp)
+	program += "\n"
+
+	program += goto_mode("usr")
+	program +="\n"
 	return program
 
 
