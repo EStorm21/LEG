@@ -146,7 +146,7 @@ module top (
     // .clean(CLEAND),
     .MemWriteM (MemWriteM   ),
     .MemtoRegM (MemtoRegM   ),
-    .BusReady  (BusReadyM   ),
+    .BusReady  (HReadyM   ),
     .IStall    (IStall      ),
     .PhysTag   (PhysTag),
     .VirtA     (DataAdrM    ),
