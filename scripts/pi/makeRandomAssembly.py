@@ -4,7 +4,6 @@
 #
 # Limitations:
 #  - Does not test write to PC
-#  - Only tests user mode (no interrupts, SR operations)
 #  - does not test coprocessor
 #  - does not test BL
 #  - w / ub mem tests are only sp relative with small offsets (forced to land in premade stack), no ISR, no cond with wb
@@ -100,6 +99,9 @@ mmem = ["ldm", "stm"]
 # swap and swap byte
 swp = ["swp", "swpb"]
 
+# exception-causing instructions
+excep = ['undef', 'swi']
+
 mode3Types = ["imm", "reg"]
 mode2Types = mode3Types + ["ISR"]
 addrRegs = ["sp"]
@@ -136,6 +138,7 @@ if inc != []:
 	mmem = [i for i in mmem if i in inc]
 	multiply = [i for i in multiply if i in inc]
 	swp = [i for i in swp if i in inc]
+	excep = [i for i in excep if i in inc]
 
 if exc != []:
 	arithmetic = [i for i in arithmetic if i not in exc]
@@ -147,10 +150,11 @@ if exc != []:
 	mmem = [i for i in mmem if i not in exc]
 	multiply = [i for i in multiply if i not in exc]
 	swp = [i for i in swp if i not in exc]
+	excep = [i for i in excep if i not in exc]
 
 
 
-instrs = [arithmetic]*len(arithmetic)+[logicOps]*len(logicOps)+[fbranch]*len(fbranch)+[bbranch]*len(bbranch)+[wbmem]*len(wbmem)+[hmem]*len(hmem)+[mmem]*len(mmem)+[multiply]*0+[swp]*len(swp)
+instrs = [arithmetic]*len(arithmetic)+[logicOps]*len(logicOps)+[fbranch]*len(fbranch)+[bbranch]*len(bbranch)+[wbmem]*len(wbmem)+[hmem]*len(hmem)+[mmem]*len(mmem)+[multiply]*0+[swp]*len(swp)+[excep]*len(excep)*2
 instrs = [subl for subl in instrs if len(subl) > 0]
 
 
@@ -197,13 +201,16 @@ def makeProgram(numInstru):
 		elif instrList == swp:
 			prog, counter = makeSWPInstr(instrChoice, counter)
 			program += prog
+		elif instrList == excep:
+			if instrChoice == 'swi': program += makeSWIInstr(counter)
+			elif instrChoice == 'undef': program += makeUndefInstr(counter)
 
 		# leftover case (branch graveyard)
 		else:
 			program += makeNopInstr(counter)
 
 		counter += 1
-	program += "end: b end\n"
+	
 
 	if interrupt_ratio > 0:
 		split_prog = program.split("\n")
@@ -211,6 +218,8 @@ def makeProgram(numInstru):
 		for i, line in enumerate(sample(range(len(split_prog)), num_interrupts)):
 			split_prog[line] = 'interrupt_{}: '.format(i) + split_prog[line]
 		program = "\n".join(split_prog)
+
+	program += "end: b end\n"
 
 	program = program_initial+program
 	print program
@@ -583,16 +592,28 @@ def makeSWPInstr(instruction, counter):
 
 	return program, counter
 
+def bitstr(length):
+	return ''.join([choice(['0','1']) for _ in range(length)])
 
 def makeNopInstr(counter):
 	program = "l{}: nop\n".format(counter)
 	return program
 
 def makeUndefInstr(counter):
-	return makeNopInstr(counter)
+	program = "l{}: .word 0b".format(counter)
+	val = ''
+	sig = choice(range(5))
+	if   sig == 0: val = bitstr(4) + '011' + bitstr(20) + '1' + bitstr(4)
+	elif sig == 1: val = '11111111' + bitstr(24)
+	elif sig == 2: val = '1111100' + bitstr(25)
+	elif sig == 3: val = '11110' + bitstr(27)
+	elif sig == 4: val = bitstr(4) + '00110' + bitstr(1) + '00' + bitstr(20)
+	return program + val + '\n'
+
 
 def makeSWIInstr(counter):
-	return makeNopInstr(counter)
+	program = "l{}: swi #{}\n".format(counter, randint(0, 2**24 - 1))
+	return program
 
 
 def makeAddr1ShiftImm(shifter):
@@ -614,7 +635,7 @@ def ror(value, amt, bits = 32):
 def init_fiq_handler(name):
 	program = "{}:\n".format(name)
 	program += "stmfd sp!, {r4-r9, r12}\n"
-	program += "ldmfd sp!, {r5-r10, r12}^\n" # load user mode
+	program += "ldmfd sp, {r5-r10, r12}^\n" # load user mode. can't wb, but don't care.
 	program += "subs pc,r14,#4\n"
 	program += "\n"
 	return program
@@ -633,10 +654,8 @@ def init_swi_handler(name):
 	program += "stmfd sp!, {r0-r3, r12, r14}\n"
 	program += "ldr r0, [r14, #-4]\n"  # recover swi argument
 	program += "bic r0, r0, #0xff000000\n"
-	program += "cmp r0, #0x00400000\n" # trigger some exception 1/4 of the time
-	program += "bge ret_swi\n"
 	program += makeUndefInstr(0)
-	program += "ret_swi: ldmfd sp!, {r0-r3, r12, pc}^\n" # a fairly complicated instruction
+	program += "ldmfd sp!, {r0-r3, r12, pc}^\n" # a fairly complicated instruction
 	program += "\n"
 	return program
 
@@ -665,8 +684,10 @@ def init_dataAbt_handler(name):
 def init_irq_handler(name):
 	program = "{}:\n".format(name)
 	program += "push {r1}\n"
+	program += "stmfd sp, {r13}^\n" # very sneaky store user mode
 	program += "ldr r1, UART_DR\n"
 	program += "str r1, [r1]\n"
+	program += "ldmfd sp, {r1}\n"
 	program += "pop {r1}\n"
 	program += "subs pc,r14,#4\n"
 	program += "\n"
