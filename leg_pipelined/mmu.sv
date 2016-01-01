@@ -1,7 +1,7 @@
 module mmu #(parameter tbits = 22) (
   input  logic        clk, reset, MMUExtInt, RequestPA, DRequestPA,
-  input  logic        HWrite,
-  input  logic        HReady, DataAccess, CPSR4,
+  input  logic        HWrite, HReadyT,
+  input  logic        DataAccess, CPSR4,
   input  logic        SupMode, WordAccess,
   input  logic        StallD, FlushD, FlushE,
   input  logic [31:0] HRData, DataAdrM, PCF, // TODO: Remove DataAdrM, PCF
@@ -55,7 +55,7 @@ module mmu #(parameter tbits = 22) (
   tri [tbits+8:0] TableEntry;
 
   // PHRData flop: Hold onto the previous bus value for current translation
-  flopenr #(32) HRDataFlop(clk, reset, HReady, HRData, PHRData);
+  flopenr #(32) HRDataFlop(clk, reset, HReadyT, HRData, PHRData);
   
   assign FSR[7:4] = Domain;    // Define the location of the domain
   assign FAR = VirtAdr;       // Set the FAR
@@ -71,11 +71,7 @@ module mmu #(parameter tbits = 22) (
   end
 
   // Bypass translation
-  //mux2 #(35) enableMux({VirtAdr, CPUHRequest, CPUHWrite, HReady},
-  //                     {HAddrT, HRequestMid, HWriteMid, CPUHReadyMid}, 
-  //                    Enable, {HAddr, HRequest, HWrite, CPUHReady});
-  // TODO: fix this name
-  mux2 #(tbits) PhsyTagEn(VirtAdr[31:32-tbits], TableEntry[tbits+8:9], MMUEn, PhysTag);
+  mux2 #(tbits) PhsyTagEn(VirtAdr[31:32-tbits], TableEntry[tbits+8:9], Enable, PhysTag);
 
   // MMUWriteData Mux
   mux2 #(32) WDMux(FAR, FSR, WDSel, MMUWriteData);
@@ -84,14 +80,8 @@ module mmu #(parameter tbits = 22) (
   // This mux was placed here to protoype a bug fix
   mux2 #(32) VirtAdrMux(PCF, DataAdrM, DRequestPA, VirtAdr);
 
-  // Instruction Tracker
-  // --- Track whether an instruction was executed.
-  // --- If an instruction that causes a memory fault is executed, 
-  // --- raise a prefetch abort
-  //instr_tracker it(.*);
-
+  // Translation Look-Aside Buffer
   parameter tlb_size = 16;
-
   tlb #(tbits, tlb_size) tlb_inst (
     .clk       (clk       ),
     .reset     (reset     ),

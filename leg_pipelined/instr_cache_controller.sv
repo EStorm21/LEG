@@ -3,7 +3,7 @@
 // Instruction Cache Controller for LEG Processor
 
 module instr_cache_controller #(parameter tbits = 14) (
-  input  logic             clk, reset, enable, PAReady, W1V, W2V, CurrLRU, BusReady,
+  input  logic             clk, reset, enable, PAReadyF, W1V, W2V, CurrLRU, BusReady,
   input  logic [      1:0] WordOffset   ,
   input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag,
   output logic [      1:0] Counter      ,
@@ -17,15 +17,15 @@ module instr_cache_controller #(parameter tbits = 14) (
   logic [      1:0] CounterMid;
 
   // Store the most recent valid physical tag
-  // flopenr #(tbits) tagReg (clk,reset,PAReady,PhysTag,PrevPTag);
+  // flopenr #(tbits) tagReg (clk,reset,PAReadyF,PhysTag,PrevPTag);
 
   // // If the current tag is valid, use it instead of the stored value
-  // mux2 #(tbits) tagMux(PrevPTag, PhysTag, PAReady, Tag);
+  // mux2 #(tbits) tagMux(PrevPTag, PhysTag, PAReadyF, Tag);
 
   // Create Hit signal 
   assign W1Hit = (W1V & (PhysTag == W1Tag));
   assign W2Hit = (W2V & (PhysTag == W2Tag));
-  assign Hit = (W1Hit | W2Hit) & PAReady;
+  assign Hit = (W1Hit | W2Hit) & PAReadyF;
 
   // Select output from Way 1 or Way 2
   assign WaySel = enable & W1Hit | ~enable;
@@ -42,7 +42,7 @@ module instr_cache_controller #(parameter tbits = 14) (
   // next state logic
   always_comb
     case (state)
-      READY:      nextstate <= (Hit | ~PAReady & enable) ? READY : MEMREAD;
+      READY:      nextstate <= (Hit | ~PAReadyF & enable) ? READY : MEMREAD;
       NEXTINSTR:  nextstate <= READY;
       MEMREAD:    nextstate <= ( BusReady & ( (Counter == 3) | ~enable ) ) ? NEXTINSTR : MEMREAD;
       default: nextstate <= READY;
@@ -52,8 +52,8 @@ module instr_cache_controller #(parameter tbits = 14) (
   assign IStall =  (state == MEMREAD) | ((state == READY) & ~Hit);
   assign CWE    = 
     ( (state == MEMREAD) & BusReady | 
-  	( (state == READY) & ~Hit & BusReady & PAReady) );
-  assign HRequestF  = (state == MEMREAD) | ((state == READY) & ~Hit & PAReady);
+  	( (state == READY) & ~Hit & BusReady & PAReadyF) );
+  assign HRequestF  = ((state == MEMREAD) | (state == READY) & ~Hit) & PAReadyF;
   assign ResetBlockOff = ( state == READY ) | ( state == NEXTINSTR );
 
   // Create Counter for sequential bus access

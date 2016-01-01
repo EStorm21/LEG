@@ -8,7 +8,7 @@ module twh #(parameter tagbits = 16) (
   input  logic               RequestPA   ,
   input  logic               DataAccess    ,
   input  logic               PrefetchAbort ,
-  input  logic               HReady        ,
+  input  logic               HReadyT        ,
   input  logic               InstrExecuting,
   input  logic               InstrCancelled,
   input  logic [       17:0] TBase         ,
@@ -68,7 +68,7 @@ always_comb
 case (state)
   READY:        if ( Enable & Fault ) begin
                   nextstate <= DataAccess ? FAULTFSR : INSTRFAULT;
-                end else if (~HReady | ~RequestPA | ~Enable | Fault | reset | PAReady) begin 
+                end else if (~HReadyT | ~RequestPA | ~Enable | Fault | reset | PAReady) begin 
                   nextstate <= READY;
                 end else if(HRData[1:0] == 2'b01) begin
                   nextstate <= COARSEFETCH;
@@ -85,11 +85,11 @@ case (state)
   SECTIONTRANS: if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
                 end else begin
-                  nextstate <= (HReady | ~RequestPA) ?  READY : SECTIONTRANS;
+                  nextstate <=  READY;
                 end
   COARSEFETCH:  if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
-                end else if (~HReady) begin
+                end else if (~HReadyT) begin
                   nextstate <= COARSEFETCH;
                 end else if(HRData[1:0] == 2'b01) begin 
                   nextstate <= LARGETRANS;
@@ -98,7 +98,7 @@ case (state)
                 end
   FINEFETCH:    if ( Fault ) begin
                   nextstate <= DataAccess ? READY: INSTRFAULT;
-                end else if (~HReady) begin
+                end else if (~HReadyT) begin
                   nextstate <= FINEFETCH;
                 end else if(HRData[1:0] == 2'b11) begin 
                   nextstate <= TINYTRANS;
@@ -108,17 +108,17 @@ case (state)
   SMALLTRANS:   if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
                 end else begin
-                  nextstate <= (HReady | ~RequestPA) ? READY : SMALLTRANS;
+                  nextstate <= READY;
                 end
   LARGETRANS:   if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
                 end else begin
-                  nextstate <= (HReady | ~RequestPA) ? READY : LARGETRANS;
+                  nextstate <= READY;
                 end
   TINYTRANS:    if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
                 end else begin 
-                  nextstate <= (HReady | ~RequestPA) ? READY : TINYTRANS;
+                  nextstate <= READY;
                 end
   INSTRFAULT:   if (InstrExecuting | InstrCancelled) begin
                   nextstate <= READY;
@@ -156,15 +156,15 @@ endcase
 assign HRequestT = ( (state == COARSEFETCH) |
                 (state == FINEFETCH)    & RequestPA |
                 (state == SMALLTRANS)   & RequestPA |
-               ( (state == READY) & RequestPA ) ) & Enable;
+               ( (state == READY) & RequestPA & ~PAReady) ) & Enable;
 
-// CPUHReady Logic  
-//assign CPUHReadyMid = PAReady;
-//assign CPUHReadyMid = (state == SECTIONTRANS) & HReady | 
-//                    (state == LARGETRANS)   & HReady |
-//                    (state == TINYTRANS)    & HReady |
+// CPUHReadyT Logic  
+//assign CPUHReadyTMid = PAReady;
+//assign CPUHReadyTMid = (state == SECTIONTRANS) & HReadyT | 
+//                    (state == LARGETRANS)   & HReadyT |
+//                    (state == TINYTRANS)    & HReadyT |
 //                    (state == READY)        & PAReady |
-//                    (state == SMALLTRANS)   & HReady;
+//                    (state == SMALLTRANS)   & HReadyT;
 
 // PAReady logic
 // assign PAReady = MMUEn |
@@ -174,7 +174,7 @@ assign TLBwe = (state == SECTIONTRANS) |
               (state == TINYTRANS);
 
 // CP15 Logic (WDSel, MMUEn, MMUWriteEn)
-assign MMUEn = (state == READY) & HReady;
+assign MMUEn = (state == READY) & HReadyT;
 assign MMUWriteEn = (state == INSTRFAULT) & PrefetchAbort |
                     (state == FAULTFSR) | (state == FAULTFAR);
 assign WDSel = (state == FAULTFSR);

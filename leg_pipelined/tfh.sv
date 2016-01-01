@@ -13,7 +13,7 @@ module tfh (
   input logic RBit,
   input logic SupMode,
   input logic InstrExecuting,
-  input logic HReady,
+  input logic HReadyT,
   input logic HWrite,
   input logic [31:0] PHRData,
   input logic [31:0] VirtAdr,
@@ -262,7 +262,7 @@ module tfh (
   assign DataAbort = Fault & DataAccess;
 
   // CP15 Logic (WDSel, MMUEn, MMUWriteEn)
-  assign MMUEn = (state == READY) & HReady;
+  assign MMUEn = (state == READY) & HReadyT;
   assign MMUWriteEn = (state == INSTRFAULT) & PrefetchAbort |
                       (state == FAULTFSR) | (state == FAULTFAR);
   assign WDSel = (state == FAULTFSR);

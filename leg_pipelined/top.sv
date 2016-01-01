@@ -124,7 +124,7 @@ module top (
     .HRData    (HRData      ),
     .RD        (InstrF      ),
     .PhysTag   (PhysTag),
-    .PAReady   (PAReadyF    ),
+    .PAReadyF  (PAReadyF    ),
     .IStall    (IStall      ),
     .HAddrF    (HAddrF      ),
     .HRequestF (HRequestF   )
@@ -161,26 +161,6 @@ module top (
     .HWriteM   (HWriteM     )
   );
 
-  /*// Create ahb arbiter
-  ahb_arbiter ahb_arb (
-    .HWriteM   (HWriteM    ),
-    .IStall    (IStall     ),
-    .DStall    (DStall     ),
-    .HReady    (CPUHReady  ),
-    .HAddrM    (HAddrM     ),
-    .HAddrF    (HAddrF     ),
-    .HRequestF (HRequestF  ),
-    .HRequestM (HRequestM  ),
-    .PAReady   (PAReady    ),
-    .PAReadyF  (PAReadyF   ),
-    .PAReadyM  (PAReadyM   ),
-    .DRequestPA(DRequestPA ),
-    .HReadyF   (HReadyF  ),
-    .HReadyM   (BusReadyM  ),
-    .CPUHAddr     (CPUHAddr   ),
-    .CPUHWrite    (CPUHWrite  ),
-    .CPUHRequest  (CPUHRequest)
-  );*/
   ahb_arbiter_3way ahb_arb(.*);
 
   tlb_arbiter tarb(.*);

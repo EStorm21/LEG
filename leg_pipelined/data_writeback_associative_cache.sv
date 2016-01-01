@@ -67,7 +67,7 @@ module data_writeback_associative_cache #(
 
     // HAddr Mux's
     assign CachedAddr = {CachedTag, ANew[31-tbits:0]};
-    mux2 #(32) HAddrMux(ANew, CachedAddr, UseCacheA, HAddr);
+    mux2 #(32) HAddrMux({PhysTag, ANew[31-tbits:0]}, CachedAddr, UseCacheA, HAddr);
 
     // Select from the ways
     mux2 #(32) CacheOutMux(W2RD, W1RD, WaySel, CacheOut);
