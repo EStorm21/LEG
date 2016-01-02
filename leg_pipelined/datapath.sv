@@ -46,11 +46,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                 /// ------ To Hazard ------
                 /// ------ To Address Path ------
                 /// ------ From Address Path ------
-                  input  logic [31:0] WA3W, RA1D, RA2D,
-
-                /// ------ added for thumb instructions ------
-                  input  logic        TFlagNextE, 
-                  output logic        TFlagE);
+                  input  logic [31:0] WA3W, RA1D, RA2D);
 
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnext2F, PCnextF, PCPlus4D, PCPlus0D, PC_in, Instr_1D;
@@ -79,9 +75,6 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   mux2 #(32) exceptionmux(PCnext2F, {27'b0, VectorPCnextF, 2'b0}, ExceptionSavePC, PCnextF);
   flopenr #(32) pcreg(clk, reset, ~StallF, PCnextF, PCF);
   adder #(32) pcaddfour(PCF, 32'h4, PCPlus4F);
-  // For thumb mode
-  //adder #(32) pcaddtwo(PCF, 32'h2, PCPlus2F)
-  //mux2 #(32) pcmux(PCPlus4F, PCPlus2F, TFlagNextE, PCPlusXF)
   
   // ====================================================================================
   // ================================ Decode Stage ======================================
@@ -122,9 +115,6 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcBE);
   mux2 #(32)  shifterAin(SrcAE, ExtImmE, RselectE, ShifterAinE); 
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
-
-  // Thumb
-  assign TFlagE = ALUSrcBE[0];
 
   // TODO: implement as a barrel shift
   shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], LDRSTRshiftE, ZeroRotateE, FlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);

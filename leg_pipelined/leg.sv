@@ -62,9 +62,6 @@ module leg(input  logic        clk, reset,
   logic [31:0]  WA3W, WA3E, RA1D, RA2D;
   logic [3:0]  DestRegD;
 
-  // Thumb 
-  logic        BXInstrD, BXInstrE, TFlagNextE, TFlagE;
-
   // Exceptions
   logic       UndefinedInstr;
   logic       SWI;
