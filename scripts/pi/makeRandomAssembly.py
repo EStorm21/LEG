@@ -764,7 +764,7 @@ def initializeProgram():
 	program += "b swi_handler\n"
 	program += "b prefetch_handler\n"
 	program += "b dataAbt_handler\n"
-	program += "b . # Unused vector 0x14\n"
+	program += "b .\n"
 	program += "b irq_handler\n"
 	program += "# FIQ handler immediately after vector table\n"
 
