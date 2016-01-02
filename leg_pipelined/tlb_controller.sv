@@ -8,6 +8,6 @@ module tlb_controller #(parameter size = 16, parameter tagbits = 16) (
 assign CRead = enable & ~we;
 assign RRead = enable & ~we;
 assign CAdr = VirtTag[$clog2(size)-1:0];
-assign PAReady = valid & enable & ~Miss;
+assign PAReady = valid & ~Miss | ~enable;
 
 endmodule

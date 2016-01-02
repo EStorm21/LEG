@@ -2,7 +2,6 @@ module data_writeback_associative_cache_controller
   #(parameter lines, parameter bsize, parameter tbits = 14)
   (input  logic clk, reset, enable, W1V, W2V, CurrLRU, W1D, W2D, clean,
    input  logic IStall, MemWriteM, MemtoRegM, BusReady, PAReady,
-   // input  logic IStall, MemWriteM, MemtoRegM, BusReady, 
    input  logic [1:0] WordOffset,
    input  logic [3:0] ByteMask,
    input  logic [31:0] A,
@@ -178,9 +177,9 @@ module data_writeback_associative_cache_controller
   assign HWriteM = (state == WRITEBACK) |
     ((state == READY) & ~Hit & Dirty & ~clean) |
     (state == DWRITE);
-  assign HRequestM = (state == READY) & MemtoRegM |
-		(state == READY) & MemWriteM & enable |
-		~(state == READY) & Stall; 
+  assign HRequestM = (state == READY) & MemtoRegM & PAReady |
+		(state == READY) & MemWriteM & enable & PAReady |
+		~(state == READY) & Stall & PAReady; 
 
   // RDSel makes WD the output for disabled cache behavior
   assign RDSel = (state == DWRITE);

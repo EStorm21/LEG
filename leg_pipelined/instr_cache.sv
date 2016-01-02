@@ -9,7 +9,7 @@ module instr_cache #(
     parameter tbits = 30-blockbits-setbits
 ) (
     input  logic             clk, reset, enable, BusReady, invalidate,
-    input  logic             PAReady,
+    input  logic             PAReadyF,
     input  logic [     31:0] A      ,
     input  logic [tbits-1:0] PhysTag,
     input  logic [     31:0] HRData ,
@@ -28,7 +28,7 @@ module instr_cache #(
     // Create New Address using the counter as the word offset
     assign WordOffset     = A[blockbits+1:2];
     assign ANew           = {A[31:4], NewWordOffset, A[1:0]};
-    assign HAddrF         = ANew;
+    assign HAddrF         = {PhysTag, ANew[31-tbits:0]};
 
     assign CacheWD        = HRData;
     assign CacheRDSel     = WordOffset;
@@ -69,7 +69,7 @@ module instr_cache #(
         .clk          (clk          ),
         .reset        (reset        ),
         .enable       (enable       ),
-        .PAReady      (PAReady      ),
+        .PAReadyF      (PAReadyF      ),
         .W1V          (W1V          ),
         .W2V          (W2V          ),
         .CurrLRU      (CurrLRU      ),

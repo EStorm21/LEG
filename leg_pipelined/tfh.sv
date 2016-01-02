@@ -1,25 +1,24 @@
 module tfh (
   //TODO: Organize and describe inputs and outputs
-	input logic clk,    // Clock
-	input logic reset,
-	input logic Enable,
+  input logic clk,    // Clock
+  input logic reset,
+  input logic Enable,
   input logic CPSR4,
-	input logic [3:0] statebits,
-	input logic MMUExtInt,
+  input logic [3:0] statebits,
+  input logic MMUExtInt,
+  input logic DRequestPA,
   input logic WordAccess,
   input logic DataAccess,
   input logic SBit,
   input logic RBit,
   input logic SupMode,
   input logic InstrExecuting,
-  input logic HReady,
-  input logic CPUHRequest,
-  input logic CPUHWrite,
-	input logic [31:0] PHRData,
-  input logic [31:0] CPUHAddr,
-  input logic [31:0] HAddrMid,
-	output logic PrefetchAbort, DataAbort, WDSel,
-	output logic [3:0] CP15A,
+  input logic HReadyT,
+  input logic HWrite,
+  input logic [31:0] PHRData,
+  input logic [31:0] VirtAdr,
+  output logic PrefetchAbort, DataAbort, WDSel,
+  output logic [3:0] CP15A,
   output logic [3:0] Domain, FaultCode,
   output logic Fault
 );
@@ -72,10 +71,10 @@ module tfh (
           FaultCodeMid <= ALIGNFAULT;
           FaultMid     <= 1'b0;
         // Alignment fault on a word access
-        end else if (~(CPUHAddr[1:0]==2'b00) & WordAccess) begin
+        end else if (~(VirtAdr[1:0]==2'b00) & WordAccess) begin
           FaultCodeMid <= ALIGNFAULT;
           FaultMid     <= 1'b1;
-        end else if (MMUExtInt & CPUHRequest) begin
+        end else if (MMUExtInt) begin
           // TODO: Investigate the proper behavior of the external abort for translations
           //       Currently faults during first access are first level faults
           FaultCodeMid <= ETFIRSTFAULT;    // First level external translation abort
@@ -171,7 +170,7 @@ module tfh (
 
   // Vector Exception Fault
   // TODO: See about PROG32 (processor is in 32 bit configuration)
-  assign vectorRegion = HAddrMid < 32'h0000_001f;
+  assign vectorRegion = VirtAdr < 32'h0000_001f;
   assign VectorException = (CPSR4 == 1'b0) & DataAccess & vectorRegion;
 
   // terminal and vector exception Logic
@@ -219,14 +218,14 @@ module tfh (
   always_comb
     case(state)
       SECTIONTRANS: CurrAP <= PHRData[11:10];
-      SMALLTRANS:   case(CPUHAddr[11:10])
+      SMALLTRANS:   case(VirtAdr[11:10])
                       2'b00: CurrAP <= PHRData[5:4];
                       2'b01: CurrAP <= PHRData[7:6];
                       2'b10: CurrAP <= PHRData[9:8];
                       2'b11: CurrAP <= PHRData[11:10];
                     endcase
       TINYTRANS:    CurrAP <= PHRData[5:4];
-      LARGETRANS:   case(CPUHAddr[15:14])
+      LARGETRANS:   case(VirtAdr[15:14])
                       2'b00: CurrAP <= PHRData[5:4];
                       2'b01: CurrAP <= PHRData[7:6];
                       2'b10: CurrAP <= PHRData[9:8];
@@ -239,11 +238,11 @@ module tfh (
   always_comb
     casez({CurrAP, SBit, RBit})
       4'b0000: APMidFault <= 1'b1;
-      4'b0010: APMidFault <= (SupMode & ~CPUHWrite);
-      4'b0001: APMidFault <= ~CPUHWrite;
+      4'b0010: APMidFault <= (SupMode & (~HWrite | ~DRequestPA)); // TODO: Fix this to handle correct writes
+      4'b0001: APMidFault <= (~HWrite | ~DRequestPA);
       4'b0011: APMidFault <= 1'b0; // Don't care
       4'b01??: APMidFault <= SupMode;
-      4'b10??: APMidFault <= SupMode | ~CPUHWrite;
+      4'b10??: APMidFault <= SupMode | ~(~HWrite | ~DRequestPA);
       4'b11??: APMidFault <= 1'b0;
     endcase
 
@@ -263,7 +262,7 @@ module tfh (
   assign DataAbort = Fault & DataAccess;
 
   // CP15 Logic (WDSel, MMUEn, MMUWriteEn)
-  assign MMUEn = (state == READY) & HReady;
+  assign MMUEn = (state == READY) & HReadyT;
   assign MMUWriteEn = (state == INSTRFAULT) & PrefetchAbort |
                       (state == FAULTFSR) | (state == FAULTFAR);
   assign WDSel = (state == FAULTFSR);
