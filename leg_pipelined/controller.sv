@@ -47,9 +47,6 @@ module controller (
   output logic        RegtoCPSR, CPSRtoReg, CoProc_En,
   output logic        RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW,
   output logic        ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
-  /// For BX instruction
-  output logic        BXInstrD, TFlagNextE   ,
-  input  logic        TFlagE                 ,
   // For exceptions
   input  logic        PrefetchAbort, DataAbort, IRQ, FIQ,
   output logic  [1:0]    PCInSelect,
@@ -87,6 +84,7 @@ module controller (
   logic        CoProc_MCR_D, CoProc_MRC_D, CoProc_FlagUpd_D, CoProc_WrEnD, CoProc_EnD;
   logic        CoProc_FlagUpd_E, CoProc_FlagUpd_M, CoProc_FlagUpd_W;
   logic        CoProc_WrEnE, CoProc_EnE;
+  logic        BXInstrD, BXInstrE;
   logic [ 3:0] FlagsOutE;
   logic [31:0] SPSRW, CPSRW;
   logic        nonFlushedInstr;
@@ -282,10 +280,6 @@ module controller (
   // === ALU Decoding ===
   alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], AddCarryE, CFlagKeptE, BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryInE, DoNotWriteRegE);
   // === END ===
-
-  // TODO: Add Thumb mode
-  mux2 #(1) updatetflag(PreviousTFlagE, TFlagE, BXInstrE, TFlagNextE); // THUMB FLAG (TFlagNextE) is no longer being used since we haven't implemented thumb mode!
-  assign PreviousTFlagE = 1'b0; // = StatusRegisterE[5];
 
   /*** BRIEF ***
   * These bits select which bit of memory to mask for Load/Store Byte, Word and Halfword operations
