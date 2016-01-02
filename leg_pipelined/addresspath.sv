@@ -31,7 +31,7 @@ module addresspath( /// ------ From TOP ------
   * -- Also needed for exception vector addresses in the Writeback stage.
   */
   
-  logic [3:0]  WA3M, WA3E, RA1E, RA2E, RdLoE, WA3W;
+  logic [31:0]  WA3D, WA3M, WA3E, RA1E, RA2E, RdLoE;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D, WA3_4b_D;
   logic user_sys, fiq, irq, svc, abort, undef, system;
   logic [5:0] ModeOneHotD;
@@ -67,7 +67,7 @@ module addresspath( /// ------ From TOP ------
 
   addressdecode address_decoder1(RA1_4b_D, RegFileRzD[0], ModeOneHotD, RA1D);
   addressdecode address_decoder2(RA2_4b_D, RegFileRzD[1], ModeOneHotD, RA2D);
-  addressdecode address_decoder3(WA3_4b_D, RegFileRzD[2], ModeOneHotD, WA3W);
+  addressdecode address_decoder3(WA3_4b_D, RegFileRzD[2], ModeOneHotD, WA3D);
 
   // ====================================================================================
   // ================================ Execute Stage =====================================
