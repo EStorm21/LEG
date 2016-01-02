@@ -66,7 +66,7 @@ module top (
     // Added for MMU
     StallD, FlushD, FlushE);
 
-  //`define ECACHES 1
+  `define ECACHES 1
   initial
     begin
       `ifdef ECACHES
@@ -78,7 +78,8 @@ module top (
 
   `ifdef ECACHES
     assign ENI = control[12];
-    assign END    = control[2];
+    //assign END    = control[2];
+    assign END    = 1'b0;
     assign CLEAND = 1'b0;
   `else
     assign ENI    = 1'b0;

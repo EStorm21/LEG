@@ -21,14 +21,15 @@ module instr_cache #(
     logic [         31:0] CacheWD, W1RD, W2RD, CacheOut, ANew;
     logic [    tbits-1:0] W1Tag, W2Tag; 
     logic [          3:0] ActiveByteMask;
-    logic [blockbits-1:0] NewWordOffset ;
+    logic [blockbits-1:0] DataWordOffset ;
+    logic [blockbits-1:0] AddrWordOffset ;
     logic [          1:0] CacheRDSel, Counter, WordOffset;
     logic                 W1V, W2V, W1WE, W2WE, ResetBlockOff, CurrLRU, DirtyIn, W1D, W2D, vin, WaySel;
 
     // Create New Address using the counter as the word offset
     assign WordOffset     = A[blockbits+1:2];
-    assign ANew           = {A[31:4], NewWordOffset, A[1:0]};
-    assign HAddrF         = {PhysTag, ANew[31-tbits:0]};
+    assign ANew           = {A[31:4], DataWordOffset, A[1:0]};
+    assign HAddrF         = {PhysTag, A[31-tbits:4], AddrWordOffset, A[1:0]};
 
     assign CacheWD        = HRData;
     assign CacheRDSel     = WordOffset;
@@ -85,7 +86,8 @@ module instr_cache #(
         .IStall       (IStall       ),
         .ResetBlockOff (ResetBlockOff ),
         .HRequestF    (HRequestF    ),
-        .NewWordOffset(NewWordOffset)
+        .AddrWordOffset(AddrWordOffset),
+        .DataWordOffset(DataWordOffset)
     );
 
     // Select from the ways
