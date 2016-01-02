@@ -96,6 +96,7 @@ module controller (
   logic        IRQAssert, FIQAssert, DataAbortAssert;
   logic        ExceptionResetMicrop, interrupting;
   logic        CondExM, CondExW;
+  logic        CondAndD;
 
   // For debugging
   logic        validDdebug, validEdebug, validMdebug, validWdebug;
@@ -238,7 +239,10 @@ module controller (
 
   // === EXCEPTION HANDLING ===
   assign SWI_D          = InstrD[27:24] == 4'hF;
-  assign undefD         = InstrD[27:25] == 3'b011 & InstrD[4];
+  assign CondAndD       = &InstrD[31:28];
+  assign undefD         = (InstrD[27:25] == 3'b011 & InstrD[4]) 
+                        | (CondAndD & ( InstrD[27:24] == 4'b1111 | InstrD[27:25] == 3'b100 | ~InstrD[27])) 
+                        | (InstrD[27:23] == 5'b00110 & InstrD[21:20] == 2'b00);
   // === END ===
 
   // === DEBUGGING ===
