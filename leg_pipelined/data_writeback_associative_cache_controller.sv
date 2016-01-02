@@ -178,8 +178,8 @@ module data_writeback_associative_cache_controller
     ((state == READY) & ~Hit & Dirty & ~clean) |
     (state == DWRITE);
   assign HRequestM = (state == READY) & MemtoRegM & PAReady |
-		(state == READY) & MemWriteM & enable |
-		~(state == READY) & Stall; 
+		(state == READY) & MemWriteM & enable & PAReady |
+		~(state == READY) & Stall & PAReady; 
 
   // RDSel makes WD the output for disabled cache behavior
   assign RDSel = (state == DWRITE);
