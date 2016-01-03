@@ -65,7 +65,7 @@ module instr_cache_controller #(parameter tbits = 14) (
     end
 
   // Data phase counter is one cycle behind address phase
-  assign DataCounter = Counter - 1'b1;
+  assign DataCounter = CounterMid - 1'b1;
 
   mux2 #(2) cenMux(WordOffset, CounterMid, enable, Counter);
 
@@ -82,7 +82,7 @@ module instr_cache_controller #(parameter tbits = 14) (
   assign W2WE = W2EN & CWE;
 
   // Create the block offset for the address and data phases of AHB
-  mux2 #(2) DataWordOffsetMux(DataCounter, WordOffset, ResetBlockOff, DataWordOffset);
+  mux2 #(2) DataWordOffsetMux(DataCounter, WordOffset, (~enable | ResetBlockOff), DataWordOffset);
   mux2 #(2) AddrWordOffsetMux(Counter, WordOffset, ResetBlockOff, AddrWordOffset);
 
 endmodule

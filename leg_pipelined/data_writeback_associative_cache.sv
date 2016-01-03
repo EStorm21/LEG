@@ -30,7 +30,7 @@ module data_writeback_associative_cache #(
     // Input Control Logic
     logic [         31:0] A             ;
     logic [          3:0] ActiveByteMask, WDSel;
-    logic [blockbits-1:0] NewWordOffset ;
+    logic [blockbits-1:0] AddrWordOffset, DataWordOffset;
     logic                 DirtyIn, vin;
     logic                 UseWD, BlockWE, cleanCurr;
     logic [$clog2(lines)-1:0] BlockNum;
@@ -50,7 +50,7 @@ module data_writeback_associative_cache #(
     // Create New Address using the counter as the word offset
     assign A = VirtA;
     assign VirtTag = VirtA[31:31-tbits+1];
-    assign ANew = {VirtTag, BlockNum, NewWordOffset, VirtA[1:0]};
+    assign ANew = {VirtTag, BlockNum, DataWordOffset, VirtA[1:0]};
 
     // Create Cache memory. 
     // This module contains both way memories and LRU table
@@ -69,13 +69,12 @@ module data_writeback_associative_cache #(
     assign HWData = RD;
 
     // HAddr Mux's
-    assign CachedAddr = {CachedTag, ANew[31-tbits:0]};
-    mux2 #(32) HAddrMux({PhysTag, ANew[31-tbits:0]}, CachedAddr, UseCacheA, HAddr);
+    assign CachedAddr = {CachedTag, A[31-tbits:4], AddrWordOffset, A[1:0]};
+    mux2 #(32) HAddrMux({PhysTag, A[31-tbits:4], AddrWordOffset, A[1:0]}, CachedAddr, UseCacheA, HAddr);
 
     // Select from the ways
     mux2 #(32) CacheOutMux(W2RD, W1RD, WaySel, CacheOut);
 
     // Select from cache or memory
     mux2 #(32) RDMux(CacheOut, WD, RDSel, RD);
-	//assign RD = 32'hdeadbeef;
 endmodule

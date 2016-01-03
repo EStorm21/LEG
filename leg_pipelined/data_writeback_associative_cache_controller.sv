@@ -13,23 +13,25 @@ module data_writeback_associative_cache_controller
    output logic [3:0] ActiveByteMask, WDSel,
    output logic [tbits-1:0] CachedTag,
    output logic [$clog2(lines)-1:0] BlockNum,
-   output logic [$clog2(bsize)-1:0] NewWordOffset);
+   output logic [$clog2(bsize)-1:0] AddrWordOffset,
+   output logic [$clog2(bsize)-1:0] DataWordOffset
+);
 
   logic [      tbits-1:0] Tag, PrevPTag;
   logic [$clog2(lines):0] FlushA    ; // Create block address to increment
   logic                   IncFlush, ResetBlockOff;
   logic                   WordAccess, CWE, Hit, W2Hit, W1Hit, TagSel, writeW1;
   logic                   W2EN, Dirty;
+  logic             [1:0] CounterMid, Counter, DataCounter;
 
 
   // Writeback cache states
-  typedef enum logic[2:0] {READY, MEMREAD, WRITEBACK, NEXTINSTR, 
-                           FLUSH, WAIT, DWRITE} statetype;
+  typedef enum logic[2:0] {READY, MEMREAD, LASTREAD, WRITEBACK, 
+                           NEXTINSTR, FLUSH, WAIT, DWRITE} statetype;
   statetype state, nextstate;
 
   // Control Signals
   // Create Counter for sequential bus access
-  logic [1:0] CounterMid, Counter;
   always_ff @(posedge clk, posedge reset)
     if(reset | ResetBlockOff) begin
         CounterMid <= 0;
@@ -40,6 +42,8 @@ module data_writeback_associative_cache_controller
             CounterMid <= CounterMid;
         end
     end
+
+  assign DataCounter = CounterMid -1'b1;
 
   // ----------------FLUSHING--------------------
   // Create the flush c ounter (count through all blocks and each way per block)
@@ -141,9 +145,16 @@ module data_writeback_associative_cache_controller
       MEMREAD:
         if( BusReady & ( (Counter == 3) | ~enable & BusReady ) )
           begin
-            nextstate <= NEXTINSTR;
+            nextstate <= LASTREAD;
           end else begin
         nextstate <= MEMREAD;
+      end
+      LASTREAD:
+        if( BusReady  )
+          begin
+            nextstate <= NEXTINSTR;
+          end else begin
+        nextstate <= LASTREAD;
       end
       // If the instruction memory is stalling, then wait for a new instruction
       NEXTINSTR: nextstate <= IStall ? WAIT : READY;
@@ -164,6 +175,7 @@ module data_writeback_associative_cache_controller
 
   // output logic
   assign Stall = (state == MEMREAD) |
+    (state == LASTREAD) |
     (state == WRITEBACK) |
     (state == FLUSH) |
     (state == DWRITE) |
@@ -172,7 +184,7 @@ module data_writeback_associative_cache_controller
     );
   assign CWE = ( (state == MEMREAD) & BusReady ) |
     ( (state == READY) & 
-      ( (MemWriteM & Hit) |  (BusReady & PAReady & ~Hit & ~Dirty & ~clean) ) 
+      ( (MemWriteM & Hit) ) 
     );
   assign HWriteM = (state == WRITEBACK) |
     ((state == READY) & ~Hit & Dirty & ~clean) |
@@ -184,8 +196,9 @@ module data_writeback_associative_cache_controller
   // RDSel makes WD the output for disabled cache behavior
   assign RDSel = (state == DWRITE);
 
-  assign BlockWE = (state == MEMREAD) | ( (state == NEXTINSTR)  & 
-                   (~MemWriteM | MemWriteM & ~Dirty) ) |
+  assign BlockWE = (state == LASTREAD) | 
+                   (state == MEMREAD) | 
+                   ( (state == NEXTINSTR)  & (~MemWriteM | MemWriteM & ~Dirty) ) |
                    ( (state == READY) & ~Hit & ~Dirty );
   assign ResetBlockOff = ((state == READY) & Hit) | (state == NEXTINSTR) | 
                         (state == FLUSH);
@@ -199,13 +212,18 @@ module data_writeback_associative_cache_controller
   // Cached address selection
   assign UseCacheA = enable & HWriteM;
 
+  // Create the block offset for the cache
+  mux2 #($clog2(bsize)) AddrWordOffsetMux(Counter, WordOffset, ResetBlockOff, 
+                                          AddrWordOffset);
+  mux2 #($clog2(bsize)) DataWordOffsetMux(DataCounter, 
+                                          WordOffset, 
+                                          (~enable | ResetBlockOff), 
+                                          DataWordOffset);
+
   // -------------Flush controls------------
   assign IncFlush = (state == FLUSH) & ~(W1D & W1V) & ~(W2D & W2V);
   assign cleanCurr = (state == WRITEBACK) & BusReady;
 
-  // Create the block offset for the cache
-  mux2 #($clog2(bsize)) WordOffsetMux(Counter, WordOffset, ResetBlockOff, 
-                                          NewWordOffset);
   // Flushing MUX
   mux2 #($clog2(lines)) BlockNumMux(A[$clog2(lines)-1 + 4:4], 
                    FlushA[$clog2(lines)-1:0], clean, BlockNum);
