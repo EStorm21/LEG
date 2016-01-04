@@ -13,6 +13,8 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
 
   logic IRQEn_sync, FIQEn_sync, interruptPending, UnstallD;
   logic [6:0] PCVectorAddress;
+  typedef enum {ready, DataAbort2, Int_E, Int_M, Int_W, Exception2} statetype;
+  statetype state, nextState;
   
   // Save some exception signals for M so CPSR works properly (see case in the FSM below)
   // Flush this if we are not in ready. Then some other exception got here first.
@@ -29,8 +31,6 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
 
 
   // FSM states and boilerplate
-  typedef enum {ready, DataAbort2, Int_E, Int_M, Int_W, Exception2} statetype;
-  statetype state, nextState;
   always_ff @ (posedge clk)
     if (reset)  state <= ready;
     else        state <= nextState;
