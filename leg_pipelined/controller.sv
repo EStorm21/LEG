@@ -312,7 +312,7 @@ module controller (
 
 
  exception_handler exh(clk, reset, undefE, SWI_E, PrefetchAbort, DataAbort, IRQ, FIQ, 
-                       ~CPSRW[7], ~CPSRW[6], StallD, StallE, PCWrPendingF, PCSrcW & CondExW,
+                       ~CPSRW[7], ~CPSRW[6], StallD, StallE, StallM, PCWrPendingF, PCSrcW & CondExW,
                        undefM, SWI_M, PrefetchAbortM, DataAbortAssert, IRQAssert, FIQAssert, // undefM, SWI_M, and PrefetchAbortM are for saving CPSR only.
                        interrupting, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
                        VectorPCnextF,

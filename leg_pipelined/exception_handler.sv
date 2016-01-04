@@ -1,5 +1,5 @@
 module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, PrefetchAbortE, DataAbort, IRQ, FIQ, 
-                         input  logic IRQEnabled, FIQEnabled, StallD, StallE, PCWrPendingF, PCUpdateW,
+                         input  logic IRQEnabled, FIQEnabled, StallD, StallE, StallM, PCWrPendingF, PCUpdateW,
                          output logic UndefinedInstrM, SWIM, PrefetchAbortM, DataAbortCycle2, IRQAssert, FIQAssert,
                          output logic interrupting, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
                          output logic [2:0] VectorPCnextF,
@@ -15,8 +15,9 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   logic [6:0] PCVectorAddress;
   
   // Save some exception signals for M so CPSR works properly (see case in the FSM below)
-  flopr #(3) exceptionflop(clk, reset, {SWIE, PrefetchAbortE, UndefinedInstrE},
-                                       {SWIM, PrefetchAbortM, UndefinedInstrM});
+  // Flush this if we are not in ready. Then some other exception got here first.
+  flopenrc #(3) exceptionflop(clk, reset, ~StallM, ~(state == ready), {SWIE, PrefetchAbortE, UndefinedInstrE},
+                                                                      {SWIM, PrefetchAbortM, UndefinedInstrM});
 
   flopenr #(1) pcwrflop(clk, reset, ~StallE, PCUpdateW, UnstallD);
 
@@ -28,7 +29,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
 
 
   // FSM states and boilerplate
-  typedef enum {ready, DataAbort2, Int_E, Int_M, Int_W} statetype;
+  typedef enum {ready, DataAbort2, Int_E, Int_M, Int_W, Exception2} statetype;
   statetype state, nextState;
   always_ff @ (posedge clk)
     if (reset)  state <= ready;
@@ -54,8 +55,8 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
         // In order to save the correct CPSR state, saving CPSR is delayed until
         // the exception is in M. This lets last good instruction set flags if it needs to.
         // This is handled by a flop outside the FSM
-        {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1010;
-        nextState = ready;
+        {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1110;
+        nextState = Exception2;
       end
       else if ( interruptPending ) begin // FIQ and IRQ
         // Only if FIQ or IRQ enabled
@@ -73,6 +74,12 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
 
     // NEXT CYCLE OF DATA ABORT
     DataAbort2: begin
+      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1011;
+      nextState = ready;
+    end
+
+    // NEXT CYCLE OF PREFETCH ABORT / UNDEFINED / SWI
+    Exception2: begin
       {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1011;
       nextState = ready;
     end
@@ -111,11 +118,11 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   // Normally we StallD in interrupts so the next instruction address is preserved. 
   // But when an interrupt follows a branch we need to get the BTA into the decode stage.
   // By unstalling at the right time the PC gets in and the rest of the stuff is still thrown out.
-  assign ExceptionStallD = (state == Int_E) | ((state == Int_M) & ~UnstallD) | ((state == ready) & DataAbort);
+  assign ExceptionStallD = (state == Int_E) | ((state == Int_M) & ~UnstallD) | ((state == ready) & (DataAbort | PrefetchAbortE | UndefinedInstrE | SWIE));
 
 
   // PC vectoring
-  assign PCVectorAddress = {FIQAssert, IRQAssert, DataAbortCycle2, PrefetchAbortE, SWIE, UndefinedInstrE, reset};
+  assign PCVectorAddress = {FIQAssert, IRQAssert, DataAbortCycle2, PrefetchAbortM, SWIM, UndefinedInstrM, reset};
   assign ExceptionSavePC = |PCVectorAddress; 
   exception_vector_address pcvec(PCVectorAddress, VectorPCnextF);
 
@@ -126,7 +133,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   always_comb
     if (IRQAssert | FIQAssert)
       PCInSelect = 2'b10; // PCD + 4
-    else if (PrefetchAbortE | UndefinedInstrE | SWIE | DataAbortCycle2)
+    else if (PrefetchAbortM | UndefinedInstrM | SWIM | DataAbortCycle2)
       PCInSelect = 2'b01; // PCD + 0
     else 
       PCInSelect = 2'b00; // PCD + 8
