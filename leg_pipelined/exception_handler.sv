@@ -20,8 +20,8 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   // Flush this if we are not in ready. Then some other exception got here first.
   flopenrc #(3) exceptionflopM(clk, reset, ~StallM, ~(state == ready), {SWIE, PrefetchAbortE, UndefinedInstrE},
                                                                        {SWIM, PrefetchAbortM, UndefinedInstrM});
-  flopenrc #(3) exceptionflopW(clk, reset, ~StallW, ~(state == ready), {SWIM, PrefetchAbortM, UndefinedInstrM},
-                                                                       {SWIW, PrefetchAbortW, UndefinedInstrW});
+  flopenrc #(3) exceptionflopW(clk, reset, ~StallW, ~(state == ExceptionM), {SWIM, PrefetchAbortM, UndefinedInstrM},
+                                                                            {SWIW, PrefetchAbortW, UndefinedInstrW});
 
   // Detect if instructions are writing to the PC and allow the change to happen if so.
   flopenr #(1) pcwrflop(clk, reset, ~StallE, PCUpdateW, UnstallD);
@@ -66,7 +66,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
         // Wait for last instruction to exit D. When it is in E, FlushE. The zero instruction cannot cause any exception.
         // When the final instruction get to W raise the interrupt, save PCD+4 
         {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b0000;
-        nextState = StallE ? ready : Int_E;
+        nextState = StallD ? ready : Int_E;
       end
       else begin // Normal
         // don't stall or flush or FIQ or IRQ or anything    
@@ -98,13 +98,13 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
     // In those cases, W looks like E. RIP. Also the relevant signal is called PCWrPendingF. Why.
     Int_E: begin
       {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b0100;
-      nextState = interruptPending ? ( (StallM | PCWrPendingF) ? Int_E : Int_M) : ready;
+      nextState = interruptPending ? ( (StallE | PCWrPendingF) ? Int_E : Int_M) : ready;
     end
 
     // IRQ / FIQ: Final instruction in M
     Int_M: begin
       {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b0100;
-      nextState = interruptPending ? (StallW ? Int_M : Int_W) : ready;
+      nextState = interruptPending ? (StallM ? Int_M : Int_W) : ready;
     end
 
     // IRQ / FIQ: Final instruction in W
