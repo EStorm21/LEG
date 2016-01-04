@@ -1,6 +1,6 @@
 module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, PrefetchAbortE, DataAbort, IRQ, FIQ, 
-                         input  logic IRQEnabled, FIQEnabled, StallD, StallE, StallM, PCWrPendingF, PCUpdateW,
-                         output logic UndefinedInstrM, SWIM, PrefetchAbortM, DataAbortCycle2, IRQAssert, FIQAssert,
+                         input  logic IRQEnabled, FIQEnabled, StallD, StallE, StallM, StallW, PCWrPendingF, PCUpdateW,
+                         output logic UndefinedInstrW, SWIW, PrefetchAbortW, DataAbortCycle2, IRQAssert, FIQAssert,
                          output logic interrupting, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
                          output logic [2:0] VectorPCnextF,
                          output logic ExceptionResetMicrop, ExceptionSavePC, 
@@ -13,14 +13,17 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
 
   logic IRQEn_sync, FIQEn_sync, interruptPending, UnstallD;
   logic [6:0] PCVectorAddress;
-  typedef enum {ready, DataAbort2, Int_E, Int_M, Int_W, Exception2} statetype;
+  typedef enum {ready, DataAbort2, Int_E, Int_M, Int_W, ExceptionM, ExceptionW} statetype;
   statetype state, nextState;
   
   // Save some exception signals for M so CPSR works properly (see case in the FSM below)
   // Flush this if we are not in ready. Then some other exception got here first.
-  flopenrc #(3) exceptionflop(clk, reset, ~StallM, ~(state == ready), {SWIE, PrefetchAbortE, UndefinedInstrE},
-                                                                      {SWIM, PrefetchAbortM, UndefinedInstrM});
+  flopenrc #(3) exceptionflopM(clk, reset, ~StallM, ~(state == ready), {SWIE, PrefetchAbortE, UndefinedInstrE},
+                                                                       {SWIM, PrefetchAbortM, UndefinedInstrM});
+  flopenrc #(3) exceptionflopW(clk, reset, ~StallW, ~(state == ready), {SWIM, PrefetchAbortM, UndefinedInstrM},
+                                                                       {SWIW, PrefetchAbortW, UndefinedInstrW});
 
+  // Detect if instructions are writing to the PC and allow the change to happen if so.
   flopenr #(1) pcwrflop(clk, reset, ~StallE, PCUpdateW, UnstallD);
 
   // CPSR acts like it is in the register file and changes on negedge clk. We want to delay these changes to the positive edge.
@@ -56,14 +59,14 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
         // the exception is in M. This lets last good instruction set flags if it needs to.
         // This is handled by a flop outside the FSM
         {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1110;
-        nextState = Exception2;
+        nextState = StallM ? ready : ExceptionM;
       end
       else if ( interruptPending ) begin // FIQ and IRQ
         // Only if FIQ or IRQ enabled
         // Wait for last instruction to exit D. When it is in E, FlushE. The zero instruction cannot cause any exception.
         // When the final instruction get to W raise the interrupt, save PCD+4 
         {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b0000;
-        nextState = StallD ? ready : Int_E;
+        nextState = StallE ? ready : Int_E;
       end
       else begin // Normal
         // don't stall or flush or FIQ or IRQ or anything    
@@ -78,8 +81,14 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
       nextState = ready;
     end
 
-    // NEXT CYCLE OF PREFETCH ABORT / UNDEFINED / SWI
-    Exception2: begin
+    // M STAGE OF PREFETCH ABORT / UNDEFINED / SWI
+    ExceptionM: begin
+      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1111;
+      nextState = StallW ? ExceptionM : ExceptionW;
+    end
+
+    // W STAGE OF PREFETCH ABORT / UNDEFINED / SWI
+    ExceptionW: begin
       {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1011;
       nextState = ready;
     end
@@ -89,19 +98,19 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
     // In those cases, W looks like E. RIP. Also the relevant signal is called PCWrPendingF. Why.
     Int_E: begin
       {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b0100;
-      nextState = interruptPending ? ( (StallE | PCWrPendingF) ? Int_E : Int_M) : ready;
+      nextState = interruptPending ? ( (StallM | PCWrPendingF) ? Int_E : Int_M) : ready;
     end
 
     // IRQ / FIQ: Final instruction in M
     Int_M: begin
       {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b0100;
-      nextState = interruptPending ? (StallE ? Int_M : Int_W) : ready;
+      nextState = interruptPending ? (StallW ? Int_M : Int_W) : ready;
     end
 
     // IRQ / FIQ: Final instruction in W
     Int_W: begin
       {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1000;
-      nextState = interruptPending ? (StallE ? Int_W : ready) : ready;
+      nextState = interruptPending ? (StallW ? Int_W : ready) : ready;
     end
 
     default: begin
@@ -118,11 +127,11 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   // Normally we StallD in interrupts so the next instruction address is preserved. 
   // But when an interrupt follows a branch we need to get the BTA into the decode stage.
   // By unstalling at the right time the PC gets in and the rest of the stuff is still thrown out.
-  assign ExceptionStallD = (state == Int_E) | ((state == Int_M) & ~UnstallD) | ((state == ready) & (DataAbort | PrefetchAbortE | UndefinedInstrE | SWIE));
+  assign ExceptionStallD = (state == Int_E) | ((state == Int_M) & ~UnstallD) | ((state == ready) & (DataAbort | PrefetchAbortE | UndefinedInstrE | SWIE)) | (state == ExceptionM);
 
 
   // PC vectoring
-  assign PCVectorAddress = {FIQAssert, IRQAssert, DataAbortCycle2, PrefetchAbortM, SWIM, UndefinedInstrM, reset};
+  assign PCVectorAddress = {FIQAssert, IRQAssert, DataAbortCycle2, PrefetchAbortW, SWIW, UndefinedInstrW, reset};
   assign ExceptionSavePC = |PCVectorAddress; 
   exception_vector_address pcvec(PCVectorAddress, VectorPCnextF);
 
@@ -133,7 +142,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   always_comb
     if (IRQAssert | FIQAssert)
       PCInSelect = 2'b10; // PCD + 4
-    else if (PrefetchAbortM | UndefinedInstrM | SWIM | DataAbortCycle2)
+    else if (PrefetchAbortW | UndefinedInstrW | SWIW | DataAbortCycle2)
       PCInSelect = 2'b01; // PCD + 0
     else 
       PCInSelect = 2'b00; // PCD + 8
