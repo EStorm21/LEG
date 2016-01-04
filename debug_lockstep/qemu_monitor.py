@@ -126,8 +126,11 @@ class QemuMonitor(object):
 			gdbQueryCmd("qemu.sstep="+QemuMonitor.SSTEP_NOIRQ)
 
 	def _step(self, pc_to_use):
-		instr_to_use = getDataAtExpr(pc_to_use)
 		gdb.execute("stepi", to_string=True)
+		try:
+			instr_to_use = getDataAtExpr(pc_to_use)
+		except MemoryError:
+			instr_to_use = "(couldn't read instruction at 0x{:x})".format(pc_to_use)
 		cpsr, regs = getQemuState()
 		state = (pc_to_use, instr_to_use, cpsr, regs)
 
