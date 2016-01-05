@@ -82,7 +82,7 @@ def overview_msg(subprocs):
 
 def statuslist_msg(subprocs, divisions, running_only):
 	msg = "Status list:\n"
-	for i, (sp, sdir), division in enumerate(zip(subprocs,divisions)):
+	for i, ((sp, sdir), division) in enumerate(zip(subprocs,divisions)):
 		if running_only and sp.poll() is not None:
 			continue
 		identifier = "{}-{}".format(hex(division[0]), hex(division[1]))
@@ -176,7 +176,7 @@ def run_divisions(test_file, divisions):
 				command = raw_input("(d&c) ")
 			except KeyboardInterrupt:
 				print "Keyboard interrupt - ignoring"
-			if command = "":
+			if command == "":
 				command = last_command
 			if command == "overview":
 				print overview_msg(subprocs)
