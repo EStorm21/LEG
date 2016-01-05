@@ -82,7 +82,7 @@ def overview_msg(subprocs):
 
 def statuslist_msg(subprocs, divisions, running_only):
 	msg = "Status list:\n"
-	for (sp, sdir), division in zip(subprocs,divisions):
+	for i, (sp, sdir), division in enumerate(zip(subprocs,divisions)):
 		if running_only and sp.poll() is not None:
 			continue
 		identifier = "{}-{}".format(hex(division[0]), hex(division[1]))
@@ -97,7 +97,7 @@ def statuslist_msg(subprocs, divisions, running_only):
 			nbugs = len(os.listdir(os.path.join(sdir,"bugs")))
 		except OSError:
 			nbugs = 0
-		msg += "{}: {} - Found {} bugs\n".format(identifier, run_status, nbugs)
+		msg += "({}) {}: {} - Found {} bugs\n".format(i, identifier, run_status, nbugs)
 	return msg
 
 def send_ctrlc(sdir):
@@ -144,8 +144,12 @@ def print_help():
 	print "  list-all        - List status of each division"
 	print "  list-running    - List status of each division"
 	print "  interrupt       - Stop all divisions immediately"
+	print "  i SHORT_TARGET  "
 	print "  inspect TARGET  - Show target's bugs and command to view stdout"
+	print "  r SHORT_TARGET  "
 	print "  restart TARGET  - Kill or restart a given target"
+	
+	
 
 def run_divisions(test_file, divisions):
 	rundir = get_run_directory(test_file)
@@ -153,7 +157,9 @@ def run_divisions(test_file, divisions):
 	subprocs = [start_division(test_file, d, rundir) for d in divisions]
 	print "Started all divisions!"
 	record_pids(rundir, subprocs)
+	target_dict = dict(enumerate(divisions))
 	print_help()
+	last_command = ""
 
 	try:
 		while True:
@@ -170,6 +176,8 @@ def run_divisions(test_file, divisions):
 				command = raw_input("(d&c) ")
 			except KeyboardInterrupt:
 				print "Keyboard interrupt - ignoring"
+			if command = "":
+				command = last_command
 			if command == "overview":
 				print overview_msg(subprocs)
 			elif command == "list-all":
@@ -181,12 +189,26 @@ def run_divisions(test_file, divisions):
 				killall(subprocs)
 			elif command == "help":
 				print_help()
+			elif command.startswith("i "):
+				try:
+					target = target_dict(int(command[2:]))
+					print_inspect(subprocs, divisions, target)
+				except KeyError:
+					print "Target {} not found".format(target)
 			elif command.startswith("inspect "):
 				target = command[8:]
 				print_inspect(subprocs, divisions, target)
+			elif command.startswith("r "):
+				try:
+					target = target_dict(int(command[2:]))
+					restart_division(test_file, rundir, subprocs, divisions, target)
+				except KeyError:
+					print "Target {} not found".format(target)
 			elif command.startswith("restart "):
 				target = command[8:]
 				restart_division(test_file, rundir, subprocs, divisions, target)
+			last_command = command
+			
 	except:
 		print "Got an exception!"
 		killall(subprocs)
