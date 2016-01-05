@@ -24,7 +24,7 @@ def start_division(test_file, division, rundir):
 	division_cmd = ['./debug.sh']
 	if test_file != "":
 		division_cmd += ['-t', test_file]
-	division_dir = os.path.join(rundir,"{}-{}".format(hex(division[0]), hex(division[1])))
+	division_dir = os.path.join(rundir,format_division(division))
 	os.mkdir(division_dir)
 	division_cmd += ['--divideandconquer', division_dir, hex(division[0]), hex(division[1])]
 	return subprocess.Popen(division_cmd, stdin=open(os.devnull, 'r'), stdout=open(os.path.join(division_dir,'stdout'),'w'), stderr=subprocess.STDOUT, preexec_fn=os.setpgrp), division_dir
@@ -34,9 +34,12 @@ def record_pids(rundir, subprocs):
 	with open(os.path.join(rundir,"pids"),'w') as f:
 		f.write(' '.join(pids))
 
+def format_division(division):
+	return "{}-{}".format(hex(division[0]), hex(division[1]))
+
 def print_inspect(subprocs, divisions, target):
 	for (sp, sdir), division in zip(subprocs,divisions):
-		identifier = "{}-{}".format(hex(division[0]), hex(division[1]))
+		identifier = format_division(division)
 		if identifier == target:
 			runlog = os.path.join(sdir,'runlog')
 			if os.path.isfile(runlog):
@@ -50,7 +53,7 @@ def print_inspect(subprocs, divisions, target):
 
 def restart_division(test_file, rundir, subprocs, divisions, target):
 	for i, ((sp, sdir), division) in enumerate(zip(subprocs,divisions)):
-		identifier = "{}-{}".format(hex(division[0]), hex(division[1]))
+		identifier = format_division(division)
 		if identifier == target:
 			if sp.poll() is None:
 				print "{} is still running! Sending ctrl-c. Run this again to restart once it dies".format(target)
@@ -85,7 +88,7 @@ def statuslist_msg(subprocs, divisions, running_only):
 	for i, ((sp, sdir), division) in enumerate(zip(subprocs,divisions)):
 		if running_only and sp.poll() is not None:
 			continue
-		identifier = "{}-{}".format(hex(division[0]), hex(division[1]))
+		identifier = format_division(division)
 		is_working = os.path.isfile(os.path.join(sdir,"working"))
 		if sp.poll() is not None:
 			run_status = "FINISHED"
@@ -191,7 +194,7 @@ def run_divisions(test_file, divisions):
 				print_help()
 			elif command.startswith("i "):
 				try:
-					target = target_dict(int(command[2:]))
+					target = format_division(target_dict[int(command[2:])])
 					print_inspect(subprocs, divisions, target)
 				except KeyError:
 					print "Target {} not found".format(target)
@@ -200,7 +203,7 @@ def run_divisions(test_file, divisions):
 				print_inspect(subprocs, divisions, target)
 			elif command.startswith("r "):
 				try:
-					target = target_dict(int(command[2:]))
+					target = format_division(target_dict[int(command[2:])])
 					restart_division(test_file, rundir, subprocs, divisions, target)
 				except KeyError:
 					print "Target {} not found".format(target)
