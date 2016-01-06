@@ -24,9 +24,15 @@ addrParser = re.compile('.*:\t(.+)')
 def getDataAtExpr(expr):
 	was_on = gdb.execute("show mem inaccessible-by-default", to_string=True) == "Unknown memory addresses will be treated as inaccessible.\n"
 	gdb.execute("set mem inaccessible-by-default off")
-	addrMatch = addrParser.match(gdb.execute('x/x {}'.format(expr), to_string=True))
+	try:
+		addrMatch = addrParser.match(gdb.execute('x/x {}'.format(expr), to_string=True))
+	except gdb.MemoryError:
+		print "Caught gdb.MemoryError. Ignoring"
+		addrMatch = None
 	if was_on:
 		gdb.execute("set mem inaccessible-by-default on")
+	if addrMatch is None:
+		return "(couldn't access data at {})".format(expr)
 	data = int(addrMatch.group(1),16)
 	return data
 
@@ -126,8 +132,8 @@ class QemuMonitor(object):
 			gdbQueryCmd("qemu.sstep="+QemuMonitor.SSTEP_NOIRQ)
 
 	def _step(self, pc_to_use):
-		instr_to_use = getDataAtExpr(pc_to_use)
 		gdb.execute("stepi", to_string=True)
+		instr_to_use = getDataAtExpr(pc_to_use)
 		cpsr, regs = getQemuState()
 		state = (pc_to_use, instr_to_use, cpsr, regs)
 

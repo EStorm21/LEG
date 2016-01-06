@@ -24,7 +24,7 @@ def start_division(test_file, division, rundir):
 	division_cmd = ['./debug.sh']
 	if test_file != "":
 		division_cmd += ['-t', test_file]
-	division_dir = os.path.join(rundir,"{}-{}".format(hex(division[0]), hex(division[1])))
+	division_dir = os.path.join(rundir,format_division(division))
 	os.mkdir(division_dir)
 	division_cmd += ['--divideandconquer', division_dir, hex(division[0]), hex(division[1])]
 	return subprocess.Popen(division_cmd, stdin=open(os.devnull, 'r'), stdout=open(os.path.join(division_dir,'stdout'),'w'), stderr=subprocess.STDOUT, preexec_fn=os.setpgrp), division_dir
@@ -34,9 +34,12 @@ def record_pids(rundir, subprocs):
 	with open(os.path.join(rundir,"pids"),'w') as f:
 		f.write(' '.join(pids))
 
+def format_division(division):
+	return "{}-{}".format(hex(division[0]), hex(division[1]))
+
 def print_inspect(subprocs, divisions, target):
 	for (sp, sdir), division in zip(subprocs,divisions):
-		identifier = "{}-{}".format(hex(division[0]), hex(division[1]))
+		identifier = format_division(division)
 		if identifier == target:
 			runlog = os.path.join(sdir,'runlog')
 			if os.path.isfile(runlog):
@@ -50,7 +53,7 @@ def print_inspect(subprocs, divisions, target):
 
 def restart_division(test_file, rundir, subprocs, divisions, target):
 	for i, ((sp, sdir), division) in enumerate(zip(subprocs,divisions)):
-		identifier = "{}-{}".format(hex(division[0]), hex(division[1]))
+		identifier = format_division(division)
 		if identifier == target:
 			if sp.poll() is None:
 				print "{} is still running! Sending ctrl-c. Run this again to restart once it dies".format(target)
@@ -82,10 +85,10 @@ def overview_msg(subprocs):
 
 def statuslist_msg(subprocs, divisions, running_only):
 	msg = "Status list:\n"
-	for (sp, sdir), division in zip(subprocs,divisions):
+	for i, ((sp, sdir), division) in enumerate(zip(subprocs,divisions)):
 		if running_only and sp.poll() is not None:
 			continue
-		identifier = "{}-{}".format(hex(division[0]), hex(division[1]))
+		identifier = format_division(division)
 		is_working = os.path.isfile(os.path.join(sdir,"working"))
 		if sp.poll() is not None:
 			run_status = "FINISHED"
@@ -97,7 +100,7 @@ def statuslist_msg(subprocs, divisions, running_only):
 			nbugs = len(os.listdir(os.path.join(sdir,"bugs")))
 		except OSError:
 			nbugs = 0
-		msg += "{}: {} - Found {} bugs\n".format(identifier, run_status, nbugs)
+		msg += "({}) {}: {} - Found {} bugs\n".format(i, identifier, run_status, nbugs)
 	return msg
 
 def send_ctrlc(sdir):
@@ -144,8 +147,12 @@ def print_help():
 	print "  list-all        - List status of each division"
 	print "  list-running    - List status of each division"
 	print "  interrupt       - Stop all divisions immediately"
+	print "  i SHORT_TARGET  "
 	print "  inspect TARGET  - Show target's bugs and command to view stdout"
+	print "  r SHORT_TARGET  "
 	print "  restart TARGET  - Kill or restart a given target"
+	
+	
 
 def run_divisions(test_file, divisions):
 	rundir = get_run_directory(test_file)
@@ -153,7 +160,9 @@ def run_divisions(test_file, divisions):
 	subprocs = [start_division(test_file, d, rundir) for d in divisions]
 	print "Started all divisions!"
 	record_pids(rundir, subprocs)
+	target_dict = dict(enumerate(divisions))
 	print_help()
+	last_command = ""
 
 	try:
 		while True:
@@ -170,6 +179,8 @@ def run_divisions(test_file, divisions):
 				command = raw_input("(d&c) ")
 			except KeyboardInterrupt:
 				print "Keyboard interrupt - ignoring"
+			if command == "":
+				command = last_command
 			if command == "overview":
 				print overview_msg(subprocs)
 			elif command == "list-all":
@@ -181,12 +192,26 @@ def run_divisions(test_file, divisions):
 				killall(subprocs)
 			elif command == "help":
 				print_help()
+			elif command.startswith("i "):
+				try:
+					target = format_division(target_dict[int(command[2:])])
+					print_inspect(subprocs, divisions, target)
+				except KeyError:
+					print "Target {} not found".format(target)
 			elif command.startswith("inspect "):
 				target = command[8:]
 				print_inspect(subprocs, divisions, target)
+			elif command.startswith("r "):
+				try:
+					target = format_division(target_dict[int(command[2:])])
+					restart_division(test_file, rundir, subprocs, divisions, target)
+				except KeyError:
+					print "Target {} not found".format(target)
 			elif command.startswith("restart "):
 				target = command[8:]
 				restart_division(test_file, rundir, subprocs, divisions, target)
+			last_command = command
+			
 	except:
 		print "Got an exception!"
 		killall(subprocs)
