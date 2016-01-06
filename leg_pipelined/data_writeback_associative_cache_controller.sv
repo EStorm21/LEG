@@ -213,11 +213,12 @@ module data_writeback_associative_cache_controller
   assign UseCacheA = enable & HWriteM;
 
   // Create the block offset for the cache
-  mux2 #($clog2(bsize)) AddrWordOffsetMux(Counter, WordOffset, ResetBlockOff, 
+  mux2 #($clog2(bsize)) AddrWordOffsetMux(Counter, WordOffset, 
+                                           ResetBlockOff, 
                                           AddrWordOffset);
   mux2 #($clog2(bsize)) DataWordOffsetMux(DataCounter, 
                                           WordOffset, 
-                                          (~enable | ResetBlockOff), 
+                                          ResetBlockOff, 
                                           DataWordOffset);
 
   // -------------Flush controls------------

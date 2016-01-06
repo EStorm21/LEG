@@ -83,6 +83,6 @@ module instr_cache_controller #(parameter tbits = 14) (
 
   // Create the block offset for the address and data phases of AHB
   mux2 #(2) DataWordOffsetMux(DataCounter, WordOffset, (~enable | ResetBlockOff), DataWordOffset);
-  mux2 #(2) AddrWordOffsetMux(Counter, WordOffset, ResetBlockOff, AddrWordOffset);
+  mux2 #(2) AddrWordOffsetMux(Counter, WordOffset, (~enable | ResetBlockOff), AddrWordOffset);
 
 endmodule
