@@ -472,9 +472,12 @@ def handleBug(prev_state, state, bug_msg, found_bugs, run_dir, test_file):
 
 		# Check to make sure we haven't overwritten the buggy instr already
 		if getDataAtExpr(bug_pc) == bug_instr:
-			instr_str = gdb.execute('x/1i {}'.format(bug_pc), to_string=True)
-			instr_asm_match = asmInstrParser.match(instr_str)
-			instr_name = instr_asm_match.group(1)
+			try:
+				instr_str = gdb.execute('x/1i {}'.format(bug_pc), to_string=True)
+				instr_asm_match = asmInstrParser.match(instr_str)
+				instr_name = instr_asm_match.group(1)
+			except gdb.MemoryError:
+				instr_name = "{}".format(bug_instr)
 		else:
 			instr_name = "{}".format(bug_instr)
 
