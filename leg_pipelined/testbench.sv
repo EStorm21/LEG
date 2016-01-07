@@ -116,6 +116,20 @@ module testbench();
   
   // instantiate device to be tested (profiler also instantiates dut)
   top dut(clk, reset, WriteData, DataAdr, MemWrite); 
+
+  // Debug Reset
+  // `define RESETDEBUG 1
+  `ifdef RESETDEBUG
+  always @(posedge clk)
+    if(reset) begin
+      $display("HRequestF = %h @ %d", dut.ahb_arb.HRequestF, $time);
+      $display("   HReady = %h @ %d", dut.ahb_arb.HReady, $time);
+      $display(" HRequest = %h @ %d", dut.ahb_arb.HRequest, $time);
+      $display("       re = %h @ %d", dut.ahb.mem.m.re, $time);
+      $display("       we = %h @ %d", dut.ahb.mem.m.we, $time);
+      $display(" HREQUEST = %h @ %d", dut.ahb.HREQUEST, $time);
+    end
+  `endif
   
   // initialize test
   initial
@@ -129,21 +143,6 @@ module testbench();
       clk <= 1; # 5; clk <= 0; # 5;
     end
 
-  // check results
- /* always @(negedge clk)
-    begin
-      if(MemWrite) begin
-        if(DataAdr === 100 & WriteData === 7) begin
-          $display("Simulation succeeded");
-          $stop;
-        end else if (DataAdr !== 96) begin
-          $display("Simulation failed");
-          $stop;
-        end
-      end
-    end*/
-
-    
     `ifdef PROFILE
   
     always @(posedge dut.leg.h.PCWrPendingF)

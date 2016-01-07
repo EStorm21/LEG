@@ -28,7 +28,7 @@ always_ff @(posedge clk)
   begin
     if (write & enable) begin
       // Word Write
-      RAM[CAdr] <= RData;
+      RAM[RAM_Adr] <= RData;
     end
   end
 

@@ -41,6 +41,6 @@ assign RData = we ? TableEntry : 'bz;
 assign CData = VirtTag;
 // assign {PhysTag, C, B, AP, Domain} = !we ? RData : 'bz;
 assign TableEntry = !we ? RData : 'bz;
-assign Miss = ~(|Match);
+assign Miss = ~(|Match) | ~valid;
 
 endmodule

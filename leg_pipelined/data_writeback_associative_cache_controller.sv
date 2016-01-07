@@ -21,7 +21,7 @@ module data_writeback_associative_cache_controller
   logic [$clog2(lines):0] FlushA    ; // Create block address to increment
   logic                   IncFlush, ResetBlockOff;
   logic                   WordAccess, CWE, Hit, W2Hit, W1Hit, TagSel, writeW1;
-  logic                   W2EN, Dirty;
+  logic                   W2EN, Dirty, NoCount;
   logic             [1:0] CounterMid, Counter, DataCounter;
 
 
@@ -184,7 +184,7 @@ module data_writeback_associative_cache_controller
     );
   assign CWE = ( (state == MEMREAD) & BusReady ) |
     ( (state == READY) & 
-      ( (MemWriteM & Hit) ) 
+      ( (MemWriteM & Hit) | MemWriteM & ~enable ) 
     );
   assign HWriteM = (state == WRITEBACK) |
     ((state == READY) & ~Hit & Dirty & ~clean) |
@@ -212,13 +212,16 @@ module data_writeback_associative_cache_controller
   // Cached address selection
   assign UseCacheA = enable & HWriteM;
 
+  // Ignore counter logic
+  assign NoCount = ~enable & ~(state == WRITEBACK) | ResetBlockOff;
+
   // Create the block offset for the cache
   mux2 #($clog2(bsize)) AddrWordOffsetMux(Counter, WordOffset, 
-                                           ResetBlockOff, 
+                                          NoCount,
                                           AddrWordOffset);
   mux2 #($clog2(bsize)) DataWordOffsetMux(DataCounter, 
                                           WordOffset, 
-                                          ResetBlockOff, 
+                                          NoCount,
                                           DataWordOffset);
 
   // -------------Flush controls------------

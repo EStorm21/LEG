@@ -455,6 +455,18 @@ class LegQemuStateCommand (gdb.Command):
 
 LegQemuStateCommand()
 
+class LegQemuFullDumpCommand (gdb.Command):
+	""" Dump qemu's memory and state to two files """
+
+	def __init__ (self):
+		super (LegQemuFullDumpCommand, self).__init__ ("leg-qemu-full-dump", gdb.COMMAND_USER)
+
+	def invoke (self, arg, from_tty):
+                path = arg[0]
+		print qemuDump.fullDump(path)
+
+LegQemuFullDumpCommand()
+
 class LegVirtToPhysCommand (gdb.Command):
 	""" Translate a virtual address to a physical one """
 
@@ -594,6 +606,7 @@ else:
 	print "    leg-count: Print the current instruction "
 	print "    leg-memwatch [-w, -r] WATCH_ADDR(S): Run qemu with memory watchpoints"
 	print "    leg-qemu-state: Print qemu's current state"
+	print "    leg-qemu-full-dump PATH: Save qemu's current state and memory to files in PATH"
 	print "    leg-virt-to-phys VIRTUAL_ADDRESS: Translate a virtual address to a physical "
 	print "    leg-checkpoint NAME: Create a ModelSim checkpoint corresponding to the current state"
 	print "    leg-restart: Restart qemu"
