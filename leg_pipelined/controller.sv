@@ -270,7 +270,6 @@ module controller (
   flopenrc #(14)  regsE(clk, reset, ~StallE, FlushE, {ALUSrcD, ALUControlD, MultControlD, MultEnableD, PSRtypeD, MSRmaskD},
                                                      {ALUSrcE, ALUControlE, MultControlE, MultEnableE, PSRtypeE, MSRmaskE});
   flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE, {(ALUOpD|ldrstrALUopD), InstrD}, {ALUOpE, InstrE});
-  flopenr  #(1) pipelineclearEflop(clk, reset, ~StallE, PipelineClearD, PipelineClearE); // see exception_handler.sv
 
 
   // < Handling all Multiplication Stalls Execute>
