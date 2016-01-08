@@ -63,7 +63,7 @@ module cpsr(input  logic        clk, reset,
       else if (DataAbort)// data abort 
         CPSR_update = {1'b1, cpsr[6], 6'b01_0111}; // Data Abort Mode
       else if (FastInterrupt) // FIQ
-        CPSR_update = {1'b1, cpsr[6], 6'b01_0001}; // output fast interrupt (FIQ) mode
+        CPSR_update = {2'b11, 6'b01_0001}; // output fast interrupt (FIQ) mode
       else if (Interrupt)// IRQ
         CPSR_update = {1'b1, cpsr[6], 6'b01_0010}; // IRQ mode
       else if (PrefetchAbort) // prefetch abort
@@ -129,16 +129,16 @@ module cpsr(input  logic        clk, reset,
           cpsr <= {FlagsUpdate, 20'b0, CPSR_update}; // go to irq mode
         end
         else if (PrefetchAbort & ~(cpsr[4:0]==5'b10111)) begin // prefetch abort
-          spsr[1] <= {FlagsUpdate, cpsr[27:0]};
-          cpsr <= {FlagsUpdate, 20'b0, CPSR_update}; // go to abort mode
+          spsr[1] <= {cpsr[31:28], cpsr[27:0]};
+          cpsr <= {cpsr[31:28], 20'b0, CPSR_update}; // go to abort mode
         end
         else if (Undefined & ~(cpsr[4:0]==5'b11011)) begin // undef
-          spsr[2] <= {FlagsUpdate, cpsr[27:0]};
-          cpsr <= {FlagsUpdate, 20'b0, CPSR_update}; // go to undef mode 
+          spsr[2] <= {cpsr[31:28], cpsr[27:0]};
+          cpsr <= {cpsr[31:28], 20'b0, CPSR_update}; // go to undef mode 
         end
         else if (SoftwareInterrupt & ~(cpsr[4:0]==5'b10011)) begin // Software interrupt
-          spsr[0] <= {FlagsUpdate, cpsr[27:0]};
-          cpsr <= {FlagsUpdate, 20'b0, CPSR_update}; // go to supervisor mode
+          spsr[0] <= {cpsr[31:28], cpsr[27:0]};
+          cpsr <= {cpsr[31:28], 20'b0, CPSR_update}; // go to supervisor mode
         end
         // ========= MSR instructions =========
         // IF R == 0 and InAPrivilegedMode
