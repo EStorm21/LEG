@@ -30,14 +30,21 @@ module instr_cache_controller #(parameter tbits = 14) (
   statetype state, nextstate;
 
   // state register
-  always_ff @(posedge clk, posedge reset)
+  always_ff @(posedge clk)
     if (reset) state <= READY;
     else state <= nextstate;
 
   // next state logic
   always_comb
     case (state)
-      READY:      nextstate <= (Hit | ~PAReadyF & enable) ? READY : MEMREAD;
+      READY:      if(Hit | ~PAReadyF | reset) begin
+                    nextstate <= READY;
+     // Only one memread is desired. Transition on reset because previous flops aren't setup
+                  end else if(~enable) begin 
+                    nextstate <= LASTREAD;
+                  end else begin
+                    nextstate <= MEMREAD;  
+                  end
       NEXTINSTR:  nextstate <= READY;
       MEMREAD:    nextstate <= ( BusReady & ( (Counter == 3) | ~enable ) ) ? LASTREAD : MEMREAD;
       LASTREAD:    nextstate <= BusReady ? NEXTINSTR : LASTREAD;
@@ -83,6 +90,6 @@ module instr_cache_controller #(parameter tbits = 14) (
 
   // Create the block offset for the address and data phases of AHB
   mux2 #(2) DataWordOffsetMux(DataCounter, WordOffset, (~enable | ResetBlockOff), DataWordOffset);
-  mux2 #(2) AddrWordOffsetMux(Counter, WordOffset, ResetBlockOff, AddrWordOffset);
+  mux2 #(2) AddrWordOffsetMux(Counter, WordOffset, (~enable | ResetBlockOff), AddrWordOffset);
 
 endmodule

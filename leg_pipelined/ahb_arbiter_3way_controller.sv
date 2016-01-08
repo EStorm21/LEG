@@ -92,7 +92,16 @@ module ahb_arbiter_3way_controller (
     // =============== Data Phase Logic ================
 
     // Data phase logic is based on the previous address phase
-    flopenr #(3) prevSel(clk, reset, HReady, {TSel, MSel, FSel}, {PTSel, PMSel, PFSel});
+    flopenr #(2) prevSel(clk, reset, HReady, {TSel, MSel}, {PTSel, PMSel});
+
+    // PFSel flop that resets to 1
+    always_ff @(posedge clk) 
+        if(reset) begin
+            PFSel <= 1'b0;
+        end else begin
+            PFSel <= FSel;
+        end
+
     assign HReadyT = PTSel & HReady;
     assign HReadyM = PMSel & HReady;
     assign HReadyF = PFSel & HReady;

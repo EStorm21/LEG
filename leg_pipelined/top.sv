@@ -153,7 +153,7 @@ module top (
     .WD        (WriteDataM  ),
     .HRData    (HRData      ),
     .ByteMask  (ByteMaskM   ),
-    .HWData_d  (HWDataM     ),
+    .HWData    (HWDataM     ),
     .RD        (ReadDataM   ),
     .HAddr     (HAddrM      ),
     .Stall     (DStall      ),
