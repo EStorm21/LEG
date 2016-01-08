@@ -1,7 +1,7 @@
 module match_ram #(parameter wordsize = 16, parameter lines = 16) (
     input logic clk, reset, enable, read, write,
     input logic [lines-1:0] Match,
-    input logic [$clog2(lines)-1:0] CAdr,
+    // input logic [$clog2(lines)-1:0] CAdr,
     inout logic [wordsize-1:0] RData
 );
 

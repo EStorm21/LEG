@@ -23,15 +23,20 @@ logic                        CRead ;
 
 // Shared Signals
 logic [size - 1:0] Match;
+logic [size - 1:0] WriteMatch; // TODO: Remove, make match < 1 cycle
+logic [size - 1:0] CamMatch; // TODO: Remove, make match < 1 cycle
 
 // Valid signal for controller
 logic valid;
 
+onehot16 onehotMatch(CAdr, WriteMatch);
+mux2 #(size) matchMux(CamMatch, WriteMatch, we, Match);
+
 cam #(tbits, size) 
-tlb_cam(clk, reset, enable, CRead, we, CAdr, CData, Match);
+tlb_cam(clk, reset, enable, CRead, we, CAdr, CData, CamMatch);
 
 match_ram #(tlb_word_size, size) 
-tlb_ram(clk, reset, enable, RRead, we, Match, CAdr,  RData);
+tlb_ram(clk, reset, enable, RRead, we, Match, RData);
 
 tlb_controller #(size, tbits) tc(.*);
 

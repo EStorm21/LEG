@@ -110,19 +110,20 @@ module data_writeback_associative_cache_controller
       READY:    if (clean) begin
         nextstate <= FLUSH;
       end
+      else if ( Hit & ~IStall |
+        (~MemWriteM & ~MemtoRegM) |
+        ~PAReady & (MemWriteM | MemtoRegM)
+      )
+      begin
+        nextstate <= READY;
+      end
       else if ( ~enable & MemWriteM ) begin
         nextstate <= DWRITE;
       end
-      else if ( Hit & ~IStall |
-        (~MemWriteM & ~MemtoRegM) |
-        (~PAReady & enable) |
-        (~enable & MemWriteM)
-      )
-      begin
-        // else if ( Hit | (~MemWriteM & ~MemtoRegM) & enable) begin
-        nextstate <= READY;
+      else if( ~enable & MemtoRegM ) begin
+        nextstate <= LASTREAD;
       end
-      else if(IStall & enable & ~clean &  PAReady & Hit) begin
+      else if( IStall & enable & ~clean & Hit ) begin
         nextstate <= WAIT;
       end
       else if( ~Dirty ) begin
@@ -182,16 +183,18 @@ module data_writeback_associative_cache_controller
     ( (state == READY) &
       ( clean | (MemtoRegM | MemWriteM) & ~Hit )
     );
-  assign CWE = ( (state == MEMREAD) & BusReady ) |
-    ( (state == READY) & 
-      ( (MemWriteM & Hit) | MemWriteM & ~enable ) 
-    );
+  assign CWE =  (state == MEMREAD) & BusReady |
+    (state == READY) & ( (MemWriteM & Hit) | MemWriteM & ~enable ) |
+    (state == LASTREAD) & BusReady & PAReady;
   assign HWriteM = (state == WRITEBACK) |
     ((state == READY) & ~Hit & Dirty & ~clean) |
     (state == DWRITE);
   assign HRequestM = (state == READY) & MemtoRegM & PAReady |
-		(state == READY) & MemWriteM & enable & PAReady |
-		~(state == READY) & Stall & PAReady; 
+		(state == READY) & MemWriteM & enable & PAReady & ~Hit |
+		(state == DWRITE) & PAReady & ~BusReady |
+    (state == LASTREAD) & PAReady & ~BusReady |
+    (state == MEMREAD) & PAReady |
+    (state == WRITEBACK) & PAReady; 
 
   // RDSel makes WD the output for disabled cache behavior
   assign RDSel = (state == DWRITE);

@@ -15,7 +15,7 @@ module data_writeback_associative_cache #(
     input  logic [     31:0] HRData  ,
     input  logic [      3:0] ByteMask,
     input  logic [tbits-1:0] PhysTag ,
-    output logic [     31:0] HWData_d ,
+    output logic [     31:0] HWData ,
     output logic [     31:0] RD, HAddr, ANew,
     output logic             Stall, HRequestM, HWriteM, RequestPA
 );
@@ -25,7 +25,7 @@ module data_writeback_associative_cache #(
     logic [   tbits-1:0] W1Tag, W2Tag, CachedTag;
     logic [bsize*32-1:0] W1BlockOut, W2BlockOut; // Way output (4 words)
     logic [        31:0] W1RD, W2RD, CacheOut, CachedAddr, CacheWD;
-    logic [        31:0] HWData;
+    // logic [        31:0] HWData;
 
     // Input Control Logic
     logic [         31:0] A             ;
@@ -62,7 +62,7 @@ module data_writeback_associative_cache #(
     data_writeback_associative_cache_controller #(lines, bsize, tbits) dcc(.*);
 
     // AHB Delay for write data
-    flopenr #(32) HWDataDelayFlop(clk, reset, BusReady, HWData, HWData_d);
+    // flopenr #(32) HWDataDelayFlop(clk, reset, BusReady, HWData, HWData_d);
 
     // HWData Mux
     // mux2 #(32) HWDataMux(W2RD, W1RD, W1EN, HWData);
