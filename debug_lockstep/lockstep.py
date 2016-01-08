@@ -461,8 +461,7 @@ def markWorking(run_dir, working):
 asmInstrParser = re.compile(".+:\\s+(.+)")
 def handleBug(prev_state, state, bug_msg, found_bugs, run_dir, test_file):
 	if state is None:
-		print "Skipped writing this bug to file (not enough information)"
-		return
+		state = prev_state
 
 	bug_pc = state[0]
 	bug_instr = state[1]
