@@ -295,7 +295,7 @@ class LegRecordCommand (gdb.Command):
 		if(len(args) >= 2):
 			N = int(args[0])
 			if(N > 0):
-				fname = 'output/recinstr/' + args[1]
+				fname = args[1]
 				print "Recording {} instructions to {}".format(args[0], fname)
 				f = open(fname, 'w')
 				for i in range(N):
