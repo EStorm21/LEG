@@ -83,13 +83,13 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
 
     // M STAGE OF PREFETCH ABORT / UNDEFINED / SWI
     ExceptionM: begin
-      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1111;
+      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b0100;
       nextState = StallW ? ExceptionM : ExceptionW;
     end
 
     // W STAGE OF PREFETCH ABORT / UNDEFINED / SWI
     ExceptionW: begin
-      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1011;
+      {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1000;
       nextState = ready;
     end
 
