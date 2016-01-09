@@ -188,6 +188,7 @@ module data_writeback_associative_cache_controller
     (state == LASTREAD) & BusReady & PAReady;
   assign HWriteM = (state == WRITEBACK) |
     ((state == READY) & ~Hit & Dirty & ~clean) |
+    (nextstate == DWRITE) | 
     (state == DWRITE);
   assign HRequestM = (state == READY) & MemtoRegM & PAReady |
 		(state == READY) & MemWriteM & enable & PAReady & ~Hit |

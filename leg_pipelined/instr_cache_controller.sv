@@ -56,7 +56,9 @@ module instr_cache_controller #(parameter tbits = 14) (
                    (state == LASTREAD);
   assign CWE    = 
      (state == MEMREAD) & BusReady | (state == LASTREAD) & BusReady;
-  assign HRequestF  = ((state == MEMREAD) | (state == READY) & ~Hit) & PAReadyF;
+  assign HRequestF  = (state == MEMREAD) & PAReadyF |
+    (state == READY) & ~Hit & PAReadyF | 
+    (state == LASTREAD) & ~BusReady & PAReadyF;
   assign ResetBlockOff = ( state == READY ) | ( state == NEXTINSTR );
 
   // Create Counter for sequential bus access
