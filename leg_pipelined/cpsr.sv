@@ -1,5 +1,6 @@
 module cpsr(input  logic        clk, reset,
               input logic [3:0] FlagsNext,
+              input logic       FlagsWrite,
               input logic [31:0] ALUout,
               input logic [4:0] MSRmask,    // Highest bit of MSRmask is R
               input logic [5:0] Exceptions, // Exceptions[5:0] are: [5]undef, swi, prefetch_abt, data_abt, irq, fiq[0] 
@@ -152,9 +153,10 @@ module cpsr(input  logic        clk, reset,
         else if (RestoreCPSR)
           cpsr <= spsr[regnumber];
         // ========= Just update flags =========
-        else begin
+        else if (FlagsWrite)
           cpsr <= {FlagsUpdate, cpsr[27:0]};
-        end
+        else 
+          cpsr <= cpsr;
     end
 
   // OUTPUT CPSR DATA
