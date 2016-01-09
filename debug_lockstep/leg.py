@@ -20,7 +20,7 @@ def msIdxToRIdx(idx):
 	#return 15-idx
 	return 14-idx
 
-stateWParser = re.compile("(.+) (.+) (.+) (.+) (.+) {(.*)}")
+stateWParser = re.compile("(.+) (.+) (.+) (.+) (.+) (.+) {(.*)}")
 def parseStateW(msState):
 	try:
 		stateMatch = stateWParser.match(msState)
@@ -29,14 +29,15 @@ def parseStateW(msState):
 		cpsr = parseVal(stateMatch.group(3))
 		irq_assert = stateMatch.group(4) == '1'
 		fiq_assert = stateMatch.group(5) == '1'
-		regparts = stateMatch.group(6).split(' ')
+		interrupting = stateMatch.group(6) == '1'
+		regparts = stateMatch.group(7).split(' ')
 		regs = [parseVal(regparts[rIdxToMSIdx(i)]) for i in range(15)]
-		return (pc, instr, cpsr, regs), irq_assert, fiq_assert
+		return (pc, instr, cpsr, regs), irq_assert, fiq_assert, interrupting
 	except Exception, e:
 		print "Invalid writeback state {}".format(msState)
 		raise
 
-stateEParser = re.compile("(.+) (.+) (.+) (.+)")
+stateEParser = re.compile("(.+) (.+) (.+) (.+) (.+)")
 def parseStateE(msState):
 	try:
 		stateMatch = stateEParser.match(msState)
@@ -44,7 +45,8 @@ def parseStateE(msState):
 		instr = parseVal(stateMatch.group(2))
 		irq_assert_delay = stateMatch.group(3) == '1'
 		fiq_assert_delay = stateMatch.group(4) == '1'
-		return (pc, instr), irq_assert_delay, fiq_assert_delay
+		interrupt_delay = stateMatch.group(5) == '1'
+		return (pc, instr), irq_assert_delay, fiq_assert_delay, interrupt_delay
 	except Exception, e:
 		print "Invalid execute state {}".format(msState)
 		raise
