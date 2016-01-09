@@ -654,7 +654,7 @@ def init_swi_handler(name):
 	program += "stmfd sp!, {r0-r3, r12, r14}\n"
 	program += "ldr r0, [r14, #-4]\n"  # recover swi argument
 	program += "bic r0, r0, #0xff000000\n"
-	program += makeUndefInstr(0)
+	#program += makeUndefInstr(0)
 	program += "ldmfd sp!, {r0-r3, r12, pc}^\n" # a fairly complicated instruction
 	program += "\n"
 	return program
