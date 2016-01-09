@@ -318,6 +318,7 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 	checked_count = 0
 
 	interrupt_ignore_next_w = False
+	interrupt_advance_w = False
 	irq_assert_next_e = False
 	fiq_assert_next_e = False
 
@@ -340,13 +341,17 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 		if advance_w_state_plus_irq is not None:
 			if interrupt_ignore_next_w:
 				interrupt_ignore_next_w = False
+			elif interrupt_advance_w:
+				interrupt_advance_w = False
+				qmon.advance_writeback()
 			else:
-				advance_w_state, irq_assert, fiq_assert = advance_w_state_plus_irq
-				interrupting = irq_assert or fiq_assert
+				advance_w_state, irq_assert, fiq_assert, interrupting = advance_w_state_plus_irq
 
 				expected_state = qmon.get_state_writeback()
+				triggered_interrupt = irq_assert or fiq_assert
+				instr_interrupt = interrupting and not triggered_interrupt
 
-				if check_states(advance_w_state, expected_state, interrupting):
+				if check_states(advance_w_state, expected_state, triggered_interrupt) or instr_interrupt:
 
 					# Correct lockstep!
 					qmon.advance_writeback()
@@ -375,7 +380,7 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 						build_bug_writeback_mismatch(qmon,advance_w_state))
 
 		if advance_e_state_plus_irq is not None:
-			advance_e_state, irq_assert_trigger, fiq_assert_trigger = advance_e_state_plus_irq
+			advance_e_state, irq_assert_trigger, fiq_assert_trigger, interrupt_trigger = advance_e_state_plus_irq
 			pc, instr = advance_e_state
 			expected_pc = qmon.execute_lookahead_pc
 
@@ -388,9 +393,17 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 					print "Executing FIQ"
 					fiq_assert_next_e = False
 					ios = qmon.do_interrupt(True)
-				elif irq_assert_trigger or fiq_assert_trigger:
+				elif irq_assert_trigger | fiq_assert_trigger:
 					print "ModelSim interrupting!"
 					# Ignore this instruction
+					interrupt_ignore_next_w = True
+					irq_assert_next_e = irq_assert_trigger
+					fiq_assert_next_e = fiq_assert_trigger
+					ios = []
+				elif interrupt_trigger:
+					print "ModelSim doing instruction-triggered interrupt!"
+					# Ignore next 2 instruction
+					interrupt_advance_w = True
 					interrupt_ignore_next_w = True
 					irq_assert_next_e = irq_assert_trigger
 					fiq_assert_next_e = fiq_assert_trigger
