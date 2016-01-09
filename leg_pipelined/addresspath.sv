@@ -31,7 +31,7 @@ module addresspath( /// ------ From TOP ------
   * -- Also needed for exception vector addresses in the Writeback stage.
   */
   
-  logic [31:0]  WA3M, WA3E, RA1E, RA2E, RdLoE, WA3E_1, WA3D;
+  logic [31:0]  WA3M, WA3E, RA1E, RA2E, RdLoE, WA3D;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D, DestRegD;
 
   // ====================================================================================

@@ -90,7 +90,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
     // W STAGE OF PREFETCH ABORT / UNDEFINED / SWI
     ExceptionW: begin
       {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1000;
-      nextState = ready;
+      nextState = StallE ? ExceptionW : ready;
     end
 
     // IRQ / FIQ: Final instruction in E. 

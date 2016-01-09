@@ -78,3 +78,10 @@ sim:/testbench/dut/ahb/ioShim/HWRITE \
 sim:/testbench/dut/ahb/ioShim/fiq \
 sim:/testbench/dut/ahb/ioShim/irq \
 sim:/testbench/dut/ahb/HSEL
+
+add wave -position insertpoint sim:/testbench/dut/leg/c/exh/*
+add wave -position insertpoint sim:/testbench/dut/leg/c/cpsr_W/*
+add wave -position insertpoint sim:/testbench/dut/leg/c/*
+add wave -position insertpoint sim:/testbench/dut/leg/h/*
+add wave -position insertpoint sim:/testbench/dut/leg/dp/*
+add wave -position insertpoint sim:/testbench/dut/leg/ap/*
