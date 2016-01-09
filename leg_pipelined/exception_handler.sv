@@ -11,7 +11,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   //--LDM: When loading into base register without writeback, must load into Rz. Last operation should then be mov Rn, Rz. This is to be consistent with data abort, which requires that base register not be updated if data abort occurs at any point.
   //--Need to change load and store to use Base Restored Abort Model
 
-  logic IRQEn_sync, FIQEn_sync, interruptPending, UnstallD;
+  logic IRQEn_sync, FIQEn_sync, interruptPending, UnstallD, instrTriggeredException;
   logic [6:0] PCVectorAddress;
   typedef enum {ready, DataAbort2, Int_E, Int_M, Int_W, ExceptionM, ExceptionW} statetype;
   statetype state, nextState;
@@ -31,6 +31,8 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
 
   // helper signal to enter or cancel interrupt sequence
   assign interruptPending = (FIQ & FIQEn_sync) | (IRQ & IRQEn_sync);
+  assign instrTriggeredException = PrefetchAbortE | UndefinedInstrE | SWIE;
+
 
 
   // FSM states and boilerplate
@@ -52,7 +54,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
         {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1111;
         nextState = DataAbort2;
       end
-      else if (PrefetchAbortE | UndefinedInstrE | SWIE) begin // single cycle exceptions
+      else if (instrTriggeredException) begin // single cycle exceptions
         // Caught in E
         // Flush D, M
         // In order to save the correct CPSR state, saving CPSR is delayed until
@@ -120,14 +122,14 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   endcase
 
   // (some) FSM Output logic
-  assign interrupting = state != ready;
+  assign interrupting = (state != ready) | instrTriggeredException;
   assign DataAbortCycle2 = state == DataAbort2;
   assign FIQAssert = (state == Int_W) & FIQ & FIQEn_sync;
   assign IRQAssert = (state == Int_W) & IRQ & IRQEn_sync & ~FIQAssert;
   // Normally we StallD in interrupts so the next instruction address is preserved. 
   // But when an interrupt follows a branch we need to get the BTA into the decode stage.
   // By unstalling at the right time the PC gets in and the rest of the stuff is still thrown out.
-  assign ExceptionStallD = (state == Int_E) | ((state == Int_M) & ~UnstallD) | ((state == ready) & (DataAbort | PrefetchAbortE | UndefinedInstrE | SWIE)) | (state == ExceptionM);
+  assign ExceptionStallD = (state == Int_E) | ((state == Int_M) & ~UnstallD) | ((state == ready) & (DataAbort | instrTriggeredException)) | (state == ExceptionM);
 
 
   // PC vectoring
