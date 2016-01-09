@@ -9,6 +9,8 @@ b irq_handler
 # FIQ handler immediately after vector table
 fiq_handler:
 stmfd sp!, {r4-r9, r12}
+ldr r5, UART_DR
+ldr r5, [r5]
 ldmfd sp, {r5-r10, r12}^
 subs pc,r14,#4
 
@@ -42,7 +44,7 @@ irq_handler:
 push {r1}
 stmfd sp, {r13}^
 ldr r1, UART_DR
-str r1, [r1]
+ldr r1, [r1]
 ldmfd sp, {r1}
 pop {r1}
 subs pc,r14,#4
@@ -73,49 +75,49 @@ ORR r0, r0, #0x1f
 MSR cpsr, r0
 reg_0_sys: ldr R0, reg_0_sys_val
 b reg_1_sys
-reg_0_sys_val: .word 1656007341
+reg_0_sys_val: .word 1866036866
 reg_1_sys: ldr R1, reg_1_sys_val
 b reg_2_sys
-reg_1_sys_val: .word 2988453420
+reg_1_sys_val: .word 3856147751
 reg_2_sys: ldr R2, reg_2_sys_val
 b reg_3_sys
-reg_2_sys_val: .word 3484541340
+reg_2_sys_val: .word 1000504953
 reg_3_sys: ldr R3, reg_3_sys_val
 b reg_4_sys
-reg_3_sys_val: .word 2422657860
+reg_3_sys_val: .word 2815758519
 reg_4_sys: ldr R4, reg_4_sys_val
 b reg_5_sys
-reg_4_sys_val: .word 1415493187
+reg_4_sys_val: .word 4046646955
 reg_5_sys: ldr R5, reg_5_sys_val
 b reg_6_sys
-reg_5_sys_val: .word 3602080481
+reg_5_sys_val: .word 3370247774
 reg_6_sys: ldr R6, reg_6_sys_val
 b reg_7_sys
-reg_6_sys_val: .word 703794717
+reg_6_sys_val: .word 2519348825
 reg_7_sys: ldr R7, reg_7_sys_val
 b reg_8_sys
-reg_7_sys_val: .word 887993586
+reg_7_sys_val: .word 3225939608
 reg_8_sys: ldr R8, reg_8_sys_val
 b reg_9_sys
-reg_8_sys_val: .word 766242466
+reg_8_sys_val: .word 102632720
 reg_9_sys: ldr R9, reg_9_sys_val
 b reg_10_sys
-reg_9_sys_val: .word 597088434
+reg_9_sys_val: .word 3737324779
 reg_10_sys: ldr R10, reg_10_sys_val
 b reg_11_sys
-reg_10_sys_val: .word 1460808213
+reg_10_sys_val: .word 885161304
 reg_11_sys: ldr R11, reg_11_sys_val
 b reg_12_sys
-reg_11_sys_val: .word 2310648815
+reg_11_sys_val: .word 2496324596
 reg_12_sys: ldr R12, reg_12_sys_val
 b reg_13_sys
-reg_12_sys_val: .word 3745857804
+reg_12_sys_val: .word 2724403041
 reg_13_sys: ldr R13, reg_13_sys_val
 b reg_14_sys
 reg_13_sys_val: .word 0x0ffff0
 reg_14_sys: ldr R14, reg_14_sys_val
 b reg_14_sys_end
-reg_14_sys_val: .word 3514358319
+reg_14_sys_val: .word 2689920407
 reg_14_sys_end: nop
 # Switching to mode fiq
 MRS r0, cpsr
@@ -124,25 +126,25 @@ ORR r0, r0, #0xd1
 MSR cpsr, r0
 reg_8_fiq: ldr R8, reg_8_fiq_val
 b reg_9_fiq
-reg_8_fiq_val: .word 363721622
+reg_8_fiq_val: .word 1984430134
 reg_9_fiq: ldr R9, reg_9_fiq_val
 b reg_10_fiq
-reg_9_fiq_val: .word 3515201468
+reg_9_fiq_val: .word 3015997222
 reg_10_fiq: ldr R10, reg_10_fiq_val
 b reg_11_fiq
-reg_10_fiq_val: .word 864777429
+reg_10_fiq_val: .word 2257660033
 reg_11_fiq: ldr R11, reg_11_fiq_val
 b reg_12_fiq
-reg_11_fiq_val: .word 2635801950
+reg_11_fiq_val: .word 2648915091
 reg_12_fiq: ldr R12, reg_12_fiq_val
 b reg_13_fiq
-reg_12_fiq_val: .word 229403864
+reg_12_fiq_val: .word 1604990810
 reg_13_fiq: ldr R13, reg_13_fiq_val
 b reg_14_fiq
 reg_13_fiq_val: .word 0x1ffff0
 reg_14_fiq: ldr R14, reg_14_fiq_val
 b reg_14_fiq_end
-reg_14_fiq_val: .word 304711456
+reg_14_fiq_val: .word 1680584000
 reg_14_fiq_end: nop
 # Switching to mode irq
 MRS r0, cpsr
@@ -154,7 +156,7 @@ b reg_14_irq
 reg_13_irq_val: .word 0x2ffff0
 reg_14_irq: ldr R14, reg_14_irq_val
 b reg_14_irq_end
-reg_14_irq_val: .word 2371259789
+reg_14_irq_val: .word 1774729342
 reg_14_irq_end: nop
 # Switching to mode undef
 MRS r0, cpsr
@@ -166,7 +168,7 @@ b reg_14_undef
 reg_13_undef_val: .word 0x3ffff0
 reg_14_undef: ldr R14, reg_14_undef_val
 b reg_14_undef_end
-reg_14_undef_val: .word 301827245
+reg_14_undef_val: .word 1384062201
 reg_14_undef_end: nop
 # Switching to mode abort
 MRS r0, cpsr
@@ -178,7 +180,7 @@ b reg_14_abort
 reg_13_abort_val: .word 0x4ffff0
 reg_14_abort: ldr R14, reg_14_abort_val
 b reg_14_abort_end
-reg_14_abort_val: .word 3726009232
+reg_14_abort_val: .word 4222958394
 reg_14_abort_end: nop
 # Switching to mode svc
 MRS r0, cpsr
@@ -190,7 +192,7 @@ b reg_14_svc
 reg_13_svc_val: .word 0x5ffff0
 reg_14_svc: ldr R14, reg_14_svc_val
 b reg_14_svc_end
-reg_14_svc_val: .word 3905682195
+reg_14_svc_val: .word 1856521433
 reg_14_svc_end: nop
 
 # INITIALIZING STACK
@@ -201,87 +203,87 @@ ORR r0, r0, #0x1f
 MSR cpsr, r0
 ldr R1, stack_0_val
 b stack_0
-stack_0_val: .word 3065388374
+stack_0_val: .word 511600366
 stack_0: str R1, [sp, #0]
 ldr R1, stack_1_val
 b stack_1
-stack_1_val: .word 319079296
+stack_1_val: .word 469602688
 stack_1: str R1, [sp, #-4]
 ldr R1, stack_2_val
 b stack_2
-stack_2_val: .word 1261968353
+stack_2_val: .word 2187653869
 stack_2: str R1, [sp, #-8]
 ldr R1, stack_3_val
 b stack_3
-stack_3_val: .word 1376107476
+stack_3_val: .word 3790300060
 stack_3: str R1, [sp, #-12]
 ldr R1, stack_4_val
 b stack_4
-stack_4_val: .word 3353657010
+stack_4_val: .word 395203980
 stack_4: str R1, [sp, #-16]
 ldr R1, stack_5_val
 b stack_5
-stack_5_val: .word 4152327733
+stack_5_val: .word 2354934057
 stack_5: str R1, [sp, #-20]
 ldr R1, stack_6_val
 b stack_6
-stack_6_val: .word 1105938679
+stack_6_val: .word 3137139539
 stack_6: str R1, [sp, #-24]
 ldr R1, stack_7_val
 b stack_7
-stack_7_val: .word 924276846
+stack_7_val: .word 2535695661
 stack_7: str R1, [sp, #-28]
 ldr R1, stack_8_val
 b stack_8
-stack_8_val: .word 2788441994
+stack_8_val: .word 3388336096
 stack_8: str R1, [sp, #-32]
 ldr R1, stack_9_val
 b stack_9
-stack_9_val: .word 2777803448
+stack_9_val: .word 743961275
 stack_9: str R1, [sp, #-36]
 ldr R1, stack_10_val
 b stack_10
-stack_10_val: .word 546740889
+stack_10_val: .word 1491039431
 stack_10: str R1, [sp, #-40]
 ldr R1, stack_11_val
 b stack_11
-stack_11_val: .word 1866266370
+stack_11_val: .word 1989681550
 stack_11: str R1, [sp, #-44]
 ldr R1, stack_12_val
 b stack_12
-stack_12_val: .word 1792276492
+stack_12_val: .word 3891352993
 stack_12: str R1, [sp, #-48]
 ldr R1, stack_13_val
 b stack_13
-stack_13_val: .word 2654807752
+stack_13_val: .word 368213033
 stack_13: str R1, [sp, #-52]
 ldr R1, stack_14_val
 b stack_14
-stack_14_val: .word 2463205066
+stack_14_val: .word 4217200024
 stack_14: str R1, [sp, #-56]
 ldr R1, stack_15_val
 b stack_15
-stack_15_val: .word 3235293507
+stack_15_val: .word 2893948220
 stack_15: str R1, [sp, #-60]
 ldr R1, stack_16_val
 b stack_16
-stack_16_val: .word 3381107148
+stack_16_val: .word 871932076
 stack_16: str R1, [sp, #-64]
 ldr R1, stack_17_val
 b stack_17
-stack_17_val: .word 212439644
+stack_17_val: .word 3859681263
 stack_17: str R1, [sp, #-68]
 ldr R1, stack_18_val
 b stack_18
-stack_18_val: .word 2754301058
+stack_18_val: .word 3194346849
 stack_18: str R1, [sp, #-72]
 ldr R1, stack_19_val
 b stack_19
-stack_19_val: .word 2552233089
+stack_19_val: .word 989247479
 stack_19: str R1, [sp, #-76]
 ldr R1, stack_20_val
 b stack_20
-stack_20_val: .word 1129138828
+stack_20_val: .word 1071690092
 stack_20: str R1, [sp, #-80]
 
 
@@ -292,5006 +294,5007 @@ ORR r0, r0, #0x10
 MSR cpsr, r0
 
 # MAIN PROGRAM
-
-l1: ldr R3, l3
-l2: b l4
-interrupt_630: l3: .word 1048504
-l4: swpVC R10, R0, [R3]
-l5: rsb R8, R4, R2
-l6: adcs R11, R9, R7
-interrupt_952: l7: ldr R4, l9
-l8: b l10
-l9: .word 1048504
-l10: swp R12, R5, [R4]
-l11: teqCS R1, R1, LSR R5
-l12: ldr R2, l14
-l13: b l15
-l14: .word 1048508
-l15: swpLT R0, R9, [R2]
-l16: b l22
-l17: bicVSs R6, R2, R3, ASR R14
-l18: rscGTs R0, R11, R9
-l19: cmnGT R14, #1073741844
-l20: rsbHIs R5, R12, R7, ASR R11
-l21: bics R11, R2, R3, LSL R1
-interrupt_734: l22: eorCC R3, R3, #84
-interrupt_502: l23: tstVS R3, R3, RRX 
-l24: add R0, R4, #156237824
-l25: bLT l34
-l26: add R1, R0, #37
-interrupt_72: l27: bicEQs R6, R8, R7, LSL #12
-interrupt_367: l28: eorNEs R7, R5, R7, LSL R0
-l29: teqVS R6, R8, LSL R8
-interrupt_176: l30: rsbCS R10, R14, R7
-l31: rscEQs R4, R15, R4, RRX 
-l32: eors R3, R9, #196
-interrupt_265: l33: b l35
-l34: b l27
-l35: rscNE R3, R1, R14
-interrupt_142: l36: cmpMI R0, R0, LSL R7
-l37: swi #6332009
-l38: ldmDB R13!, {R0, R1, R2, R8, R11, R14}
-l39: eorMIs R14, R9, #10485760
-l40: rscGTs R7, R4, R7, ASR #4
-l41: mov R1, #15
-interrupt_983: l42: strPLB R4, [sp, -R1]
-l43: mov R11, #16
-l44: ldr R10, [sp, -R11]!
-l45: tst R14, R3, ASR #31
-l46: ldrsh R6, [sp, #+28]
-l47: rsbGE R4, R0, R2, RRX 
-l48: sbc R14, R5, #11776
-l49: cmnEQ R14, R0
-l50: cmn R0, R14, LSR #17
-l51: rscs R10, R7, R12
-l52: mov R11, #10
-l53: ldrLEB R12, [sp, +R11]
-l54: ldrHIsb R14, [sp, #+34]
-l55: ldr R5, l57
-interrupt_906: l56: b l58
-interrupt_581: l57: .word 1048524
-l58: swpEQ R1, R0, [R5]
-l59: eors R7, R14, R6, ASR #2
-l60: ldr R6, l62
-l61: b l63
-l62: .word 1048496
-l63: swpEQb R4, R8, [R6]
-l64: adcEQs R11, R5, R11, LSL R7
-l65: andGTs R8, R12, R0, LSL #14
-interrupt_487: l66: ldmCCIA R13, {R1, R4, R9}
-l67: cmn R10, R0
-l68: cmp R10, R3
-l69: cmn R14, R7, LSL R9
-l70: tstLS R15, #1124073472
-l71: movCC R4, #158
-l72: ldr R5, l74
-interrupt_837: l73: b l75
-l74: .word 1048504
-l75: swpMI R4, R7, [R5]
-interrupt_174: l76: ldrVSh R5, [sp, #-10]
-l77: strGTB R9, [sp, #-8]
-l78: subCSs R1, R3, R11, ASR R12
-interrupt_189: l79: rsbMIs R14, R1, R0, ROR R7
-interrupt_579: l80: ldmDB R13!, {R0, R2, R10, R11, R14}
-l81: rscs R11, R8, R2
-l82: clzCC R8, R1
-l83: and R5, R9, R4, RRX 
-l84: rsb R5, R12, R0, ROR #22
-l85: mov R4, #12
-l86: ldrh R5, [sp, -R4]
-interrupt_477: l87: swi #10741207
-l88: mov R4, #13
-l89: ldrLSB R9, [sp, +R4]
-l90: ldrsh R10, [sp, #+50]
-l91: mov R4, #21
-l92: ldrGEsb R3, [sp, +R4]
-l93: mvn R11, R10, ASR #26
-l94: strPLh R1, [sp, #+46]
-l95: bicLT R4, R7, R0, ASR #30
-l96: ldr R9, l98
-interrupt_707: l97: b l99
-l98: .word 1048548
-l99: swpEQb R5, R0, [R9]
-l100: mov R5, #16
-l101: strLT R10, [sp, +R5]
-l102: mov R4, #14
-l103: ldrsb R10, [sp, -R4]
-l104: mov R8, #8
-interrupt_424: l105: ldrh R7, [sp, +R8]
-l106: bicNEs R8, R15, #3328
-l107: tst R9, R12, ASR R6
-l108: nop
-l109: rscLT R12, R0, #143
-l110: cmpLT R2, #1802240
-l111: and R2, R4, R15
-l112: tstGE R12, R4
-l113: cmpVC R3, R14
-l114: sbcLE R7, R4, #1811939331
-l115: mov R12, #13
-l116: ldrsb R4, [sp, +R12]
-l117: mov R10, #12
-l118: ldrEQsh R12, [sp, +R10]
-interrupt_713: l119: clzLE R7, R10
-l120: ldr R9, l122
-interrupt_995: l121: b l123
-l122: .word 1048484
-l123: swpHI R3, R1, [R9]
-l124: clzLT R6, R3
-l125: stmVSIB R13, {R8, R11, R13, R14}
-l126: clzLT R11, R5
-l127: cmn R12, R2, LSL R7
-l128: mov R6, #12
-interrupt_534: l129: str R8, [sp, +R6]!
-interrupt_381: l130: ldrVSsh R11, [sp, #+26]
-l131: strh R11, [sp, #+10]
-l132: ldrh R2, [sp, #-18]
-interrupt_92: l133: subs R10, R9, R9, RRX 
-l134: tstHI R5, R2, ASR #6
-l135: sbcs R11, R11, R14, ASR #18
-interrupt_154: l136: ldrsb R9, [sp, #+9]
-l137: eorPL R4, R14, R7, ROR R4
-l138: mov R10, #38
-l139: ldrsh R3, [sp, +R10]
-l140: mov R2, #32
-l141: str R8, [sp], +R2
-l142: subEQ R14, R11, R0, RRX 
-l143: ldrsh R12, [sp, #+10]
-l144: bHI l150
-l145: add R1, R0, #131
-interrupt_401: l146: movs R3, #1342177290
-l147: addEQ R0, R3, #5376
-interrupt_740: l148: eors R4, R10, R3, LSR R9
-interrupt_394: l149: b l151
-l150: b l146
-interrupt_114: l151: mov R4, R15, ASR #2
-l152: cmnNE R12, R14, LSL R3
-l153: eors R3, R8, #1245184
-l154: movNEs R12, R10, LSL R2
-l155: subs R11, R5, R1, ROR R14
-l156: ldr R12, [sp, #-28]
-l157: cmn R5, #384
-interrupt_739: l158: adc R8, R0, R6, RRX 
-l159: sub R12, R8, R3, LSL R9
-l160: eor R0, R6, R1, ASR #14
-l161: mov R1, #20
-interrupt_231: l162: ldrLSh R1, [sp, -R1]
-l163: ldr R6, l165
-l164: b l166
-l165: .word 1048508
-l166: swpb R0, R9, [R6]
-l167: bLE l174
-l168: and R1, R8, R1, LSR #18
-interrupt_520: l169: rsc R6, R3, R11, LSL #2
-l170: cmn R8, R7, LSR R0
-l171: eorVCs R2, R5, #261120
-l172: teqPL R11, R7, ROR #27
-l173: sbcEQ R4, R9, #1610612748
-interrupt_765: l174: tstGT R14, R6
-l175: clz R14, R3
-l176: cmn R0, R1
-l177: subEQs R12, R6, R0, ROR R3
-interrupt_393: l178: addMIs R0, R0, R0, ASR #19
-interrupt_853: l179: eorVSs R4, R8, R14, LSL R1
-l180: sbcs R7, R2, R6, ROR #23
-l181: clzLT R7, R2
-interrupt_24: l182: mov R3, #33
-l183: strCSB R8, [sp, -R3]
-l184: ldrMIsh R4, [sp, #-54]
-l185: swi #8482151
-l186: cmnCC R4, R2, LSL R12
-l187: mov R6, #64
-interrupt_149: l188: strh R4, [sp, -R6]
-l189: add R6, R10, R0, ASR #9
-l190: teq R8, R14, RRX 
-l191: sbcLSs R14, R14, #46137344
-l192: cmnLE R15, R7
-l193: subVSs R1, R7, R14
-interrupt_546: l194: ldrNEsb R0, [sp, #-53]
-interrupt_418: l195: ldr R6, [sp, #+0]!
-l196: ldr R10, l198
-l197: b l199
-l198: .word 1048516
-interrupt_121: l199: swpb R12, R1, [R10]
-l200: ldmDB R13!, {R1, R2, R4, R5, R6, R7, R8, R9, R12, R14}
-l201: strh R10, [sp, #+44]
-l202: rsbMIs R7, R2, #114688
-l203: clzVS R11, R0
-interrupt_691: l204: ldmPLIB R13, {R10}
-interrupt_168: l205: bicVCs R8, R0, R1, ASR #5
-l206: bNE l207
-l207: rsbs R11, R11, #-1073741817
-l208: bicEQs R6, R7, #1073741857
-interrupt_988: l209: stmIA R13!, {R2, R5, R6, R9, R11, R14}
-l210: andMIs R2, R10, R3, ASR R6
-interrupt_440: l211: swi #7073839
-l212: orrLS R7, R6, R6, LSL R2
-l213: clzMI R5, R11
-l214: mov R2, #46
-l215: ldrsb R3, [sp, -R2]
-l216: bicVC R9, R14, R5
-l217: ldmGEIB R13, {R3, R9, R12}
-l218: adds R1, R0, #-469762047
-l219: movMIs R3, R3, ASR #13
-l220: b l221
-l221: cmp R3, R12, LSL R14
-l222: ldr R4, l224
-l223: b l225
-l224: .word 1048552
-l225: swpCCb R3, R1, [R4]
-l226: clzGE R5, R12
-l227: eorCS R10, R10, R6, RRX 
-l228: swi #11110917
-l229: subs R8, R3, #-1342177270
-interrupt_771: l230: ldr R9, l232
-l231: b l233
-l232: .word 1048552
-l233: swpLTb R10, R3, [R9]
-interrupt_410: l234: ldrCSsh R1, [sp, #-30]
-interrupt_86: l235: and R1, R10, R12, ASR R3
-l236: addGEs R10, R1, R5, LSL #20
-l237: ldrsh R8, [sp, #+26]
-l238: ldr R4, [sp], #-4
-l239: ldr R10, [sp, #+4]!
-l240: bCC l246
-l241: add R1, R0, #142
-interrupt_267: l242: bics R9, R2, R10, RRX 
-interrupt_310: l243: and R5, R8, R2, LSL #6
-interrupt_283: l244: rscGT R6, R5, R14
-l245: b l247
-l246: b l242
-interrupt_872: l247: bic R14, R9, R12
-l248: bGT l255
-l249: add R1, R0, #19
-l250: andCSs R4, R0, #2688
-l251: mvnLS R3, R0
-l252: movs R1, #192
-l253: cmnGT R0, R1
-l254: b l256
-l255: b l250
-l256: strh R12, [sp, #-38]
-interrupt_473: l257: stmDA R13!, {R4, R7, R8, R14, R15}
-l258: swi #16549972
-l259: bLT l266
-l260: add R1, R0, #140
-l261: mvn R8, R4
-l262: subPLs R11, R8, #11730944
-l263: orrVSs R8, R4, R12, LSR R2
-l264: rsbNE R0, R9, R11
-l265: b l267
-interrupt_631: l266: b l261
-l267: subs R7, R2, #172032
-l268: eorHI R7, R14, #5177344
-interrupt_841: l269: addLT R0, R14, R5, LSR #22
-interrupt_809: l270: stmDA R13!, {R13}
-l271: swi #14105557
-l272: ldmIB R13!, {R2, R6}
-l273: ldrMIh R7, [sp, #+14]
-l274: rscNE R5, R8, R7, RRX 
-l275: ldmIA R13!, {R2, R4, R6, R9}
-l276: bLS l285
-interrupt_974: l277: subs R12, R11, R12, ASR R3
-l278: teqPL R0, R15, ASR #8
-l279: sbcHIs R12, R11, R5, LSR #3
-l280: subs R5, R9, R10, LSL #20
-l281: add R14, R9, R11
-interrupt_461: l282: eors R8, R9, R6
-l283: eors R4, R8, R14, LSL #17
-l284: eor R14, R1, R7, ASR R0
-l285: teq R4, #520
-l286: mov R6, #21
-l287: ldrsb R2, [sp, +R6]
-l288: add R14, R8, R14, RRX 
-l289: bGT l293
-l290: sbcGT R3, R2, #48128
-l291: cmpCS R3, R11, RRX 
-interrupt_554: l292: clz R6, R3
-interrupt_968: l293: eorLSs R12, R14, R4, ROR R3
-l294: mov R7, #7
-l295: ldrsb R3, [sp, -R7]
-l296: mov R8, #26
-l297: ldrh R5, [sp, -R8]
-l298: cmn R9, R4, ROR #30
-l299: cmp R1, #3211264
-l300: swi #10400420
-l301: subs R4, R8, R0, RRX 
-interrupt_828: l302: bicLSs R10, R11, R15, ROR #17
-l303: mov R10, #34
-interrupt_235: l304: strB R1, [sp, -R10]
-l305: ldmDA R13!, {R2, R4, R5, R6, R7, R8, R9, R10, R12, R14}
-l306: mvnGEs R6, R1
-l307: swi #9445361
-l308: nop
-interrupt_320: l309: clzHI R6, R7
-l310: sbcs R11, R4, R8
-interrupt_5: l311: subMI R1, R15, R14, ROR #26
-l312: adcs R10, R7, R7, LSR R2
-l313: rscCCs R3, R2, R8, LSL #15
-l314: sbcEQs R7, R0, R10
-l315: rscLSs R8, R11, #7360
-l316: clzHI R14, R10
-l317: ldr R12, [sp, #+60]!
-l318: mov R10, #28
-interrupt_626: l319: ldrsb R1, [sp, -R10]
-interrupt_810: l320: orrLT R0, R11, R14, LSL R8
-l321: nop
-l322: mov R3, #53
-l323: ldrVSsb R5, [sp, -R3]
-l324: ldmDA R13!, {R0, R1, R2, R3, R4, R6, R8, R9, R10, R11, R12, R14}
-interrupt_483: l325: mov R11, #50
-l326: ldrB R3, [sp, +R11]
-interrupt_247: l327: ldr R11, [sp], #+8
-l328: stmLTDA R13, {R10}
-l329: ldr R1, l331
-l330: b l332
-interrupt_537: l331: .word 1048532
-interrupt_286: l332: swpLSb R9, R8, [R1]
-l333: strh R11, [sp, #+0]
-l334: ldmIB R13!, {R2, R3, R4, R5, R6, R8, R9, R10, R12, R14}
-l335: andNE R4, R0, R1
-l336: cmnGT R6, #835584
-l337: stmIB R13!, {R6}
-interrupt_720: l338: nop
-l339: adc R6, R12, #79872
-l340: rscLE R4, R8, R5, ASR R11
-l341: rscPL R12, R1, R4
-interrupt_294: l342: strLS R3, [sp, #-68]
-l343: bicMIs R2, R7, R11
-l344: ldr R8, [sp], #-44
-interrupt_414: l345: swi #13809514
-l346: bVC l356
-l347: eorVCs R7, R10, #28416
-interrupt_129: l348: eorVSs R7, R11, R7
-l349: subGE R1, R15, #553648128
-l350: bicCSs R10, R3, R2, RRX 
-l351: mvnCS R6, R11, LSR R5
-l352: rscs R12, R9, R1
-l353: sbcEQ R11, R12, #188416
-l354: cmpGT R11, R14, LSR #7
-l355: adcPL R5, R12, R7
-l356: tstPL R11, R5, ASR R3
-l357: mov R14, #36
-l358: str R6, [sp, +R14]
-interrupt_939: l359: b l364
-l360: cmp R7, R8, RRX 
-l361: subGE R4, R11, R7
-l362: adcVCs R1, R14, R10, ROR R8
-l363: sbc R9, R7, R9, LSR R6
-interrupt_676: l364: mvns R1, R6
-l365: ldr R9, l367
-l366: b l368
-l367: .word 1048480
-l368: swp R4, R2, [R9]
-l369: ldrHIh R2, [sp, #+16]
-l370: rsc R11, R7, R14, ASR R5
-interrupt_839: l371: swi #7804667
-l372: bics R2, R15, R11, RRX 
-l373: ldmIB R13, {R1, R2, R3, R4, R5, R6, R7, R10, R11, R14}
-l374: cmnLE R5, #39424
-l375: tstLS R14, R12, LSL R9
-l376: mov R6, R14, LSR R14
-l377: tstLT R9, #206
-l378: mvnGEs R11, #1677721602
-l379: swi #4807786
-l380: mvnGEs R5, R0, ROR #20
-l381: ldrB R5, [sp, #-4]
-interrupt_863: l382: tstNE R11, R15, RRX 
-interrupt_687: l383: ldr R12, l385
-interrupt_36: l384: b l386
-l385: .word 1048536
-l386: swpNE R3, R0, [R12]
-l387: adcNE R5, R10, R7
-l388: ldrMIsh R1, [sp, #-22]
-l389: orrLE R10, R4, R8, LSL R2
-l390: eorLSs R2, R6, #-1275068415
-interrupt_32: l391: subCC R3, R1, R12
-interrupt_795: l392: bLS l394
-l393: addCC R11, R11, #4587520
-l394: rsb R0, R3, #721420288
-interrupt_33: l395: mov R8, #24
-l396: ldrEQsh R7, [sp, -R8]
-l397: sbcGEs R0, R1, #738197504
-l398: addGT R1, R1, #2031616
-l399: bicMI R6, R12, R7
-interrupt_700: l400: orr R7, R8, R1, ROR R5
-l401: ldrB R1, [sp, #-28]
-l402: eorNEs R3, R12, R11
-l403: stmDB R13, {R7, R10, R11}
-l404: ldmDB R13!, {R14}
-interrupt_512: l405: adcs R5, R5, R7
-l406: mov R12, #43
-l407: ldrEQsb R2, [sp, +R12]
-l408: mvn R1, #218103808
-l409: rscPLs R6, R12, R3, ASR R4
-l410: rscHI R0, R6, R9
-l411: ldr R4, l413
-l412: b l414
-l413: .word 1048508
-interrupt_458: l414: swpGTb R7, R12, [R4]
-l415: subs R10, R0, #9175040
-l416: eor R3, R11, R2, LSL R2
-l417: subPL R10, R7, R11, ROR R4
-interrupt_315: l418: bEQ l425
-l419: sbcLTs R12, R15, R10
-interrupt_583: l420: orr R7, R12, R14
-l421: sbcEQ R8, R3, R10
-l422: addEQs R5, R7, R2, ROR R12
-l423: bicPL R14, R7, R9, RRX 
-interrupt_423: l424: subVSs R9, R11, R1, LSL R3
-l425: andCSs R0, R6, R7, ASR #14
-l426: mov R0, #49
-l427: ldrGTsb R11, [sp, +R0]
-interrupt_321: l428: teq R1, R2, ROR #30
-l429: eor R10, R11, #12352
-interrupt_513: l430: movVC R2, #161480704
-l431: sub R4, R9, R8, LSL #1
-l432: orrGTs R8, R6, R7
-l433: subs R11, R8, R1, ROR #5
-l434: mov R10, #31
-l435: strB R7, [sp, +R10]
-interrupt_997: l436: ldmIA R13!, {R0, R2, R4, R5, R6, R7, R10, R12}
-l437: orrEQ R6, R2, R10, RRX 
-l438: tstGT R11, R5, LSR R11
-interrupt_643: l439: ldrPLsb R14, [sp, #+13]
-interrupt_903: l440: teqLS R8, #-1073741805
-l441: stmDB R13!, {R13, R15}
-interrupt_389: l442: bics R2, R6, #-1409286143
-l443: clz R1, R5
-l444: tstLT R5, R3
-interrupt_83: l445: teqLT R4, R8, ROR #20
-l446: strEQB R10, [sp, #+0]
-interrupt_690: l447: mov R11, #23
-l448: ldrHIsb R3, [sp, -R11]
-interrupt_216: l449: tstLE R15, #1610612746
-l450: ldr R10, [sp], #-24
-l451: sbcCSs R14, R8, R5
-interrupt_848: l452: cmnLT R0, #748
-l453: ldr R2, l455
-l454: b l456
-l455: .word 1048488
-l456: swpLSb R4, R6, [R2]
-interrupt_297: l457: cmp R0, R15
-interrupt_84: l458: clzLT R6, R14
-l459: subMIs R1, R9, #56320
-l460: b l463
-l461: mvns R3, R3, ASR R1
-l462: sub R0, R15, #196608
-l463: sbc R6, R3, R2, LSL R1
-interrupt_878: l464: bMI l468
-l465: subEQs R10, R1, R0, LSR #18
-interrupt_52: l466: adcVSs R2, R12, #790528
-l467: and R6, R12, #193
-interrupt_963: l468: bic R7, R1, R9, ROR #1
-interrupt_913: l469: adc R8, R4, R15
-l470: ldr R7, l472
-interrupt_75: l471: b l473
-interrupt_767: l472: .word 1048528
-l473: swpb R0, R10, [R7]
-l474: andGEs R4, R7, #19456
-l475: cmnEQ R15, R10
-interrupt_874: l476: ldmDA R13!, {R6, R10}
-interrupt_408: l477: subVCs R9, R6, #8896
-l478: mov R6, #52
-interrupt_509: l479: ldrLSsh R12, [sp, +R6]
-l480: strMIh R6, [sp, #-6]
-interrupt_711: l481: cmnGE R11, R5, LSR R12
-l482: adcs R8, R11, R11, ROR R11
-l483: bMI l484
-l484: rsbs R10, R9, R3, LSL #4
-l485: eors R7, R10, R14, LSL #12
-l486: bics R9, R5, #60
-l487: nop
-l488: rsbNEs R9, R1, #12736
-interrupt_575: l489: ldr R11, l491
-l490: b l492
-l491: .word 1048524
-l492: swpLT R0, R0, [R11]
-l493: clzNE R6, R5
-l494: eor R5, R4, R9
-interrupt_354: l495: mov R0, #48
-l496: ldrh R6, [sp, +R0]
-l497: cmpHI R7, R5
-interrupt_620: l498: ldmVSDA R13, {R5}
-l499: ldr R7, l501
-l500: b l502
-l501: .word 1048552
-l502: swpEQb R10, R10, [R7]
-l503: orrVSs R8, R12, R12, LSL #0
-interrupt_785: l504: bEQ l506
-l505: and R5, R8, R11
-l506: sbcs R11, R8, R10
-l507: ldrh R0, [sp, #+58]
-l508: strGEh R4, [sp, #+40]
-interrupt_926: l509: bGE l518
-l510: add R1, R0, #70
-l511: clzVS R4, R12
-l512: teq R0, R14, LSL #7
-l513: subLEs R9, R3, R9, ASR #7
-l514: tstVC R14, R14, ROR #30
-l515: andCS R9, R14, R1
-l516: subNE R2, R1, R7, LSL #1
-l517: b l519
-l518: b l511
-interrupt_993: l519: sbcCCs R10, R8, #638976
-interrupt_769: l520: adcLEs R0, R3, R11, ROR #23
-l521: bEQ l530
-l522: add R1, R0, #161
-l523: rscGT R9, R1, R15, RRX 
-l524: subs R14, R7, R3, LSL R4
-l525: rscs R7, R6, R0, ASR #30
-l526: clz R9, R10
-l527: cmp R12, R9
-l528: addCS R9, R6, R6, RRX 
-interrupt_290: l529: b l531
-l530: b l523
-l531: cmpVC R12, R15, LSR #27
-interrupt_908: l532: mov R7, #28
-l533: strB R9, [sp, +R7]
-l534: ldrh R8, [sp, #-16]
-l535: ldrLSsb R9, [sp, #+19]
-l536: bLT l542
-l537: teqLS R5, R8, ASR #5
-l538: subEQ R2, R2, #37486592
-l539: rscLSs R14, R4, R2, ASR R12
-l540: rsbs R11, R7, R2
-l541: mvn R3, R3, LSR #25
-l542: adds R11, R3, #0
-interrupt_942: l543: swi #14637222
-interrupt_684: l544: ldrsh R6, [sp, #+34]
-l545: swi #15416936
-l546: ldr R12, l548
-l547: b l549
-interrupt_793: l548: .word 1048528
-l549: swpGEb R0, R5, [R12]
-l550: sbcs R11, R15, R14
-l551: rsbNE R3, R11, R2
-l552: mov R0, R5, ASR R4
-interrupt_199: l553: bicGEs R12, R3, #700416
-l554: clzCS R2, R11
-l555: adcNE R2, R14, R9, LSL R11
-interrupt_490: l556: cmpCS R14, R9, LSL R3
-l557: cmp R14, #3552
-l558: ldrh R12, [sp, #+56]
-l559: ldr R10, l561
-l560: b l562
-l561: .word 1048508
-l562: swpLEb R11, R0, [R10]
-l563: b l564
-l564: eor R1, R1, #-2147483646
-l565: orrCCs R6, R5, R8
-l566: clz R4, R7
-l567: clz R2, R4
-l568: clzCS R0, R10
-interrupt_838: l569: stmVCIB R13, {R0, R1, R2, R3, R4, R7, R9, R10, R11, R13, R15}
-l570: mov R6, #4
-l571: str R6, [sp, +R6]
-interrupt_3: l572: mov R14, R1, LSR #24
-l573: rsbs R6, R15, R0
-l574: eors R8, R15, R1, LSR #22
-l575: mov R9, #37
-l576: strGTB R12, [sp, +R9]
-l577: swi #15148161
-l578: sub R0, R6, R6
-interrupt_307: l579: teqMI R14, R15, RRX 
-interrupt_868: l580: swi #12537390
-l581: movHIs R3, #15552
-l582: clzVC R1, R4
-interrupt_950: l583: mov R5, #40
-l584: strLTB R11, [sp, +R5]
-l585: adcs R12, R2, #2768
-l586: orrs R10, R3, #7340032
-interrupt_898: l587: swi #6049962
-l588: rscGTs R12, R4, R2, RRX 
-l589: adcs R5, R0, R8, ROR R1
-l590: cmn R4, R1, RRX 
-interrupt_650: l591: subLE R14, R1, #104
-interrupt_754: l592: mov R1, #34
-l593: ldrMIh R1, [sp, +R1]
-l594: ldr R1, l596
-l595: b l597
-l596: .word 1048496
-l597: swpCC R9, R11, [R1]
-l598: mvnVC R10, R3
-l599: ldmCSDA R13, {R1}
-l600: cmp R12, R1
-l601: tst R1, R1, ASR R0
-l602: mov R3, #52
-l603: ldrCCsb R14, [sp, +R3]
-l604: rsbPLs R2, R14, R4, ASR R12
-l605: strB R9, [sp, #+41]
-l606: tstCC R0, R14
-l607: tst R3, R10, RRX 
-l608: sbc R7, R4, R6, LSR #24
-l609: addGEs R3, R9, R8, RRX 
-l610: bHI l615
-interrupt_150: l611: add R1, R0, #52
-l612: eor R7, R1, R0
-l613: rsc R2, R0, R3, ROR #27
-l614: b l616
-interrupt_180: l615: b l612
-l616: ldr R7, l618
-l617: b l619
-l618: .word 1048552
-l619: swpLEb R10, R14, [R7]
-l620: mvns R4, R2, ROR R4
-l621: ldr R6, l623
-l622: b l624
-l623: .word 1048520
-interrupt_11: l624: swpEQb R2, R7, [R6]
-interrupt_222: l625: subPLs R7, R8, #118489088
-l626: ldr R8, [sp, #-4]
-l627: ldrHIsh R12, [sp, #+54]
-interrupt_888: l628: ldmIB R13!, {R2, R3, R4, R5, R6, R8, R9, R11, R12, R14}
-l629: clzMI R5, R11
-l630: subNEs R14, R0, R15
-l631: cmnGT R5, R0, ROR #2
-interrupt_595: l632: teq R0, #223346688
-interrupt_304: l633: swi #15248203
-l634: cmn R14, #-1879048188
-l635: orrs R6, R8, R15
-l636: clzVC R3, R8
-l637: mvn R4, R5, LSL #25
-l638: sbc R8, R14, R11
-l639: ldrsb R0, [sp, #-40]
-interrupt_229: l640: tst R5, R4, ASR #28
-interrupt_112: l641: nop
-l642: rscMI R9, R12, #3031040
-l643: mvns R10, R1, LSR R1
-l644: eors R10, R6, #191488
-interrupt_850: l645: teqVC R11, R2, ASR R7
-interrupt_200: l646: eorVCs R3, R12, R2, RRX 
-interrupt_87: l647: bicGEs R7, R5, R11
-l648: ldrEQ R1, [sp, #+0]
-l649: ldr R8, l651
-l650: b l652
-l651: .word 1048512
-l652: swpb R2, R14, [R8]
-l653: ldr R11, l655
-l654: b l656
-l655: .word 1048492
-interrupt_597: l656: swpVS R4, R9, [R11]
-l657: tstLE R8, R1, ASR R6
-l658: rsbLSs R0, R4, R0
-l659: ldrLSsh R10, [sp, #+2]
-interrupt_801: l660: rsbNEs R4, R3, R4, ROR R1
-l661: swi #12631400
-interrupt_234: l662: rsb R0, R6, R2
-l663: bicCC R9, R10, #196608
-l664: mov R0, #12
-interrupt_552: l665: ldrsh R4, [sp, -R0]
-l666: orrCC R11, R1, R3, ASR R2
-l667: mov R5, #17
-interrupt_314: l668: ldrHIB R4, [sp, -R5]
-l669: mov R10, #36
-l670: ldr R12, [sp, -R10]
-l671: sbcGE R9, R6, R10, RRX 
-l672: teqGT R11, R5, RRX 
-l673: clzLE R0, R10
-l674: movHI R12, R11, LSL #18
-l675: mov R11, #50
-l676: strB R9, [sp, -R11]
-l677: adcVSs R6, R11, R1, LSR #31
-l678: strh R2, [sp, #-28]
-l679: orrs R5, R2, R4
-l680: mov R7, #6
-interrupt_429: l681: ldrsh R7, [sp, -R7]
-l682: ldrsh R11, [sp, #+16]
-interrupt_601: l683: bicHIs R5, R6, R9, LSL R11
-l684: ldr R11, l686
-l685: b l687
-l686: .word 1048536
-l687: swp R3, R2, [R11]
-l688: mvnCCs R5, R5, ROR R14
-interrupt_296: l689: swi #10680173
-l690: swi #7864333
-l691: eorGEs R9, R0, R0, RRX 
-l692: strGEB R7, [sp, #-12]
-interrupt_715: l693: subVCs R8, R14, R14, RRX 
-interrupt_600: l694: rsc R9, R0, R6, LSR R3
-l695: rsb R11, R6, R11, ASR #15
-l696: ldr R8, l698
-interrupt_135: l697: b l699
-l698: .word 1048528
-l699: swpNEb R4, R4, [R8]
-l700: mov R3, #27
-l701: strB R4, [sp, -R3]
-l702: sbcs R8, R2, R8, RRX 
-l703: adcLS R9, R4, R6
-l704: adcMI R6, R4, R5, LSR #9
-l705: eorEQs R4, R3, R14, ASR R7
-l706: ldmDB R13!, {R4, R10}
-interrupt_787: l707: tstCS R7, R3
-l708: eors R11, R2, R7, ASR R14
-l709: strLSB R1, [sp, #+27]
-l710: ldrLSh R8, [sp, #-26]
-interrupt_89: l711: clzGE R6, R10
-l712: eorMIs R5, R11, R15
-l713: tstCC R6, R8, RRX 
-l714: andHI R1, R10, R10, LSL #9
-interrupt_773: l715: swi #14147110
-interrupt_391: l716: orrNEs R14, R1, R4
-interrupt_171: l717: movMIs R1, R9
-l718: cmn R15, R8
-l719: stmIB R13!, {R6}
-interrupt_370: l720: movs R2, R9, ROR R11
-l721: bics R4, R6, #-536870904
-l722: orrGE R14, R7, R0
-l723: ldmLEIB R13, {R0, R2, R12}
-l724: bicGTs R2, R15, R1, ROR #9
-l725: rscCC R12, R6, #2949120
-interrupt_531: l726: ldmDB R13, {R5, R10}
-l727: ldmVCIA R13, {R0, R3, R12}
-l728: ldr R2, l730
-l729: b l731
-l730: .word 1048548
-l731: swpGEb R12, R6, [R2]
-l732: swi #14398513
-l733: ldr R0, l735
-l734: b l736
-l735: .word 1048540
-l736: swp R7, R12, [R0]
-l737: swi #14595328
-l738: rscs R6, R4, R15, LSL #7
-l739: and R7, R11, R10, LSR R14
-interrupt_844: l740: ldrVCB R1, [sp, #+12]
-l741: adds R3, R12, #880803840
-interrupt_246: l742: mvn R12, R10, ROR #31
-l743: clzGT R9, R14
-l744: eorGE R4, R3, R14, ROR R11
-l745: ldmDB R13!, {R1, R2, R4, R7, R12}
-interrupt_274: l746: stmDB R13!, {R2, R8}
-l747: clzMI R9, R6
-interrupt_399: l748: mov R11, R10
-l749: bMI l758
-l750: add R1, R0, #212
-l751: adc R1, R15, R10, LSR #10
-interrupt_292: l752: subEQs R1, R2, R10
-interrupt_37: l753: cmpGE R9, R11, ASR #19
-interrupt_561: l754: adds R2, R11, #1261568
-l755: sbcEQs R1, R5, #335872
-interrupt_541: l756: sbc R14, R3, R4
-l757: b l759
-l758: b l751
-l759: swi #10150228
-interrupt_13: l760: cmpPL R6, R9, LSL #30
-l761: cmpVS R9, R3
-l762: ldrsb R1, [sp, #+45]
-l763: swi #2534789
-l764: sbc R7, R14, R8, ASR #24
-l765: nop
-l766: mov R4, #22
-l767: ldrLSB R2, [sp, +R4]
-interrupt_308: l768: ldr R7, l770
-l769: b l771
-l770: .word 1048492
-l771: swp R1, R9, [R7]
-l772: mov R6, #23
-l773: strB R11, [sp, -R6]
-interrupt_468: l774: mov R11, #44
-l775: str R4, [sp, +R11]
-l776: ldr R6, l778
-interrupt_192: l777: b l779
-l778: .word 1048552
-l779: swpGT R9, R5, [R6]
-interrupt_836: l780: str R5, [sp], #+40
-l781: sub R8, R5, #2816
-l782: mov R7, #16
-l783: ldr R10, [sp, -R7]
-l784: andEQs R14, R6, R6, LSR R0
-interrupt_999: l785: ands R10, R1, #293601280
-l786: b l789
-interrupt_443: l787: adds R1, R15, R6
-l788: adcLS R0, R15, R8
-l789: eorHI R12, R0, R14, LSR #19
-l790: strB R6, [sp, #+9]
-l791: orrs R11, R8, R8, LSL #13
-l792: ldr R1, l794
-l793: b l795
-interrupt_452: l794: .word 1048492
-l795: swp R12, R3, [R1]
-interrupt_555: l796: movNEs R5, #1310720
-l797: addGE R14, R10, R11, ROR R10
-interrupt_374: l798: subCSs R3, R10, #3824
-l799: bEQ l807
-l800: teq R3, R7
-l801: cmnLT R6, R6, RRX 
-l802: cmpCS R6, R1, ROR R9
-interrupt_501: l803: rscGE R1, R12, R6, ROR #8
-l804: mov R0, R7
-l805: clzCS R14, R4
-interrupt_161: l806: adcs R9, R10, #15040
-l807: rscVS R7, R1, R14
-interrupt_883: l808: rsbMI R1, R2, #5376
-l809: movVC R4, R10
-l810: strB R4, [sp, #-59]
-l811: bNE l815
-l812: add R1, R0, #214
-l813: ands R3, R15, R3, RRX 
-l814: b l816
-l815: b l813
-l816: mov R2, #64
-l817: ldrPLsh R4, [sp, -R2]
-interrupt_299: l818: cmp R5, #33280
-l819: tstLT R12, #53739520
-l820: tstCS R1, R7, ROR #30
-l821: add R6, R14, R0, ASR #31
-l822: mov R3, #36
-l823: ldrNEh R8, [sp, -R3]
-l824: nop
-l825: bicVSs R10, R15, R12
-l826: subVC R12, R10, R6
-l827: cmnNE R0, R4, LSL #25
-interrupt_115: l828: ldmHIDA R13, {R2, R3, R4, R5, R6, R7, R8, R9}
-l829: mov R9, #14
-l830: strh R4, [sp, -R9]
-l831: tst R7, R5
-interrupt_198: l832: addVS R4, R7, R6, ASR R3
-l833: subVSs R9, R5, R14, ASR #5
-l834: addPLs R3, R8, R12
-l835: movVSs R10, R12
-l836: teqMI R6, R15
-l837: rscVCs R12, R6, R10, ROR R6
-l838: bicNEs R3, R5, R3, ROR R7
-l839: mov R12, #28
-l840: str R4, [sp], -R12
-interrupt_138: l841: strLEh R3, [sp, #+24]
-l842: ldr R10, l844
-l843: b l845
-interrupt_862: l844: .word 1048524
-interrupt_969: l845: swpNE R4, R14, [R10]
-l846: movCC R2, R8, LSR R1
-l847: subVS R7, R1, R10, LSR #22
-interrupt_446: l848: rscCSs R2, R4, R11, LSR #15
-l849: stmDB R13!, {R2, R3}
-interrupt_705: l850: mov R11, #10
-l851: ldrHIsb R9, [sp, -R11]
-l852: ldr R5, l854
-interrupt_218: l853: b l855
-l854: .word 1048520
-l855: swpHIb R9, R10, [R5]
-l856: cmn R15, R0, LSL #16
-l857: orrPL R9, R9, R2
-interrupt_661: l858: addEQs R12, R11, #1008
-l859: strPL R8, [sp, #-28]
-l860: ldr R3, [sp, #+32]
-interrupt_402: l861: swi #3157696
-l862: adcLSs R6, R9, #-201326592
-l863: stmDA R13!, {R3, R6, R7}
-l864: subCCs R8, R7, R10
-l865: clz R0, R8
-l866: ands R6, R1, R12, RRX 
-l867: mov R5, #10
-interrupt_312: l868: ldrsb R0, [sp, -R5]
-l869: mvns R10, R1, LSL #17
-l870: rsbs R11, R12, R7, ASR R0
-l871: ldr R3, l873
-l872: b l874
-interrupt_259: l873: .word 1048536
-l874: swpPLb R12, R1, [R3]
-l875: bCS l884
-l876: add R1, R0, #176
-l877: clzGT R11, R0
-l878: subEQ R7, R8, #14592
-l879: add R9, R2, #223346688
-l880: cmnEQ R7, R10, LSR R7
-l881: subEQ R4, R14, #24117248
-l882: rsbs R0, R12, R3, ASR R2
-interrupt_593: l883: b l885
-l884: b l877
-l885: cmnCS R3, R5
-l886: subMI R7, R2, R14
-l887: cmnLS R0, R0, ROR #26
-l888: bicHIs R11, R9, R5
-l889: ldrPLh R0, [sp, #+16]
-l890: sub R9, R7, #1280
-l891: mov R9, #12
-l892: strB R3, [sp, -R9]
-l893: mov R4, #44
-l894: ldrVCsh R10, [sp, +R4]
-l895: ldrEQ R10, [sp, #+28]
-l896: cmpVS R2, R15
-l897: ldr R7, l899
-l898: b l900
-l899: .word 1048524
-l900: swpVC R8, R5, [R7]
-l901: strVSh R5, [sp, #+2]
-l902: bics R0, R3, #48496640
-interrupt_467: l903: strVCh R9, [sp, #-12]
-l904: swi #16676563
-l905: tstCC R2, R5, ASR R11
-interrupt_945: l906: ldr R3, l908
-l907: b l909
-l908: .word 1048552
-l909: swpb R6, R10, [R3]
-l910: tst R1, #8323072
-l911: mov R10, #11
-l912: strEQB R3, [sp, +R10]
-l913: swi #3850230
-l914: sbc R0, R1, R11, ASR R1
-interrupt_624: l915: orrs R14, R10, R15, LSL #20
-interrupt_342: l916: ldr R7, l918
-l917: b l919
-l918: .word 1048552
-l919: swpb R6, R9, [R7]
-interrupt_67: l920: cmpLS R5, R15
-l921: add R7, R5, R8, RRX 
-l922: sbcs R3, R7, R5
-l923: teqVC R5, #1073741879
-interrupt_343: l924: rsbGE R11, R7, R2
-interrupt_186: l925: ldr R11, [sp, #+4]!
-l926: b l931
-interrupt_586: l927: add R1, R0, #102
-l928: cmp R0, R2
-l929: bics R6, R11, R5, ROR R10
-l930: b l932
-l931: b l928
-l932: mov R12, #0
-l933: ldrMIsh R3, [sp, +R12]
-l934: b l940
-l935: add R1, R0, #176
-interrupt_285: l936: sbc R2, R4, R11, LSL R8
-l937: sbcGTs R8, R12, R4, RRX 
-interrupt_255: l938: clzHI R9, R7
-l939: b l941
-l940: b l936
-interrupt_257: l941: bLS l945
-l942: add R1, R0, #172
-l943: eor R14, R11, R9, RRX 
-l944: b l946
-l945: b l943
-l946: rscCSs R3, R7, R11, LSR R3
-l947: rscLS R5, R9, #4128768
-l948: movs R9, R2, ROR #1
-l949: teq R12, R1, ROR R7
-l950: subLE R7, R6, R11, ASR R0
-l951: strCCh R3, [sp, #+2]
-l952: mov R11, #24
-l953: strLE R3, [sp, +R11]
-interrupt_890: l954: mov R5, #39
-l955: ldrCCsb R3, [sp, +R5]
-l956: subs R0, R5, #124
-l957: ldr R1, l959
-l958: b l960
-l959: .word 1048532
-l960: swpCCb R10, R14, [R1]
-l961: cmp R8, R5
-l962: bics R0, R3, R6, ASR #1
-l963: cmp R12, R10, ROR R14
-l964: adc R6, R10, R10, RRX 
-l965: rsbVCs R2, R11, R14, ROR #28
-l966: clz R4, R7
-l967: ldr R9, l969
-l968: b l970
-l969: .word 1048492
-l970: swpVSb R1, R1, [R9]
-l971: movCSs R3, R1, RRX 
-interrupt_287: l972: subPLs R6, R12, #10158080
-l973: mov R14, #20
-l974: ldrh R10, [sp, +R14]
-l975: mov R5, #37
-interrupt_7: l976: ldrsb R9, [sp, +R5]
-l977: eor R10, R11, R9
-interrupt_623: l978: sub R8, R11, #59392
-l979: mov R12, #50
-l980: ldrLEsh R1, [sp, +R12]
-l981: adcs R7, R11, R11
-l982: tst R10, #948
-l983: b l984
-interrupt_639: l984: eorNEs R14, R15, R11, RRX 
-l985: eor R1, R3, R2, ROR #14
-l986: mov R12, #20
-l987: str R11, [sp], -R12
-l988: cmnGT R11, R5, ASR R3
-l989: addVCs R6, R7, R0, RRX 
-l990: mov R10, #34
-interrupt_278: l991: ldrB R10, [sp, +R10]
-l992: rscVS R9, R11, #9024
-interrupt_34: l993: andVCs R1, R6, R9, LSL #13
-l994: b l999
-l995: tstLT R0, R7
-l996: cmpHI R14, #270336
-l997: addHIs R11, R4, #28928
-l998: clz R4, R14
-l999: mvnVC R8, #792723456
-l1000: movLEs R6, #1140850688
-l1001: tst R1, R10
-l1002: adc R11, R4, R0, LSR #9
-l1003: swi #1553988
-l1004: swi #6997775
-l1005: swi #4135764
-l1006: ldrB R9, [sp, #+55]
-l1007: mov R7, #15
-l1008: ldrCSsb R2, [sp, +R7]
-l1009: b l1015
-l1010: sub R14, R0, R1, LSL #19
-l1011: addMI R12, R4, R4, LSL R10
-interrupt_859: l1012: eorNEs R8, R7, R14, RRX 
-interrupt_617: l1013: clzGT R5, R11
-l1014: subGEs R2, R3, R3
-l1015: teqHI R0, R5, LSR R7
-l1016: subLSs R4, R8, #228
-l1017: teqVS R9, R2
-l1018: ldr R5, l1020
-l1019: b l1021
-l1020: .word 1048484
-l1021: swpNEb R1, R3, [R5]
-interrupt_409: l1022: ldr R4, l1024
-l1023: b l1025
-interrupt_64: l1024: .word 1048492
-l1025: swpVSb R8, R3, [R4]
-l1026: mov R9, #34
-interrupt_667: l1027: ldrGTsb R9, [sp, +R9]
-l1028: ldr R6, l1030
-interrupt_316: l1029: b l1031
-l1030: .word 1048480
-l1031: swp R1, R10, [R6]
-l1032: cmnLS R6, R11, LSL #16
-l1033: eorHI R12, R2, R10, RRX 
-l1034: bMI l1038
-l1035: add R1, R0, #243
-l1036: mvnVS R6, R9
-l1037: b l1039
-interrupt_496: l1038: b l1036
-l1039: mov R3, #56
-l1040: ldrh R10, [sp, +R3]
-l1041: mov R12, #45
-l1042: strLTB R1, [sp, +R12]
-interrupt_228: l1043: mov R4, #44
-l1044: ldr R10, [sp, +R4]!
-l1045: clzGE R2, R6
-l1046: ldr R1, l1048
-l1047: b l1049
-l1048: .word 1048488
-l1049: swpVS R0, R5, [R1]
-l1050: rscs R3, R5, R10, RRX 
-l1051: addLSs R1, R0, R7
-l1052: mov R6, #20
-l1053: strLSh R8, [sp, +R6]
-l1054: rsb R8, R11, R2
-l1055: swi #4062307
-l1056: ldmIA R13!, {R2, R4, R9}
-l1057: strLSh R0, [sp, #-24]
-l1058: mov R2, #12
-l1059: ldr R5, [sp], +R2
-l1060: sub R4, R14, R9, ROR R10
-l1061: orrLS R6, R15, #26214400
-interrupt_433: l1062: mov R4, #61
-l1063: strGTB R9, [sp, -R4]
-interrupt_140: l1064: swi #14962921
-l1065: ldrLSh R5, [sp, #+6]
-l1066: swi #15722865
-l1067: strPLB R8, [sp, #-10]
-l1068: orrs R5, R9, R4, ASR #1
-l1069: rsbs R4, R15, #1073741883
-l1070: clzLT R0, R0
-l1071: tstCS R10, R2, ASR R3
-l1072: mov R2, #48
-l1073: strLS R14, [sp, -R2]
-l1074: mov R7, #60
-l1075: ldr R11, [sp, -R7]!
-l1076: stmIB R13!, {R13}
-interrupt_517: l1077: ldrEQB R5, [sp, #+57]
-l1078: bicCC R12, R0, R5, LSR R5
-l1079: strPLh R2, [sp, #+60]
-l1080: mov R8, #60
-l1081: ldrh R11, [sp, +R8]
-interrupt_747: l1082: mov R9, #6
-interrupt_478: l1083: ldrh R14, [sp, +R9]
-l1084: rscs R6, R12, R8
-l1085: clz R7, R12
-l1086: cmpGT R8, R2, ASR #0
-l1087: strh R14, [sp, #+28]
-l1088: b l1093
-l1089: subs R14, R4, R14, LSR R11
-l1090: tstHI R5, R0, RRX 
-interrupt_407: l1091: orrVSs R6, R0, R1
-l1092: cmp R8, R3, LSL R10
-interrupt_566: l1093: sub R7, R11, R8, ASR R12
-l1094: mov R2, #4
-l1095: ldrCCsh R5, [sp, -R2]
-l1096: ldr R12, [sp], #+20
-l1097: ldr R4, l1099
-l1098: b l1100
-l1099: .word 1048536
-l1100: swpVSb R10, R9, [R4]
-interrupt_341: l1101: addGT R5, R7, R8, RRX 
-l1102: ands R3, R9, R2, ROR R11
-l1103: bMI l1108
-interrupt_851: l1104: mvnGTs R1, R4, ASR R0
-interrupt_679: l1105: orrs R11, R14, R8
-l1106: bicGT R11, R2, R7, ASR R3
-l1107: bics R10, R8, #216
-l1108: orr R8, R14, R3
-l1109: mov R11, #20
-l1110: ldr R0, [sp, +R11]!
-interrupt_743: l1111: cmn R12, R3
-l1112: orrs R12, R0, #230686720
-interrupt_884: l1113: cmnNE R7, R0, RRX 
-l1114: ldrB R5, [sp, #-12]
-l1115: b l1119
-l1116: add R1, R0, #169
-l1117: rsbLE R4, R0, R4, ROR R2
-l1118: b l1120
-l1119: b l1117
-l1120: tstGT R15, R8
-l1121: subLTs R8, R3, #-1006632960
-l1122: rscVCs R6, R3, #624
-interrupt_645: l1123: swi #13274122
-l1124: tst R3, R14, LSR R9
-l1125: tst R0, R2
-l1126: bic R11, R2, R2, LSL #3
-l1127: orr R3, R9, R9
-l1128: mov R4, #0
-l1129: strB R7, [sp, +R4]
-l1130: cmn R6, #327680
-interrupt_723: l1131: subVSs R0, R3, R3
-l1132: subNEs R7, R10, R8
-l1133: movGTs R9, R11
-interrupt_153: l1134: bVC l1142
-l1135: add R1, R0, #213
-l1136: orr R6, R1, R8, RRX 
-l1137: subCC R6, R10, #236
-l1138: add R10, R11, R5
-l1139: rsbLS R9, R6, #-1459617792
-interrupt_680: l1140: clzLS R9, R4
-l1141: b l1143
-interrupt_893: l1142: b l1136
-l1143: sbcs R7, R7, R3, ROR #12
-l1144: ldr R1, l1146
-l1145: b l1147
-l1146: .word 1048496
-l1147: swp R9, R6, [R1]
-l1148: mov R5, #12
-l1149: strLSB R14, [sp, -R5]
-l1150: orrVC R8, R15, R0
-interrupt_435: l1151: teqLS R1, #3932160
-l1152: mov R0, #12
-l1153: ldrGTh R3, [sp, -R0]
-l1154: addLE R14, R1, R8, LSL #27
-l1155: rscCC R11, R14, R4
-l1156: cmn R3, R1
-l1157: rsbPL R0, R9, #176
-l1158: strVS R8, [sp, #+0]
-interrupt_395: l1159: tstVC R10, #3801088
-l1160: rsbMIs R10, R1, R0, LSR R1
-l1161: mov R14, #8
-interrupt_101: l1162: ldrNEsb R6, [sp, -R14]
-l1163: b l1168
-l1164: bic R11, R0, R10, ASR R9
-l1165: eorLEs R8, R10, #3952
-l1166: adcs R6, R3, R0, RRX 
-l1167: clzCC R10, R12
-l1168: addGE R11, R3, R9, RRX 
-l1169: bGT l1178
-l1170: add R1, R0, #116
-l1171: cmnEQ R2, R9
-l1172: adcHI R3, R15, R7, ASR #26
-interrupt_298: l1173: rscMIs R14, R3, #14
-interrupt_441: l1174: add R6, R11, R3, ROR R5
-interrupt_280: l1175: teqCS R1, #1019215872
-l1176: movCCs R9, #11599872
-l1177: b l1179
-interrupt_958: l1178: b l1171
-l1179: swi #12589441
-l1180: bics R6, R12, R1
-l1181: swi #15937655
-l1182: mov R6, #52
-l1183: strh R10, [sp, -R6]
-l1184: ldr R12, [sp, #-52]
-l1185: movLEs R4, #143360
-l1186: ldr R3, l1188
+interrupt_394: 
+l1: addCS R1, R5, R1, ROR #13
+l2: mov R9, #16
+l3: ldrCS R7, [sp, -R9]
+l4: movGT R14, R6, ROR R2
+l5: stmVCDB R13, {R0, R1, R2, R3, R4, R6, R8, R9, R10, R11, R12, R13, R14, R15}
+l6: swi #5631939
+l7: bCC l13
+l8: eors R10, R0, R12
+l9: add R5, R7, R10, LSL R7
+l10: tstVS R14, R6, LSR R11
+l11: mvnEQs R6, R10
+l12: tstVC R15, R7
+l13: clzVS R0, R8
+interrupt_328: l14: swi #7937123
+interrupt_111: l15: sub R0, R15, R15
+l16: orrs R4, R10, R0, ROR R3
+l17: ldr R7, [sp, #-36]!
+l18: adc R4, R7, R15, RRX 
+l19: bLE l25
+interrupt_849: l20: add R1, R0, #13
+l21: clz R14, R10
+l22: cmp R15, R2, LSR #11
+l23: teqVC R7, R11, ASR #28
+l24: b l26
+l25: b l21
+l26: bNE l34
+l27: add R1, R0, #12
+l28: sbcCCs R9, R12, #1644167168
+l29: orrLEs R7, R11, R9, ASR #22
+l30: clzEQ R4, R1
+l31: orrPLs R2, R3, #1146880
+l32: sub R5, R10, #36962304
+l33: b l35
+l34: b l28
+interrupt_703: l35: ldrh R8, [sp, #-14]
+l36: tst R0, R1, LSL R14
+interrupt_101: l37: b l44
+l38: add R1, R0, #241
+l39: rscGEs R11, R7, R15, LSR #19
+l40: subNE R5, R1, R9, LSL #10
+l41: sub R2, R6, R6, ASR R14
+l42: bicCSs R1, R6, R15, LSR #28
+l43: b l45
+l44: b l39
+interrupt_989: l45: ldrB R12, [sp, #+0]
+l46: mov R8, #16
+interrupt_921: l47: str R0, [sp], +R8
+l48: b l54
+l49: add R1, R0, #100
+l50: rscGEs R0, R6, R7, LSR #7
+l51: orrEQ R3, R8, R2
+interrupt_254: l52: subVCs R10, R10, R5, ROR R2
+l53: b l55
+l54: b l50
+l55: clz R8, R6
+l56: tstMI R5, R9, ASR #18
+interrupt_144: l57: ldmLSIA R13, {R10, R14}
+interrupt_666: l58: bGT l62
+l59: rsbLEs R10, R8, R6, ASR R5
+l60: sbcVCs R7, R7, R1, ROR R1
+l61: bicGTs R9, R3, R10
+l62: subVSs R0, R5, R5, ROR #28
+interrupt_975: l63: teqGT R12, #1073741834
+l64: teq R7, R2, RRX 
+l65: ldr R12, l67
+interrupt_355: l66: b l68
+interrupt_363: l67: .word 1048488
+l68: swpLTb R3, R8, [R12]
+l69: addGTs R3, R9, R14, LSL #25
+l70: mvnHI R4, #12352
+l71: ldmDA R13!, {R0, R1, R2, R3, R6, R7, R8, R9, R12, R14}
+l72: andCC R12, R7, R6
+l73: mov R5, #40
+l74: str R4, [sp], +R5
+l75: orrNE R14, R1, R1, LSR #5
+l76: swi #15610467
+l77: tstVS R0, #68608
+l78: andNE R11, R9, R10, ROR R0
+l79: mvnVSs R8, #2867200
+l80: clzCC R11, R11
+l81: tstGT R3, R5, LSR R1
+interrupt_977: l82: mov R2, #50
+l83: strVCh R7, [sp, -R2]
+l84: mvn R4, #495616
+l85: swi #2092325
+l86: andGE R9, R2, R10
+l87: ldr R0, l89
+l88: b l90
+l89: .word 1048520
+l90: swpLTb R12, R11, [R0]
+l91: bPL l99
+interrupt_852: l92: subEQs R0, R9, R8, RRX 
+l93: mov R8, R12, ROR R0
+l94: adds R5, R14, R5
+l95: bicMIs R1, R10, R2
+l96: sbcCSs R10, R6, R12, LSR R2
+l97: rsb R3, R15, #167936
+l98: orrCS R2, R0, R14, ROR #24
+l99: movLT R4, R0
+l100: mvnLTs R7, #10240
+l101: ldr R2, l103
+l102: b l104
+l103: .word 1048492
+l104: swpHIb R1, R14, [R2]
+l105: bLS l114
+l106: orrs R14, R15, #92
+l107: ands R0, R5, R2, ROR R1
+interrupt_607: l108: rsbEQ R5, R7, R11, RRX 
+l109: cmp R7, #8454144
+l110: subCCs R9, R0, R1
+l111: orrs R9, R8, #134217728
+l112: orrs R3, R5, R1, LSL #17
+interrupt_331: l113: tstNE R12, #1104
+l114: cmp R0, R8
+l115: str R3, [sp], #+4
+l116: strEQB R10, [sp, #+6]
+l117: cmpLE R9, R6
+l118: str R6, [sp, #-20]!
+l119: bic R4, R4, #824
+l120: add R12, R4, #13632
+l121: sbcVCs R12, R14, R4
+l122: tstNE R1, R12, LSR #30
+l123: bEQ l129
+l124: tstGT R14, R10
+l125: subs R1, R4, R14, ROR #15
+l126: clz R4, R3
+l127: cmpEQ R11, R2
+l128: teqPL R7, R5
+l129: movCC R1, R5
+interrupt_959: l130: str R7, [sp, #-12]!
+l131: ldr R6, l133
+l132: b l134
+l133: .word 1048536
+l134: swp R12, R8, [R6]
+l135: orrPLs R8, R9, R2
+l136: stmDB R13!, {R2}
+l137: mvnPL R14, R6, ROR #21
+l138: subVCs R8, R11, R15, ROR #14
+l139: cmn R6, R9
+l140: ldr R3, [sp], #-28
+interrupt_585: l141: sbc R3, R10, R10, LSL #24
+l142: orrs R11, R11, R15, LSR #18
+l143: ldr R7, l145
+l144: b l146
+interrupt_501: l145: .word 1048540
+l146: swpGE R10, R0, [R7]
+l147: sub R5, R14, R12, RRX 
+interrupt_180: l148: ldr R5, l150
+l149: b l151
+l150: .word 1048480
+l151: swpLTb R1, R9, [R5]
+l152: swi #16158625
+l153: mov R14, #46
+l154: ldrGEh R11, [sp, +R14]
+interrupt_286: l155: sbcHIs R3, R5, R0
+l156: subHIs R14, R1, R12, ASR R6
+l157: movs R3, R0, LSL R8
+l158: adc R6, R5, R6, RRX 
+l159: clzNE R9, R10
+l160: mvnGE R5, R3
+l161: tst R0, #260046848
+interrupt_543: l162: mvns R7, R14, RRX 
+l163: clzVS R11, R7
+l164: clzGT R0, R5
+l165: tstVS R7, R5
+l166: bLS l175
+l167: add R1, R0, #119
+l168: subGT R2, R0, R2
+interrupt_700: l169: mvnLE R3, R0
+l170: mvnEQ R3, R7, LSL R14
+l171: mvnPL R5, #1811939330
+interrupt_893: l172: addVS R8, R2, R8, ROR #26
+l173: cmpLT R10, R9
+l174: b l176
+interrupt_446: l175: b l168
+l176: ldmIA R13, {R0, R1, R2, R3, R4, R5, R6, R8, R9, R10, R11, R12}
+l177: andLEs R3, R7, R6, ASR R9
+l178: mov R0, #28
+l179: ldrPLsb R3, [sp, +R0]
+l180: b l189
+interrupt_699: l181: tstLE R9, R10, ROR R4
+l182: eors R4, R15, R1
+l183: movLE R10, #7680
+l184: orrMI R11, R15, #1856
+l185: clzHI R4, R0
+interrupt_153: l186: eor R4, R1, R3
+l187: tst R5, R1, ASR R3
+l188: orr R8, R12, R15, RRX 
+l189: rsc R1, R9, R9
+l190: swi #4738907
+l191: cmn R9, R9
+l192: sbcGEs R4, R1, R6
+l193: tstPL R9, R12, ROR R2
+l194: sub R2, R1, R7
+interrupt_762: l195: subCC R7, R6, R9, ASR #20
+l196: b l205
+interrupt_659: l197: add R1, R0, #108
+l198: andVSs R7, R2, R12, RRX 
+l199: cmnLS R11, R11
+l200: sbcs R14, R10, R12, ASR R11
+l201: orrs R6, R1, #-67108863
+l202: orrHIs R5, R8, R5
+l203: eorNE R12, R5, #-1342177279
+l204: b l206
+l205: b l198
+interrupt_63: l206: ldmIA R13!, {R0, R2, R3, R5, R6, R8, R11, R12, R14}
+l207: mov R0, #8
+l208: ldrVCsh R2, [sp, -R0]
+l209: sbcCC R3, R14, R11, ASR #29
+l210: subLS R8, R10, R5, LSR #31
+l211: bicGT R10, R4, R8, RRX 
+l212: rsb R9, R7, R8, ASR #6
+l213: ldrsh R3, [sp, #+14]
+l214: mov R10, #12
+interrupt_685: l215: ldrh R5, [sp, -R10]
+l216: bicCSs R9, R6, R5
+l217: ldmIB R13!, {R3, R4, R6, R7, R10, R12, R14}
+interrupt_278: l218: eor R10, R11, R2, ASR #1
+interrupt_719: l219: add R7, R10, R14
+l220: cmn R12, R10, LSL #1
+l221: stmDA R13, {R4, R7, R10}
+l222: mov R6, #64
+l223: ldrLS R12, [sp, -R6]
+l224: eorMI R5, R12, #-469762046
+l225: sbcs R6, R6, R10
+l226: bGE l236
+interrupt_763: l227: cmp R10, R8, LSR R1
+l228: sbcPL R9, R3, R8, ASR R12
+l229: rsbLT R14, R3, R9
+interrupt_903: l230: rscMIs R3, R5, #68157440
+l231: rsbMIs R3, R6, #44288
+l232: cmpVS R10, R5
+l233: cmn R4, #186
+l234: orr R1, R8, R5, LSR R11
+l235: adcGTs R0, R6, R1
+l236: addPLs R5, R4, R6, LSR R0
+l237: adcMI R3, R14, R8, ROR R12
+l238: movCCs R7, #1490944
+l239: str R14, [sp], #-32
+l240: tstHI R15, #-2147483635
+l241: mov R10, #4
+l242: ldrPLB R12, [sp, +R10]
+l243: clzLT R2, R6
+interrupt_667: l244: ldrh R1, [sp, #+40]
+l245: tstEQ R10, R2, ROR #7
+l246: eor R1, R14, #-1073741824
+l247: eorGE R3, R7, R15, ROR #16
+l248: mov R12, #7
+interrupt_398: l249: ldrEQsb R0, [sp, +R12]
+interrupt_902: l250: rscGE R7, R7, R6
+l251: orrVSs R9, R3, R14
+l252: swi #4606968
+interrupt_680: l253: eorNE R1, R1, #2310144
+l254: teqEQ R7, R2, LSL #28
+l255: mov R11, #25
+l256: ldrEQB R10, [sp, -R11]
+interrupt_936: l257: ldr R11, [sp], #+8
+l258: stmDA R13!, {R11}
+l259: ldmPLDA R13, {R5, R8, R10}
+l260: rscVCs R8, R5, R15, ROR #8
+l261: mvnLEs R14, #248
+l262: mov R0, #8
+l263: strHIB R14, [sp, +R0]
+l264: eorVC R3, R11, R9, ROR R0
+l265: adcGEs R0, R15, R15, RRX 
+l266: str R6, [sp, #+16]!
+interrupt_969: l267: bicMIs R14, R8, #452984832
+l268: ldr R6, l270
+l269: b l271
+l270: .word 1048536
+l271: swpGE R5, R11, [R6]
+l272: swi #10147399
+l273: cmnLE R12, R3, RRX 
+interrupt_958: l274: sub R6, R0, R12, LSR #10
+l275: mov R3, #32
+interrupt_311: l276: ldrh R12, [sp, -R3]
+l277: ldr R11, l279
+l278: b l280
+l279: .word 1048548
+l280: swpb R0, R1, [R11]
+interrupt_479: l281: mov R12, #14
+l282: ldrGTsh R4, [sp, -R12]
+interrupt_32: l283: ldr R12, l285
+l284: b l286
+l285: .word 1048480
+l286: swpPLb R11, R4, [R12]
+l287: rscs R2, R1, R3, ROR R10
+l288: mov R1, #22
+l289: strPLB R11, [sp, +R1]
+l290: movs R3, R12
+l291: ldr R4, l293
+l292: b l294
+l293: .word 1048504
+l294: swpNE R6, R12, [R4]
+interrupt_520: l295: adcNE R14, R6, R5, LSL #31
+interrupt_516: l296: and R12, R12, #40370176
+l297: sub R12, R8, R10, RRX 
+l298: ldrLTsh R12, [sp, #-50]
+l299: bic R14, R5, R8
+l300: b l307
+l301: add R1, R0, #230
+l302: rsbGT R5, R7, R9, RRX 
+interrupt_657: l303: subs R10, R4, R15
+interrupt_24: l304: tstEQ R6, R5, LSL R6
+interrupt_164: l305: eors R12, R11, #3248
+l306: b l308
+l307: b l302
+interrupt_716: l308: strVCh R1, [sp, #-46]
+interrupt_489: l309: str R12, [sp, #-16]!
+interrupt_267: l310: ldrB R14, [sp, #-10]
+l311: strCSh R14, [sp, #+8]
+l312: clz R7, R10
+interrupt_746: l313: mov R11, #22
+l314: strLTB R7, [sp, +R11]
+l315: stmDB R13!, {R9, R10, R14}
+l316: orrLS R12, R1, R7, LSL #28
+l317: swi #11732605
+interrupt_54: l318: subLT R6, R12, R15, RRX 
+l319: cmpCC R14, R9, LSL #18
+l320: nop
+interrupt_481: l321: mov R2, #15
+l322: ldrsb R0, [sp, -R2]
+l323: addGE R6, R2, R3, ASR R1
+l324: strVSh R14, [sp, #-22]
+l325: bGT l332
+interrupt_343: l326: add R1, R0, #232
+l327: subMIs R6, R5, R9
+l328: clz R10, R3
+l329: rsbEQ R7, R8, R0, RRX 
+l330: bics R5, R9, R2, ROR #1
+l331: b l333
+interrupt_797: l332: b l327
+interrupt_98: l333: b l337
+l334: add R1, R0, #141
+l335: adcCCs R0, R11, #652
+l336: b l338
+l337: b l335
+interrupt_656: l338: mov R6, #17
+l339: strLSB R12, [sp, -R6]
+l340: adcGTs R2, R0, R5, ROR #19
+l341: b l348
+l342: add R1, R0, #55
+interrupt_854: l343: tstGE R15, R6, ASR #13
+l344: mvn R11, R0, ROR R9
+l345: mvn R3, #99328
+interrupt_340: l346: rscs R4, R2, R11, ROR R0
+interrupt_308: l347: b l349
+l348: b l343
+l349: rsbEQs R4, R5, #11534336
+l350: bic R10, R8, #2560
+l351: movs R14, #40704
+l352: adcLE R1, R14, R8
+l353: ldrLSB R8, [sp, #+3]
+l354: swi #361241
+interrupt_711: l355: cmpVS R11, R6, LSL #27
+interrupt_61: l356: bLS l366
+l357: subVS R4, R9, R9, ASR #1
+l358: tstVS R10, R10, ROR #11
+l359: adc R5, R0, #41
+l360: adcs R10, R7, #11392
+interrupt_492: l361: cmp R2, R11, RRX 
+interrupt_981: l362: sbcCS R3, R0, R15, RRX 
+interrupt_734: l363: subLT R8, R0, #86016
+l364: teqLS R7, R5
+l365: teqEQ R11, R5
+l366: orrs R3, R9, R7
+l367: mov R0, #22
+l368: ldrCCsb R9, [sp, -R0]
+l369: tst R12, R0, ASR #2
+l370: ldrh R14, [sp, #+44]
+l371: sbcLT R0, R0, R3
+l372: str R8, [sp], #+28
+l373: b l380
+l374: add R1, R0, #76
+l375: subGE R1, R0, R11, LSL R3
+l376: tstLE R2, #15532032
+l377: tstLS R8, R9, ROR #2
+l378: rsbVCs R0, R6, #197132288
+interrupt_395: l379: b l381
+l380: b l375
+l381: bLS l389
+l382: rsbs R5, R14, #500
+l383: clz R5, R0
+l384: bicCCs R6, R0, #557842432
+l385: ands R9, R1, #44032
+l386: bic R5, R11, #-1073741815
+l387: mvns R5, R5, LSL R8
+l388: bic R7, R14, R4, ASR #4
+l389: orrs R0, R2, #1296
+l390: ldrHIsb R2, [sp, #+2]
+l391: tstPL R14, R14
+l392: stmIB R13!, {R4, R15}
+l393: bPL l397
+interrupt_436: l394: add R1, R0, #242
+l395: adcs R11, R2, R8
+l396: b l398
+l397: b l395
+interrupt_81: l398: teq R1, #268435459
+interrupt_595: l399: swi #8737635
+interrupt_945: l400: teq R1, R0
+interrupt_303: l401: add R9, R1, R5, LSL #24
+l402: orrs R8, R4, #4480
+interrupt_264: l403: cmpVS R10, R5
+l404: stmDB R13!, {R13, R14}
+l405: ldr R14, l407
+interrupt_712: l406: b l408
+l407: .word 1048532
+l408: swpb R1, R10, [R14]
+l409: b l416
+l410: subGTs R8, R12, R11, LSL #18
+l411: tstVC R1, R5, LSR R3
+l412: rsbLEs R9, R14, #805306382
+l413: eor R2, R6, R12, RRX 
+l414: addLTs R9, R6, R4
+l415: addCSs R9, R2, R14
+l416: cmnLT R14, R9, RRX 
+interrupt_863: l417: ldr R11, l419
+l418: b l420
+l419: .word 1048500
+l420: swpLTb R5, R10, [R11]
+l421: bicLTs R0, R3, R3, RRX 
+l422: rsbVC R6, R14, #10944
+l423: tstPL R7, #1073741832
+l424: mov R8, #44
+interrupt_420: l425: str R5, [sp], -R8
+l426: swi #12503487
+interrupt_799: l427: movLTs R2, R0, LSR R6
+l428: bLT l432
+l429: add R1, R0, #156
+interrupt_820: l430: mvnPL R1, R14, ROR #6
+interrupt_298: l431: b l433
+l432: b l430
+l433: subs R2, R3, R7, LSR #28
+l434: adcGT R6, R14, R0
+l435: ands R3, R7, R3, RRX 
+l436: tst R6, R2, LSR #26
+l437: mov R3, #43
+l438: ldrHIB R4, [sp, +R3]
+l439: mvnGE R2, R12
+l440: adcLTs R11, R1, R9, LSL R8
+l441: mov R11, #20
+interrupt_890: l442: ldr R8, [sp, +R11]!
+l443: ldrHIsb R8, [sp, #+28]
+interrupt_266: l444: subLEs R10, R10, #130023424
+interrupt_616: l445: swi #4352540
+l446: ldrsb R9, [sp, #+35]
+l447: adcNE R7, R14, R7, ASR #1
+interrupt_310: l448: rsbs R0, R3, R8, RRX 
+l449: ldrsb R1, [sp, #-5]
+l450: tstGE R3, R4
+interrupt_67: l451: rsc R4, R14, R1
+l452: mov R2, #22
+interrupt_205: l453: strGTh R2, [sp, +R2]
+interrupt_477: l454: clzLE R7, R10
+l455: ldmDB R13, {R11, R12}
+l456: mov R3, #2
+l457: ldrh R2, [sp, -R3]
+interrupt_77: l458: b l466
+l459: sbcLS R14, R2, R4
+l460: clz R12, R4
+interrupt_726: l461: cmp R4, #872
+l462: orrVS R0, R6, #545259520
+interrupt_920: l463: subVS R14, R9, R0
+interrupt_430: l464: rscLEs R6, R1, #21248
+l465: andCS R11, R15, R9, LSL #30
+l466: sub R9, R5, R15
+l467: tstCC R14, R0, ROR #16
+interrupt_964: l468: andMIs R5, R10, R9, ROR #14
+l469: teqLE R9, R1, ASR #5
+l470: mov R9, #16
+l471: ldrNEh R7, [sp, -R9]
+l472: sbcPLs R5, R14, #1261568
+l473: mov R1, #21
+l474: ldrB R6, [sp, -R1]
+l475: rsbVCs R2, R12, R15
+l476: rsbVSs R3, R3, R2
+interrupt_831: l477: swi #11353796
+l478: mov R11, #4
+l479: ldrB R14, [sp, +R11]
+l480: mov R9, #11
+l481: ldrMIB R1, [sp, +R9]
+interrupt_348: l482: andMI R5, R4, R8, LSR #28
+l483: eorPL R10, R4, R11, ASR #4
+l484: cmpHI R2, R2, ASR #26
+interrupt_368: l485: mov R11, #20
+l486: strCS R8, [sp, +R11]
+l487: eorLT R11, R8, R8, LSR R14
+l488: ands R14, R4, #27648
+l489: cmn R4, #254976
+l490: mov R14, #32
+l491: ldr R11, [sp], +R14
+l492: addLSs R12, R11, R11, RRX 
+l493: and R11, R1, #2490368
+l494: teqLS R10, R3
+l495: orr R8, R15, #1120
+l496: mov R11, #2
+interrupt_413: l497: ldrsb R11, [sp, -R11]
+l498: movGE R3, R7, RRX 
+l499: strB R12, [sp, #-38]
+l500: orrLSs R0, R10, R15
+interrupt_894: l501: rsbPLs R11, R8, R11, ROR R0
+l502: adcLTs R2, R9, R6, ASR #4
+l503: clz R7, R1
+l504: subLS R8, R8, R14
+l505: stmVCIA R13, {R1, R10}
+l506: rscLE R7, R15, R1
+l507: tstVS R15, R10, LSR #5
+l508: stmDB R13, {R0, R1, R3, R4, R5, R7, R11, R13, R14}
+l509: rsbHI R12, R3, R0, LSR #31
+interrupt_747: l510: ldrB R4, [sp, #-55]
+l511: eors R1, R8, R7
+l512: stmIA R13!, {R2, R3, R11}
+l513: ldrPLB R5, [sp, #-42]
+l514: subPLs R0, R4, R8, LSR #10
+l515: swi #14954550
+l516: strVSh R2, [sp, #-24]
+l517: nop
+l518: ldrB R6, [sp, #-70]
+l519: sub R9, R9, #40960
+l520: swi #10875807
+l521: mov R7, #52
+l522: ldrGEsh R14, [sp, -R7]
+l523: mov R9, #36
+l524: strHIh R1, [sp, -R9]
+l525: tstHI R10, R1, ROR #26
+interrupt_21: l526: rscLSs R0, R4, R12, LSR #13
+l527: eor R8, R8, #5
+l528: strB R3, [sp, #-43]
+l529: movLT R6, R14
+l530: nop
+l531: rsbs R7, R11, #557056
+l532: bGE l541
+l533: and R4, R2, R9, ROR R4
+interrupt_439: l534: adcEQs R8, R8, R14, LSL #5
+l535: andLS R8, R11, #638976
+l536: orrLS R2, R7, #620756992
+interrupt_296: l537: eor R9, R5, #1073741857
+interrupt_847: l538: teq R14, R12
+l539: tstVC R15, R9, ASR #2
+l540: orrLTs R0, R11, #592
+l541: sub R12, R3, R2, ROR #22
+interrupt_155: l542: sbcLE R7, R9, #536870914
+interrupt_415: l543: orrLTs R3, R2, #1020
+l544: eorEQ R3, R0, #42
+l545: mov R6, #33
+l546: ldrPLB R5, [sp, -R6]
+l547: teqCS R15, R7, RRX 
+l548: mvnEQ R3, R15, LSL #12
+l549: bicLTs R10, R10, R2
+l550: add R1, R1, R3, RRX 
+interrupt_536: l551: cmpEQ R11, R0, RRX 
+l552: rscs R9, R15, R1
+l553: tstPL R1, R4
+l554: cmpMI R8, #61079552
+l555: clz R1, R2
+l556: tst R4, #9961472
+l557: clzHI R4, R7
+l558: mov R9, #41
+l559: strB R7, [sp, -R9]
+l560: b l564
+l561: add R1, R0, #49
+l562: sub R11, R8, #18874368
+l563: b l565
+l564: b l562
+l565: b l575
+l566: andGEs R5, R14, R12
+l567: eorGTs R5, R4, R4, LSL #28
+l568: teqLT R8, R7, LSL R5
+l569: adc R14, R9, R2
+interrupt_725: l570: andCS R11, R5, R1, ASR #10
+l571: subLSs R12, R7, R2, ROR R12
+l572: teqLT R10, R5, ROR #7
+l573: eor R1, R10, R5
+l574: addGE R12, R2, R0, LSR R2
+l575: subVCs R2, R2, #768
+l576: nop
+l577: movLTs R5, #1073741831
+l578: strCSB R1, [sp, #-16]
+l579: orrs R3, R11, #-1811939328
+interrupt_90: l580: addGE R1, R0, R15, LSL #11
+interrupt_996: l581: ldr R7, l583
+l582: b l584
+l583: .word 1048552
+l584: swpVCb R3, R12, [R7]
+l585: mvnLSs R5, R6, ROR #25
+l586: ldr R6, [sp], #-4
+l587: bicHI R6, R1, R1
+interrupt_775: l588: mov R6, #2
+l589: ldrsh R1, [sp, -R6]
+interrupt_999: l590: ldrh R6, [sp, #-58]
+l591: swi #2233334
+l592: ands R0, R3, R8, ASR #18
+interrupt_806: l593: ldrCCh R11, [sp, #-20]
+l594: cmp R7, R12, ASR #5
+l595: subPLs R7, R6, R7, LSL #5
+l596: bCC l601
+l597: add R1, R0, #75
+l598: rsbCCs R11, R7, R0
+l599: adds R5, R5, R6, ROR #13
+l600: b l602
+l601: b l598
+l602: subGTs R8, R14, R6
+l603: adc R10, R10, R12, LSL R14
+l604: mov R9, #44
+l605: ldrh R5, [sp, -R9]
+l606: ldmDB R13!, {R0, R3, R5, R6, R8, R9, R11, R12, R14}
+l607: bNE l616
+l608: cmn R5, R3
+l609: subHIs R0, R14, #45056
+l610: clz R11, R9
+l611: tst R11, #221
+l612: clz R5, R2
+l613: movCS R10, R12, RRX 
+l614: clzNE R9, R10
+l615: rsc R8, R6, #18087936
+l616: movLE R5, #1811939330
+l617: rsc R1, R1, R6
+interrupt_26: l618: bPL l621
+l619: teq R3, R8, RRX 
+l620: rsc R0, R11, #193
+l621: tstLS R6, R6, LSR R3
+l622: sbcGE R10, R4, R4, ASR R3
+l623: mvnCSs R7, R7
+l624: mov R4, #0
+l625: strGE R8, [sp, +R4]
+interrupt_636: l626: ldrB R14, [sp, #+3]
+l627: mov R8, #6
+l628: ldrNEsh R2, [sp, +R8]
+interrupt_370: l629: orrs R11, R11, R11, LSL R7
+l630: cmnVS R0, #2013265920
+l631: bicVCs R5, R15, R8
+l632: andGTs R3, R15, R12
+l633: clzMI R8, R7
+l634: rsb R12, R14, R2, LSL R12
+l635: ldrLSB R5, [sp, #+7]
+l636: teqGE R1, R0, LSL #17
+interrupt_815: l637: eorLE R3, R1, R9, LSR R3
+l638: mov R12, #40
+l639: str R6, [sp, +R12]
+l640: rscLS R4, R15, R5, ROR #18
+interrupt_570: l641: cmn R2, R3, ASR R1
+l642: ldrCCsh R6, [sp, #+22]
+interrupt_319: l643: clzGE R12, R4
+l644: subEQ R14, R14, R15
+l645: orrs R6, R10, #0
+interrupt_401: l646: ldrPLsh R8, [sp, #-10]
+interrupt_66: l647: movHI R2, #3008
+l648: ldrHIB R3, [sp, #+31]
+l649: rscCC R1, R4, R8
+l650: andGEs R4, R1, R4
+l651: rscGT R4, R1, R11, ROR R14
+l652: ldrGEsh R6, [sp, #+32]
+l653: ldmIA R13!, {R3, R4, R6, R8, R12}
+l654: b l662
+l655: subLTs R10, R11, R15
+l656: subLS R7, R5, R6, LSR R4
+l657: clzPL R14, R8
+l658: tstVS R8, R6
+interrupt_444: l659: cmn R10, R5, ASR R11
+l660: adcMIs R9, R7, R3, ASR #13
+l661: andLS R6, R14, R15
+l662: teqNE R9, R12, ASR #13
+l663: movGE R9, #-1342177278
+interrupt_850: l664: ldr R4, l666
+l665: b l667
+interrupt_235: l666: .word 1048540
+l667: swpCSb R14, R9, [R4]
+l668: mov R6, R14
+l669: subs R8, R9, R4, ROR R11
+l670: andCSs R9, R4, R7, LSL R7
+l671: mov R3, #32
+l672: ldr R5, [sp, -R3]
+l673: ldr R4, l675
+interrupt_611: l674: b l676
+l675: .word 1048512
+l676: swpLE R1, R12, [R4]
+l677: strVCB R11, [sp, #+17]
+l678: cmpNE R3, #73728
+l679: orr R8, R1, R11, LSL #5
+l680: mov R7, #52
+l681: str R15, [sp, -R7]
+l682: cmp R1, #2949120
+l683: tst R0, R11, ASR R5
+l684: mov R10, #7
+l685: ldrsb R0, [sp, -R10]
+l686: bCS l694
+l687: teqLS R11, #684032
+l688: sbcVSs R10, R8, R4, LSL R0
+l689: orrPLs R12, R9, R2, ASR R10
+l690: teqVC R11, R8, LSR #13
+l691: adcGTs R2, R6, R6, ROR #18
+l692: addEQs R14, R0, R7, LSL R6
+l693: sub R9, R9, R8, ROR R3
+l694: teq R0, R2, LSL #19
+l695: teqLT R12, R2, LSR R8
+l696: nop
+l697: swi #15984373
+interrupt_375: l698: mov R10, #12
+l699: ldrCCB R12, [sp, +R10]
+l700: subLE R14, R2, R6, RRX 
+l701: cmnGE R15, #10223616
+l702: strHIB R11, [sp, #-13]
+l703: mov R4, #6
+interrupt_465: l704: strVCh R4, [sp, -R4]
+l705: clzPL R10, R12
+l706: ldrLSsh R2, [sp, #-44]
+l707: mov R0, R11, ASR #28
+interrupt_280: l708: cmp R4, R15
+l709: mov R6, #18
+l710: ldrLSB R10, [sp, +R6]
+l711: ldrVCsb R4, [sp, #-13]
+l712: cmp R14, R11, LSR #31
+l713: bicNE R4, R12, R10, RRX 
+l714: swi #114739
+l715: rsbLE R7, R14, R11, ASR R10
+l716: teqVS R0, R6, LSL #13
+l717: b l721
+interrupt_366: l718: subPL R3, R10, R12
+l719: eorLEs R4, R12, R2
+l720: clzCC R3, R0
+l721: adc R14, R1, R15
+l722: ldrNEsb R11, [sp, #-47]
+l723: movs R12, R4
+l724: mov R4, #19
+l725: strB R1, [sp, -R4]
+interrupt_529: l726: clzVC R6, R10
+l727: swi #9733871
+l728: tstEQ R4, R3
+l729: mov R3, #24
+l730: str R10, [sp, -R3]!
+l731: ldrsb R0, [sp, #-21]
+l732: sbc R8, R8, #1916928
+interrupt_944: l733: nop
+l734: tstVC R14, R8, ROR R3
+l735: ldr R11, l737
+l736: b l738
+l737: .word 1048536
+l738: swpVS R6, R10, [R11]
+l739: mov R1, #44
+l740: ldr R12, [sp, +R1]!
+l741: adcMIs R12, R3, R7
+l742: nop
+interrupt_326: l743: ldr R9, l745
+l744: b l746
+l745: .word 1048536
+l746: swpMIb R11, R10, [R9]
+l747: eorNE R7, R2, R3
+l748: adds R12, R9, R14, LSL R5
+l749: clzPL R9, R12
+l750: bicEQs R1, R1, R5
+l751: cmpVS R6, R14
+interrupt_438: l752: andNEs R14, R11, R3, RRX 
+l753: mov R4, #16
+l754: strB R11, [sp, -R4]
+l755: ldr R6, l757
+l756: b l758
+interrupt_48: l757: .word 1048540
+l758: swpb R10, R2, [R6]
+l759: ldrNEB R12, [sp, #-69]
+l760: movs R8, R7
+l761: strPLh R2, [sp, #-32]
+interrupt_754: l762: ldrB R1, [sp, #-44]
+l763: cmpPL R9, R0
+l764: tst R2, R10, ASR #30
+l765: mov R2, R10, LSR #15
+l766: teq R8, R1
+l767: str R1, [sp, #-60]!
+l768: swi #9523165
+l769: ldrVSsb R9, [sp, #+60]
+interrupt_15: l770: bics R9, R9, #852
+l771: ldmDB R13!, {R11}
+l772: mov R10, #12
+l773: ldrh R14, [sp, +R10]
+l774: nop
+l775: rsbNEs R0, R2, #14
+l776: mvnPL R2, #-788529152
+l777: swi #6478357
+l778: movVCs R8, R5
+l779: bHI l787
+interrupt_494: l780: teqLT R3, R12, RRX 
+l781: rsbCS R4, R12, R9
+interrupt_559: l782: rsbs R3, R12, R3
+l783: orrHIs R5, R7, R14
+l784: addCC R4, R15, R2, ROR #8
+l785: andHI R9, R14, R11
+interrupt_339: l786: addHI R0, R4, #9472
+l787: rsb R7, R0, R4, RRX 
+interrupt_960: l788: mov R12, #50
+l789: strLEB R2, [sp, +R12]
+l790: bicNE R7, R10, R7, LSR R10
+l791: stmIB R13, {R1, R5, R6, R7, R9, R13, R15}
+l792: orrMIs R5, R11, #570425344
+l793: movPLs R2, R2, LSL #28
+interrupt_196: l794: ldr R0, l796
+interrupt_770: l795: b l797
+l796: .word 1048540
+interrupt_379: l797: swpNE R14, R3, [R0]
+l798: ldmIA R13!, {R0, R1, R6, R7, R8, R10}
+l799: mov R6, #32
+l800: ldrh R11, [sp, +R6]
+l801: ldrHIsh R4, [sp, #+14]
+interrupt_848: l802: swi #9460836
+l803: clz R5, R3
+l804: eors R2, R7, R1, LSR R2
+l805: ldmDB R13!, {R0, R1, R6, R7, R10, R14}
+l806: ldr R4, [sp, #+4]!
+l807: cmnHI R5, R2, LSL R8
+l808: mov R14, #4
+interrupt_972: l809: ldr R0, [sp, -R14]
+l810: mov R10, R9, LSL R14
+l811: ldrVSsb R2, [sp, #+37]
+l812: sbcs R5, R10, R2
+l813: movVCs R8, R14
+l814: subs R2, R1, R0
+l815: str R2, [sp, #+48]!
+l816: bLT l824
+l817: cmn R9, #8
+l818: teqVS R8, #1761607680
+l819: sbcVSs R7, R9, R3, LSL #3
+l820: adcGEs R8, R15, R10, LSL #15
+l821: sub R5, R5, R1
+interrupt_735: l822: mvnLTs R0, #868
+interrupt_596: l823: cmpCS R3, #-1946157055
+l824: bics R5, R12, R3, LSL #7
+l825: subEQ R11, R9, #29360128
+l826: ands R9, R1, R9, LSR R14
+l827: sbcHIs R8, R9, R3, LSL R14
+l828: eor R5, R10, R2
+l829: mov R4, #23
+l830: ldrsb R0, [sp, -R4]
+l831: adc R7, R14, R10, ROR R14
+l832: ldr R11, l834
+l833: b l835
+l834: .word 1048508
+l835: swpCS R6, R9, [R11]
+l836: adcs R7, R9, R6, RRX 
+l837: rscLSs R1, R3, R9, ASR R5
+l838: teqGE R9, R10, RRX 
+l839: ldrVCsh R9, [sp, #+8]
+interrupt_608: l840: subs R9, R2, #4032
+interrupt_279: l841: strB R14, [sp, #+11]
+l842: stmDA R13!, {R13, R14, R15}
+l843: addGTs R14, R6, R0, ASR R2
+l844: orrs R1, R8, #-1207959552
+l845: cmpPL R8, R6
+l846: ldr R14, l848
+l847: b l849
+interrupt_631: l848: .word 1048544
+l849: swpMIb R1, R2, [R14]
+l850: cmnPL R12, R10, ASR R4
+l851: subLSs R10, R15, R4, RRX 
+interrupt_55: l852: mov R12, #4
+l853: ldrsb R1, [sp, +R12]
+l854: ldr R7, [sp, #-16]
+l855: adds R0, R11, #-2147483645
+l856: ldmDB R13!, {R2, R7, R8, R10, R11}
+l857: andEQs R11, R15, R9, LSL #28
+l858: swi #1853337
+l859: ldr R9, l861
+l860: b l862
+l861: .word 1048552
+l862: swpEQb R7, R2, [R9]
+l863: ldrVSh R1, [sp, #-26]
+l864: b l872
+interrupt_376: l865: add R1, R0, #202
+l866: eorLS R8, R9, R12, LSL R9
+interrupt_184: l867: cmp R7, R3, RRX 
+l868: sbc R9, R3, R11
+l869: mvnVCs R12, #3200
+l870: teqPL R8, R15
+l871: b l873
+l872: b l866
+l873: eorPL R8, R2, R10, ASR R8
+l874: sbcLEs R5, R5, R8, ROR #13
+l875: cmnLS R7, R12, RRX 
+l876: ldrLEsh R10, [sp, #+20]
+l877: tstLE R12, #1644167168
+l878: strMIh R9, [sp, #+24]
+l879: swi #15202489
+l880: addCSs R12, R1, #754974720
+interrupt_803: l881: rsb R7, R8, R7, ASR #24
+l882: rsbLTs R3, R1, #6881280
+l883: tstCS R10, R10
+l884: bLE l894
+l885: sbcVC R4, R3, R0, ROR R14
+l886: sub R1, R9, #-2147483589
+l887: mvns R11, R11, ASR R10
+l888: cmn R5, R0, LSL R10
+l889: eorVCs R7, R4, R11
+l890: rsbPL R4, R6, R7, LSL R2
+l891: rscs R0, R15, #286720
+interrupt_31: l892: mov R14, #41472
+interrupt_648: l893: cmn R7, R5
+interrupt_755: l894: subPL R0, R0, #1073741860
+l895: mov R5, #8
+l896: str R1, [sp, +R5]!
+l897: adcVC R0, R8, R4, ASR R7
+l898: sub R9, R9, R2, LSR #9
+interrupt_748: l899: subs R14, R5, #9600
+l900: mov R7, #36
+l901: ldrPLsh R12, [sp, -R7]
+l902: ldr R2, l904
+l903: b l905
+l904: .word 1048532
+l905: swp R8, R11, [R2]
+interrupt_75: l906: movHIs R5, R6, ASR #3
+interrupt_74: l907: bVC l912
+l908: add R1, R0, #205
+l909: adcEQs R10, R4, R9, ASR R14
+l910: bicHI R0, R9, R4, ASR R5
+l911: b l913
+l912: b l909
+interrupt_994: l913: mov R14, R4
+l914: swi #9109727
+l915: adds R11, R4, R9, ROR R5
+l916: bicGEs R3, R0, #2392064
+l917: movs R1, R7
+interrupt_583: l918: stmDB R13!, {R3, R4, R6, R8, R11, R12, R14}
+l919: rsbPL R4, R4, R4, LSR R8
+l920: mov R12, #2
+l921: strVCh R2, [sp, -R12]
+l922: orrMIs R3, R11, R7, ASR R1
+l923: clzNE R1, R12
+l924: add R5, R11, R3, LSL R8
+l925: ldr R3, l927
+l926: b l928
+l927: .word 1048508
+l928: swpb R1, R9, [R3]
+l929: andLTs R12, R3, R15
+l930: nop
+interrupt_816: l931: subVSs R3, R12, R5, ROR #22
+interrupt_122: l932: cmnNE R6, R8
+l933: clzCC R5, R4
+l934: tstEQ R6, R2, ROR R8
+l935: teq R7, #35840
+interrupt_621: l936: subs R8, R11, R9, ROR #27
+l937: ldrHIsb R11, [sp, #+23]
+l938: nop
+interrupt_834: l939: addGE R1, R15, R8, LSR #14
+interrupt_115: l940: mvn R0, R7
+l941: teqVC R7, R12, RRX 
+interrupt_691: l942: b l945
+l943: subLSs R12, R10, R0
+l944: mov R10, R0
+l945: cmpVS R1, R3, ASR R5
+l946: andVCs R5, R7, #72
+l947: b l957
+l948: sbcNEs R14, R7, #752
+l949: sbcGT R4, R2, #-1342177273
+interrupt_197: l950: mvnCC R5, R15, RRX 
+l951: orr R8, R11, R7, LSR R4
+l952: orrs R8, R10, #1474560
+l953: teqGT R9, #77824
+l954: addGTs R6, R12, R0, LSL #11
+l955: teqHI R5, #-1073741799
+l956: sub R3, R15, #65536
+interrupt_116: l957: teqMI R4, R2, LSR R1
+interrupt_458: l958: mov R6, #4
+l959: strEQB R4, [sp, -R6]
+interrupt_89: l960: andGEs R12, R11, R14
+l961: orrVC R5, R6, #1409286147
+l962: ldrPLsh R11, [sp, #+10]
+l963: adcLEs R1, R1, R2
+l964: bicVCs R3, R2, R8, ROR R7
+l965: b l969
+interrupt_571: l966: rsbMIs R14, R0, R5, LSR R3
+l967: tstNE R12, R3, LSR R14
+l968: subVC R11, R8, R2
+interrupt_163: l969: mvnLE R1, R3, RRX 
+l970: bVC l975
+l971: add R1, R0, #6
+l972: teqLS R3, R2, ASR R4
+l973: tst R5, R8, RRX 
+l974: b l976
+l975: b l972
+l976: bicCS R9, R12, R12, ASR #22
+l977: movs R8, R14, LSR R0
+l978: mov R6, #26
+interrupt_412: l979: strPLh R10, [sp, +R6]
+l980: sbcs R5, R4, R7, LSL #19
+interrupt_210: l981: strCCh R6, [sp, #+12]
+l982: nop
+interrupt_687: l983: strGEh R11, [sp, #+46]
+interrupt_899: l984: ldrsb R5, [sp, #+51]
+l985: eor R7, R5, R11
+interrupt_187: l986: mov R11, #27
+l987: strB R0, [sp, +R11]
+interrupt_8: l988: mvnLS R2, R4, RRX 
+interrupt_87: l989: tstLS R4, R10, RRX 
+l990: nop
+l991: nop
+l992: cmpCC R12, R10
+l993: cmnCC R8, R0, LSR #19
+l994: eor R0, R10, R2
+l995: ldr R11, l997
+l996: b l998
+l997: .word 1048484
+l998: swpMIb R3, R12, [R11]
+interrupt_237: l999: cmpHI R0, R5, LSR R14
+l1000: ldr R0, l1002
+l1001: b l1003
+l1002: .word 1048540
+l1003: swpLTb R9, R11, [R0]
+l1004: strh R11, [sp, #+54]
+l1005: tst R14, R9, ROR #14
+l1006: mov R14, #36
+l1007: str R6, [sp, +R14]!
+l1008: subCCs R1, R10, R12, ROR #25
+interrupt_460: l1009: ldrGEsb R7, [sp, #-29]
+l1010: adcGE R1, R1, #2416
+l1011: mov R8, #2
+interrupt_794: l1012: ldrh R7, [sp, -R8]
+l1013: orrs R5, R3, #188416
+l1014: adcVSs R3, R15, R4
+l1015: ldrsh R10, [sp, #+4]
+l1016: ldr R0, l1018
+l1017: b l1019
+l1018: .word 1048492
+l1019: swpLSb R9, R11, [R0]
+l1020: mov R8, #18
+l1021: ldrCCh R7, [sp, +R8]
+interrupt_542: l1022: addHIs R4, R2, R6, LSL #3
+l1023: tst R3, R2
+interrupt_405: l1024: ands R0, R2, R11, LSL R2
+l1025: ldrh R8, [sp, #-24]
+l1026: orrPL R3, R5, #256901120
+l1027: mov R2, #28
+interrupt_73: l1028: strEQh R6, [sp, -R2]
+interrupt_753: l1029: sbc R3, R11, #117
+l1030: nop
+l1031: swi #464624
+l1032: subGT R1, R6, #2998272
+l1033: ldrGTh R10, [sp, #-44]
+l1034: teqLE R11, R11, LSL R7
+l1035: ldrLTsb R10, [sp, #+8]
+l1036: mvnNE R8, R14
+l1037: movCCs R6, R2
+l1038: nop
+l1039: bVS l1045
+l1040: add R1, R0, #203
+l1041: cmpPL R8, #-805306362
+l1042: mvnLSs R7, #48128
+l1043: mvns R3, R12
+interrupt_499: l1044: b l1046
+l1045: b l1041
+l1046: mov R11, #14
+l1047: ldrB R7, [sp, -R11]
+l1048: cmpLE R4, R7, LSL R3
+interrupt_723: l1049: mov R7, #7
+l1050: strB R10, [sp, -R7]
+l1051: cmn R2, R15, LSR #28
+l1052: orrs R0, R12, R10, LSR R2
+l1053: mov R6, #16
+l1054: ldrsb R14, [sp, +R6]
+interrupt_701: l1055: sbcPLs R0, R4, R8, LSR R11
+l1056: tstLE R9, #260046848
+l1057: swi #2535958
+l1058: adc R11, R0, #-1073741804
+interrupt_613: l1059: mov R2, #6
+l1060: strh R12, [sp, +R2]
+interrupt_464: l1061: bEQ l1068
+l1062: rsbVS R12, R15, R1
+l1063: clz R8, R1
+interrupt_874: l1064: rscEQ R14, R11, R14, LSR #27
+l1065: adc R5, R12, R5, ROR R0
+l1066: bicGEs R1, R11, R8, LSR #25
+l1067: sbcs R11, R15, #-1073741767
+l1068: movCSs R5, R5
+l1069: swi #2677760
+l1070: mov R6, #5
+l1071: ldrVSsb R2, [sp, -R6]
+l1072: mov R11, #36
+interrupt_221: l1073: str R5, [sp, -R11]!
+l1074: adcs R7, R4, #-1258291200
+l1075: mov R1, #63
+l1076: strB R12, [sp, +R1]
+interrupt_622: l1077: movs R11, R6, LSR #26
+l1078: str R2, [sp, #+16]!
+l1079: mov R4, #24
+l1080: strLSh R1, [sp, -R4]
+interrupt_341: l1081: rsbEQs R5, R9, R3, LSR R2
+l1082: stmDB R13!, {R4, R5, R6, R12}
+interrupt_474: l1083: mov R10, #65
+l1084: ldrB R11, [sp, +R10]
+l1085: adcPL R11, R11, R9
+interrupt_677: l1086: orr R10, R8, #872415235
+interrupt_88: l1087: cmn R14, #66060288
+l1088: mov R1, #1
+l1089: ldrsb R1, [sp, +R1]
+l1090: andMIs R4, R4, R4, LSL R5
+l1091: ldrHIB R5, [sp, #+8]
+l1092: orrPLs R9, R7, R5
+l1093: subLS R3, R5, #1069547520
+interrupt_35: l1094: nop
+l1095: andLSs R10, R3, #236
+l1096: ldrB R0, [sp, #+44]
+l1097: strh R5, [sp, #+16]
+l1098: teq R2, #1207959552
+l1099: mvn R11, R2
+l1100: ldr R9, l1102
+interrupt_484: l1101: b l1103
+l1102: .word 1048544
+interrupt_118: l1103: swpGT R8, R3, [R9]
+l1104: tstCS R9, #1610612738
+l1105: swi #11495568
+interrupt_760: l1106: eorMI R9, R2, R9, LSR #28
+l1107: cmnCS R12, #-2147483647
+l1108: cmnLE R3, R3, LSL R4
+l1109: bicVS R10, R3, R0, LSR #23
+l1110: ldrEQsb R0, [sp, #+5]
+l1111: strh R12, [sp, #+30]
+l1112: mov R8, #32
+l1113: strPLh R4, [sp, +R8]
+l1114: swi #2701303
+interrupt_2: l1115: mvnLSs R6, R4
+l1116: swi #677377
+l1117: adcVC R6, R11, #50944
+l1118: clzCS R5, R4
+l1119: adc R5, R10, R1, ASR #24
+l1120: adcLT R10, R10, #-2147483635
+l1121: mov R2, #8
+l1122: strNE R4, [sp, -R2]
+interrupt_437: l1123: cmn R10, R6
+interrupt_573: l1124: mov R12, #2
+l1125: strh R11, [sp, -R12]
+l1126: ldr R1, l1128
+l1127: b l1129
+interrupt_857: l1128: .word 1048540
+l1129: swp R0, R6, [R1]
+l1130: adcEQ R11, R12, #-268435442
+interrupt_661: l1131: ldmIB R13!, {R2}
+l1132: movs R8, R11
+l1133: ldrh R14, [sp, #+18]
+l1134: mov R10, #14
+l1135: strGTB R5, [sp, +R10]
+l1136: strNEh R5, [sp, #+8]
+l1137: strB R7, [sp, #+21]
+interrupt_335: l1138: mov R7, #805306371
+l1139: swi #952531
+l1140: rscCS R4, R10, R4, LSL R2
+l1141: cmnLS R0, R8
+l1142: subCSs R8, R5, R14
+l1143: teqGE R0, R1, ROR #24
+interrupt_215: l1144: bicGE R4, R11, R6, LSR R9
+l1145: ldrGEh R11, [sp, #+62]
+interrupt_953: l1146: ldr R5, [sp, #+28]!
+l1147: mov R5, #12
+interrupt_318: l1148: ldrCSB R8, [sp, -R5]
+interrupt_329: l1149: ldmDA R13!, {R3, R9, R12}
+l1150: sub R2, R10, #3588096
+l1151: rsbMI R14, R5, R10, LSL #6
+l1152: stmPLIA R13, {R3, R5, R6, R10, R15}
+interrupt_870: l1153: tst R1, R5, ROR #21
+l1154: ldr R12, l1156
+l1155: b l1157
+l1156: .word 1048496
+interrupt_38: l1157: swpb R1, R9, [R12]
+l1158: cmp R9, R7, ASR R14
+l1159: mov R7, #38
+l1160: strCCB R12, [sp, +R7]
+l1161: stmIA R13!, {R13, R14, R15}
+l1162: rsb R3, R2, #268435459
+interrupt_352: l1163: eor R2, R9, R6
+interrupt_990: l1164: movCC R14, R7, LSL #27
+l1165: sbc R3, R5, R2, LSR #23
+l1166: eorCS R4, R3, #12648448
+l1167: cmp R9, R6, RRX 
+interrupt_177: l1168: ldr R5, l1170
+l1169: b l1171
+l1170: .word 1048528
+l1171: swpb R12, R2, [R5]
+l1172: bLT l1173
+l1173: mvnVS R7, R11, RRX 
+l1174: addMI R7, R7, R0, ASR #21
+l1175: ldr R5, l1177
+l1176: b l1178
+l1177: .word 1048488
+l1178: swp R7, R9, [R5]
+l1179: clzGT R12, R9
+l1180: sub R1, R2, R9
+l1181: ldmDA R13!, {R1, R5, R6, R7, R11, R12, R14}
+l1182: clzLE R12, R12
+l1183: stmIA R13!, {R0, R3, R4, R5, R6, R7, R9, R15}
+l1184: clzNE R5, R2
+l1185: ldmDB R13!, {R10, R12}
+interrupt_892: l1186: ldr R7, l1188
 l1187: b l1189
-l1188: .word 1048548
-l1189: swpGT R8, R1, [R3]
-l1190: ldr R4, l1192
-l1191: b l1193
-l1192: .word 1048536
-l1193: swp R5, R7, [R4]
-l1194: ldmIB R13, {R1, R2, R3}
-l1195: ldrCCsh R0, [sp, #+0]
-interrupt_811: l1196: movCCs R10, R14, LSL R6
-l1197: b l1206
-l1198: sbc R8, R14, R9
-interrupt_484: l1199: sbcGE R7, R10, R2, ROR R4
-interrupt_79: l1200: adds R12, R15, #30408704
-interrupt_454: l1201: adcVC R14, R11, R3, ASR #7
-interrupt_830: l1202: rsb R6, R15, #540672
-l1203: teq R11, R4
-l1204: movLE R1, R15
-l1205: mov R3, #984
-l1206: subs R2, R4, #1632
-l1207: ldr R10, l1209
-interrupt_123: l1208: b l1210
-interrupt_909: l1209: .word 1048524
-l1210: swpb R0, R2, [R10]
-l1211: b l1219
-l1212: add R1, R0, #246
-l1213: adcLTs R4, R6, R6, ROR #15
-l1214: clzLE R8, R14
-interrupt_652: l1215: sbc R0, R8, R14
-l1216: rscLEs R3, R2, #3
-l1217: addCC R10, R7, #320
-l1218: b l1220
-l1219: b l1213
-l1220: mov R14, #5
-l1221: strGTB R3, [sp, +R14]
-l1222: movCC R9, R9, ROR R1
-l1223: mov R0, #43
-interrupt_924: l1224: ldrLSB R0, [sp, -R0]
-l1225: mov R12, #24
-l1226: ldrsh R4, [sp, -R12]
-l1227: cmnVC R9, R3, ROR #28
-l1228: ldrNEB R6, [sp, #+23]
-interrupt_612: l1229: cmnLT R0, #1073741824
-l1230: bCC l1239
-l1231: add R1, R0, #172
-l1232: mvnNE R10, R3
-l1233: cmn R3, R5, ROR R2
-l1234: eorLSs R0, R7, R1, ROR #29
-l1235: subEQ R4, R6, #763363328
-l1236: clzGT R10, R1
-l1237: rscs R12, R1, R14, ROR R3
-l1238: b l1240
-l1239: b l1232
-l1240: ldrHIB R10, [sp, #+21]
-l1241: eorVCs R8, R4, #44
-interrupt_847: l1242: rsbs R12, R7, #-2147483610
-l1243: sub R11, R8, R2, ROR R4
-l1244: mov R8, #8
-l1245: str R11, [sp, -R8]!
-l1246: subs R5, R6, R11
-l1247: ldr R1, l1249
-l1248: b l1250
-l1249: .word 1048532
-l1250: swpMI R4, R5, [R1]
-interrupt_240: l1251: b l1257
-l1252: add R1, R0, #17
-interrupt_567: l1253: subHI R0, R14, #905969664
-l1254: rscVCs R4, R7, R12, LSR #12
-l1255: subLEs R2, R4, R12, RRX 
-l1256: b l1258
-l1257: b l1253
-l1258: mov R0, #12
-l1259: ldrPLh R3, [sp, +R0]
-l1260: rscLTs R2, R1, R12, ASR R1
-l1261: ldrB R9, [sp, #-12]
-l1262: rscCC R11, R11, R5, LSR #30
-l1263: mov R6, #32
-l1264: ldrsh R7, [sp, -R6]
-l1265: clz R8, R10
-l1266: orrPL R8, R6, R2, LSL #8
-l1267: and R8, R0, #4194304
-l1268: ldrh R5, [sp, #+4]
-l1269: mov R4, #8
-interrupt_622: l1270: ldrCSB R9, [sp, +R4]
-interrupt_709: l1271: ldrMIsb R14, [sp, #+11]
-l1272: stmDA R13!, {R2, R8}
-l1273: addLS R1, R0, #1280
-l1274: subLE R1, R5, #-2147483598
-l1275: cmn R2, #2208
-l1276: ldr R10, l1278
+l1188: .word 1048492
+l1189: swpb R8, R9, [R7]
+l1190: eor R6, R1, R9, ROR R11
+interrupt_234: l1191: tstHI R5, R4
+interrupt_626: l1192: ldr R14, [sp, #-20]
+l1193: rsbEQs R14, R8, R8
+l1194: mov R0, #8
+l1195: ldrsh R0, [sp, +R0]
+l1196: tst R5, R3, LSR R14
+l1197: b l1203
+l1198: mvnVCs R7, R8, RRX 
+interrupt_271: l1199: rscLT R8, R7, #13303808
+interrupt_764: l1200: subLE R0, R2, R6
+interrupt_36: l1201: movGE R1, #77824
+l1202: rscPLs R1, R8, R10, ASR #15
+l1203: subPL R5, R15, R2, LSL #2
+l1204: ldmGEIB R13, {R0, R1, R2, R3, R8, R11, R14}
+l1205: clzNE R0, R5
+l1206: ldrsh R1, [sp, #-4]
+l1207: eor R1, R7, R12, RRX 
+interrupt_149: l1208: mov R8, #24
+l1209: ldrh R5, [sp, -R8]
+l1210: swi #14412959
+l1211: teqEQ R9, R1, LSR R2
+l1212: swi #15251653
+l1213: mov R11, #34
+l1214: strVSh R14, [sp, -R11]
+interrupt_58: l1215: str R5, [sp, #+32]!
+interrupt_796: l1216: teqVC R12, R3, ROR #28
+interrupt_809: l1217: sub R1, R15, R8, RRX 
+interrupt_138: l1218: mov R2, #56
+interrupt_581: l1219: strh R4, [sp, -R2]
+l1220: stmDB R13!, {R1, R5, R7, R8, R14}
+l1221: rsbHI R3, R8, R12, ROR #18
+l1222: rsbs R9, R10, R9, ASR #24
+l1223: mov R0, #14
+l1224: ldrHIsh R9, [sp, -R0]
+l1225: mov R1, #14
+l1226: ldrGTh R8, [sp, +R1]
+interrupt_788: l1227: and R6, R6, R11, ASR R6
+l1228: tstMI R4, R14
+l1229: sbcHI R3, R8, R8, ROR R6
+l1230: tst R9, R14
+l1231: ldrB R4, [sp, #+10]
+l1232: stmIB R13, {R5, R7, R10, R13, R15}
+interrupt_248: l1233: andMIs R6, R6, R6
+interrupt_79: l1234: eorCS R9, R11, #120
+l1235: stmMIDB R13, {R3, R6, R12}
+l1236: mov R0, #28
+l1237: ldrHIsb R11, [sp, -R0]
+l1238: swi #4223994
+l1239: sbcMIs R12, R10, R2
+l1240: sbcLSs R11, R1, #1023410176
+l1241: ldmDA R13!, {R1, R6, R7, R8}
+l1242: ldmDB R13!, {R4, R5, R8, R9, R12}
+l1243: mov R10, #17
+l1244: ldrB R14, [sp, +R10]
+l1245: ldmIB R13!, {R0, R1, R2, R3, R4, R5, R6, R8, R9, R10, R11, R14}
+l1246: ldr R7, l1248
+l1247: b l1249
+l1248: .word 1048536
+interrupt_421: l1249: swpEQb R2, R5, [R7]
+l1250: bHI l1259
+interrupt_168: l1251: sbcEQ R2, R3, R3
+l1252: rsbMIs R5, R2, R11
+interrupt_832: l1253: mvn R10, #492
+interrupt_62: l1254: adcNE R2, R10, #18432
+interrupt_106: l1255: addLEs R14, R10, R5
+l1256: eorEQs R9, R4, R1, ASR #29
+l1257: bicLSs R6, R1, #-805306365
+interrupt_137: l1258: sbc R6, R11, R14, RRX 
+l1259: teqCC R5, R4, ROR R6
+interrupt_727: l1260: bic R10, R3, R3, ROR R9
+interrupt_147: l1261: strNE R9, [sp, #+12]
+l1262: bicEQ R11, R7, R12
+l1263: mov R7, #18
+l1264: ldrsb R4, [sp, -R7]
+interrupt_449: l1265: bEQ l1268
+l1266: orrLEs R9, R1, #3088
+l1267: rsbMIs R14, R5, R5, LSL #3
+interrupt_493: l1268: teqLT R14, #34560
+interrupt_269: l1269: tstGE R8, R12, ROR R12
+l1270: mvnNE R3, #1342177280
+l1271: b l1278
+l1272: add R1, R0, #119
+l1273: movVC R7, #268435468
+l1274: andMI R6, R10, R10
+l1275: bics R3, R5, #187695104
+interrupt_263: l1276: rscVCs R4, R15, R12
 l1277: b l1279
-l1278: .word 1048536
-l1279: swp R4, R2, [R10]
-l1280: andVS R5, R9, R15
-l1281: mov R14, #6
-interrupt_472: l1282: ldrLSh R2, [sp, +R14]
-l1283: orrVC R5, R4, R7, ASR #9
-l1284: ands R4, R1, #188
-l1285: rscs R5, R15, R0
-interrupt_947: l1286: rscs R6, R12, R14, LSL #28
-l1287: mov R9, #24
-interrupt_672: l1288: ldrCCh R12, [sp, +R9]
-l1289: andVCs R3, R8, R0, ROR #3
-l1290: cmpCC R10, R7, LSL #6
-interrupt_845: l1291: adcLTs R14, R6, R9, RRX 
-interrupt_436: l1292: clz R5, R3
-l1293: eor R2, R5, #192937984
-l1294: mov R10, #30
-l1295: ldrsh R11, [sp, -R10]
-interrupt_253: l1296: add R1, R9, R8
-interrupt_557: l1297: rsb R1, R4, R2
-l1298: andHIs R7, R2, R14, ASR R4
-l1299: clzNE R10, R4
-l1300: tstEQ R7, #-402653184
-l1301: cmnVS R8, #219136
-interrupt_15: l1302: swi #277323
-l1303: stmDA R13!, {R13}
-l1304: subLTs R4, R11, R0
-interrupt_543: l1305: sub R6, R5, #458752
-l1306: sbcGT R6, R6, #-1962934272
-l1307: subs R11, R1, R2, ROR R4
-l1308: b l1313
-l1309: add R1, R0, #31
-l1310: bicHIs R7, R4, R8, ASR R7
-interrupt_328: l1311: orr R2, R1, #17039360
-l1312: b l1314
-l1313: b l1310
-l1314: cmnGE R9, R1
-l1315: mov R6, #32
-l1316: ldr R1, [sp, -R6]!
-l1317: bLE l1326
-l1318: orrEQ R3, R5, #130048
-interrupt_35: l1319: movVS R8, R14, ROR #25
-l1320: rsbs R2, R12, #1073741854
-l1321: rscLTs R1, R5, R6, LSR R6
-l1322: subCSs R12, R4, #123731968
-l1323: sbc R11, R10, R0, ASR R4
-l1324: sbcEQs R11, R9, R7, ROR #16
-l1325: clz R2, R14
-l1326: teq R2, #185597952
-l1327: sbcs R3, R7, #826277888
-interrupt_124: l1328: mov R5, R8
-l1329: eor R12, R11, #3072
-interrupt_256: l1330: addLTs R8, R2, R11
-l1331: bic R3, R2, R9
-interrupt_521: l1332: bCS l1341
-l1333: add R1, R0, #31
-l1334: adcs R10, R9, R11, RRX 
-interrupt_689: l1335: teq R6, R2, RRX 
-interrupt_311: l1336: cmn R8, #511705088
-l1337: rsbs R11, R2, #56623104
-l1338: cmn R6, R11, ROR R3
-l1339: bicGT R4, R6, #3850240
-l1340: b l1342
-l1341: b l1334
-l1342: andCC R12, R2, #-1879048189
-l1343: b l1349
-l1344: add R1, R0, #156
-interrupt_618: l1345: clzMI R2, R12
-l1346: movVSs R14, R9
-l1347: addGTs R12, R3, R0, ASR #27
-l1348: b l1350
-l1349: b l1345
-l1350: orr R9, R1, R4, RRX 
-l1351: tst R14, R14
-interrupt_717: l1352: strCCB R9, [sp, #+26]
-l1353: ldrNEsb R12, [sp, #+75]
-l1354: ldr R4, l1356
-l1355: b l1357
-l1356: .word 1048492
-interrupt_134: l1357: swp R9, R10, [R4]
-l1358: rsb R8, R0, #-1342177268
-l1359: mov R10, #73
-l1360: strLEB R3, [sp, +R10]
-l1361: rscs R3, R9, R0, RRX 
-l1362: rsc R5, R12, R4, LSR #18
-l1363: tst R7, R0
-l1364: strMIB R11, [sp, #+21]
-l1365: clz R12, R3
-interrupt_843: l1366: eor R5, R14, R1, LSL R10
-l1367: str R8, [sp], #+20
-l1368: cmnLE R12, R0
-l1369: subHI R2, R2, R8
-interrupt_271: l1370: movs R7, R8, ASR R3
-l1371: sub R9, R11, #-570425344
-l1372: and R14, R9, R2, LSL R6
-l1373: mov R9, #43
-l1374: ldrsb R9, [sp, +R9]
-l1375: rsbLTs R3, R8, R7
-l1376: mvnPLs R14, R7
-l1377: sub R1, R10, R4
-l1378: swi #9277157
-l1379: mov R12, #10
-l1380: ldrEQsb R0, [sp, -R12]
-interrupt_674: l1381: mov R3, #40
-l1382: str R9, [sp, +R3]!
-l1383: eor R5, R12, #49020928
-l1384: teqMI R15, #1064960
-l1385: ldrsb R7, [sp, #-54]
-l1386: andPL R8, R4, #1036288
-interrupt_746: l1387: ldrsh R5, [sp, #-56]
-l1388: ldr R8, [sp], #-52
-l1389: sub R10, R14, R10, RRX 
-interrupt_226: l1390: ldrGTh R1, [sp, #+46]
-l1391: teq R7, #1073741825
-l1392: cmp R11, R2, LSL R6
-l1393: ldr R6, l1395
-l1394: b l1396
-interrupt_499: l1395: .word 1048552
-interrupt_946: l1396: swpVCb R1, R11, [R6]
-l1397: cmpVS R1, R12, LSR #4
-l1398: stmIB R13!, {R0, R3, R4, R6, R7, R11, R12, R14}
-interrupt_724: l1399: swi #16351448
-l1400: rsbMI R7, R10, R3
-l1401: rscs R4, R11, R6, RRX 
-l1402: stmGTDB R13, {R1, R2, R5, R6, R8, R11, R14, R15}
-l1403: rscPL R4, R2, #162816
-l1404: sub R1, R0, R9, ASR R4
-interrupt_515: l1405: orr R1, R15, #-1073741814
-l1406: ldr R3, l1408
-interrupt_688: l1407: b l1409
-l1408: .word 1048540
-l1409: swpGT R4, R12, [R3]
-l1410: ldr R4, l1412
+l1278: b l1273
+l1279: sub R14, R8, R2
+interrupt_629: l1280: mov R14, #18
+l1281: ldrEQh R1, [sp, -R14]
+l1282: sbc R6, R5, #608
+interrupt_351: l1283: eor R3, R1, R8, LSL R10
+interrupt_898: l1284: ldr R3, l1286
+interrupt_926: l1285: b l1287
+l1286: .word 1048492
+interrupt_64: l1287: swp R12, R2, [R3]
+l1288: b l1290
+l1289: cmn R7, R14
+interrupt_179: l1290: cmp R1, R0
+l1291: ldrLTB R4, [sp, #-60]
+l1292: clz R1, R5
+l1293: mov R2, #3
+l1294: ldrLSsb R11, [sp, +R2]
+l1295: teqHI R4, R9
+l1296: ldr R4, l1298
+l1297: b l1299
+l1298: .word 1048552
+l1299: swp R1, R7, [R4]
+interrupt_404: l1300: orrs R7, R12, R8, ROR R7
+l1301: orrNE R7, R1, R2, ROR R8
+interrupt_584: l1302: stmDB R13, {R9, R11}
+l1303: mov R1, #36
+l1304: ldrsb R3, [sp, -R1]
+l1305: cmn R6, R4, ASR #13
+l1306: adds R4, R5, R11, RRX 
+l1307: mov R7, #0
+l1308: ldr R3, [sp, +R7]!
+l1309: ldrGE R11, [sp, #-60]
+interrupt_556: l1310: teqEQ R6, #1835008
+l1311: andNE R12, R6, #55808
+l1312: subVC R0, R3, R11, ASR #28
+interrupt_173: l1313: ldr R2, l1315
+interrupt_968: l1314: b l1316
+l1315: .word 1048512
+l1316: swpb R0, R9, [R2]
+l1317: stmIB R13!, {R1, R5}
+l1318: ldr R9, l1320
+l1319: b l1321
+l1320: .word 1048520
+l1321: swpVCb R5, R11, [R9]
+l1322: teqMI R3, #-1459617792
+l1323: bicHIs R11, R14, #-1526726656
+l1324: teqPL R12, R0
+l1325: subLSs R14, R1, R3
+l1326: addGTs R14, R0, R0
+l1327: rsb R5, R4, #30670848
+l1328: ldrNEB R7, [sp, #+0]
+interrupt_540: l1329: movMIs R3, R6, ASR R6
+interrupt_786: l1330: mov R5, #55
+interrupt_359: l1331: ldrVSsb R11, [sp, -R5]
+l1332: bHI l1336
+l1333: add R1, R0, #195
+l1334: rsbGEs R14, R14, R9
+l1335: b l1337
+interrupt_845: l1336: b l1334
+l1337: ldr R0, l1339
+interrupt_518: l1338: b l1340
+l1339: .word 1048548
+l1340: swp R10, R6, [R0]
+interrupt_11: l1341: tst R9, R15, ROR #20
+l1342: sbcPLs R10, R3, R15, RRX 
+interrupt_554: l1343: addGT R4, R2, R10, ASR R4
+l1344: stmDB R13!, {R13, R15}
+l1345: cmpMI R11, R6
+l1346: ldr R14, l1348
+interrupt_886: l1347: b l1349
+l1348: .word 1048496
+l1349: swpCS R2, R6, [R14]
+l1350: movLE R9, R6
+interrupt_45: l1351: tstCS R12, #163577856
+l1352: orrEQ R6, R8, R2, ROR R0
+l1353: mov R12, #8
+l1354: ldrCSsh R3, [sp, -R12]
+interrupt_338: l1355: mov R2, #48
+l1356: strB R1, [sp, -R2]
+l1357: subs R5, R3, R15, RRX 
+interrupt_381: l1358: adc R5, R8, R7
+l1359: ldrh R11, [sp, #-46]
+l1360: cmn R15, R0, ASR #24
+interrupt_284: l1361: clz R0, R11
+l1362: teq R14, R11, RRX 
+l1363: mov R6, #14
+l1364: ldrLTB R12, [sp, -R6]
+l1365: strPLB R10, [sp, #-56]
+l1366: bics R2, R9, R9, RRX 
+l1367: adds R8, R0, R8, LSL R0
+l1368: mvn R6, #208
+l1369: addGEs R9, R15, R5, ASR #15
+l1370: mov R4, #6
+l1371: ldrNEh R5, [sp, +R4]
+l1372: b l1379
+l1373: andLT R0, R8, R3, ASR #28
+l1374: mov R3, R15
+l1375: eors R7, R7, R9, LSR R6
+l1376: cmp R15, R12, RRX 
+l1377: adds R3, R11, R4, LSL R9
+l1378: subCC R12, R12, R11, ASR R8
+interrupt_80: l1379: andGEs R3, R1, R5
+interrupt_732: l1380: tstPL R8, R8
+l1381: subs R10, R0, R14, LSL R1
+l1382: ldr R2, [sp, #+0]!
+l1383: mov R3, #52
+l1384: ldr R12, [sp, -R3]!
+l1385: bEQ l1393
+l1386: add R1, R0, #9
+l1387: rscHI R6, R5, R2, LSR R10
+interrupt_447: l1388: ands R0, R5, R12
+interrupt_148: l1389: rsc R2, R12, #251658240
+interrupt_825: l1390: orr R6, R10, R10
+interrupt_132: l1391: tst R0, R4
+l1392: b l1394
+l1393: b l1387
+l1394: bics R2, R2, R15, RRX 
+interrupt_722: l1395: cmpGE R8, #69632
+l1396: movGT R12, R6, ROR R6
+l1397: ldr R12, [sp], #+24
+interrupt_336: l1398: rscLTs R9, R6, R14, LSR #22
+l1399: clz R2, R8
+l1400: mov R5, #1
+interrupt_369: l1401: strMIB R14, [sp, +R5]
+l1402: ldmIA R13!, {R7, R8, R11}
+l1403: ldrLSh R7, [sp, #-10]
+l1404: ldrB R14, [sp, #-18]
+interrupt_506: l1405: ldrEQB R3, [sp, #+31]
+l1406: movLEs R9, R12, LSR #28
+l1407: bMI l1412
+l1408: add R1, R0, #121
+l1409: teqGE R8, R1, ROR #9
+l1410: subs R12, R6, #92
 l1411: b l1413
-l1412: .word 1048504
-l1413: swpNE R11, R8, [R4]
-l1414: ldr R14, l1416
-interrupt_392: l1415: b l1417
-l1416: .word 1048496
-l1417: swpLTb R5, R9, [R14]
-interrupt_602: l1418: swi #10123644
-l1419: ldr R4, [sp], #-4
-l1420: mvn R7, R5, LSL R9
-l1421: adcVC R5, R15, R10
-l1422: tst R4, #63963136
-interrupt_181: l1423: bLT l1431
-interrupt_74: l1424: add R1, R0, #211
-l1425: sbcs R12, R9, R3, LSL R5
-l1426: sbcs R5, R2, #-1140850688
-l1427: sub R8, R9, R10, LSL #7
-interrupt_899: l1428: subCCs R4, R6, #5376
-l1429: eorNEs R9, R5, R4
-interrupt_897: l1430: b l1432
-l1431: b l1425
-l1432: ldr R3, l1434
-l1433: b l1435
-l1434: .word 1048496
-l1435: swpb R12, R9, [R3]
-interrupt_306: l1436: teqPL R11, R12
-l1437: teqVC R4, #262144000
-interrupt_426: l1438: movs R9, R9, RRX 
-l1439: mov R11, #33
-l1440: strB R6, [sp, +R11]
-l1441: bVC l1451
-interrupt_791: l1442: teq R0, R10, RRX 
-l1443: movMI R1, R10
-l1444: add R6, R0, R9, LSR R14
-l1445: tstNE R11, R3, ASR R11
-interrupt_397: l1446: teqCC R7, #-2147483631
-l1447: sub R10, R6, R15, RRX 
-l1448: cmp R5, #5308416
-l1449: clzGT R6, R12
-l1450: andGTs R12, R0, #-1426063360
-interrupt_507: l1451: rsbPL R7, R4, R3, ASR #28
-l1452: addEQ R6, R7, R4, RRX 
-l1453: add R8, R2, #55050240
-l1454: sbc R2, R0, R6
-l1455: ldrsh R4, [sp, #+30]
-l1456: ldrB R5, [sp, #-25]
-l1457: ldmIB R13!, {R0, R5, R9, R10, R11, R12}
-interrupt_832: l1458: eorHIs R8, R11, R8
-l1459: eors R12, R2, R2, RRX 
-l1460: ands R10, R2, R4
-l1461: cmn R7, R9, LSR #6
-l1462: mov R10, #32
-l1463: strB R4, [sp, -R10]
-l1464: ldr R7, l1466
-l1465: b l1467
-l1466: .word 1048544
-l1467: swpb R10, R8, [R7]
-interrupt_411: l1468: swi #8529023
-l1469: eorLSs R6, R2, #35840
-l1470: strh R9, [sp, #-32]
-l1471: ldmDA R13!, {R0, R1, R2, R3, R4, R5, R9}
-l1472: tstLE R1, R5, ROR #2
-l1473: ldrEQh R4, [sp, #-24]
-l1474: mov R10, #42
-l1475: ldrLEsh R1, [sp, +R10]
-l1476: strh R14, [sp, #-10]
-interrupt_941: l1477: mvnCS R4, R10
-l1478: stmDA R13!, {R1, R5, R11, R12}
-l1479: stmIA R13!, {R1, R2, R3, R4, R6, R7, R8, R10, R11}
-l1480: swi #12380789
-l1481: rsbVCs R12, R8, #360
-l1482: sbcs R4, R0, R10, LSR #18
-l1483: bPL l1490
-l1484: add R1, R0, #25
-l1485: bicLS R0, R11, #805306371
-l1486: movLT R6, R2, ASR R10
-interrupt_143: l1487: cmp R8, R12, ROR R4
-l1488: sbcs R10, R10, R11, ROR #22
-l1489: b l1491
-l1490: b l1485
-interrupt_651: l1491: stmDA R13!, {R13}
-l1492: ldmNEIA R13, {R3, R8, R11}
-l1493: movGTs R1, R8
-interrupt_964: l1494: strB R2, [sp, #+21]
-l1495: swi #9862955
-l1496: mov R0, #6
-interrupt_371: l1497: strh R14, [sp, -R0]
-l1498: swi #8213046
-l1499: mov R6, #6
-l1500: ldrLEh R8, [sp, -R6]
-l1501: movVS R10, R4
-l1502: movLE R10, R9
-l1503: cmnCS R9, R3
-interrupt_692: l1504: tst R0, R12, LSR R2
-l1505: str R0, [sp, #-32]
-interrupt_984: l1506: b l1512
-interrupt_827: l1507: add R1, R0, #243
-l1508: teqLT R3, #10944512
-l1509: cmp R11, R6, LSL R9
-interrupt_204: l1510: adcEQ R6, R7, R15
-interrupt_792: l1511: b l1513
-l1512: b l1508
-l1513: adcMI R3, R7, R11, LSR R6
-l1514: bicEQs R11, R4, R6, ASR R10
-interrupt_125: l1515: bics R3, R11, R9
-l1516: mov R5, #14
-l1517: ldrsh R8, [sp, -R5]
-l1518: sub R9, R5, R10
-l1519: teqMI R11, #905216
-l1520: mov R12, #40
-l1521: ldr R0, [sp, -R12]!
-l1522: adcCS R12, R3, R11, ROR R3
-l1523: subLEs R4, R6, #864
-l1524: swi #11681258
-l1525: mov R3, #61
-l1526: strB R6, [sp, +R3]
-interrupt_27: l1527: ldrh R10, [sp, #+28]
-interrupt_295: l1528: ldr R8, l1530
-interrupt_933: l1529: b l1531
-l1530: .word 1048552
-l1531: swpMI R5, R5, [R8]
-l1532: ldr R1, l1534
-l1533: b l1535
-interrupt_733: l1534: .word 1048524
-l1535: swp R8, R9, [R1]
-interrupt_309: l1536: mov R11, #40
-l1537: ldr R6, [sp], +R11
-interrupt_629: l1538: eorNEs R1, R0, R1, LSL R14
-l1539: mov R7, #29
-interrupt_276: l1540: ldrGEB R2, [sp, -R7]
-l1541: ldrCSsh R0, [sp, #+26]
-l1542: swi #8099170
-l1543: rscLS R14, R5, #192
-l1544: swi #14572830
-interrupt_991: l1545: mov R12, #12
-l1546: ldrVCh R8, [sp, +R12]
-interrupt_920: l1547: b l1557
-l1548: tst R6, R3, RRX 
-interrupt_822: l1549: bicVS R0, R14, R4, RRX 
-l1550: rscLT R12, R4, R3, ROR #8
-interrupt_527: l1551: cmpEQ R7, R4, RRX 
-l1552: subPLs R7, R0, R7
-interrupt_430: l1553: sbcLE R0, R6, #7929856
-l1554: cmnVS R1, R3
-l1555: teqHI R14, R12
-l1556: clz R2, R14
-l1557: teqVC R1, #14464
-l1558: bCS l1559
-l1559: sbcGE R9, R11, R12, RRX 
-l1560: mov R4, #48
-l1561: ldrLE R8, [sp, -R4]
-l1562: movHI R3, R14, ASR #23
-l1563: adds R4, R12, #311296
-l1564: sbcPL R6, R8, R5, ASR R7
-l1565: clzEQ R9, R0
-l1566: sub R2, R3, R15, ROR #31
-l1567: str R10, [sp], #-4
-l1568: bLS l1577
-l1569: add R1, R0, #18
-l1570: cmnMI R12, #80740352
-l1571: subGTs R5, R1, R9, ASR R5
-l1572: bicVSs R3, R6, #570425344
-l1573: orr R4, R5, R4, RRX 
-l1574: movVCs R7, #248512512
-interrupt_270: l1575: cmn R2, R5, LSR R10
-l1576: b l1578
-l1577: b l1570
-l1578: tstPL R7, R6, LSR #3
-l1579: mvn R10, R14
-l1580: clzGT R4, R11
-l1581: mvnHIs R12, R12, ASR #27
-l1582: cmn R2, R8, LSR R2
-l1583: ldrLSsb R12, [sp, #-18]
-l1584: cmnVS R6, R0
-interrupt_130: l1585: strEQB R12, [sp, #-20]
-l1586: mov R4, #0
-l1587: str R1, [sp], +R4
-l1588: adcs R12, R4, R8, ROR R6
-l1589: mov R10, #0
-l1590: ldrNE R8, [sp, +R10]
-l1591: bic R4, R9, #1543503875
-l1592: mvn R8, R7
-l1593: mov R7, #27
-l1594: strB R12, [sp, -R7]
-l1595: swi #13253913
-l1596: stmIA R13!, {R13}
-l1597: ldrB R4, [sp, #-1]
-l1598: cmpNE R10, R9, LSR R0
-l1599: mov R12, #12
-l1600: strh R7, [sp, +R12]
-l1601: strB R10, [sp, #-41]
-l1602: tstPL R2, #756
-l1603: adcEQs R14, R10, R8, ROR #22
-l1604: mov R2, #26
-l1605: ldrLTB R11, [sp, -R2]
-l1606: eors R5, R8, R7
-l1607: nop
-l1608: clzMI R9, R12
-l1609: mvn R6, R6
-l1610: teqGT R4, R5, LSR R2
-l1611: ldr R0, l1613
-l1612: b l1614
-l1613: .word 1048520
-interrupt_777: l1614: swpMI R6, R1, [R0]
-l1615: mov R4, R2
-l1616: andLT R1, R8, R14
-l1617: rsb R2, R0, R14
-l1618: sub R12, R12, R15
-interrupt_683: l1619: bNE l1625
-l1620: adcLSs R10, R6, R7
-interrupt_54: l1621: cmn R8, R12, ASR #4
-l1622: subGEs R2, R15, R6
-l1623: adds R0, R4, R10
-l1624: sbcCSs R11, R3, #35913728
-l1625: rscs R9, R8, R6, RRX 
-l1626: mov R4, #25
-l1627: strB R12, [sp, +R4]
-l1628: bCS l1634
-l1629: andVCs R1, R7, R8, ROR R4
-l1630: mvns R6, R6, RRX 
-l1631: bicHIs R14, R3, #212
-l1632: sbcs R5, R7, R15
-l1633: orrVSs R14, R9, R5, LSR R3
-l1634: subLSs R6, R10, #1664
-l1635: ldmMIDB R13, {R1, R2, R3, R7, R9, R10, R11, R12, R14}
-l1636: orrVC R9, R7, R9, ASR R11
-l1637: addLEs R9, R9, #27525120
-l1638: bCS l1646
-l1639: adc R12, R14, #2816
-l1640: subVSs R6, R1, R4
-l1641: cmpNE R10, R1
-l1642: mov R14, R3, ROR R7
-l1643: sbcMI R1, R12, R2, ROR R6
-l1644: sbc R4, R8, R12, ASR #12
-l1645: rsbLE R14, R2, R12, ASR #26
-l1646: clzPL R0, R0
-interrupt_542: l1647: mov R12, #26
-l1648: strLTh R3, [sp, -R12]
-l1649: cmp R11, R15, RRX 
-l1650: cmn R10, #175104
-l1651: rscs R0, R8, R5
-interrupt_179: l1652: bPL l1661
-l1653: and R7, R4, R10, ROR R8
-interrupt_625: l1654: addCSs R4, R0, R11
-l1655: orr R10, R2, R15, ROR #14
-interrupt_735: l1656: mov R4, R6, ASR R14
-interrupt_657: l1657: cmnVC R8, R14, RRX 
-l1658: clzLE R0, R2
-interrupt_971: l1659: addLT R5, R12, R6, ROR #26
-l1660: mov R3, R12, ASR R2
-l1661: clz R1, R9
-l1662: mvnMIs R8, R15, RRX 
-l1663: stmDB R13, {R3, R13}
-l1664: ldrh R11, [sp, #-16]
-l1665: add R0, R10, R9, RRX 
-l1666: rsc R0, R0, R3, LSR R2
-l1667: mov R2, #20
-l1668: ldrh R0, [sp, +R2]
-l1669: orrVSs R12, R12, R8, LSR R1
-l1670: cmnLE R6, R10, LSR R8
-l1671: ldrsb R1, [sp, #-12]
-l1672: teq R7, R12, LSR R4
-l1673: cmpCS R8, #202
-l1674: ldrNEB R0, [sp, #-2]
-interrupt_960: l1675: orrMI R14, R12, #193
-l1676: clz R10, R6
-l1677: bMI l1681
-l1678: add R1, R0, #94
-l1679: teqCC R15, R8
-l1680: b l1682
-interrupt_510: l1681: b l1679
-l1682: tst R11, R2, ASR #17
-l1683: sbc R7, R11, R3
-interrupt_910: l1684: bMI l1685
-l1685: cmp R15, #824
-l1686: bEQ l1690
-l1687: add R1, R0, #228
-l1688: andCCs R5, R8, R9, LSL R4
-l1689: b l1691
-l1690: b l1688
-l1691: subCS R9, R9, R7, LSR R6
-interrupt_759: l1692: bVC l1701
-l1693: add R1, R0, #160
-l1694: andHIs R10, R9, R3, ROR R14
-interrupt_936: l1695: movNEs R6, R7, LSL R0
-interrupt_660: l1696: rsb R6, R2, R1, RRX 
-interrupt_336: l1697: rscLEs R6, R5, #-671088639
-l1698: eorCSs R11, R7, R1, ROR R14
-l1699: orrs R12, R5, R2
-l1700: b l1702
-l1701: b l1694
-l1702: cmn R6, R12, LSR #29
-interrupt_992: l1703: ldmIB R13!, {R0, R7}
-l1704: ldr R1, l1706
-l1705: b l1707
-l1706: .word 1048488
-l1707: swpLSb R6, R9, [R1]
-l1708: eorVCs R2, R0, R7, ASR R3
-l1709: bCS l1715
-l1710: add R1, R0, #64
-interrupt_145: l1711: sub R11, R6, #-1879048192
-interrupt_849: l1712: orr R11, R0, R2, RRX 
-interrupt_481: l1713: cmn R0, R2, ROR R0
-l1714: b l1716
-l1715: b l1711
-l1716: tstNE R5, R2
-l1717: rsc R11, R11, R11
-interrupt_589: l1718: clzLS R3, R14
-l1719: eorVS R14, R0, #-33554432
-l1720: subVC R8, R5, R10, LSL R3
-l1721: swi #13523991
-l1722: bPL l1728
-l1723: add R1, R0, #122
-l1724: eorHI R9, R8, R9
-l1725: subHIs R1, R0, #3072
-interrupt_44: l1726: clz R7, R3
-l1727: b l1729
-l1728: b l1724
-l1729: mov R5, #52
-l1730: ldrh R11, [sp, -R5]
-l1731: clz R9, R1
-interrupt_675: l1732: swi #7369329
-interrupt_944: l1733: swi #4266029
-l1734: subNE R8, R10, R15
-l1735: orrCCs R5, R8, #-1140850687
-l1736: clz R8, R1
-l1737: eorLTs R1, R8, #4
-l1738: stmIA R13, {R2, R3, R14}
-l1739: bCS l1746
-l1740: add R1, R0, #173
-interrupt_578: l1741: sbcLSs R10, R1, #192512
-l1742: mvnGE R6, R14, ASR R5
-l1743: adcs R5, R6, R11
-l1744: rsbCSs R10, R6, #47104
-interrupt_526: l1745: b l1747
-l1746: b l1741
-l1747: bPL l1754
-interrupt_912: l1748: add R1, R0, #123
-l1749: subGTs R5, R6, #6291456
-l1750: eorEQ R10, R4, #235520
-l1751: tstGE R8, R9
-interrupt_108: l1752: subGE R2, R12, R5, ROR #13
-l1753: b l1755
-l1754: b l1749
-interrupt_205: l1755: mov R5, #10
-l1756: strGTh R7, [sp, -R5]
-interrupt_710: l1757: cmn R2, R3
-l1758: eors R8, R14, #-218103808
-l1759: andPL R10, R14, R4, ROR R10
-l1760: subLTs R14, R6, R4, ASR R14
-interrupt_642: l1761: cmnEQ R10, R8
-l1762: mvnLT R3, R10
-l1763: b l1770
-l1764: add R1, R0, #126
-l1765: rscNE R9, R5, R1, ASR R6
-interrupt_475: l1766: cmnPL R0, R2, RRX 
-l1767: tstHI R5, R9, ASR R0
-interrupt_332: l1768: mvnVCs R3, R12, ROR R4
-l1769: b l1771
-l1770: b l1765
-l1771: orrLE R11, R8, R6, ROR #20
-l1772: stmDB R13!, {R0, R1, R9, R10, R14}
-l1773: rsc R8, R1, R7
-interrupt_351: l1774: bicMIs R2, R6, R10, LSL R7
-interrupt_213: l1775: ldrB R2, [sp, #+8]
-l1776: teqVC R9, R4, LSR #29
-interrupt_790: l1777: rsbs R3, R11, R2
-l1778: bicVS R10, R14, #-469762045
-l1779: andCSs R6, R4, R12, LSL R0
-l1780: bCC l1788
-l1781: add R8, R11, R11
-interrupt_701: l1782: subLTs R0, R14, R0
-interrupt_613: l1783: cmn R14, #536870912
-l1784: cmpPL R7, R4, RRX 
-l1785: teqCS R2, #36962304
-interrupt_976: l1786: adcMIs R6, R10, R2, LSL #3
-l1787: bic R1, R9, R0
-interrupt_165: l1788: orrNE R3, R0, R14, RRX 
-l1789: rscPLs R9, R6, R11, RRX 
-l1790: strCCh R1, [sp, #+28]
-l1791: bGT l1799
-l1792: bic R10, R12, R10
-l1793: mov R14, #112197632
-l1794: bicMI R12, R12, R10, RRX 
-l1795: tstEQ R4, #211968
-l1796: eorLEs R3, R15, R7
-l1797: orr R4, R8, R7, ASR #28
-l1798: mvn R9, R2, RRX 
-l1799: tstEQ R6, #12736
-interrupt_232: l1800: mov R8, #7
-interrupt_338: l1801: ldrVCsb R9, [sp, -R8]
-l1802: teq R11, R4
-l1803: movGE R0, R7
-l1804: ldrsb R14, [sp, #-24]
-l1805: rsc R1, R14, R14, RRX 
-l1806: bicGE R12, R5, R11
-l1807: bEQ l1814
-l1808: cmpGT R11, R7
-l1809: adds R6, R7, R10, LSL #3
-l1810: cmp R9, R6, RRX 
-l1811: mvns R5, R1, LSL R3
-l1812: clz R7, R2
-l1813: mvnPL R12, R11, RRX 
-l1814: sub R4, R0, R3, RRX 
-l1815: rscMI R1, R4, R15
-interrupt_80: l1816: teq R15, #241664
-l1817: rsb R2, R4, R11
-l1818: cmnLE R0, R4, ASR R7
-l1819: stmDA R13!, {R2, R3, R9}
-l1820: ldrsb R5, [sp, #-10]
-l1821: subCCs R7, R12, #12032
-l1822: mvnGEs R14, R0
-l1823: subPL R1, R7, #8716288
-l1824: mvnLTs R0, R11, RRX 
-l1825: mov R2, #12
-l1826: strHI R9, [sp, +R2]
-interrupt_916: l1827: subGE R11, R10, R0, ASR R6
-l1828: mvnLT R1, R3, LSR #28
-l1829: ldr R11, l1831
-l1830: b l1832
-l1831: .word 1048536
-interrupt_766: l1832: swpHIb R14, R14, [R11]
-l1833: orr R3, R4, R10
-l1834: eors R14, R12, R0
-l1835: ldrCCB R8, [sp, #+43]
-l1836: adc R12, R3, R0
-l1837: mov R1, #48
-interrupt_156: l1838: ldrsb R14, [sp, +R1]
-l1839: strVCh R0, [sp, #+0]
-l1840: eorNEs R8, R5, R14, LSR R8
-l1841: addEQ R9, R11, R12, LSL R9
-l1842: rsc R8, R3, #1006632961
-l1843: stmDB R13, {R2, R6, R11, R15}
-l1844: mov R0, #1
-l1845: ldrLSB R7, [sp, +R0]
-l1846: and R5, R14, R2
-l1847: ldr R11, l1849
-l1848: b l1850
-l1849: .word 1048524
-l1850: swpCCb R3, R9, [R11]
-l1851: mvnEQ R2, #73728
-l1852: clzPL R1, R3
-l1853: ldr R14, l1855
+l1412: b l1409
+interrupt_317: l1413: mvn R5, R1, ASR R1
+l1414: orr R3, R0, #25690112
+interrupt_46: l1415: tstNE R3, R2, LSR #27
+interrupt_961: l1416: mov R9, #40
+l1417: strLSB R2, [sp, -R9]
+interrupt_550: l1418: bicLE R6, R3, R14, ROR R10
+l1419: ldr R3, [sp], #+24
+l1420: mov R4, #9
+l1421: ldrB R4, [sp, -R4]
+l1422: clzLT R10, R1
+interrupt_586: l1423: cmpLT R10, R3, ASR R6
+l1424: rsbPLs R12, R9, R0
+interrupt_589: l1425: orrVCs R4, R10, R2, LSL R0
+l1426: mov R0, #16
+l1427: str R8, [sp, -R0]!
+l1428: mov R11, #49
+l1429: strCSB R11, [sp, -R11]
+l1430: ldrPLsb R6, [sp, #+23]
+l1431: mvn R3, R8
+l1432: teqEQ R6, R12, LSL #30
+interrupt_545: l1433: str R1, [sp], #+4
+interrupt_777: l1434: ldr R2, [sp, #-8]
+l1435: orrs R3, R3, R4, ASR #4
+l1436: sbcEQ R8, R2, #2013265920
+interrupt_217: l1437: bNE l1445
+l1438: mvnLSs R12, #1627389952
+l1439: sbcs R4, R4, #630784
+interrupt_119: l1440: rscPL R4, R7, #56832
+l1441: eors R11, R12, R11
+l1442: rscNEs R11, R9, R8
+l1443: rsc R4, R7, R1, RRX 
+l1444: teq R4, #11862016
+l1445: sub R14, R0, R7, RRX 
+interrupt_344: l1446: mov R6, #16
+interrupt_970: l1447: strGTB R5, [sp, +R6]
+l1448: strVC R12, [sp, #-24]
+l1449: subPLs R8, R11, R4, LSL R10
+l1450: teqHI R4, #3735552
+l1451: ldr R11, l1453
+interrupt_713: l1452: b l1454
+interrupt_434: l1453: .word 1048496
+l1454: swp R8, R10, [R11]
+l1455: swi #6195314
+l1456: bNE l1466
+l1457: orrMI R11, R3, R8
+l1458: tst R4, R4
+l1459: bic R12, R3, #42729472
+l1460: eorEQ R14, R4, R10
+l1461: cmp R2, R8
+l1462: rsc R0, R1, R9, ASR #19
+l1463: orrNEs R11, R5, R6, LSL #9
+l1464: cmpPL R4, R7, ROR R4
+l1465: adcs R11, R5, #-536870909
+l1466: adcCS R8, R11, R3, ASR #29
+l1467: b l1471
+l1468: add R14, R6, #5952
+l1469: clz R14, R6
+l1470: mvns R4, #215
+l1471: adcGT R0, R9, R3, RRX 
+l1472: bNE l1480
+l1473: bic R14, R8, R1, LSL #21
+interrupt_869: l1474: andHI R9, R5, R0, ASR #21
+l1475: rsbPLs R10, R3, R9, LSR R10
+interrupt_602: l1476: rscCC R14, R7, R0, ASR #13
+l1477: eor R9, R14, #42240
+l1478: cmn R10, #20224
+l1479: addEQs R4, R6, R14
+l1480: subCCs R1, R1, #29952
+l1481: eors R7, R11, R5, ROR R3
+l1482: adds R9, R15, R1
+interrupt_856: l1483: ldrsh R14, [sp, #-42]
+l1484: stmIB R13, {R0, R9, R13}
+l1485: mov R4, #995328
+interrupt_510: l1486: rsbCSs R12, R8, R0, LSL R4
+l1487: tstHI R1, #536870915
+interrupt_943: l1488: subHIs R11, R14, #4096000
+l1489: tst R6, #-1140850688
+l1490: subVSs R7, R2, R2, RRX 
+l1491: ldrCCh R11, [sp, #-26]
+l1492: mov R11, #50
+interrupt_57: l1493: ldrh R8, [sp, -R11]
+l1494: stmIB R13, {R12}
+l1495: mov R0, #7
+l1496: strB R14, [sp, -R0]
+l1497: add R7, R3, #1140850690
+l1498: mov R2, #4
+l1499: ldrB R3, [sp, -R2]
+interrupt_241: l1500: ldr R5, [sp, #-44]!
+l1501: ldrsb R11, [sp, #+47]
+l1502: ldr R11, l1504
+interrupt_843: l1503: b l1505
+l1504: .word 1048496
+l1505: swpLTb R8, R14, [R11]
+l1506: ldr R12, l1508
+l1507: b l1509
+interrupt_410: l1508: .word 1048552
+l1509: swpHIb R6, R11, [R12]
+l1510: orrPLs R8, R0, R14, ASR #25
+l1511: clzCC R9, R3
+l1512: sub R14, R8, R15, ASR #21
+l1513: nop
+l1514: adc R9, R10, R14, LSL R2
+l1515: b l1522
+l1516: bics R12, R2, R11, LSR #9
+l1517: subGE R8, R12, R15, LSL #15
+l1518: clzPL R6, R6
+interrupt_623: l1519: adc R2, R8, R14
+l1520: rsbEQ R11, R3, R14
+l1521: adc R2, R7, #14483456
+interrupt_772: l1522: eors R6, R14, R6, ROR #30
+l1523: mov R0, #16
+l1524: ldrsh R0, [sp, +R0]
+l1525: rscVCs R11, R2, R6, ASR R9
+l1526: rsbPL R1, R3, R0
+l1527: eorLEs R5, R3, R15
+l1528: subs R2, R2, R11
+l1529: ldr R4, l1531
+l1530: b l1532
+l1531: .word 1048536
+l1532: swpVSb R12, R2, [R4]
+interrupt_146: l1533: rscLSs R6, R2, #856
+interrupt_97: l1534: tst R15, R1, RRX 
+interrupt_383: l1535: teq R3, R1, LSL #9
+l1536: stmIB R13!, {R13, R14}
+l1537: ldr R7, [sp, #+8]!
+l1538: rscHI R1, R1, #61341696
+l1539: mov R8, #40
+l1540: str R3, [sp, +R8]!
+l1541: clzVC R4, R4
+interrupt_361: l1542: movGEs R5, R3, ROR #26
+l1543: bPL l1549
+l1544: add R1, R0, #80
+l1545: rscs R8, R5, R7
+l1546: cmnCS R4, R1, ASR R3
+l1547: eorLSs R4, R10, R3
+l1548: b l1550
+l1549: b l1545
+l1550: ldrh R8, [sp, #-58]
+l1551: mov R3, #61
+l1552: strB R0, [sp, -R3]
+interrupt_273: l1553: mov R2, #4
+l1554: ldrMIh R11, [sp, +R2]
+l1555: and R3, R5, R8, LSR #9
+interrupt_19: l1556: teqCC R3, R15, RRX 
+l1557: b l1566
+l1558: eors R4, R1, #4288
+l1559: subHI R12, R10, R0, ROR #21
+interrupt_995: l1560: tst R7, R2, RRX 
+l1561: addVS R3, R4, R5, ROR #25
+l1562: orrs R7, R2, R10, RRX 
+l1563: rscVCs R2, R1, R9, LSL #16
+l1564: cmpEQ R14, R0, RRX 
+l1565: andPLs R7, R0, #-2147483586
+l1566: subs R1, R4, #716800
+l1567: adcs R7, R0, R10, ASR #29
+interrupt_282: l1568: sbc R1, R4, R12, LSL R4
+l1569: orr R6, R9, R3, LSR R5
+l1570: b l1573
+interrupt_904: l1571: cmnCS R1, R2, ASR #18
+interrupt_830: l1572: rsbLE R9, R6, #41
+l1573: cmpVC R14, R12
+l1574: sbcGE R2, R2, R6, LSR R11
+l1575: adcLE R11, R15, #-1543503870
+l1576: addVC R7, R7, #42729472
+interrupt_433: l1577: nop
+l1578: stmVCIB R13, {R4}
+l1579: stmLEDA R13, {R5, R6, R13}
+interrupt_566: l1580: ldrPLB R7, [sp, #-49]
+l1581: b l1587
+l1582: cmpLT R15, R8, RRX 
+l1583: teqMI R4, R1
+l1584: sbc R10, R0, #855638016
+l1585: mvnMI R14, R6
+interrupt_530: l1586: cmp R5, #-536870897
+l1587: andGT R8, R6, R11, LSL #22
+interrupt_246: l1588: adcGT R12, R10, R0, ROR #13
+l1589: ldr R12, l1591
+l1590: b l1592
+l1591: .word 1048552
+l1592: swpLS R7, R10, [R12]
+interrupt_399: l1593: ldr R14, l1595
+interrupt_829: l1594: b l1596
+interrupt_229: l1595: .word 1048488
+l1596: swpb R2, R10, [R14]
+l1597: ldr R7, [sp, #-60]!
+l1598: cmn R8, R12
+l1599: cmpLS R10, R2
+l1600: subMI R3, R15, R15
+interrupt_547: l1601: adcs R0, R9, R2
+l1602: mov R1, #0
+interrupt_941: l1603: strVCh R4, [sp, +R1]
+l1604: ldrB R6, [sp, #+13]
+l1605: cmnNE R5, R3, LSR R14
+interrupt_397: l1606: rsbNE R4, R0, R8, ASR R5
+interrupt_230: l1607: bLS l1614
+l1608: add R1, R0, #216
+interrupt_209: l1609: tstLT R15, R1
+l1610: adcMIs R6, R2, R5, ASR R4
+l1611: orr R5, R4, R2, ROR #16
+l1612: sbc R14, R1, R5
+l1613: b l1615
+l1614: b l1609
+l1615: ldr R9, l1617
+l1616: b l1618
+l1617: .word 1048548
+interrupt_503: l1618: swp R14, R10, [R9]
+l1619: nop
+l1620: bics R12, R0, R0, LSR R12
+l1621: subMIs R8, R10, #159
+interrupt_593: l1622: subs R11, R0, R10, ROR R5
+interrupt_249: l1623: nop
+l1624: sub R2, R9, R9
+l1625: ldrVSsb R9, [sp, #-7]
+l1626: cmp R7, R8, LSL R9
+l1627: movGE R9, #41
+l1628: nop
+l1629: eorCS R3, R14, #7424
+l1630: ldrNEsh R0, [sp, #-6]
+l1631: orr R4, R5, R15
+l1632: rsbCSs R5, R0, #2572288
+l1633: strHI R7, [sp, #+56]
+l1634: ldrCSsb R12, [sp, #+64]
+l1635: mov R0, #1
+l1636: ldrB R2, [sp, -R0]
+interrupt_879: l1637: strHI R0, [sp, #+52]
+l1638: sub R0, R0, R3, LSR #8
+l1639: rsb R14, R9, R2, LSR #11
+l1640: ldr R2, l1642
+interrupt_212: l1641: b l1643
+l1642: .word 1048508
+l1643: swp R3, R10, [R2]
+interrupt_950: l1644: mov R10, #16
+l1645: strVCh R8, [sp, +R10]
+l1646: adcEQs R0, R5, #753664
+l1647: nop
+interrupt_919: l1648: rscs R10, R11, R8
+l1649: rsbVS R1, R11, #-603979775
+l1650: ands R7, R11, R3, LSR #24
+l1651: movHI R12, R9, LSL #8
+l1652: bPL l1657
+l1653: add R1, R0, #203
+l1654: clzGE R14, R10
+interrupt_385: l1655: sub R9, R0, R15, RRX 
+l1656: b l1658
+l1657: b l1654
+l1658: nop
+l1659: adcLE R7, R1, #235
+l1660: ldrHIh R9, [sp, #+50]
+l1661: bicGEs R2, R12, R5, LSL R3
+l1662: ldrCSh R9, [sp, #+10]
+l1663: swi #2471517
+l1664: ldrGT R6, [sp, #+44]
+l1665: orr R7, R5, #267386880
+l1666: rsc R5, R3, R15, RRX 
+l1667: adcNEs R3, R0, R12, RRX 
+l1668: addNE R3, R11, R1, ROR #12
+l1669: ldrNEsb R2, [sp, #+52]
+l1670: adcHIs R0, R7, R3, RRX 
+l1671: adcGEs R7, R4, R10
+l1672: clzCC R6, R12
+l1673: ldrVSsh R5, [sp, #+30]
+l1674: sub R9, R6, #830472192
+l1675: bics R2, R9, R5, ASR R12
+interrupt_938: l1676: mov R0, #4
+l1677: ldrCCsb R0, [sp, -R0]
+l1678: mvns R1, R0, ROR #3
+interrupt_47: l1679: cmn R10, #394264576
+l1680: mov R7, #4
+l1681: ldrMIh R6, [sp, +R7]
+l1682: ldrNEsb R11, [sp, #+18]
+l1683: mov R7, #52
+l1684: ldr R1, [sp], +R7
+l1685: rsbNE R14, R1, #2162688
+l1686: ldrh R5, [sp, #-40]
+l1687: addLT R12, R4, #2179072
+interrupt_244: l1688: swi #14161029
+l1689: tstEQ R7, R2, ROR #15
+interrupt_403: l1690: sbcVS R5, R12, R5, LSR R9
+interrupt_487: l1691: swi #14690775
+l1692: cmnLT R0, #2048
+l1693: b l1698
+l1694: add R1, R0, #131
+l1695: eorCC R14, R7, #133169152
+l1696: andNEs R6, R4, R0
+l1697: b l1699
+l1698: b l1695
+l1699: mov R4, #16
+l1700: ldrVSsh R8, [sp, -R4]
+l1701: mov R4, #60
+l1702: str R5, [sp], -R4
+l1703: ldmIA R13!, {R2}
+l1704: ldrh R4, [sp, #+54]
+l1705: cmpCC R9, #2192
+l1706: rsbGT R8, R6, R14, ASR R11
+l1707: b l1716
+l1708: cmn R5, #165
+l1709: tstVS R7, R15, LSL #0
+l1710: movVS R3, R11, LSR #19
+l1711: tstCS R12, #13312
+l1712: addLE R1, R12, R0, LSL #23
+interrupt_878: l1713: eors R3, R4, #164626432
+l1714: clzVS R8, R5
+interrupt_597: l1715: sbcGT R6, R3, R14, ASR #14
+l1716: adcs R14, R15, R15
+l1717: mvns R11, R7
+l1718: rscVSs R5, R10, R11
+l1719: nop
+l1720: ldrh R9, [sp, #+2]
+interrupt_564: l1721: sub R0, R11, #76
+l1722: andLSs R4, R10, R5, LSR R1
+l1723: sbcMIs R8, R11, R4, LSR R14
+interrupt_291: l1724: eorVSs R8, R0, #889192448
+l1725: mov R6, #4
+l1726: ldrCSsb R14, [sp, +R6]
+l1727: ldrGEh R6, [sp, #+44]
+l1728: cmp R8, R0
+l1729: swi #6728419
+l1730: eorLEs R1, R10, R5, LSL #18
+l1731: b l1736
+l1732: add R1, R0, #36
+l1733: rsbGEs R8, R9, R7, LSL R12
+l1734: bicEQ R0, R12, R1
+l1735: b l1737
+interrupt_472: l1736: b l1733
+l1737: mov R1, #42
+l1738: strMIh R14, [sp, +R1]
+l1739: sub R8, R11, #738197505
+l1740: clz R4, R12
+l1741: bicGT R2, R1, #38797312
+l1742: swi #9272989
+l1743: subLEs R9, R10, #157696
+l1744: adds R10, R3, R4, ASR #23
+l1745: ldmMIIB R13, {R2, R10}
+l1746: bGE l1754
+l1747: cmpCC R15, R8, RRX 
+l1748: adds R12, R8, R14
+interrupt_204: l1749: subLSs R0, R15, R15, LSR #10
+interrupt_749: l1750: tst R6, R3
+l1751: orr R6, R7, R14, ASR #7
+l1752: and R12, R9, R4, LSR #23
+l1753: tstEQ R0, R9, LSL R12
+interrupt_654: l1754: tstPL R15, R5, ROR #10
+l1755: mov R2, #40
+interrupt_801: l1756: strh R5, [sp, +R2]
+l1757: ldmIB R13!, {R0, R1}
+interrupt_563: l1758: ldr R4, l1760
+l1759: b l1761
+l1760: .word 1048480
+l1761: swpMI R8, R1, [R4]
+l1762: and R3, R7, R1
+l1763: str R9, [sp, #+60]
+l1764: eorGTs R7, R6, #64
+l1765: teqHI R1, R5
+l1766: bPL l1774
+l1767: sbcVS R11, R0, R5
+l1768: bicLSs R11, R14, R12, RRX 
+l1769: adcMIs R1, R9, R14, LSR R12
+interrupt_260: l1770: mvnHIs R10, R6, LSR R0
+interrupt_512: l1771: subLTs R9, R4, R10, LSL R6
+l1772: clz R3, R2
+l1773: orrs R14, R1, R7
+interrupt_422: l1774: rsbNE R0, R9, #34865152
+l1775: ldrh R4, [sp, #+58]
+interrupt_653: l1776: mov R0, #28
+l1777: ldr R8, [sp, +R0]
+interrupt_3: l1778: strGTh R11, [sp, #+26]
+interrupt_876: l1779: teq R1, #622592
+l1780: subLE R8, R8, R15, LSR #18
+l1781: sub R1, R7, R14, ROR R2
+l1782: ldr R1, l1784
+l1783: b l1785
+l1784: .word 1048528
+l1785: swpVC R0, R9, [R1]
+l1786: mov R5, #56
+interrupt_744: l1787: strh R12, [sp, +R5]
+l1788: mov R10, #12
+l1789: str R6, [sp], -R10
+l1790: sbc R12, R15, R2
+l1791: ldmIA R13, {R0, R2, R3, R4, R6, R7, R9, R11, R12}
+l1792: ldmIA R13!, {R1, R2}
+interrupt_562: l1793: bic R9, R12, #107520
+l1794: andVSs R10, R4, #-1677721599
+l1795: ldr R3, l1797
+l1796: b l1798
+interrupt_709: l1797: .word 1048492
+l1798: swpb R4, R6, [R3]
+l1799: orrs R9, R3, #14417920
+l1800: adcs R6, R14, #36864
+interrupt_759: l1801: bics R4, R10, #22020096
+interrupt_800: l1802: orrLS R5, R7, R6, ROR R9
+l1803: mov R7, #42
+l1804: ldrPLsb R10, [sp, +R7]
+l1805: clzPL R9, R6
+interrupt_752: l1806: strLEB R14, [sp, #+17]
+l1807: ldmIB R13!, {R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R14}
+l1808: bGE l1814
+l1809: add R1, R0, #154
+l1810: sbcVSs R7, R11, R15
+l1811: eors R8, R0, #-385875968
+l1812: cmn R9, R5, ROR #8
+l1813: b l1815
+l1814: b l1810
+l1815: b l1820
+l1816: add R1, R0, #77
+l1817: bic R3, R5, #121634816
+l1818: orr R11, R8, #11776
+l1819: b l1821
+l1820: b l1817
+interrupt_836: l1821: swi #7939645
+l1822: ldmDB R13!, {R2}
+l1823: tstVS R3, #220160
+interrupt_872: l1824: ldmIB R13!, {R7}
+l1825: mov R6, #24
+l1826: ldrsh R0, [sp, -R6]
+l1827: sbcVS R12, R14, R9, LSR #5
+l1828: addCSs R2, R1, #991232
+l1829: mov R14, #11
+l1830: strB R11, [sp, +R14]
+l1831: mov R5, #57
+interrupt_290: l1832: ldrsb R2, [sp, -R5]
+l1833: mov R7, #60
+l1834: str R3, [sp, -R7]!
+l1835: mvnLTs R6, R10
+l1836: mov R6, #28
+l1837: ldrsh R2, [sp, +R6]
+l1838: andEQs R2, R14, R9, ASR R14
+l1839: adcLTs R10, R2, R6, LSL #16
+l1840: bPL l1845
+interrupt_253: l1841: rsbs R2, R4, R6, LSL #23
+l1842: add R11, R6, R6, LSL R1
+interrupt_297: l1843: movHI R14, R10, LSL #24
+l1844: teq R6, #17
+l1845: rsbVSs R0, R12, R12, RRX 
+l1846: tst R9, R3, LSR R5
+l1847: clz R14, R2
+l1848: strLTh R14, [sp, #+52]
+interrupt_107: l1849: eorCS R9, R2, R1, ROR R10
+l1850: eorLT R0, R8, #12608
+l1851: b l1855
+l1852: add R1, R0, #143
+l1853: cmpLT R8, R2, RRX 
 l1854: b l1856
-l1855: .word 1048480
-l1856: swp R0, R7, [R14]
-interrupt_61: l1857: swi #1462539
-l1858: andNEs R10, R3, R6, RRX 
-interrupt_459: l1859: rsbs R5, R2, R6, ASR #25
-l1860: subVS R1, R8, R11
-interrupt_644: l1861: subs R7, R2, #704512
-l1862: cmnNE R7, R15
-l1863: ldr R7, l1865
-l1864: b l1866
-l1865: .word 1048532
-l1866: swpb R14, R10, [R7]
-l1867: addLEs R10, R15, R4, LSR #18
-l1868: cmp R11, #5824
-l1869: swi #15277043
-l1870: cmp R2, R2, ASR R9
-l1871: ldr R5, [sp, #-16]
-l1872: sbc R0, R12, R5, ASR R9
-l1873: stmIA R13!, {R0, R1, R2, R3, R5, R7, R8, R10, R11, R12, R14, R15}
-l1874: swi #1329658
-l1875: ldrEQB R1, [sp, #-70]
-l1876: mov R3, #52
-l1877: ldrsh R3, [sp, -R3]
-l1878: mov R2, #60
-interrupt_151: l1879: str R11, [sp, -R2]!
-l1880: ldr R12, l1882
-l1881: b l1883
-l1882: .word 1048516
-interrupt_450: l1883: swpCS R6, R8, [R12]
-l1884: ldrsh R7, [sp, #+6]
-l1885: teq R9, R4, LSL #19
-l1886: bNE l1894
-interrupt_911: l1887: add R1, R0, #213
-l1888: sub R0, R11, R0, RRX 
-l1889: eors R3, R11, #-1610612727
-l1890: addMIs R12, R12, R7, LSL #2
-l1891: eorLS R7, R5, R2
-l1892: cmn R0, R3, ROR #10
-l1893: b l1895
-l1894: b l1888
-l1895: cmpLE R11, R15
-l1896: subMIs R6, R4, #406847488
-interrupt_762: l1897: tstVS R10, R12
-l1898: stmGEDA R13, {R14}
-l1899: swi #1565262
-l1900: subs R8, R12, R6
-l1901: orrs R11, R0, R7, RRX 
-l1902: ldr R14, l1904
+l1855: b l1853
+l1856: mov R0, #73
+l1857: ldrsb R12, [sp, +R0]
+interrupt_980: l1858: mov R10, #68
+interrupt_790: l1859: strPLh R1, [sp, +R10]
+interrupt_113: l1860: ldrh R3, [sp, #+12]
+interrupt_811: l1861: ldr R7, l1863
+l1862: b l1864
+l1863: .word 1048540
+l1864: swpPLb R5, R9, [R7]
+l1865: cmn R10, R7, ASR #11
+l1866: mov R14, R2, ROR R12
+l1867: ldrLEh R0, [sp, #+6]
+l1868: mov R10, #55
+l1869: strVCB R10, [sp, +R10]
+l1870: cmnMI R2, R9, ROR R12
+l1871: swi #4320277
+l1872: mov R10, #3
+l1873: strB R0, [sp, +R10]
+interrupt_390: l1874: sbc R2, R6, R7
+l1875: swi #15964655
+interrupt_987: l1876: mov R4, #43
+l1877: ldrB R3, [sp, +R4]
+l1878: eors R12, R3, R11, LSL #17
+l1879: mov R4, #39
+l1880: ldrMIB R5, [sp, +R4]
+l1881: mov R0, #0
+l1882: ldrsh R14, [sp, +R0]
+l1883: cmpHI R1, #44826624
+l1884: adc R12, R15, R15
+l1885: add R4, R4, R5, LSR R1
+l1886: ldr R9, l1888
+l1887: b l1889
+l1888: .word 1048480
+l1889: swpb R0, R10, [R9]
+interrupt_962: l1890: ldr R0, l1892
+l1891: b l1893
+l1892: .word 1048552
+l1893: swpLT R4, R9, [R0]
+l1894: swi #7004465
+interrupt_663: l1895: orrVCs R10, R11, #6815744
+l1896: eors R10, R14, #9961472
+l1897: rsb R5, R3, R4, ROR R1
+l1898: clzGT R0, R12
+l1899: teq R2, #240
+l1900: b l1904
+l1901: add R1, R0, #57
+interrupt_407: l1902: rsc R8, R9, R7, LSL #29
 l1903: b l1905
-l1904: .word 1048496
-l1905: swpCSb R6, R2, [R14]
-l1906: ands R6, R8, R8, LSL #24
-l1907: ldmIB R13!, {R1, R7}
-interrupt_346: l1908: ldrLSsb R6, [sp, #+43]
-l1909: str R11, [sp, #+4]
-l1910: strB R5, [sp, #+40]
-l1911: movGTs R8, R9, LSL R1
-l1912: teq R14, R9
-l1913: subHI R9, R4, R15, LSL #6
-l1914: orr R14, R10, R1, LSR #18
-l1915: cmn R14, #1648
-l1916: bics R8, R5, R6
-l1917: mov R6, #44
-l1918: str R5, [sp, +R6]!
-l1919: movVS R10, R8, LSL #2
-l1920: rsbLTs R5, R0, R7, ASR R11
-l1921: swi #6137504
-l1922: tstVC R0, R11, LSR #21
-l1923: rsbNEs R7, R8, #-201326592
-interrupt_846: l1924: andMIs R6, R15, R0, RRX 
-interrupt_653: l1925: cmn R5, R11
-interrupt_282: l1926: teqCC R15, #2013265922
-l1927: bCS l1935
-l1928: add R1, R0, #30
-l1929: teq R3, R6, ROR #18
-l1930: teqVS R7, R0
-l1931: tstVC R1, R2, ROR #23
-l1932: and R3, R12, #320
-l1933: addLS R14, R12, R10, RRX 
-l1934: b l1936
-l1935: b l1929
-interrupt_866: l1936: subs R12, R11, #172
-l1937: b l1944
-l1938: add R1, R0, #242
-l1939: teq R14, #22
-l1940: bic R6, R14, R3
-l1941: subVC R2, R6, R0
-interrupt_662: l1942: adcs R11, R14, R12, LSR #26
-l1943: b l1945
-interrupt_885: l1944: b l1939
-l1945: swi #6528970
-l1946: swi #12467786
-l1947: orrGTs R1, R11, R8
-l1948: and R11, R4, R8
-l1949: clzGT R9, R8
-l1950: swi #15108705
-interrupt_126: l1951: bics R14, R7, R7, ROR R1
-l1952: mov R0, #4
-l1953: ldrh R11, [sp, -R0]
-l1954: rsc R9, R4, R7, ROR R0
-l1955: ldrLEsh R1, [sp, #-38]
-interrupt_471: l1956: cmnGE R11, #143654912
-l1957: rsc R11, R8, R12, RRX 
-l1958: mov R3, #9
-l1959: strB R9, [sp, -R3]
-interrupt_373: l1960: mov R7, #28
-l1961: ldrh R3, [sp, -R7]
-interrupt_281: l1962: ldmIA R13, {R6}
-l1963: bLE l1965
-l1964: cmp R11, #1006632960
-l1965: movs R3, R8
-l1966: adcNEs R1, R9, #12648448
-l1967: rscVSs R8, R9, R4
-l1968: addEQ R11, R10, R15, ROR #27
-l1969: swi #7261261
-interrupt_584: l1970: movs R4, #264241152
-interrupt_131: l1971: ldrB R3, [sp, #-12]
-l1972: subLT R0, R14, R2, ROR R6
-l1973: movs R2, R15
-l1974: bicLEs R2, R7, R10
-l1975: ldr R9, l1977
-l1976: b l1978
-l1977: .word 1048528
-l1978: swpGTb R0, R11, [R9]
-l1979: ldrh R2, [sp, #+10]
-l1980: b l1983
-l1981: eorCS R11, R0, R11
-l1982: orrs R14, R11, R11
-l1983: eors R1, R12, R0, ROR #21
-interrupt_361: l1984: ldrMIB R5, [sp, #-44]
-interrupt_380: l1985: sbc R14, R6, R9
-l1986: ldrEQsh R11, [sp, #-26]
-interrupt_760: l1987: adcPL R11, R6, R0, ASR R0
-interrupt_678: l1988: sbcLEs R11, R1, R8, RRX 
-l1989: mvn R4, R8
-l1990: swi #15617785
-l1991: adcVS R4, R0, R8, RRX 
-l1992: swi #5461984
-l1993: cmn R6, R10
-l1994: subGE R4, R1, #69632
-interrupt_25: l1995: rscGTs R10, R8, #177209344
-interrupt_731: l1996: ldr R6, l1998
-l1997: b l1999
-l1998: .word 1048508
-l1999: swpVCb R14, R5, [R6]
-interrupt_175: l2000: eorLTs R4, R2, R10, LSL R1
-l2001: b l2008
-l2002: add R1, R0, #171
-interrupt_97: l2003: adcs R3, R8, #222298112
-interrupt_780: l2004: eorEQ R11, R9, R2
-l2005: mvn R4, R5, ASR #11
-l2006: orrCS R0, R6, R9
-l2007: b l2009
-l2008: b l2003
-l2009: adcCCs R10, R8, R5
-l2010: eorVCs R2, R14, #675840
-interrupt_627: l2011: sub R6, R6, R8, ROR R14
-l2012: andVC R5, R8, R5, LSL R3
-l2013: clzEQ R2, R7
-l2014: cmpMI R11, #29622272
-l2015: clz R5, R14
-l2016: teq R6, R4, ROR R7
-l2017: ldrHIB R7, [sp, #+8]
-l2018: tst R3, R3, LSL R0
-l2019: clzPL R9, R4
-l2020: b l2026
-l2021: add R1, R0, #144
-l2022: mvnLE R0, R5, LSR R14
-l2023: sub R0, R2, R2, LSR #11
-l2024: movGE R4, R7, LSL #30
-l2025: b l2027
-l2026: b l2022
-interrupt_317: l2027: bLE l2032
-l2028: add R1, R0, #224
-l2029: eorLTs R14, R14, R2, LSL #13
-l2030: orrs R0, R12, R12, LSL R0
-l2031: b l2033
-l2032: b l2029
-l2033: andHI R2, R9, #11730944
-l2034: rsb R9, R10, R1, RRX 
-l2035: tst R9, R10, RRX 
-l2036: swi #5444125
-l2037: adcNE R9, R2, R7, LSL R7
-interrupt_833: l2038: mov R11, #56
-l2039: ldr R10, [sp], -R11
-interrupt_40: l2040: strVCB R2, [sp, #+67]
-l2041: cmnLE R2, #236
-interrupt_334: l2042: nop
-l2043: subs R7, R3, #486539264
-l2044: mov R9, #48
-l2045: strNEh R14, [sp, +R9]
-l2046: str R1, [sp, #+44]!
-l2047: mov R0, #36
-l2048: str R9, [sp, -R0]
-l2049: orrPLs R4, R10, R10, ROR #24
-l2050: b l2056
-l2051: bicGT R5, R15, #2801664
-l2052: mvnGEs R9, R9, LSL #23
-interrupt_559: l2053: orrCSs R7, R10, #214016
-interrupt_970: l2054: tstVC R14, R6
-l2055: cmnEQ R6, #19456
-l2056: movs R11, R10, ASR R14
-l2057: swi #11137113
-interrupt_109: l2058: mov R0, #8
-l2059: ldr R1, [sp], +R0
-l2060: ldr R11, l2062
-l2061: b l2063
-l2062: .word 1048500
-l2063: swpGEb R4, R9, [R11]
-l2064: mov R3, #40
-l2065: ldrsb R6, [sp, -R3]
-l2066: ldr R5, l2068
-interrupt_782: l2067: b l2069
-interrupt_816: l2068: .word 1048496
-l2069: swp R6, R10, [R5]
-l2070: addGTs R3, R12, #25344
-l2071: mov R0, #28
-l2072: strh R1, [sp, -R0]
-l2073: mov R4, #12
-interrupt_523: l2074: strVCh R14, [sp, +R4]
-l2075: clz R8, R10
-l2076: mov R9, #48
-interrupt_385: l2077: str R0, [sp], -R9
-l2078: teqGE R5, R2, ROR R2
-l2079: tstLS R14, #3216
-l2080: ldrsh R9, [sp, #+16]
-l2081: sbcs R10, R2, R2, RRX 
-l2082: strB R5, [sp, #+24]
-l2083: ldmIA R13!, {R2, R8, R12, R14}
-l2084: sub R14, R15, R11
-interrupt_914: l2085: b l2091
-l2086: andGEs R1, R4, R0, ASR R14
-l2087: sbcLS R11, R0, R6
-l2088: rscs R0, R9, R2, ROR R10
-l2089: subCC R2, R5, R6, ASR #29
-interrupt_750: l2090: cmnCC R9, R15
-interrupt_904: l2091: rscs R10, R2, R10, LSR R11
-l2092: swi #9548463
-l2093: movNEs R2, R5
-l2094: sbcGTs R14, R3, R15
-l2095: ldmDA R13, {R0, R4, R5, R14}
-l2096: ldrh R0, [sp, #+6]
-l2097: eorLS R9, R7, R12, RRX 
-interrupt_934: l2098: b l2107
-l2099: add R1, R0, #190
-interrupt_886: l2100: tst R2, R6, ASR R0
-l2101: movs R12, R3, RRX 
-l2102: adcs R6, R1, R12
-interrupt_147: l2103: tst R3, R11
-l2104: adds R1, R15, R4, RRX 
-interrupt_818: l2105: cmnGE R3, #49
-interrupt_302: l2106: b l2108
-l2107: b l2100
-l2108: mov R2, #0
-interrupt_372: l2109: ldr R14, [sp, +R2]!
-l2110: ldrsb R2, [sp, #+34]
-l2111: sub R3, R4, R2, LSR #8
-l2112: cmnLS R12, #-805306359
-l2113: bCS l2123
-interrupt_778: l2114: mov R3, #141
-l2115: cmnVC R4, #1073741868
-l2116: bicGT R4, R10, R15
-l2117: movCCs R10, R10
-interrupt_638: l2118: adcLTs R3, R15, #16000
-l2119: cmn R0, #3457024
-interrupt_103: l2120: rscs R11, R8, R0
-interrupt_840: l2121: teqEQ R12, R9, LSL #22
-l2122: clzCC R4, R1
-l2123: teqCC R14, R12, LSR #27
-interrupt_880: l2124: stmDB R13!, {R1, R4, R5, R6}
-interrupt_576: l2125: mov R1, R7
-l2126: strCSh R0, [sp, #+8]
-l2127: ldmIA R13, {R2, R3, R4, R6, R7, R8, R9, R11}
-l2128: mov R14, #8
-interrupt_462: l2129: ldrNEh R4, [sp, +R14]
-l2130: teqEQ R5, R6, LSR #5
-l2131: stmPLDA R13, {R2}
-interrupt_648: l2132: rscs R2, R1, R12
-l2133: ldmGEIB R13, {R7, R9}
-l2134: subLEs R12, R0, R11, ROR #20
-l2135: orrs R10, R0, R11
-l2136: swi #14528488
-l2137: swi #12733646
-l2138: movNE R2, R1, ROR #2
-interrupt_337: l2139: ldr R8, [sp], #+52
-l2140: ldr R3, l2142
-interrupt_434: l2141: b l2143
-l2142: .word 1048492
-l2143: swpLEb R14, R1, [R3]
-interrupt_319: l2144: swi #3446695
-l2145: cmnHI R3, #1879048192
-l2146: cmn R7, #820
-l2147: mov R11, #5
-l2148: ldrGEsb R2, [sp, -R11]
-l2149: orr R2, R10, R1, LSL #21
-l2150: ldr R7, l2152
-l2151: b l2153
-interrupt_834: l2152: .word 1048520
-l2153: swpb R5, R2, [R7]
-l2154: teqGE R2, R10, ROR #8
-l2155: b l2159
-l2156: add R1, R0, #206
-interrupt_979: l2157: adds R5, R2, #207
-l2158: b l2160
-l2159: b l2157
-l2160: strCSB R11, [sp, #-10]
-l2161: swi #5854303
-interrupt_119: l2162: mov R5, #26
-l2163: strB R8, [sp, -R5]
-l2164: adc R6, R11, R10, ROR R3
-l2165: mov R4, #12
-l2166: ldrsb R7, [sp, -R4]
-l2167: ldrsh R11, [sp, #-62]
-l2168: mov R14, #30
-interrupt_989: l2169: strVCh R12, [sp, -R14]
-l2170: sbcPLs R6, R5, #4194304
-l2171: rscGTs R12, R7, R9, RRX 
-l2172: ldr R7, l2174
-interrupt_864: l2173: b l2175
-l2174: .word 1048532
-l2175: swpCC R6, R3, [R7]
-l2176: mov R10, R11, ROR #29
-l2177: ldrEQsh R0, [sp, #-52]
-l2178: mov R6, #12
-l2179: strEQB R10, [sp, -R6]
-l2180: b l2188
-l2181: add R1, R0, #204
-l2182: subGE R6, R1, #58
-l2183: eorGTs R11, R10, R1, ROR R11
-l2184: bicVCs R0, R1, R12, ROR R7
-l2185: rsbPLs R4, R12, R3
-interrupt_415: l2186: sub R5, R0, R3
-l2187: b l2189
-l2188: b l2182
-interrupt_122: l2189: ldrNEsh R14, [sp, #-34]
-interrupt_636: l2190: eor R4, R6, R1, RRX 
-l2191: rsc R10, R9, #-1744830464
-l2192: add R8, R4, #2512
-l2193: ldr R0, l2195
-interrupt_327: l2194: b l2196
-l2195: .word 1048484
-l2196: swpLTb R9, R10, [R0]
-l2197: stmIA R13!, {R1}
-l2198: stmDB R13, {R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R12, R13, R14, R15}
-l2199: cmnHI R0, R10, ASR R12
-l2200: mov R1, #10
-l2201: strh R9, [sp, -R1]
-interrupt_331: l2202: mov R5, #48
-interrupt_895: l2203: ldrh R6, [sp, -R5]
-interrupt_668: l2204: nop
-l2205: stmDB R13!, {R0, R8, R12, R15}
-l2206: orrs R10, R0, R6
-l2207: cmnCS R5, R9, ROR R7
-l2208: swi #12188977
-l2209: clzLE R7, R11
-l2210: teqVC R8, #8781824
-l2211: eorCSs R11, R1, R2, RRX 
-l2212: cmpEQ R1, R4
-l2213: mov R3, #18
-l2214: ldrVCB R10, [sp, -R3]
-l2215: swi #16755905
-l2216: teq R7, #1654784
-l2217: tstCC R5, R3, LSR #8
-l2218: mov R6, #20
-l2219: ldr R7, [sp, +R6]
-interrupt_209: l2220: teq R4, R8
-interrupt_448: l2221: mov R12, #4
-l2222: ldrsh R1, [sp, -R12]
-l2223: addCCs R2, R10, R4, ASR #6
-l2224: str R15, [sp], #+4
-l2225: mvns R0, R11
-l2226: eorLEs R1, R15, R7
-l2227: subs R12, R7, #933888
-interrupt_348: l2228: ldr R7, l2230
-l2229: b l2231
-l2230: .word 1048500
-l2231: swp R4, R5, [R7]
-l2232: swi #8923265
-interrupt_621: l2233: mov R6, #38
-l2234: strVCB R0, [sp, -R6]
-l2235: ldr R9, [sp, #-36]!
-l2236: ldrsb R2, [sp, #-12]
-l2237: strh R5, [sp, #+20]
-l2238: ldr R10, l2240
-l2239: b l2241
-l2240: .word 1048520
-l2241: swpVCb R5, R1, [R10]
-l2242: ands R7, R5, R1, RRX 
-l2243: rsbEQs R10, R11, #1982464
-l2244: rscLE R14, R10, R6, RRX 
-l2245: bLT l2250
-l2246: rscVSs R5, R0, R8, RRX 
-l2247: and R12, R11, R12, LSL #24
-l2248: cmn R8, R14
-l2249: mvns R11, #38400
-l2250: mvnLTs R12, R4, ASR R4
-l2251: swi #4661370
-l2252: strEQh R2, [sp, #+12]
-l2253: andCS R12, R7, #36700160
-l2254: bic R11, R14, R6
-l2255: rsbNEs R8, R12, R6, ASR #25
-l2256: teqGT R3, R11, LSL #22
-l2257: subCSs R0, R2, R4, LSL #7
-interrupt_990: l2258: subGT R3, R0, R14, ROR #21
-interrupt_564: l2259: ldr R4, [sp, #+16]
-l2260: addPL R8, R14, R0, LSR R2
-l2261: ldr R3, l2263
-l2262: b l2264
-l2263: .word 1048496
-l2264: swpVSb R5, R7, [R3]
-l2265: nop
-l2266: nop
-l2267: sbcVS R2, R0, R14, LSR #14
-l2268: bEQ l2274
-l2269: orrLE R1, R12, R7, LSR #17
-l2270: eorHIs R14, R2, R12, ROR R3
-l2271: movVCs R11, R5
-l2272: cmpCS R15, R14
-l2273: bicLE R6, R14, R8, ROR R6
-l2274: add R2, R5, R4, ASR R6
-l2275: rsb R10, R0, R10
-l2276: mov R0, #40
-interrupt_726: l2277: str R14, [sp, +R0]!
-l2278: subGEs R12, R0, R14
-l2279: mov R14, #31
-l2280: ldrsb R7, [sp, -R14]
-l2281: bLE l2288
-l2282: eorVC R3, R2, R14, LSL R11
-interrupt_825: l2283: sbcLS R9, R4, R3, LSR #27
-interrupt_712: l2284: eorLT R7, R14, R6, LSR #1
-l2285: tstVS R15, R3
-l2286: adcLTs R14, R9, #432
-interrupt_535: l2287: adc R2, R7, #12032
-l2288: rscs R9, R11, #6016
-l2289: str R5, [sp, #-32]!
-l2290: mov R9, #8
-l2291: ldrsb R6, [sp, -R9]
-interrupt_596: l2292: ldr R9, l2294
-interrupt_505: l2293: b l2295
-l2294: .word 1048532
-l2295: swpb R12, R6, [R9]
-l2296: bicEQs R6, R0, R11, ASR #25
-interrupt_398: l2297: teqCS R4, R11, ASR #30
-l2298: ldr R0, l2300
-l2299: b l2301
-l2300: .word 1048516
-l2301: swpVSb R8, R5, [R0]
-l2302: mov R10, #16
-l2303: strCSh R12, [sp, +R10]
-l2304: movMI R5, R8
-l2305: sbcLS R1, R7, R8
-l2306: subEQ R4, R6, #181
-l2307: ldr R14, l2309
+l1904: b l1902
+l1905: ldrsh R12, [sp, #+68]
+l1906: mvnLS R12, R7
+l1907: str R6, [sp, #+36]!
+l1908: sbc R1, R7, R3, ROR R12
+l1909: str R8, [sp], #-24
+interrupt_652: l1910: cmp R10, R10
+l1911: swi #10677590
+l1912: bics R6, R1, #568
+l1913: mov R2, #20
+l1914: ldr R10, [sp, +R2]!
+l1915: mov R8, #10
+l1916: ldrB R6, [sp, -R8]
+interrupt_924: l1917: cmpPL R9, R2, ROR R5
+l1918: clzMI R14, R5
+l1919: rscGE R3, R3, R15
+l1920: ldr R8, l1922
+l1921: b l1923
+interrupt_912: l1922: .word 1048552
+l1923: swp R1, R9, [R8]
+l1924: tstLE R4, R11
+l1925: clz R4, R3
+l1926: mov R8, #40
+interrupt_108: l1927: strNEh R7, [sp, +R8]
+l1928: adcs R14, R1, #15728640
+l1929: mov R10, #32
+l1930: str R12, [sp], -R10
+l1931: mov R9, #56
+interrupt_37: l1932: ldrCCh R11, [sp, +R9]
+l1933: mov R5, #74
+l1934: strPLh R11, [sp, +R5]
+interrupt_946: l1935: mov R1, #20
+l1936: strB R5, [sp, +R1]
+l1937: ldrLTsb R3, [sp, #+21]
+interrupt_728: l1938: rscLE R9, R9, R10, LSR R3
+l1939: teq R11, #1867776
+l1940: clzGT R1, R10
+l1941: bHI l1950
+l1942: bicCSs R14, R11, #974848
+l1943: rsbs R3, R5, R6, ROR #14
+l1944: rsb R8, R7, R3, LSL R4
+l1945: mvnGT R14, R5, LSL R2
+l1946: cmnCC R10, R4, ASR #6
+l1947: rscNE R6, R6, R14, LSR R14
+l1948: movNE R9, R1, RRX 
+l1949: cmnVS R1, R9
+l1950: mvns R6, R8
+l1951: subs R11, R5, R4, ASR #14
+l1952: bLE l1955
+interrupt_128: l1953: tst R1, R9, ROR R12
+l1954: and R7, R4, R12, RRX 
+l1955: teqCC R11, #16777216
+l1956: swi #11906836
+interrupt_940: l1957: adcCSs R14, R15, R9, RRX 
+l1958: b l1967
+interrupt_285: l1959: clzGE R8, R2
+l1960: adc R6, R9, R7, ASR R8
+l1961: subHIs R7, R3, #-939524096
+l1962: sbcGT R9, R8, R3, ASR #16
+l1963: clzPL R3, R8
+l1964: teq R8, R14
+l1965: adcEQs R11, R2, R9, LSL R11
+l1966: addEQs R9, R0, R3, LSL #3
+l1967: subs R7, R14, R15
+interrupt_227: l1968: mov R5, #8
+interrupt_408: l1969: ldrPL R7, [sp, +R5]
+l1970: b l1979
+interrupt_289: l1971: add R1, R0, #190
+l1972: subGT R10, R9, R8, RRX 
+l1973: rsbLSs R8, R10, R9, ROR R9
+l1974: cmnCS R7, R14, ASR R7
+interrupt_43: l1975: orr R8, R14, R10, LSL #30
+l1976: orrGEs R11, R11, R7
+l1977: teqGT R5, #38273024
+interrupt_757: l1978: b l1980
+l1979: b l1972
+l1980: subs R8, R5, R6, LSR #0
+l1981: teqNE R15, R10
+l1982: orrLTs R1, R11, R8
+interrupt_789: l1983: ldr R8, l1985
+l1984: b l1986
+l1985: .word 1048540
+l1986: swpb R11, R12, [R8]
+interrupt_710: l1987: sub R5, R11, R5
+l1988: swi #14477770
+interrupt_948: l1989: cmn R14, R7, ROR R11
+l1990: orr R11, R8, #294912
+interrupt_580: l1991: subVC R5, R8, #784334848
+l1992: subLE R0, R6, R0
+l1993: andLSs R12, R10, R11, LSL #30
+l1994: eorLT R1, R3, #147456
+interrupt_649: l1995: adcPL R6, R15, R6
+l1996: cmpMI R1, #-822083584
+l1997: sbcLSs R3, R3, R12, ROR R9
+l1998: eorVC R9, R2, R2, LSL #0
+l1999: b l2002
+l2000: cmnLE R12, R14, ASR R9
+l2001: rsbs R10, R6, #2113929216
+interrupt_783: l2002: sbcNEs R11, R3, R5
+l2003: bVS l2012
+l2004: rsbHI R11, R14, R5
+l2005: adds R6, R12, R11, ASR #14
+interrupt_265: l2006: mvnMIs R2, R3
+interrupt_86: l2007: tst R4, R2, ASR R7
+l2008: adc R14, R14, R10, ASR R4
+interrupt_95: l2009: bicCCs R1, R6, R4
+l2010: adcLE R4, R6, R4, ROR R1
+l2011: mvns R14, R7, LSR R2
+l2012: cmpPL R0, R1, ASR R6
+l2013: adcs R4, R5, R8
+l2014: ldmIB R13!, {R0, R1, R2, R3, R7, R8}
+l2015: cmnCC R8, #17664
+l2016: rsbGTs R3, R3, #1808
+l2017: ldr R14, [sp, #-12]!
+interrupt_933: l2018: swi #11311734
+l2019: cmpVC R5, #-805306359
+l2020: cmp R3, R11, RRX 
+l2021: str R2, [sp, #+8]!
+l2022: orr R6, R12, R3
+l2023: ldrPLB R12, [sp, #+13]
+l2024: ldrLEsb R10, [sp, #+13]
+interrupt_673: l2025: str R10, [sp], #-8
+l2026: sub R7, R5, R9, ROR #11
+l2027: teqGT R14, R6, ASR #18
+l2028: tstGT R6, #-1073741821
+l2029: bVS l2033
+l2030: orrVC R14, R12, R3, RRX 
+l2031: movCS R12, R1, RRX 
+l2032: cmnGE R11, R5
+interrupt_539: l2033: cmnVC R1, R14, ASR #20
+l2034: andNE R12, R1, R8, ASR R8
+l2035: nop
+l2036: mvn R3, #81
+l2037: cmnMI R2, R12, LSL R7
+l2038: sub R1, R5, R11, LSL #19
+interrupt_256: l2039: bLT l2046
+l2040: add R1, R0, #161
+interrupt_817: l2041: sbcCCs R6, R5, R12, LSR R8
+l2042: rsbs R2, R1, #6881280
+l2043: mvnLEs R14, R6
+interrupt_864: l2044: mvns R5, R9, ASR #26
+l2045: b l2047
+l2046: b l2041
+l2047: mvns R3, R10
+l2048: teqHI R3, R8, LSR R0
+l2049: ldr R10, l2051
+l2050: b l2052
+l2051: .word 1048532
+l2052: swpPLb R8, R7, [R10]
+l2053: strLTB R6, [sp, #+36]
+l2054: sub R8, R4, R6, LSL R3
+l2055: mov R10, #38
+l2056: strB R6, [sp, +R10]
+l2057: cmp R4, R14
+l2058: rsbVC R6, R5, R10, LSL R6
+l2059: adc R12, R0, R6, RRX 
+l2060: mov R2, #6
+interrupt_347: l2061: strh R8, [sp, -R2]
+l2062: rsbCSs R2, R12, R1, RRX 
+l2063: mov R8, #44
+interrupt_141: l2064: ldrGE R4, [sp, +R8]
+l2065: clzLS R5, R1
+interrupt_443: l2066: movVSs R5, R4
+interrupt_974: l2067: cmp R11, #-1073741779
+l2068: orrLE R7, R8, R6, ASR R10
+l2069: bLE l2073
+l2070: add R1, R0, #254
+l2071: cmp R5, R10, LSL R8
+l2072: b l2074
+interrupt_627: l2073: b l2071
+l2074: sub R2, R8, R7, LSR R2
+l2075: teqVC R5, #-1744830463
+l2076: tstEQ R4, R1, ROR R11
+l2077: mov R12, #16
+l2078: ldr R0, [sp, +R12]!
+l2079: swi #3762526
+l2080: eors R11, R15, R7
+l2081: tstGT R5, R6, ASR #1
+l2082: stmIB R13!, {R0, R1, R2, R3, R5, R9, R10, R11, R14}
+interrupt_619: l2083: swi #5551409
+l2084: sbcEQs R2, R14, R4, ROR R14
+l2085: adc R6, R5, R9, ASR R9
+interrupt_354: l2086: bMI l2091
+l2087: add R1, R0, #92
+l2088: movGTs R12, R8
+interrupt_482: l2089: sbc R9, R5, R2, LSL R5
+l2090: b l2092
+l2091: b l2088
+interrupt_189: l2092: orrs R5, R14, #1032192
+l2093: stmDA R13!, {R1, R15}
+interrupt_337: l2094: rsb R5, R4, R11
+l2095: ldmIB R13!, {R4, R5, R7, R14}
+l2096: tst R0, R6, LSL R11
+l2097: nop
+interrupt_511: l2098: teqLE R2, R15
+l2099: orr R8, R1, R2, LSL R3
+l2100: swi #2115002
+l2101: tstLS R1, R12
+l2102: mov R1, #44
+l2103: ldr R0, [sp, -R1]!
+l2104: stmVCIA R13, {R0, R2, R3, R8, R9, R11, R12, R15}
+l2105: mov R6, #31
+l2106: ldrsb R9, [sp, +R6]
+l2107: cmnLT R0, R1, ROR R7
+l2108: rsbGTs R1, R9, R4, ASR #22
+l2109: bLS l2113
+l2110: add R1, R0, #57
+l2111: rscLSs R3, R2, R0, ROR #14
+interrupt_954: l2112: b l2114
+interrupt_804: l2113: b l2111
+l2114: addLEs R12, R14, R7, ASR R6
+interrupt_461: l2115: mov R1, #4
+l2116: ldrsb R2, [sp, +R1]
+l2117: clzHI R5, R7
+l2118: teqMI R1, R11, ROR R8
+interrupt_51: l2119: teqMI R14, R12
+l2120: mov R0, #6
+l2121: ldrh R0, [sp, +R0]
+l2122: movHI R0, R6
+l2123: eorGTs R3, R5, R4
+l2124: movMI R14, R8, ASR #1
+interrupt_688: l2125: b l2133
+l2126: orrCC R6, R2, R10
+l2127: eorLS R7, R6, R0
+l2128: orrs R8, R10, R7
+l2129: sbcLS R6, R0, #1124073472
+l2130: add R6, R14, R11, RRX 
+interrupt_665: l2131: rsbGT R7, R9, R5, ROR #7
+interrupt_123: l2132: addGE R11, R8, R6, ASR R9
+l2133: movEQs R4, R6, LSL #20
+l2134: and R10, R3, R6, ASR #16
+l2135: swi #12004690
+l2136: eorLTs R8, R9, R15
+l2137: ldr R11, l2139
+l2138: b l2140
+l2139: .word 1048528
+l2140: swpLSb R1, R12, [R11]
+l2141: mvn R5, R7, ROR R0
+interrupt_544: l2142: mov R2, #36
+l2143: ldrVC R12, [sp, +R2]
+l2144: swi #2559454
+interrupt_16: l2145: bics R12, R12, R14
+l2146: cmpVS R2, R5, ROR R3
+l2147: mov R7, #34
+l2148: ldrB R2, [sp, +R7]
+l2149: stmDB R13!, {R6, R15}
+l2150: tst R14, R14, LSL #20
+l2151: tstLS R9, R7
+interrupt_708: l2152: orrs R7, R0, R7, ROR R5
+l2153: ldr R9, l2155
+l2154: b l2156
+l2155: .word 1048492
+l2156: swpCCb R11, R6, [R9]
+interrupt_838: l2157: subLTs R12, R14, R6
+l2158: subs R9, R2, R11, ROR R7
+l2159: adcGTs R14, R0, #62720
+l2160: eorLS R1, R9, R12, ASR R9
+l2161: ldrVCB R2, [sp, #+23]
+interrupt_372: l2162: teqGE R10, R10
+l2163: str R11, [sp, #+12]!
+interrupt_633: l2164: b l2170
+l2165: add R1, R0, #135
+interrupt_356: l2166: adcLEs R2, R1, R3, ASR #28
+l2167: orrPL R11, R15, #2752
+l2168: clzPL R7, R0
+l2169: b l2171
+l2170: b l2166
+l2171: stmDB R13!, {R1, R8, R15}
+interrupt_231: l2172: rscs R8, R9, #235520
+l2173: mov R7, #19
+l2174: ldrsb R14, [sp, +R7]
+l2175: mov R10, #8
+l2176: ldr R1, [sp], +R10
+l2177: ldr R11, [sp], #+4
+l2178: ldrHIh R5, [sp, #-18]
+l2179: b l2186
+l2180: teqEQ R0, R4, ASR #29
+l2181: tstHI R14, R11, RRX 
+l2182: orrEQs R12, R1, R11
+l2183: sbc R10, R9, #2686976
+interrupt_560: l2184: rscs R14, R4, R1, ROR R10
+l2185: subMIs R10, R2, #643072
+l2186: subGT R8, R1, R0
+l2187: mov R4, #14
+l2188: ldrCCsh R5, [sp, +R4]
+interrupt_662: l2189: movs R5, R14
+l2190: stmPLDB R13, {R0, R5, R7, R11, R12, R15}
+l2191: strVCB R11, [sp, #+7]
+l2192: subs R6, R6, R12, ASR #29
+l2193: swi #206633
+interrupt_574: l2194: b l2198
+interrupt_56: l2195: add R1, R0, #203
+l2196: ands R11, R15, #41943040
+l2197: b l2199
+l2198: b l2196
+l2199: mov R4, #26
+l2200: ldrCSh R10, [sp, -R4]
+l2201: mvnVSs R5, R8
+l2202: swi #5888525
+l2203: b l2211
+l2204: teqGE R14, R3, ROR #15
+interrupt_567: l2205: rscLE R1, R1, #51200
+l2206: sbcs R3, R15, R8
+interrupt_104: l2207: subLSs R11, R0, R0
+l2208: subEQ R0, R7, #616
+l2209: eorMIs R6, R7, #3145728
+l2210: orrPL R8, R3, R8, RRX 
+l2211: bics R0, R6, R6, RRX 
+l2212: strGEh R6, [sp, #-2]
+l2213: ldmIB R13!, {R0, R2, R4, R6, R8, R14}
+l2214: b l2222
+l2215: bics R5, R3, R11
+interrupt_457: l2216: cmpVS R14, R2, LSL R10
+interrupt_880: l2217: rscVC R12, R10, #29360128
+l2218: andGE R3, R6, R6, ROR R12
+l2219: movPLs R11, R10, ROR R7
+l2220: cmnGT R12, R0, RRX 
+l2221: sub R10, R8, #-1392508928
+interrupt_917: l2222: andVSs R11, R6, #57344
+l2223: swi #7213347
+l2224: teq R9, R14, RRX 
+l2225: ldmIB R13!, {R0, R2, R11, R14}
+interrupt_606: l2226: ldr R3, [sp, #-56]!
+interrupt_802: l2227: clzMI R0, R10
+l2228: stmMIDA R13, {R8, R13}
+l2229: cmnLS R5, R4, LSR R2
+l2230: eorCC R12, R15, R6, LSR #0
+l2231: orrEQs R5, R5, R10
+l2232: cmn R1, R4, ASR R8
+l2233: swi #13224956
+l2234: teqCC R5, R8, ROR R14
+l2235: rsbMI R1, R10, R7, ROR R6
+l2236: mov R7, #21
+l2237: ldrVSB R0, [sp, +R7]
+interrupt_93: l2238: stmPLIA R13, {R0, R1, R2, R3, R4, R6, R7, R9, R10, R11, R12, R13, R15}
+l2239: adcs R12, R7, R14
+l2240: ldmDA R13!, {R4, R11}
+interrupt_72: l2241: teqLS R6, R8, ROR #25
+l2242: ldr R12, l2244
+l2243: b l2245
+l2244: .word 1048536
+l2245: swpVC R4, R8, [R12]
+l2246: cmpMI R1, R6, LSL #14
+l2247: cmnGT R5, #712
+l2248: ldrGEsb R1, [sp, #+4]
+interrupt_18: l2249: movNEs R7, #2304
+interrupt_159: l2250: rsbs R3, R1, #-2147483613
+l2251: strHIh R9, [sp, #+26]
+l2252: add R4, R10, R9, ASR #13
+l2253: ldr R0, [sp], #+56
+l2254: stmDA R13!, {R1, R2, R3, R9, R10, R11}
+interrupt_309: l2255: rsbVC R3, R10, #948
+l2256: andEQ R7, R6, R14, RRX 
+l2257: ldrh R12, [sp, #-2]
+l2258: rsbPLs R12, R1, R9, ASR R14
+l2259: teqCC R1, #111149056
+l2260: nop
+l2261: andNE R10, R7, R15
+interrupt_791: l2262: swi #16204818
+l2263: ldmIB R13!, {R0, R10}
+l2264: ldrPLsb R14, [sp, #-32]
+l2265: sbcs R9, R11, R0
+interrupt_158: l2266: eorVC R10, R10, #1073741832
+l2267: adc R10, R8, #6946816
+l2268: bics R12, R5, R10, ASR #11
+interrupt_927: l2269: ldrLEB R0, [sp, #-18]
+l2270: orrVCs R8, R9, R3
+interrupt_822: l2271: ldrB R9, [sp, #+8]
+l2272: ldr R8, l2274
+interrupt_861: l2273: b l2275
+l2274: .word 1048484
+l2275: swpLS R10, R5, [R8]
+l2276: strCSh R14, [sp, #+4]
+l2277: mov R6, #18
+l2278: strCSh R9, [sp, -R6]
+l2279: subPL R7, R5, R1, LSL #21
+interrupt_706: l2280: teqGE R1, R14, LSL R2
+l2281: bVC l2290
+l2282: orrs R12, R14, R4, LSR R8
+interrupt_730: l2283: subs R10, R5, #17
+interrupt_675: l2284: rscCC R11, R6, #11337728
+l2285: adds R7, R2, R10, ROR #2
+l2286: clzMI R5, R6
+l2287: clzGT R7, R1
+l2288: orrHI R5, R4, R14, LSR #30
+l2289: addVCs R10, R10, R11, LSL #6
+interrupt_979: l2290: clz R11, R4
+interrupt_693: l2291: subCSs R2, R4, R10, LSL #13
+l2292: orrEQs R0, R4, R1
+l2293: b l2297
+l2294: add R1, R0, #247
+l2295: teqLS R9, R11, ROR R7
+l2296: b l2298
+l2297: b l2295
+l2298: bicNEs R4, R15, R6, RRX 
+l2299: strh R4, [sp, #+18]
+l2300: eors R12, R10, R7, ASR #1
+l2301: eor R11, R4, R5, RRX 
+l2302: movVCs R0, R7
+l2303: ldmDA R13, {R0, R1, R3, R4, R5, R6, R9, R14}
+l2304: andGE R7, R2, R15, RRX 
+interrupt_695: l2305: b l2309
+interrupt_491: l2306: add R1, R0, #197
+interrupt_918: l2307: bicLTs R5, R12, R4, ASR R14
 l2308: b l2310
-l2309: .word 1048496
-l2310: swpGTb R3, R1, [R14]
-l2311: tstPL R0, R8, ASR R12
-l2312: bLS l2322
-l2313: tstLE R9, R8
-l2314: tstCC R0, R0, LSR R1
-l2315: tst R5, #72
-l2316: orrs R14, R2, R5
-interrupt_6: l2317: cmpVC R0, #44288
-l2318: bicMI R10, R10, #4864
-l2319: subs R0, R8, R8, ROR #1
-l2320: movs R0, R1, LSR R6
-l2321: rscs R11, R6, R5, ROR R0
-l2322: rsbGEs R7, R0, R3, RRX 
-l2323: swi #12414047
-l2324: and R9, R6, R4
-interrupt_262: l2325: cmpGE R5, R14, LSL R12
-interrupt_647: l2326: clzLT R5, R5
-l2327: and R2, R1, R10, LSL R1
-l2328: mov R14, #16
-l2329: ldrB R12, [sp, -R14]
-l2330: orrMIs R12, R4, #888832
-l2331: stmDA R13!, {R3, R5, R6, R12}
-l2332: mov R1, #36
-interrupt_208: l2333: strh R3, [sp, +R1]
-interrupt_439: l2334: bGE l2338
-l2335: subCSs R6, R0, R6
-l2336: subCC R4, R15, R14
-l2337: rsb R8, R6, R11, LSR #24
-interrupt_610: l2338: subs R5, R12, #671088640
-l2339: bVS l2346
-interrupt_896: l2340: add R1, R0, #224
-l2341: sbcs R9, R1, R14, LSL R14
-l2342: movs R14, R15, ASR #24
-l2343: mvnMI R11, R14, ROR R7
-l2344: teqEQ R9, R11
-l2345: b l2347
-l2346: b l2341
-l2347: strB R0, [sp, #+30]
-interrupt_322: l2348: ldr R8, l2350
-l2349: b l2351
-l2350: .word 1048488
-l2351: swpNEb R12, R7, [R8]
-interrupt_614: l2352: rsbCSs R5, R1, R0, ROR #28
-l2353: mov R3, #28
-interrupt_202: l2354: strh R14, [sp, +R3]
-l2355: cmnLS R15, #700416
-l2356: rsb R11, R6, R12, ASR #23
-l2357: ldrVCB R12, [sp, #+15]
-l2358: teqGE R1, R7, LSL #12
-l2359: ldmDA R13!, {R3}
-interrupt_485: l2360: clz R14, R7
-l2361: ldrGEsh R10, [sp, #+38]
-l2362: tst R3, R6, RRX 
-l2363: cmpMI R9, #1184
-l2364: clzCS R2, R3
-l2365: strCC R5, [sp, #+16]
-l2366: adc R12, R0, R2, ROR #11
-l2367: tst R11, R8, ROR R5
-l2368: ldr R11, l2370
-l2369: b l2371
-l2370: .word 1048512
-l2371: swpCC R2, R12, [R11]
-l2372: rsbGTs R11, R3, R4, RRX 
-interrupt_813: l2373: ands R7, R10, #419430400
-interrupt_95: l2374: mov R7, #44
-l2375: str R5, [sp], +R7
-l2376: eorPL R2, R7, R3, LSR R2
-l2377: movHIs R2, R12
-l2378: rsbs R10, R12, R1, LSR #28
-l2379: cmpHI R12, R3, LSR R4
-l2380: teqMI R0, R1
-l2381: orrCCs R5, R5, R11
-l2382: b l2390
-interrupt_173: l2383: addVSs R1, R4, R2, LSR R7
-l2384: adds R0, R7, R7, LSR #11
-l2385: eors R1, R11, R9
-l2386: tst R8, R9, LSR R5
-interrupt_788: l2387: addVSs R10, R6, R0
-l2388: teq R2, R14
-l2389: cmpEQ R0, R12
-l2390: tstVS R5, R6
-l2391: subVC R1, R7, #2013265921
-l2392: andCS R4, R11, R2
-l2393: subs R7, R6, R5, LSR #12
-l2394: add R3, R15, R14
-l2395: clz R5, R6
-l2396: mvn R11, R14
-l2397: mov R9, #24
-l2398: strh R7, [sp, -R9]
-l2399: ldr R14, [sp, #+20]!
-l2400: stmDA R13!, {R13, R14}
-l2401: ldrsb R1, [sp, #-50]
-l2402: swi #1352746
-l2403: addCCs R11, R2, #7808
-l2404: clzGE R8, R7
-l2405: rsbMI R8, R2, R12, ROR R7
-l2406: mov R3, #30
-l2407: ldrCSsb R10, [sp, -R3]
-interrupt_347: l2408: b l2416
-l2409: eorPL R10, R10, R8, LSR R5
-l2410: bicCSs R14, R11, R14, ROR R5
-l2411: rscHIs R11, R2, R6, LSL R10
-l2412: teqCS R9, R12, ROR R0
-l2413: orr R3, R12, #254803968
-l2414: rscPL R14, R7, R11
-l2415: mvn R14, R6, ROR #10
-interrupt_714: l2416: adcs R7, R8, R1, RRX 
-l2417: cmp R14, R3, LSL #12
-l2418: ldr R5, l2420
-l2419: b l2421
-interrupt_529: l2420: .word 1048520
-l2421: swpHIb R1, R3, [R5]
-l2422: mov R5, #58
-l2423: ldrh R3, [sp, -R5]
-interrupt_456: l2424: clzLT R1, R10
-l2425: cmn R7, R7, ASR R0
-l2426: ldr R4, l2428
-l2427: b l2429
-l2428: .word 1048524
-l2429: swpb R6, R9, [R4]
-l2430: mvnPL R0, #893386752
-l2431: ldr R1, l2433
-l2432: b l2434
-l2433: .word 1048540
-interrupt_703: l2434: swpb R10, R2, [R1]
-l2435: ldrB R9, [sp, #+5]
-l2436: ldrsb R4, [sp, #-2]
-l2437: mov R14, #34
-l2438: ldrB R12, [sp, -R14]
-interrupt_978: l2439: sbcNEs R3, R9, R3
-l2440: clzGE R14, R8
-l2441: teqHI R5, R6
-l2442: rsb R4, R1, R3, LSL #19
-l2443: add R4, R4, R7, LSL #16
-l2444: bics R1, R14, R4
-l2445: swi #5300040
-l2446: bLT l2455
-l2447: add R1, R0, #43
-interrupt_98: l2448: cmpVC R8, R5, RRX 
-l2449: cmnNE R2, R0, RRX 
-l2450: sbcs R14, R9, R2, RRX 
-l2451: mvn R11, R5, LSL #6
-l2452: mvns R7, #401408
-interrupt_889: l2453: movHIs R2, R14, LSR R9
-interrupt_386: l2454: b l2456
-l2455: b l2448
-interrupt_206: l2456: cmnVC R12, R14, LSL #19
-interrupt_4: l2457: adcMI R4, R5, R1, LSR R3
-l2458: movMI R2, R14, ASR R11
-l2459: andLT R1, R0, R9, RRX 
-l2460: ldrGTsb R1, [sp, #-32]
-interrupt_858: l2461: mov R14, #56
-l2462: ldr R10, [sp], -R14
-l2463: swi #10302070
-l2464: eors R2, R6, #114688
-l2465: mov R10, #35
-l2466: strB R0, [sp, +R10]
-l2467: bicHI R9, R4, R9
-l2468: ldmIA R13, {R1, R2, R3, R5, R8, R10, R11, R12, R14}
-l2469: str R12, [sp], #+24
-l2470: mov R10, #12
-l2471: str R8, [sp, -R10]
-l2472: swi #11750595
-interrupt_53: l2473: ldr R11, l2475
+l2309: b l2307
+interrupt_194: l2310: adds R0, R7, R0, ROR R8
+l2311: ldrB R4, [sp, #-45]
+l2312: tst R3, R9
+l2313: subLE R8, R1, R10, ROR #11
+interrupt_625: l2314: subLTs R1, R15, #380
+l2315: mov R12, #8
+l2316: strEQh R0, [sp, -R12]
+l2317: sbcLE R8, R10, R9, RRX 
+interrupt_515: l2318: teqLT R0, R12, RRX 
+interrupt_110: l2319: mov R10, #24
+l2320: ldr R14, [sp], -R10
+l2321: ldr R11, l2323
+l2322: b l2324
+l2323: .word 1048504
+interrupt_117: l2324: swpMI R2, R8, [R11]
+l2325: addGE R9, R0, R6, LSL R2
+l2326: swi #14127803
+interrupt_324: l2327: eor R4, R14, R12
+l2328: bicHIs R7, R4, R9
+l2329: mvnEQ R4, R15
+l2330: ldmCSDA R13, {R5}
+l2331: tst R10, R1, LSL R14
+interrupt_325: l2332: sbcs R2, R3, R8, ASR #28
+l2333: subLT R0, R6, R12, ROR #13
+l2334: subLS R1, R6, R2, ASR R9
+l2335: bCS l2339
+l2336: add R1, R0, #126
+l2337: eorLSs R10, R0, R6
+l2338: b l2340
+interrupt_823: l2339: b l2337
+l2340: strh R12, [sp, #+14]
+interrupt_85: l2341: rscPLs R0, R6, R11, ASR #16
+l2342: sbc R5, R11, R0, LSL R3
+interrupt_480: l2343: b l2350
+interrupt_211: l2344: subLEs R1, R10, R9, ASR #14
+l2345: cmp R15, R7
+l2346: orrHIs R2, R3, R6, LSL #18
+l2347: adcs R0, R11, R5
+interrupt_915: l2348: tstVS R12, R3
+l2349: andGE R2, R9, R3, LSL R11
+l2350: adcPLs R1, R8, #-2147483633
+interrupt_641: l2351: ldr R0, [sp], #+20
+l2352: bMI l2360
+l2353: add R1, R0, #168
+l2354: orrGTs R10, R1, R2
+l2355: cmnNE R7, R1, LSR #17
+l2356: addEQs R9, R5, R0, ASR R11
+l2357: ands R9, R6, R7, LSR R2
+l2358: rsc R0, R1, R15, RRX 
+l2359: b l2361
+l2360: b l2354
+l2361: adcNE R0, R12, R8, LSL R1
+l2362: mov R9, #52953088
+l2363: ldr R0, l2365
+l2364: b l2366
+interrupt_114: l2365: .word 1048520
+l2366: swpVSb R3, R1, [R0]
+l2367: tst R6, R7, LSL R1
+l2368: str R11, [sp], #+28
+l2369: b l2370
+l2370: cmp R11, R8
+l2371: ldmDB R13!, {R1, R6, R7, R9, R14}
+l2372: swi #9573150
+interrupt_531: l2373: adcGTs R5, R9, #2013265920
+l2374: sbcs R9, R4, #1644167168
+l2375: subs R7, R15, #12451840
+l2376: mvn R0, R9, LSL #9
+interrupt_632: l2377: bHI l2380
+l2378: rsbPLs R1, R4, R0
+interrupt_533: l2379: cmpMI R2, R14
+l2380: sbc R8, R8, R4, RRX 
+l2381: ldrNEB R11, [sp, #+14]
+interrupt_639: l2382: andNE R0, R7, R10, ROR #5
+l2383: bics R14, R1, R3, ROR R6
+l2384: ldmDA R13, {R0, R1, R4, R5, R6, R8, R9, R10, R11, R12, R14}
+l2385: cmp R4, R11
+l2386: ands R3, R8, #34816
+l2387: mov R7, #52
+l2388: str R0, [sp, -R7]
+interrupt_435: l2389: mvnNEs R2, R8
+l2390: mov R5, #12
+interrupt_558: l2391: str R1, [sp], +R5
+l2392: strCSh R2, [sp, #+8]
+l2393: mov R4, #52
+l2394: ldrCS R3, [sp, -R4]
+l2395: sbcCS R11, R15, #1073741834
+interrupt_756: l2396: cmn R6, R1, ASR R10
+l2397: orrPL R2, R2, R3
+l2398: mov R3, #44
+l2399: str R7, [sp, -R3]
+l2400: b l2409
+l2401: rscVCs R9, R15, R0
+l2402: mvnCSs R1, R9
+l2403: rscLS R6, R7, #-201326590
+interrupt_213: l2404: andLSs R11, R6, R8
+l2405: subVC R8, R9, R11, LSR R11
+l2406: bics R2, R8, R6, RRX 
+l2407: cmpVS R9, R3
+interrupt_882: l2408: clzCC R8, R7
+interrupt_71: l2409: movGTs R8, R14, LSR #28
+l2410: ldmDB R13!, {R0, R1, R2, R3, R4, R5, R7, R8, R9, R12, R14}
+l2411: bLT l2417
+l2412: sbcLT R9, R9, R1, LSR #0
+l2413: movCC R2, R12, LSL R12
+l2414: tstEQ R8, R14, RRX 
+interrupt_955: l2415: tst R7, #6848
+interrupt_696: l2416: mov R2, R15, RRX 
+interrupt_973: l2417: addLS R3, R6, R8, RRX 
+l2418: mov R2, #16
+l2419: ldr R14, [sp, -R2]!
+l2420: tstMI R8, R4, LSR #4
+l2421: sbcHI R11, R1, R7
+l2422: mov R9, #9
+l2423: ldrLSB R8, [sp, +R9]
+interrupt_784: l2424: ldr R14, l2426
+interrupt_134: l2425: b l2427
+l2426: .word 1048504
+l2427: swpCC R4, R8, [R14]
+l2428: rsc R4, R11, R12, LSL R8
+interrupt_909: l2429: ldr R1, l2431
+l2430: b l2432
+l2431: .word 1048488
+l2432: swpLSb R2, R11, [R1]
+l2433: cmp R3, R10, LSR R7
+l2434: swi #1753988
+interrupt_172: l2435: b l2440
+interrupt_377: l2436: add R1, R0, #72
+l2437: subPL R10, R14, R8
+l2438: cmn R7, R0, LSL #9
+interrupt_761: l2439: b l2441
+l2440: b l2437
+interrupt_766: l2441: b l2447
+l2442: subCC R4, R6, R3, RRX 
+l2443: andCCs R11, R15, #1808
+interrupt_873: l2444: sbcNEs R0, R5, #406847488
+l2445: clzCS R9, R14
+interrupt_524: l2446: adcVS R4, R1, R15
+l2447: rsbs R14, R7, #1073741827
+l2448: swi #10423416
+interrupt_140: l2449: ands R5, R0, R4, LSR R9
+l2450: rsbs R5, R3, R0, ROR R10
+l2451: str R9, [sp], #+36
+l2452: cmpLE R7, R1, RRX 
+l2453: eors R2, R11, #60555264
+l2454: mov R11, #21
+l2455: strLTB R3, [sp, +R11]
+l2456: teq R7, R6
+l2457: teq R8, R7
+l2458: mov R2, #7
+l2459: strB R3, [sp, -R2]
+l2460: mov R0, #6
+l2461: ldrLEsh R9, [sp, -R0]
+interrupt_478: l2462: mov R0, #0
+l2463: ldr R3, [sp, +R0]!
+l2464: swi #2879900
+l2465: bVS l2472
+interrupt_907: l2466: mvn R6, R10
+interrupt_156: l2467: clz R6, R0
+l2468: clz R14, R8
+interrupt_769: l2469: cmpGT R10, R3
+l2470: subCS R10, R2, R11, LSL #19
+interrupt_737: l2471: movs R3, R12, ASR R11
+interrupt_190: l2472: add R0, R10, #1376256
+l2473: ldr R10, l2475
 l2474: b l2476
-interrupt_716: l2475: .word 1048488
-l2476: swpGTb R0, R3, [R11]
-l2477: rsbCCs R4, R10, R12, ROR R8
-l2478: b l2479
-l2479: cmnLS R4, R10, RRX 
-l2480: ldr R7, l2482
-l2481: b l2483
-l2482: .word 1048520
-l2483: swpVCb R2, R3, [R7]
-l2484: subLS R12, R9, R6, LSL R4
-l2485: cmn R9, #-2147483648
-l2486: ldr R5, l2488
-l2487: b l2489
-l2488: .word 1048528
-l2489: swp R10, R4, [R5]
-l2490: swi #11515786
-interrupt_725: l2491: adds R8, R11, R15, ROR #21
-l2492: sbcVC R1, R6, R10, ASR R2
-l2493: ldr R6, l2495
-l2494: b l2496
-l2495: .word 1048504
-interrupt_291: l2496: swpCCb R0, R9, [R6]
-l2497: bics R9, R1, #23068672
-l2498: swi #2099330
-l2499: ldrCCB R12, [sp, #+3]
-l2500: teqEQ R11, R9, ROR R6
-l2501: cmn R7, #973078528
-l2502: orrs R4, R12, R2
-l2503: ldrsb R0, [sp, #+15]
-l2504: stmVSDA R13, {R1, R7, R10}
-l2505: rsc R14, R2, R11, LSL R10
-l2506: rsbCS R4, R12, R15, LSR #16
-l2507: subHIs R1, R6, #52428800
-l2508: ldrGEsb R9, [sp, #+20]
-interrupt_925: l2509: orrEQs R14, R11, R2
-l2510: cmp R11, #-1543503870
-l2511: sbcPL R4, R6, R12, LSR R7
-interrupt_719: l2512: nop
-interrupt_41: l2513: addLS R3, R1, R7
-l2514: teqEQ R15, R5
-interrupt_609: l2515: stmIB R13!, {R0, R4, R10, R15}
-l2516: ldrsb R12, [sp, #-38]
-l2517: ldmIB R13, {R1, R6, R8}
-l2518: stmDA R13!, {R4, R7, R15}
-l2519: subNEs R0, R15, #164
-l2520: sbc R1, R12, R6
-l2521: sbcs R0, R10, #11665408
-l2522: bPL l2532
-l2523: eorEQs R7, R7, R15
-l2524: mvnEQ R2, R5, LSR #6
-l2525: andEQs R4, R7, R1, LSR #1
-interrupt_980: l2526: mvn R12, R2, RRX 
-interrupt_985: l2527: andGEs R4, R5, #1073741835
-l2528: sbcVCs R1, R12, R11
-l2529: sbcs R4, R8, #1325400064
-l2530: subs R11, R8, R1
-l2531: clzVC R6, R3
-interrupt_959: l2532: mvnGTs R3, R9, ROR #29
-l2533: mov R14, #10
-l2534: strh R10, [sp, +R14]
-l2535: stmLTIA R13, {R0, R2, R14}
-l2536: sbcNE R9, R5, R0, LSL R0
-interrupt_738: l2537: rscVSs R1, R9, R8
-l2538: sbcLSs R12, R1, R11
-interrupt_73: l2539: swi #6850004
-l2540: ldmDA R13!, {R2, R3, R5, R7, R8}
-l2541: cmnLE R11, R1, RRX 
-interrupt_882: l2542: clzHI R5, R10
-l2543: mov R5, #26
-l2544: ldrGEB R8, [sp, +R5]
-interrupt_303: l2545: sub R4, R1, R7
-l2546: mov R10, #58
-interrupt_447: l2547: ldrsb R7, [sp, +R10]
-l2548: ldr R14, l2550
-interrupt_548: l2549: b l2551
-l2550: .word 1048516
-l2551: swpb R12, R6, [R14]
-l2552: mov R9, #16
-l2553: ldrsh R5, [sp, +R9]
-l2554: sbc R12, R1, R6, ASR R6
-interrupt_873: l2555: ldrsb R2, [sp, #+22]
-l2556: subs R9, R12, #3768320
-l2557: ldrsh R14, [sp, #+50]
-interrupt_736: l2558: swi #15571954
-l2559: stmIA R13, {R0, R3, R8, R13}
-l2560: ldrVCsb R4, [sp, #-8]
-l2561: mvnNE R7, R11
-l2562: mvnLEs R6, R2, RRX 
-l2563: mov R10, #16
-l2564: ldrsh R1, [sp, -R10]
-interrupt_405: l2565: addLSs R6, R12, #-1677721600
-l2566: ldrLTB R6, [sp, #+23]
-l2567: rscCS R4, R12, R12, ROR #8
-l2568: mov R14, #48
-l2569: str R1, [sp], +R14
-l2570: cmpCS R14, R5
-l2571: subs R1, R0, #1408
-l2572: ldrsh R4, [sp, #-28]
-l2573: subHI R9, R7, R8, LSR R1
-l2574: ldrsh R5, [sp, #-38]
-l2575: swi #7785379
-interrupt_571: l2576: rscLTs R3, R1, #2097152
-l2577: orrPLs R3, R15, #65011712
-l2578: adcNE R8, R14, R14, LSR #3
-interrupt_829: l2579: addLT R6, R12, R11, RRX 
-l2580: orr R4, R4, R5
-l2581: cmn R4, #155648
-l2582: ldrGEh R5, [sp, #-28]
-l2583: ands R11, R4, R10, ASR #2
-l2584: mov R7, #12
-interrupt_876: l2585: str R15, [sp, -R7]
-l2586: andEQ R2, R10, R3, LSR R14
-l2587: bVC l2597
-l2588: cmnLS R7, R4
-l2589: sbcs R12, R7, R5, LSL #21
-l2590: sbc R3, R15, #-134217725
-interrupt_50: l2591: cmp R1, R9
-l2592: eor R11, R4, R2, ROR R14
-interrupt_183: l2593: cmpMI R3, R8
-l2594: mvnEQs R7, R2, LSR R12
-l2595: adcNE R11, R12, #53248
-l2596: sbcVCs R11, R3, #782336
-l2597: bicHIs R5, R14, R9, LSL R14
-l2598: strEQh R1, [sp, #-60]
-l2599: rscGT R4, R11, R15
-interrupt_565: l2600: b l2603
-l2601: rscEQs R12, R6, R12, ROR R11
-l2602: sbcs R10, R6, #40
-l2603: rsbGT R8, R4, R4
-l2604: subLTs R0, R4, R2
-l2605: clzCC R9, R7
-interrupt_563: l2606: swi #669918
-l2607: strPLB R11, [sp, #-6]
-l2608: movs R14, #192
-l2609: mov R1, #40
-l2610: str R5, [sp], -R1
-l2611: stmCCDA R13, {R2}
-l2612: movEQ R11, R0, RRX 
-l2613: orr R1, R14, R7
-l2614: addNEs R14, R8, R2, LSL R7
-l2615: bicNE R3, R9, R10
-l2616: cmp R3, R9
-l2617: ldr R1, l2619
-interrupt_353: l2618: b l2620
-l2619: .word 1048484
-interrupt_604: l2620: swp R7, R3, [R1]
-l2621: swi #8420668
-l2622: sbcLSs R2, R11, R14, ROR #24
-interrupt_133: l2623: orrGTs R11, R11, R12, ASR R3
-l2624: stmDA R13!, {R13}
-l2625: cmpGE R3, #388
-l2626: sbcs R7, R12, #33280
-l2627: bHI l2631
-l2628: clzLT R6, R3
-l2629: teq R10, R1, LSR R6
-l2630: orrLE R10, R5, #29696
-l2631: subVSs R2, R3, #9437184
-interrupt_900: l2632: swi #5999907
-l2633: sbcs R10, R9, R7, ROR #19
-l2634: ldr R10, l2636
-l2635: b l2637
-l2636: .word 1048536
-interrupt_413: l2637: swp R12, R7, [R10]
-l2638: clz R3, R6
-l2639: orr R5, R8, R6
-interrupt_802: l2640: mvnEQs R12, R5
-interrupt_857: l2641: bicLEs R7, R11, R15, ASR #29
-l2642: mov R3, #37
-l2643: ldrsb R4, [sp, +R3]
-l2644: ldr R3, l2646
-interrupt_203: l2645: b l2647
-l2646: .word 1048516
-l2647: swpb R14, R2, [R3]
-l2648: swi #12271446
-l2649: clz R0, R4
-l2650: rsbVS R11, R2, R2, LSL #9
-l2651: swi #269845
-l2652: mvns R4, #37632
-l2653: rscPLs R4, R7, R7, LSL #19
-interrupt_63: l2654: strh R3, [sp, #+38]
-interrupt_486: l2655: rscs R1, R12, R14, ROR #18
-l2656: teq R10, #471040
-l2657: ldrLEsh R4, [sp, #+4]
-l2658: mov R7, #47
-l2659: ldrEQB R5, [sp, +R7]
-l2660: stmDA R13!, {R5}
-l2661: mvn R1, #32768
-l2662: sbcCS R7, R11, R1, LSR R2
-interrupt_786: l2663: mov R8, #4
-l2664: str R0, [sp, -R8]!
-l2665: subLE R11, R5, R3, ASR #14
-l2666: cmpGE R15, R8, RRX 
-l2667: ldr R2, [sp], #-12
-l2668: b l2676
-l2669: add R1, R0, #52
-l2670: and R8, R9, R14, ROR R3
-l2671: mvnLSs R2, #512
-interrupt_474: l2672: tst R12, #1073741879
-l2673: cmpMI R3, R12, ROR #18
-l2674: and R4, R6, #503316480
-l2675: b l2677
-l2676: b l2670
-l2677: mov R1, #40
-l2678: ldrNE R8, [sp, +R1]
-l2679: b l2680
-l2680: rsb R1, R11, R7, LSL R7
-l2681: swi #16546141
-l2682: mov R6, #74
-l2683: ldrsh R9, [sp, +R6]
-interrupt_239: l2684: swi #10835051
-l2685: mov R9, #40
-interrupt_887: l2686: ldr R0, [sp, +R9]
-interrupt_982: l2687: ldrsh R2, [sp, #+40]
-l2688: tst R6, #-536870908
-l2689: mvnHIs R1, R0, ROR #12
-l2690: cmpMI R0, R11
-l2691: swi #11727589
-interrupt_329: l2692: mvnVSs R14, R4
-l2693: stmIB R13!, {R13, R14, R15}
-interrupt_954: l2694: bCC l2703
-l2695: orrCC R11, R10, R7, LSR #30
-l2696: cmn R9, R6, ASR R10
-l2697: bicCC R11, R14, R9, ASR #20
-l2698: mvn R5, #-603979775
-interrupt_451: l2699: sbc R7, R6, R10, LSL #15
-l2700: add R3, R15, R0
-l2701: subLS R8, R7, R4
-l2702: sub R1, R12, R9
-l2703: cmp R9, R4, RRX 
-interrupt_815: l2704: bLE l2711
-interrupt_553: l2705: add R1, R0, #116
-l2706: subNE R11, R6, R8, LSL R14
-l2707: cmpCS R2, R4, RRX 
-l2708: subVS R7, R7, R3, LSR R4
-l2709: clzLS R2, R11
-l2710: b l2712
-l2711: b l2706
-l2712: strB R7, [sp, #+53]
-l2713: ldrsh R0, [sp, #+6]
-l2714: stmIB R13!, {R13, R14, R15}
-l2715: ands R5, R7, #16252928
-l2716: swi #16064281
-l2717: swi #6346384
-interrupt_82: l2718: cmpMI R11, R15, RRX 
-l2719: stmIA R13!, {R13}
-l2720: mov R11, #14
-l2721: strLTh R0, [sp, -R11]
-l2722: teq R8, R11, LSR R8
-interrupt_665: l2723: mov R10, #40
-l2724: ldrsh R10, [sp, +R10]
-l2725: movMI R7, R7, LSL R7
-interrupt_368: l2726: swi #3391487
-l2727: cmn R2, R4, LSR R4
-interrupt_587: l2728: eor R9, R5, R1, RRX 
-l2729: bicLS R11, R5, R11, ROR R11
-l2730: ldr R0, l2732
-l2731: b l2733
-interrupt_261: l2732: .word 1048520
-interrupt_524: l2733: swpb R10, R7, [R0]
-l2734: movGT R8, R3, ROR R5
-l2735: swi #8665290
-interrupt_803: l2736: mov R8, #16
-l2737: ldrCSh R11, [sp, -R8]
-l2738: swi #12299262
-l2739: strB R5, [sp, #+18]
-l2740: cmn R14, #121634816
-l2741: tst R1, R10, LSL R10
-l2742: rsbHIs R14, R0, R8
-l2743: clzVC R4, R10
-interrupt_807: l2744: sbcs R1, R7, R12, ASR #24
-l2745: cmpGE R9, R15, RRX 
-l2746: andPL R1, R0, R14, ROR #15
-l2747: rsb R5, R10, R3, ASR #15
-l2748: mov R7, #26
-l2749: ldrh R2, [sp, -R7]
-l2750: strVSh R6, [sp, #+16]
-l2751: mov R9, #16
-l2752: ldr R3, [sp], +R9
-l2753: ldr R11, l2755
-l2754: b l2756
-l2755: .word 1048544
-l2756: swpb R7, R14, [R11]
-l2757: eorCSs R8, R3, R10, LSL R14
-l2758: andGEs R10, R15, #2304
-l2759: adcEQ R3, R3, #872415234
-l2760: and R14, R15, R0
-l2761: sub R14, R12, #536870925
-l2762: ldr R12, [sp], #-44
-l2763: adcs R11, R15, #2192
-l2764: ldmIB R13!, {R1, R2, R4, R6, R7, R10, R14}
-interrupt_254: l2765: cmp R1, R6, LSL #8
-l2766: ldr R2, l2768
-l2767: b l2769
-l2768: .word 1048508
-l2769: swpGT R1, R0, [R2]
-interrupt_210: l2770: ldr R3, [sp, #+28]!
-l2771: strVSh R6, [sp, #-14]
-l2772: ldr R0, l2774
-l2773: b l2775
-l2774: .word 1048536
-l2775: swpMIb R11, R7, [R0]
-l2776: ldr R7, l2778
-l2777: b l2779
-interrupt_549: l2778: .word 1048516
-l2779: swpCCb R9, R0, [R7]
-l2780: strB R2, [sp, #-6]
-l2781: mov R9, #16
-l2782: ldr R9, [sp, -R9]!
-l2783: mov R3, #28
-l2784: ldr R2, [sp, -R3]!
-l2785: clzVC R10, R0
-l2786: mov R7, #11
-l2787: ldrNEB R12, [sp, +R7]
-l2788: cmpHI R10, R5, RRX 
-interrupt_905: l2789: bicLEs R0, R12, R6, RRX 
-l2790: movLEs R14, R8, LSR #25
-l2791: clz R5, R3
-l2792: mov R6, #34
-l2793: ldrEQsb R1, [sp, +R6]
-l2794: eorGE R12, R3, R7, ROR R7
-l2795: ldr R11, l2797
-l2796: b l2798
-l2797: .word 1048532
-l2798: swp R12, R2, [R11]
-l2799: strCSB R2, [sp, #-7]
-l2800: stmIB R13!, {R1, R10, R11}
-l2801: andNE R7, R4, R5
-l2802: cmpNE R1, R8, LSL R8
-l2803: strGEB R1, [sp, #-2]
-l2804: strB R5, [sp, #+40]
-l2805: tstCC R9, R15, LSL #26
-interrupt_917: l2806: teqPL R1, R3, LSR #18
-l2807: movVC R4, R5, LSL R7
-l2808: bHI l2812
-l2809: add R1, R0, #99
-l2810: bicVC R9, R3, R6
-interrupt_28: l2811: b l2813
-l2812: b l2810
-l2813: sbcVC R8, R1, R6
-l2814: swi #12586755
-l2815: rsbEQ R9, R10, R4, RRX 
-l2816: mov R10, #4
-l2817: str R0, [sp], -R10
-interrupt_695: l2818: ldmIB R13!, {R0, R1, R2, R3, R4, R5, R6, R7, R8, R10, R11, R12, R14}
-l2819: tstHI R1, R3, RRX 
-l2820: mov R11, #42
-l2821: strh R6, [sp, -R11]
-l2822: teq R7, R15
-l2823: clzEQ R14, R9
-l2824: movMI R0, R3, RRX 
-l2825: ands R4, R15, R2
-l2826: nop
-l2827: str R3, [sp, #-44]
-l2828: nop
-interrupt_749: l2829: b l2831
-interrupt_673: l2830: clz R1, R6
-l2831: clz R0, R6
-l2832: sbc R11, R14, R15, LSL #24
-interrupt_497: l2833: ldr R6, [sp, #-64]
-l2834: ldrHIh R6, [sp, #-44]
-l2835: swi #8345388
-l2836: b l2840
-interrupt_632: l2837: add R1, R0, #4
-l2838: movGEs R7, #2030043136
-l2839: b l2841
-l2840: b l2838
-l2841: rsb R12, R0, R9, ASR R7
-l2842: swi #5659075
-interrupt_449: l2843: swi #9395334
-l2844: cmpCS R12, R2, LSL #5
-l2845: ldr R4, l2847
-l2846: b l2848
-l2847: .word 1048520
-l2848: swp R9, R14, [R4]
-l2849: orr R7, R5, R0, LSL #9
-l2850: mov R4, #70
-l2851: ldrCCB R11, [sp, -R4]
-l2852: mvnLSs R12, R0, RRX 
-l2853: teq R10, R15
-interrupt_58: l2854: sub R14, R10, R9
-l2855: ldr R0, l2857
+l2475: .word 1048544
+l2476: swpGE R6, R3, [R10]
+l2477: teqMI R3, #4080
+interrupt_178: l2478: adcs R6, R7, #8384
+l2479: bicLTs R5, R0, R5, LSR R11
+l2480: orrHI R0, R4, #208
+l2481: subGE R1, R6, #268435459
+l2482: mvn R2, #-1811939328
+l2483: orrEQs R4, R1, R2
+interrupt_795: l2484: addPL R8, R14, R1, LSL R8
+l2485: teqVC R11, #1073741879
+l2486: stmDB R13!, {R0, R1, R2, R9, R10, R11, R14, R15}
+l2487: sbcLT R11, R4, R14, LSR R10
+l2488: b l2496
+l2489: add R1, R0, #84
+l2490: mvnLEs R11, R5, ASR #3
+l2491: andEQs R4, R14, R5, RRX 
+l2492: rsbGT R9, R7, R12, LSR R10
+l2493: subLT R14, R14, #150994944
+l2494: sbcs R8, R1, R15, LSL #0
+l2495: b l2497
+l2496: b l2490
+interrupt_176: l2497: orrs R9, R1, R15, RRX 
+interrupt_305: l2498: rscHIs R0, R9, R0, ROR #14
+l2499: addLEs R0, R0, R4
+l2500: swi #2542422
+l2501: rsbVCs R6, R9, R4
+l2502: and R4, R1, R15, LSL #19
+l2503: ldmIB R13!, {R0, R1, R3, R4, R5, R9, R11, R12}
+l2504: swi #159146
+interrupt_12: l2505: rscs R9, R4, R14, LSR #19
+l2506: swi #2789355
+l2507: ldrEQ R4, [sp, #+16]
+l2508: cmnGE R10, R10, ROR R9
+l2509: cmnLS R12, R9, RRX 
+interrupt_169: l2510: bicLS R1, R11, R12, LSL R7
+l2511: sub R9, R2, R2, LSL R8
+l2512: strh R11, [sp, #-18]
+l2513: stmIB R13!, {R2, R3, R4, R6, R7, R12}
+l2514: cmp R4, #-570425344
+l2515: addCSs R10, R4, #21504
+l2516: rsbNE R8, R1, R4
+interrupt_130: l2517: mvnLS R4, R4, RRX 
+l2518: mov R4, #53
+l2519: ldrLTsb R9, [sp, -R4]
+l2520: rscMI R0, R14, R8, LSR R12
+l2521: swi #15823654
+l2522: rsc R9, R3, R3, ASR R14
+l2523: movLS R9, #14016
+l2524: ldmIA R13!, {R1}
+l2525: stmHIDB R13, {R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R11, R12, R13, R14, R15}
+l2526: cmn R3, R2, ROR #2
+interrupt_207: l2527: tstCC R4, R10
+l2528: ldrVSsb R11, [sp, #+2]
+l2529: cmp R0, R15
+l2530: ands R10, R9, #1296
+l2531: sbcLTs R5, R7, R15
+l2532: addNE R6, R4, R1, LSL #7
+l2533: teqLT R0, R3, ROR R0
+l2534: swi #1915098
+l2535: ldrsh R10, [sp, #-56]
+interrupt_733: l2536: andVSs R9, R1, #39321600
+l2537: b l2541
+interrupt_454: l2538: add R1, R0, #229
+l2539: cmn R0, R11, LSL R11
+l2540: b l2542
+l2541: b l2539
+l2542: ldr R12, [sp, #+0]
+l2543: mov R3, #26
+l2544: ldrLEsb R6, [sp, -R3]
+l2545: ldr R9, l2547
+l2546: b l2548
+l2547: .word 1048532
+l2548: swp R11, R14, [R9]
+l2549: sbc R14, R0, R4, LSL R1
+l2550: mov R9, #32
+l2551: ldr R8, [sp], -R9
+l2552: sbcGEs R3, R8, #31232
+l2553: movs R10, R1, ASR #11
+l2554: ldr R11, l2556
+interrupt_655: l2555: b l2557
+l2556: .word 1048500
+l2557: swpLE R0, R5, [R11]
+l2558: strVSB R4, [sp, #+35]
+l2559: movHIs R1, R3, LSL #24
+l2560: teqVS R4, R10, RRX 
+interrupt_905: l2561: adcs R1, R10, R2, RRX 
+l2562: mov R4, #20
+l2563: ldrh R2, [sp, +R4]
+l2564: addGEs R2, R4, R6, RRX 
+l2565: addVC R0, R7, R3, LSL #22
+l2566: strB R10, [sp, #+10]
+interrupt_956: l2567: mov R6, #16
+interrupt_157: l2568: strh R6, [sp, -R6]
+l2569: ldr R12, [sp], #+28
+l2570: ldr R9, l2572
+l2571: b l2573
+l2572: .word 1048504
+interrupt_900: l2573: swpb R12, R2, [R9]
+l2574: mvns R0, R4
+l2575: rsbVCs R10, R9, R12
+interrupt_672: l2576: bLE l2581
+l2577: add R1, R0, #223
+interrupt_300: l2578: subCCs R4, R9, R11, ROR #1
+interrupt_402: l2579: rscCS R0, R14, #536870913
+l2580: b l2582
+interrupt_721: l2581: b l2578
+l2582: ldrMIB R12, [sp, #-16]
+l2583: ldr R11, [sp, #-28]!
+l2584: ldr R6, l2586
+l2585: b l2587
+l2586: .word 1048484
+l2587: swpLT R5, R4, [R6]
+l2588: swi #10171203
+l2589: sbcNE R6, R0, R3
+l2590: mov R10, #8
+interrupt_853: l2591: str R7, [sp, +R10]!
+l2592: ldmDB R13!, {R14}
+interrupt_251: l2593: strCSB R11, [sp, #+24]
+interrupt_136: l2594: nop
+l2595: subLTs R5, R3, R11, ROR R11
+l2596: cmp R14, R12, LSR R7
+l2597: swi #6690370
+l2598: rsbHI R2, R15, R5, ROR #19
+l2599: mov R10, #20
+l2600: strVCh R4, [sp, +R10]
+interrupt_166: l2601: tst R2, R11, ROR #13
+l2602: swi #670587
+l2603: strB R11, [sp, #+30]
+l2604: rscLS R8, R0, #5
+interrupt_490: l2605: b l2613
+l2606: add R1, R0, #147
+interrupt_689: l2607: orr R1, R14, R3
+l2608: movEQ R12, R5, ROR #23
+interrupt_569: l2609: orr R1, R0, #14024704
+interrupt_362: l2610: orrEQs R4, R7, #48234496
+l2611: tst R0, R10, ROR #28
+interrupt_452: l2612: b l2614
+l2613: b l2607
+l2614: and R4, R14, R5
+interrupt_988: l2615: mov R1, #28
+interrupt_805: l2616: ldrsb R7, [sp, -R1]
+l2617: mov R0, #6
+interrupt_188: l2618: ldrEQh R6, [sp, -R0]
+l2619: cmn R12, #53248
+l2620: rscPLs R0, R3, R10, ASR #17
+l2621: cmpLT R4, R4
+l2622: bic R11, R3, R8, LSR R11
+l2623: ldrCSsh R7, [sp, #+10]
+l2624: clz R11, R14
+l2625: ldrB R7, [sp, #-20]
+l2626: strGEh R14, [sp, #+10]
+l2627: rsc R11, R3, R11, LSR #25
+interrupt_69: l2628: ldrsb R11, [sp, #-29]
+l2629: cmnNE R3, R0, LSR R11
+l2630: eors R14, R10, #-536870912
+interrupt_997: l2631: ldrh R14, [sp, #+14]
+l2632: mvnVSs R11, #16252928
+l2633: mov R12, #16
+interrupt_292: l2634: str R10, [sp, +R12]
+l2635: mov R5, #10
+l2636: ldrLSh R1, [sp, -R5]
+interrupt_774: l2637: ldr R3, l2639
+l2638: b l2640
+l2639: .word 1048548
+interrupt_389: l2640: swpNE R0, R2, [R3]
+l2641: subLS R0, R4, R6, ASR #9
+l2642: ldrB R12, [sp, #+26]
+l2643: and R3, R7, R1
+l2644: cmpPL R9, R14, RRX 
+l2645: subEQ R8, R0, #452984832
+l2646: sbcs R14, R1, R14, LSL R4
+interrupt_889: l2647: nop
+l2648: cmnCC R9, R7, ROR #14
+interrupt_322: l2649: ldr R11, l2651
+l2650: b l2652
+l2651: .word 1048504
+l2652: swpHI R4, R1, [R11]
+l2653: mov R12, R10
+l2654: subLEs R6, R4, R1
+l2655: nop
+l2656: rscs R6, R1, R2, ASR R10
+l2657: andPL R12, R9, R6, ASR #9
+interrupt_281: l2658: teq R8, R0, LSL R11
+l2659: subs R0, R4, R15, LSL #7
+l2660: swi #14120912
+interrupt_781: l2661: addVS R14, R3, R5, LSR R2
+l2662: stmDA R13!, {R13}
+l2663: nop
+interrupt_767: l2664: bicMIs R11, R14, R3, ASR R3
+l2665: ldrCSsh R11, [sp, #-2]
+interrupt_440: l2666: mov R2, #25
+l2667: ldrMIsb R4, [sp, +R2]
+l2668: ldmDA R13, {R0, R4, R6, R8, R9, R12}
+l2669: cmnLT R9, R9
+l2670: strB R2, [sp, #+2]
+interrupt_738: l2671: bicLTs R11, R10, #219152384
+l2672: mov R3, #10
+l2673: ldrh R8, [sp, +R3]
+l2674: mov R9, #2
+l2675: ldrNEB R14, [sp, +R9]
+l2676: ldr R10, l2678
+l2677: b l2679
+l2678: .word 1048520
+interrupt_431: l2679: swpLS R5, R3, [R10]
+l2680: sbcNE R11, R6, R3, RRX 
+l2681: bCS l2691
+l2682: teqLT R14, R11, ASR #1
+l2683: tstNE R6, R2, ROR #2
+l2684: subMI R11, R11, #8388608
+l2685: mvnPLs R3, R10
+l2686: clz R6, R0
+l2687: adcs R14, R11, R8, RRX 
+interrupt_729: l2688: movGTs R11, #4325376
+l2689: bic R4, R0, R5, LSL R7
+l2690: orrVS R7, R14, R15
+l2691: orrNE R8, R10, R9, ASR R3
+interrupt_505: l2692: bicVSs R7, R2, #229638144
+l2693: mvnMI R1, R7
+l2694: bicHI R7, R10, R5, LSR #15
+l2695: strLEB R14, [sp, #-4]
+l2696: b l2698
+interrupt_450: l2697: adc R8, R8, R4, RRX 
+l2698: tstLS R3, R1
+l2699: ldr R5, [sp, #-24]
+l2700: tstGT R4, R8, RRX 
+l2701: ldr R6, l2703
+l2702: b l2704
+l2703: .word 1048544
+l2704: swpb R9, R8, [R6]
+l2705: ldr R9, [sp, #+0]
+l2706: swi #7770935
+l2707: clzCC R7, R9
+l2708: mov R8, #34
+l2709: ldrCSB R10, [sp, +R8]
+l2710: sbcNEs R8, R3, R11, ROR R0
+l2711: mov R8, #28
+l2712: ldr R11, [sp], +R8
+l2713: sub R5, R12, #216006656
+l2714: teq R5, R1, ASR R1
+l2715: ldr R7, l2717
+interrupt_833: l2716: b l2718
+interrupt_780: l2717: .word 1048536
+interrupt_127: l2718: swp R11, R11, [R7]
+l2719: mov R2, #16
+interrupt_534: l2720: ldrLEh R2, [sp, -R2]
+l2721: rscs R5, R0, R0
+l2722: swi #4526239
+l2723: nop
+l2724: movs R8, #958464
+interrupt_650: l2725: add R12, R5, R8, ROR R12
+l2726: orr R3, R2, R12, LSL R5
+interrupt_658: l2727: ldr R14, l2729
+l2728: b l2730
+interrupt_634: l2729: .word 1048500
+l2730: swp R4, R8, [R14]
+l2731: sbcGT R10, R6, R9, LSR R10
+l2732: orrVCs R8, R15, R10, ASR #20
+l2733: mov R12, #23
+l2734: strB R8, [sp, -R12]
+l2735: bic R3, R4, R8, LSL R14
+l2736: swi #11271480
+l2737: cmpGT R14, R7, RRX 
+l2738: bics R12, R15, R10
+l2739: teq R5, #1589248
+interrupt_963: l2740: tst R14, R15
+interrupt_528: l2741: bLS l2744
+l2742: movCSs R7, R10, RRX 
+l2743: bics R11, R6, R12, LSR #25
+l2744: mov R5, #211968
+l2745: mov R11, #60
+l2746: str R3, [sp, -R11]!
+l2747: mvnCS R0, R1, ROR R8
+l2748: rsbLSs R14, R7, R9
+l2749: ldmIB R13!, {R2, R10, R14}
+l2750: cmn R9, #905969664
+l2751: tst R3, R10, LSL R9
+interrupt_785: l2752: swi #4473296
+l2753: mov R4, #16
+interrupt_277: l2754: ldrCC R14, [sp, -R4]
+interrupt_469: l2755: mov R12, #15
+l2756: ldrB R3, [sp, -R12]
+l2757: swi #7393540
+l2758: ldrh R6, [sp, #+18]
+interrupt_485: l2759: mov R6, #36
+l2760: ldr R12, [sp, +R6]!
+l2761: ldrB R12, [sp, #-34]
+l2762: mov R7, #5
+l2763: ldrGTB R10, [sp, -R7]
+l2764: mov R6, R3, LSR #5
+l2765: bicMIs R0, R3, R3, LSR R10
+l2766: ldrCCsb R3, [sp, #-39]
+l2767: eorPLs R9, R9, R11, RRX 
+l2768: tstMI R10, R14, RRX 
+l2769: ldr R3, l2771
+l2770: b l2772
+interrupt_502: l2771: .word 1048512
+l2772: swpHI R4, R8, [R3]
+l2773: bicLE R4, R4, R12, LSR R3
+l2774: cmn R3, R10
+l2775: orrs R1, R11, #1720320
+l2776: clz R1, R2
+l2777: tst R3, R10
+interrupt_384: l2778: mov R9, #14
+l2779: ldrGEh R10, [sp, -R9]
+l2780: mov R14, #31
+l2781: strB R7, [sp, -R14]
+l2782: teq R11, R8, LSL R3
+l2783: clz R9, R8
+l2784: strLEB R9, [sp, #-26]
+l2785: b l2787
+interrupt_41: l2786: teq R2, R5, RRX 
+l2787: sub R4, R4, R6, ROR R4
+l2788: rscCC R5, R3, R4
+l2789: orrs R2, R7, R7, ASR #0
+interrupt_982: l2790: ldrEQsh R11, [sp, #+8]
+l2791: ldmDB R13!, {R3, R4, R5, R7, R8, R9, R11, R12}
+l2792: bicHI R14, R3, R0, RRX 
+l2793: adc R4, R10, R4, RRX 
+interrupt_523: l2794: ldr R10, l2796
+l2795: b l2797
+l2796: .word 1048484
+l2797: swpMI R5, R8, [R10]
+l2798: and R5, R9, R0, ASR R11
+interrupt_897: l2799: adc R8, R1, R4
+l2800: teq R8, R10, ROR R4
+l2801: adc R0, R2, R2
+interrupt_236: l2802: mov R8, #49
+l2803: ldrCSB R6, [sp, +R8]
+l2804: teq R1, #1358954496
+l2805: mov R9, #50
+interrupt_758: l2806: strh R3, [sp, +R9]
+l2807: rscCCs R5, R9, R1, LSR #6
+interrupt_885: l2808: mov R14, #36
+l2809: ldrB R1, [sp, +R14]
+l2810: swi #11708926
+l2811: ldrsh R1, [sp, #+6]
+l2812: mov R14, #16
+l2813: ldrVC R10, [sp, -R14]
+l2814: ldr R6, l2816
+l2815: b l2817
+interrupt_895: l2816: .word 1048524
+l2817: swpb R10, R9, [R6]
+l2818: ldr R8, l2820
+l2819: b l2821
+interrupt_154: l2820: .word 1048532
+l2821: swpb R11, R5, [R8]
+interrupt_373: l2822: mvns R2, R5
+l2823: strVSh R0, [sp, #+52]
+l2824: rsc R3, R3, #223346688
+l2825: addLEs R1, R3, R12, RRX 
+l2826: bVS l2831
+l2827: sbcs R4, R6, R1, LSL #2
+l2828: cmn R4, #-2097152000
+l2829: rsb R3, R3, R0, ROR #3
+l2830: mvnGT R9, R6
+l2831: rscVC R12, R2, #43515904
+l2832: tstLT R11, R5, LSL #20
+l2833: ldmLEIA R13, {R1, R14}
+l2834: subGTs R14, R9, R9, ROR #11
+l2835: sub R10, R14, R11, ROR R14
+l2836: ldrsh R12, [sp, #+10]
+l2837: eors R0, R1, R5
+l2838: orr R4, R12, R10, LSR R1
+l2839: nop
+l2840: swi #11554337
+interrupt_9: l2841: swi #4581509
+interrupt_819: l2842: andPL R6, R7, #10752
+l2843: ldrB R1, [sp, #+22]
+l2844: strLTB R11, [sp, #+21]
+interrupt_301: l2845: orr R2, R6, R8, LSR R5
+l2846: strVCB R0, [sp, #+8]
+l2847: movVS R12, R4, ROR R8
+l2848: mvnHI R7, R1, LSR R4
+l2849: sub R7, R4, R9, RRX 
+l2850: mov R10, #54
+l2851: ldrsh R0, [sp, +R10]
+l2852: orrLTs R6, R7, #15859712
+l2853: orr R6, R14, #4046848
+interrupt_171: l2854: ldrGTB R2, [sp, #+51]
+l2855: ldr R4, l2857
 l2856: b l2858
-l2857: .word 1048540
-interrupt_400: l2858: swpEQb R3, R2, [R0]
-l2859: teqEQ R5, R7, ROR R7
-l2860: mvns R11, R10, RRX 
-l2861: subCSs R3, R0, R14, ROR #11
-l2862: bicVSs R11, R9, R1
-l2863: str R12, [sp], #-36
-l2864: swi #6453082
-l2865: ldr R12, l2867
-l2866: b l2868
-l2867: .word 1048508
-l2868: swpLT R8, R7, [R12]
-l2869: stmDA R13!, {R13}
-interrupt_891: l2870: mov R11, #16
-l2871: ldr R4, [sp, +R11]!
-interrupt_23: l2872: mov R12, #1600
-interrupt_166: l2873: mov R6, #48
-l2874: ldrEQsb R0, [sp, -R6]
-l2875: ldr R1, l2877
-l2876: b l2878
-interrupt_18: l2877: .word 1048524
-l2878: swp R3, R0, [R1]
-l2879: mvn R7, R9, ASR R12
-interrupt_789: l2880: cmnLT R6, R11, LSR #6
-l2881: mov R1, #16
-interrupt_856: l2882: strLT R9, [sp, -R1]
-l2883: sub R14, R9, R14, ASR R3
-l2884: adcs R8, R8, #-1073741823
-l2885: eorGEs R7, R15, R5
-l2886: ldrsh R2, [sp, #-46]
-l2887: bCC l2896
-l2888: eor R9, R9, #-1493172224
-l2889: adcCC R1, R3, R5
-l2890: rsbPLs R1, R7, R10, RRX 
-l2891: cmnLT R2, R9, ASR #15
-interrupt_470: l2892: rsbGEs R5, R1, R11, RRX 
-l2893: cmpHI R8, R1, ASR #21
-l2894: rsbGEs R3, R4, #167936
-interrupt_961: l2895: cmpGE R5, R5
-l2896: addHIs R11, R9, R9
-l2897: adcCCs R6, R15, R7, RRX 
-l2898: clzEQ R3, R14
-l2899: rsbVCs R0, R10, R6, ASR R4
-interrupt_339: l2900: ldr R4, l2902
-l2901: b l2903
-l2902: .word 1048540
-l2903: swpCS R0, R8, [R4]
-l2904: mov R2, #24
-interrupt_251: l2905: ldrVCsb R1, [sp, +R2]
-l2906: mov R4, #16
-l2907: str R11, [sp, +R4]!
-l2908: subEQ R0, R4, R2, ROR R5
-interrupt_732: l2909: mov R10, #34
-l2910: ldrh R11, [sp, -R10]
-l2911: adcNEs R5, R2, #50
-l2912: cmn R5, R4, LSL R3
-l2913: ldrsb R9, [sp, #-2]
-l2914: add R4, R5, R9, ASR R5
-l2915: teqHI R8, #145
-interrupt_986: l2916: ldrCSsb R6, [sp, #-54]
-l2917: swi #14395306
-l2918: eorCCs R9, R7, R2, LSL R0
-l2919: cmpEQ R11, R8
-l2920: cmpLT R15, R0
-interrupt_998: l2921: ldr R9, l2923
-interrupt_238: l2922: b l2924
-interrupt_268: l2923: .word 1048548
-interrupt_369: l2924: swpb R10, R14, [R9]
-l2925: eorPLs R1, R14, #179306496
-l2926: ldr R10, l2928
-interrupt_357: l2927: b l2929
-l2928: .word 1048484
-l2929: swpb R0, R3, [R10]
-l2930: adds R9, R3, R11, RRX 
-l2931: rsbs R1, R7, R1
-l2932: bGT l2936
-l2933: add R1, R0, #205
-l2934: subLT R7, R1, #34603008
-l2935: b l2937
-l2936: b l2934
-l2937: sbc R8, R6, #176160768
-l2938: ldrEQsh R9, [sp, #-18]
-l2939: bLE l2946
-l2940: add R1, R0, #18
-l2941: orrs R3, R9, R6, LSR #25
-l2942: sbc R10, R0, R3, LSL #22
-l2943: rscs R3, R14, #-1073741779
-l2944: eorCCs R0, R11, R10
-l2945: b l2947
-l2946: b l2941
-l2947: ldmDB R13, {R9, R10, R11}
-l2948: mvnCCs R6, R0
-l2949: tstCC R4, R6
-l2950: bGE l2959
-l2951: tstLE R10, R12
-l2952: tstLE R12, R4, ROR #27
-l2953: cmp R0, R12, LSL R1
-interrupt_184: l2954: sub R6, R9, R8
-l2955: cmpCC R9, R7, RRX 
-l2956: movLEs R5, R15
-l2957: subGT R11, R12, R10
-l2958: adcs R8, R9, R12, LSR R1
-l2959: tstNE R0, R8, LSL R12
-interrupt_442: l2960: swi #2797486
-l2961: mvns R3, R6, RRX 
-l2962: rsc R4, R15, R15, ROR #16
-l2963: cmn R3, R5, LSL #28
-interrupt_144: l2964: and R2, R1, R9, LSR R0
-l2965: addCC R3, R9, R1, ROR R12
-interrupt_19: l2966: cmn R14, R8, LSR R9
-l2967: strPLB R10, [sp, #-58]
-l2968: subCS R1, R12, R2
-l2969: teqLS R14, R7, ASR R0
-l2970: teqLS R3, R3, RRX 
-interrupt_556: l2971: cmpNE R4, R0, LSR R8
-l2972: movVSs R14, R3
-l2973: b l2981
-l2974: add R1, R0, #95
-interrupt_550: l2975: orr R4, R10, R7, LSL #6
-l2976: bics R11, R5, R4, ASR R8
-l2977: bicVCs R7, R5, R14, LSR #26
-interrupt_677: l2978: subLE R10, R10, R11, ASR #24
-l2979: movMIs R2, #241172480
-l2980: b l2982
-l2981: b l2975
-l2982: swi #6257534
-l2983: mov R7, R3, LSR #25
-l2984: sub R9, R4, #194
-l2985: clz R1, R7
-interrupt_744: l2986: ldr R7, [sp], #+4
-interrupt_500: l2987: ldr R11, [sp], #-64
-l2988: tstVC R12, R2, RRX 
-l2989: strNEh R4, [sp, #+30]
-interrupt_774: l2990: tstMI R0, R8, RRX 
-l2991: andLTs R10, R3, #3473408
-l2992: mov R7, #8
-l2993: ldrLTsh R3, [sp, +R7]
-l2994: mov R11, #58
-interrupt_921: l2995: ldrHIsh R4, [sp, +R11]
-l2996: sub R6, R6, #11136
-l2997: mov R6, #0
-l2998: strCCh R0, [sp, +R6]
-interrupt_39: l2999: b l3003
-interrupt_250: l3000: add R1, R0, #60
-l3001: bicVCs R11, R0, #-2147483627
-l3002: b l3004
-l3003: b l3001
-interrupt_962: l3004: movPLs R11, R6
-l3005: mov R7, #4
-l3006: ldrEQsb R5, [sp, +R7]
-l3007: bicEQs R1, R10, #196608
-l3008: subHI R2, R3, R3, ASR #4
-l3009: mov R4, #40
-l3010: ldrLSh R2, [sp, +R4]
-interrupt_966: l3011: mov R5, #32
-l3012: ldrMIsh R9, [sp, +R5]
-l3013: ldmIA R13!, {R0, R5, R7, R8, R9, R10, R11, R12}
-l3014: orrNEs R5, R9, #1088
-l3015: swi #1914811
-l3016: bHI l3019
-interrupt_671: l3017: subs R11, R10, R7, RRX 
-l3018: mvns R11, R12, LSL #14
-l3019: movs R0, R1, ASR #14
-l3020: tstVC R2, R15
-l3021: bics R10, R0, R15, RRX 
-l3022: ldr R6, l3024
-l3023: b l3025
-l3024: .word 1048552
-l3025: swpb R14, R10, [R6]
-l3026: str R7, [sp, #+24]!
-l3027: ldr R5, l3029
-l3028: b l3030
-l3029: .word 1048524
-interrupt_457: l3030: swpVSb R9, R8, [R5]
-l3031: swi #11273808
-l3032: subs R4, R1, R8, LSR R11
-l3033: eors R1, R5, R1, LSL #30
-l3034: bic R8, R6, #3768320
-l3035: tst R8, R4, LSR R8
-l3036: clzVS R8, R8
-l3037: teqVC R4, R1, ASR R8
-l3038: stmIA R13!, {R8}
-l3039: sbcs R9, R7, R4, ROR R11
-l3040: ldrsb R2, [sp, #-7]
-l3041: teq R12, R12, ASR #30
-interrupt_949: l3042: teqLT R7, #118784
-interrupt_162: l3043: swi #8752212
-l3044: eorPL R1, R15, R12, LSL #11
-l3045: orrMIs R8, R11, #560
-l3046: tstMI R4, R7
-l3047: rsbMIs R11, R2, R4
-l3048: strHIh R12, [sp, #-14]
-interrupt_508: l3049: subMI R0, R4, #27262976
-l3050: swi #13432444
-l3051: swi #12602730
-l3052: bGE l3058
-interrupt_427: l3053: add R2, R8, R14, LSR R3
-l3054: rsbLT R14, R2, #65011712
-l3055: addGTs R0, R11, R7, ROR R12
-interrupt_696: l3056: add R8, R9, #973078528
-l3057: clzGE R7, R14
-l3058: mov R9, R9
-l3059: mov R3, #58
-interrupt_699: l3060: ldrGEsh R12, [sp, -R3]
-l3061: ldmDA R13!, {R0, R2, R4, R7, R9, R14}
-l3062: subs R14, R12, R0, RRX 
-l3063: sbc R2, R11, R11, LSL #11
-l3064: mvnPL R2, #4718592
-l3065: clz R14, R0
-l3066: bic R12, R1, R10, LSR #3
-l3067: adcEQs R1, R4, R5, RRX 
-interrupt_277: l3068: sbcPLs R9, R8, R0, RRX 
-l3069: swi #3565619
-l3070: ldr R12, l3072
+l2857: .word 1048548
+l2858: swp R1, R6, [R4]
+l2859: adcMI R2, R14, #149504
+l2860: subs R12, R5, R11, LSR R14
+l2861: mvnLSs R5, R8, LSL #0
+l2862: subNEs R9, R0, #184549376
+interrupt_702: l2863: mov R12, #20
+interrupt_835: l2864: str R4, [sp], -R12
+l2865: sub R8, R10, R2
+l2866: swi #4723780
+l2867: rscPL R0, R6, R3
+l2868: mov R4, #29
+l2869: ldrsb R5, [sp, +R4]
+l2870: strEQh R2, [sp, #+28]
+l2871: cmn R3, R1, RRX 
+interrupt_302: l2872: rsbGT R10, R7, R7, ROR R11
+l2873: mov R11, #62
+l2874: ldrHIB R0, [sp, +R11]
+l2875: addVC R9, R2, #1408
+l2876: mov R9, R1, LSL R5
+l2877: b l2882
+l2878: add R1, R0, #185
+interrupt_448: l2879: cmpGT R8, R4, LSR #27
+l2880: movs R1, #16187392
+interrupt_150: l2881: b l2883
+l2882: b l2879
+interrupt_272: l2883: rscs R14, R6, #2240
+l2884: strPLB R10, [sp, #+28]
+interrupt_615: l2885: mov R2, #70
+l2886: strEQh R6, [sp, +R2]
+l2887: stmIA R13!, {R13}
+interrupt_986: l2888: subEQs R6, R11, R6, RRX 
+l2889: sub R12, R4, #4128768
+l2890: ldrCCh R11, [sp, #+14]
+l2891: stmIA R13!, {R0, R3, R4, R5, R6, R7, R10, R12, R14}
+interrupt_124: l2892: swi #6732691
+interrupt_6: l2893: teqLS R2, R5
+l2894: mov R7, #4
+l2895: ldr R3, [sp, -R7]
+interrupt_645: l2896: mov R5, #18
+l2897: strEQh R3, [sp, +R5]
+l2898: adds R6, R14, R6
+interrupt_50: l2899: str R5, [sp, #-32]!
+l2900: clz R4, R4
+l2901: swi #12246417
+l2902: bVS l2906
+l2903: tstEQ R10, R6, ROR R12
+l2904: teqVS R10, R8, ROR R5
+l2905: clzGE R1, R9
+l2906: teq R8, R0, ROR #8
+interrupt_966: l2907: sub R10, R5, R1, LSR R9
+l2908: strPLh R4, [sp, #+58]
+l2909: rscs R14, R3, R6
+l2910: rscLEs R7, R0, R10, ROR R3
+l2911: cmn R11, R9, LSL R14
+l2912: rscs R2, R9, R11, LSR #5
+l2913: swi #3714394
+l2914: ldrMIh R4, [sp, #+32]
+l2915: mvns R14, #153092096
+l2916: sbc R6, R9, #45613056
+interrupt_594: l2917: strh R4, [sp, #+64]
+l2918: bVS l2926
+l2919: add R1, R0, #135
+l2920: adds R1, R7, R8
+l2921: teq R3, R3, ROR R10
+l2922: addHIs R9, R0, R9
+l2923: clzGE R3, R9
+l2924: movVC R2, #1073741870
+l2925: b l2927
+l2926: b l2920
+interrupt_967: l2927: swi #12896723
+l2928: teq R9, R15, ASR #31
+l2929: nop
+l2930: nop
+interrupt_906: l2931: swi #11619661
+interrupt_365: l2932: mvn R12, #132096
+l2933: ldrB R11, [sp, #+16]
+l2934: rsbLE R3, R14, R15
+l2935: mov R12, #64
+l2936: ldrMIsh R5, [sp, +R12]
+l2937: cmn R6, R2, RRX 
+l2938: tst R3, R14, ROR R1
+l2939: adc R0, R5, R0
+l2940: teqNE R2, R4, ASR R2
+l2941: ldr R1, l2943
+l2942: b l2944
+interrupt_908: l2943: .word 1048524
+l2944: swpLE R12, R0, [R1]
+l2945: mov R14, #13
+l2946: ldrsb R7, [sp, +R14]
+l2947: rsbs R7, R11, R1, ASR R0
+l2948: ldrB R12, [sp, #+13]
+l2949: mov R3, #40
+interrupt_203: l2950: strLSB R6, [sp, +R3]
+l2951: subEQ R5, R10, R6, ROR #6
+interrupt_736: l2952: tstEQ R8, #215
+interrupt_814: l2953: addHI R12, R4, #15728640
+l2954: ldr R4, l2956
+l2955: b l2957
+interrupt_812: l2956: .word 1048524
+l2957: swpb R7, R12, [R4]
+l2958: ldmIB R13!, {R0, R1, R2, R3, R5, R6, R7, R8, R9, R11, R12}
+l2959: swi #5747327
+interrupt_881: l2960: strGEh R3, [sp, #+8]
+l2961: ldr R7, [sp, #-40]
+l2962: tstGE R1, R8, RRX 
+l2963: ldrB R11, [sp, #+0]
+l2964: mov R11, #20
+l2965: strB R0, [sp, -R11]
+l2966: mov R1, #34
+interrupt_992: l2967: ldrGEh R6, [sp, -R1]
+l2968: swi #6244421
+l2969: mov R1, #22
+l2970: ldrsb R11, [sp, +R1]
+l2971: movCS R1, R11, ROR #16
+l2972: bLE l2976
+l2973: subLTs R12, R12, R14, ROR R5
+l2974: mvns R8, R4, LSL #22
+l2975: orrNE R8, R4, #216
+l2976: mvn R0, R14, LSR #31
+l2977: str R3, [sp], #-8
+interrupt_635: l2978: mov R4, #38
+l2979: ldrsb R7, [sp, -R4]
+l2980: bHI l2987
+l2981: add R1, R0, #156
+l2982: cmpPL R15, #17
+l2983: tst R8, R15, RRX 
+l2984: subs R12, R10, R3, ASR #2
+l2985: ands R6, R0, R0, RRX 
+interrupt_513: l2986: b l2988
+l2987: b l2982
+l2988: bicMI R1, R12, R15, ASR #26
+l2989: mov R10, #24
+l2990: strVCh R1, [sp, +R10]
+l2991: subLEs R12, R4, R1, LSR #12
+l2992: str R6, [sp, #-40]
+interrupt_686: l2993: ldmDA R13, {R0, R2, R5, R7, R10}
+l2994: cmnPL R15, R15
+interrupt_984: l2995: ldrB R11, [sp, #+18]
+l2996: ldrsb R3, [sp, #+13]
+l2997: subNEs R4, R3, R8, LSR #30
+l2998: bicGT R6, R7, R4, RRX 
+l2999: bCC l3004
+l3000: mvn R11, R0, LSR R12
+l3001: eors R7, R12, R0, ROR #28
+interrupt_429: l3002: clzVC R12, R3
+l3003: subGE R5, R11, R3, LSR #28
+l3004: bicNEs R1, R2, #1073741850
+l3005: subLSs R2, R5, R0, ASR R9
+l3006: ldr R7, l3008
+l3007: b l3009
+interrupt_262: l3008: .word 1048536
+l3009: swpNEb R6, R9, [R7]
+l3010: sbcNE R7, R11, R9, ASR #28
+l3011: stmDA R13!, {R13}
+l3012: movCS R5, R7, ROR #21
+interrupt_612: l3013: mov R10, #7
+l3014: ldrNEsb R8, [sp, +R10]
+l3015: strPL R3, [sp, #-28]
+l3016: mov R6, #35
+l3017: ldrEQB R3, [sp, -R6]
+l3018: cmp R8, R6
+interrupt_417: l3019: adcLE R10, R3, #671088640
+l3020: subGT R2, R4, R7, ASR #19
+interrupt_349: l3021: mov R3, #26
+l3022: ldrGEB R2, [sp, -R3]
+interrupt_855: l3023: mov R9, #27
+l3024: strB R10, [sp, +R9]
+l3025: b l3032
+l3026: adcEQs R7, R10, #11136
+interrupt_851: l3027: eor R4, R14, R5
+l3028: rsc R11, R1, R5, RRX 
+l3029: cmnLE R3, R0, LSL #7
+interrupt_242: l3030: mov R9, R0
+l3031: clzLS R0, R4
+l3032: sbcVCs R14, R4, #-1493172224
+interrupt_901: l3033: b l3043
+l3034: adcEQ R2, R7, #14208
+l3035: teq R0, R11, RRX 
+l3036: adds R11, R9, R9
+l3037: mvnLE R6, #1174405120
+l3038: andLT R7, R1, R2, ASR R12
+l3039: sbcLS R11, R4, #3216
+interrupt_293: l3040: rsb R4, R10, R0, ROR R8
+l3041: sbcs R8, R14, R11, LSL #18
+l3042: rsbNE R14, R12, R15
+l3043: adc R2, R3, R2, LSR R0
+interrupt_409: l3044: clzNE R14, R11
+l3045: mov R10, #18
+interrupt_884: l3046: ldrHIsh R8, [sp, -R10]
+l3047: ldrh R11, [sp, #-24]
+l3048: strB R9, [sp, #-27]
+l3049: str R14, [sp, #+32]
+l3050: mov R6, #18
+l3051: ldrLSsh R11, [sp, -R6]
+l3052: swi #16308439
+l3053: ldmDA R13!, {R0, R2, R3, R6, R7, R8, R11, R12}
+interrupt_514: l3054: mov R7, #0
+l3055: ldrNEsh R14, [sp, +R7]
+interrupt_471: l3056: mov R4, #7
+l3057: ldrVSsb R6, [sp, +R4]
+l3058: movMI R5, R12, ASR #14
+l3059: ldrCCh R0, [sp, #+18]
+l3060: mov R9, #32
+l3061: str R11, [sp], +R9
+interrupt_364: l3062: subCCs R11, R14, R10, RRX 
+l3063: b l3064
+interrupt_846: l3064: movs R14, R12
+l3065: swi #1359927
+l3066: orrs R1, R2, #591396864
+l3067: cmn R15, R2
+l3068: movLSs R5, R7, RRX 
+l3069: movs R6, R8
+interrupt_930: l3070: ldr R4, l3072
 l3071: b l3073
-l3072: .word 1048512
-interrupt_506: l3073: swpb R5, R6, [R12]
-l3074: subs R5, R10, R4
-l3075: cmn R9, R1, LSR R6
-l3076: cmp R10, #70
-l3077: mov R0, #22
-l3078: ldrPLh R1, [sp, +R0]
-l3079: swi #1946887
-l3080: ldr R14, l3082
-interrupt_197: l3081: b l3083
-l3082: .word 1048508
-interrupt_619: l3083: swpHIb R9, R8, [R14]
-l3084: subs R10, R9, R10, RRX 
-l3085: subNEs R8, R11, #8448
-interrupt_111: l3086: ldr R2, l3088
-l3087: b l3089
-l3088: .word 1048548
-l3089: swpVS R3, R1, [R2]
-l3090: ldr R2, l3092
-l3091: b l3093
-interrupt_569: l3092: .word 1048524
-l3093: swpLEb R3, R1, [R2]
-l3094: mov R0, #12
-l3095: str R6, [sp], -R0
-interrupt_382: l3096: strNEh R14, [sp, #+34]
-interrupt_326: l3097: eors R10, R3, R12, ASR #9
-l3098: ands R11, R14, R2, LSL #4
-interrupt_340: l3099: swi #2553834
-l3100: subGEs R9, R14, #989855744
-interrupt_390: l3101: mov R6, #14
-l3102: ldrLEsh R0, [sp, +R6]
-l3103: tstCC R5, R10, RRX 
-l3104: rscLS R3, R9, R10, RRX 
-interrupt_26: l3105: swi #9295041
-interrupt_953: l3106: bicLSs R5, R10, #469762051
-l3107: bNE l3112
-l3108: add R1, R0, #132
-interrupt_59: l3109: eor R9, R11, R9, RRX 
-l3110: andPL R2, R10, R6, ASR R9
-l3111: b l3113
-l3112: b l3109
-interrupt_494: l3113: adcs R2, R12, R3, LSR R1
-l3114: teqGE R11, R15
-l3115: ldrVCsb R2, [sp, #+10]
-l3116: b l3122
-interrupt_987: l3117: add R1, R0, #202
-l3118: sbc R5, R12, R15
-interrupt_217: l3119: sbcLEs R0, R8, #742391808
-interrupt_207: l3120: subLE R8, R4, R14, LSL R8
-l3121: b l3123
-l3122: b l3118
-interrupt_820: l3123: cmpLT R3, R6, LSR #23
-l3124: ldr R5, l3126
-l3125: b l3127
-l3126: .word 1048504
-l3127: swpEQb R0, R4, [R5]
-l3128: ldrVSsb R1, [sp, #+37]
-l3129: orrPL R8, R4, R4
-l3130: ldrB R0, [sp, #+31]
-interrupt_237: l3131: mov R12, #15
-interrupt_325: l3132: ldrsb R10, [sp, +R12]
-l3133: ldr R14, l3135
-l3134: b l3136
-l3135: .word 1048544
-l3136: swpEQ R4, R6, [R14]
-l3137: bics R8, R1, R2, ASR #22
-l3138: bicHIs R4, R12, R1, ASR #29
-l3139: mov R8, #20
-l3140: strPLB R14, [sp, -R8]
-l3141: ldr R9, l3143
-l3142: b l3144
-l3143: .word 1048488
-l3144: swpLT R10, R6, [R9]
-l3145: teqEQ R10, #1342177295
-interrupt_823: l3146: mov R1, #40
-l3147: ldrVCsh R10, [sp, +R1]
-l3148: mov R3, R12, LSR R11
-l3149: stmDB R13!, {R1, R12}
-interrupt_973: l3150: stmIA R13!, {R0, R1, R3, R4, R5, R6, R8, R9, R10, R11, R12, R15}
-l3151: stmVSDA R13, {R0, R2, R3, R8, R9, R11, R14}
-l3152: addNE R6, R10, R14, ASR #1
-l3153: mov R9, #41
-l3154: ldrGTsb R7, [sp, -R9]
-l3155: ldr R12, [sp, #-52]!
-interrupt_591: l3156: adcLS R1, R2, R11
-l3157: cmnLS R12, R4
-l3158: stmIA R13!, {R0, R7}
-l3159: tst R5, #460
-l3160: ldmIA R13, {R1, R2, R3, R4, R5, R6, R7, R8, R9, R11, R12, R14}
-l3161: subLE R7, R12, R4
-l3162: swi #13336740
-l3163: mov R11, #24
-l3164: ldrHIh R7, [sp, -R11]
-interrupt_193: l3165: b l3174
-l3166: adcNE R11, R14, R9, ROR #7
-l3167: tst R5, R5, ASR #28
-l3168: movs R4, R2
-l3169: cmp R8, R8
-l3170: andLS R6, R10, #1245184
-l3171: rsb R0, R2, R7, ROR #15
-l3172: adcs R6, R5, R2, ASR #19
-l3173: eor R7, R6, #385875968
-l3174: andLSs R0, R11, R9
-interrupt_377: l3175: swi #4142825
-l3176: addPL R6, R5, R12, ASR #24
-l3177: adcs R2, R14, #145
-l3178: mov R4, #16
-l3179: ldrsh R7, [sp, -R4]
-l3180: mov R2, #12
-interrupt_279: l3181: ldrsh R3, [sp, +R2]
-l3182: adcs R2, R0, #50
-l3183: clz R9, R11
-interrupt_463: l3184: addGTs R3, R5, R12, LSL #26
-l3185: teq R9, R4
-l3186: mov R10, #36
-l3187: ldrh R10, [sp, +R10]
-interrupt_196: l3188: cmpVC R15, #1342177291
-l3189: ldrh R14, [sp, #-8]
-l3190: swi #7949006
-l3191: cmpGE R1, R14, ASR R2
-l3192: rsbGTs R4, R2, R10
-l3193: mov R7, #7
-l3194: strCCB R7, [sp, +R7]
-interrupt_177: l3195: cmnCS R5, R6, LSR R4
-interrupt_404: l3196: ldrh R0, [sp, #-8]
-l3197: b l3204
-l3198: add R1, R0, #180
-l3199: rsb R5, R6, R2, RRX 
-interrupt_48: l3200: andEQ R1, R5, R1, LSL #2
-interrupt_860: l3201: cmnMI R4, #143360
-l3202: movGTs R6, R8, ASR R2
-l3203: b l3205
-l3204: b l3199
-l3205: mvnLSs R5, R3, ROR #6
-interrupt_215: l3206: swi #141231
-l3207: rsbGTs R10, R5, R6
-interrupt_1: l3208: cmpNE R3, #1073741877
-l3209: mvnLTs R6, #417792
-l3210: orr R6, R7, R7, LSR #30
-l3211: ldrsh R1, [sp, #+22]
-interrupt_804: l3212: cmnHI R4, R3, LSR #23
-l3213: ldmNEIA R13, {R2, R12, R14}
-l3214: rsbGEs R12, R5, R0, ROR R3
-l3215: ldrGEsh R14, [sp, #-12]
-l3216: ldr R10, l3218
-interrupt_783: l3217: b l3219
-l3218: .word 1048492
-l3219: swpb R4, R6, [R10]
-l3220: bicHI R0, R14, R11
-l3221: andPL R4, R0, R10, ASR R7
-l3222: mov R8, #44
-l3223: ldrsh R6, [sp, +R8]
-l3224: andHI R7, R0, R0
-l3225: teqPL R10, #26624
-l3226: mov R9, #20
-l3227: ldr R12, [sp, +R9]
-l3228: stmIB R13!, {R1, R2, R3, R5, R6, R9, R12, R15}
-l3229: bMI l3235
-l3230: add R1, R0, #210
-l3231: bic R7, R10, R1
-l3232: sbc R0, R0, R4, RRX 
-l3233: tstNE R7, R5
-l3234: b l3236
-l3235: b l3231
-l3236: mov R3, #28
-l3237: strNEh R1, [sp, -R3]
-l3238: ldmIB R13!, {R6, R8}
-l3239: mvn R8, R11, ASR R2
-l3240: rsc R5, R7, R8, ASR R10
-interrupt_230: l3241: swi #11912992
-l3242: adcs R2, R2, #179306496
-l3243: movCC R9, R10, LSL #18
-l3244: bVC l3246
-l3245: eorHIs R3, R15, R5, RRX 
-l3246: andHIs R5, R6, R5
-l3247: ldr R1, l3249
-l3248: b l3250
-l3249: .word 1048512
-l3250: swpCS R4, R8, [R1]
-l3251: subLS R6, R9, R0
-l3252: swi #16262087
-interrupt_223: l3253: ldrsb R7, [sp, #-23]
-l3254: ldr R1, l3256
-interrupt_77: l3255: b l3257
-l3256: .word 1048512
-l3257: swp R4, R8, [R1]
-l3258: mov R10, #56
-l3259: str R12, [sp, -R10]
-l3260: b l3264
-l3261: add R1, R0, #128
-interrupt_245: l3262: cmnVS R3, R1, LSR #17
-l3263: b l3265
-l3264: b l3262
-l3265: orrs R9, R9, R5
-l3266: ldr R1, l3268
-l3267: b l3269
-l3268: .word 1048524
-interrupt_854: l3269: swpb R12, R7, [R1]
-l3270: rsbLEs R2, R4, #3072
-l3271: addCS R7, R14, R14, ASR R6
-l3272: sub R5, R7, R11, RRX 
-l3273: stmDA R13!, {R1, R4, R9, R14}
-l3274: movPL R7, #1610612736
-l3275: eorCS R7, R14, R12, ASR #25
-l3276: teq R3, #39424
-l3277: cmn R15, R0, LSR #18
-l3278: movs R0, R4, LSR R3
-l3279: mov R8, #9
-interrupt_919: l3280: ldrCCB R0, [sp, +R8]
-l3281: subLTs R3, R6, #4587520
-l3282: mov R5, R12, ASR R12
-interrupt_152: l3283: sbcNE R6, R6, #2496
-l3284: ldrLTB R5, [sp, #-37]
-l3285: mov R8, #44
-l3286: ldrB R8, [sp, -R8]
-l3287: adds R9, R9, R6, LSR R1
-l3288: mov R4, #6
-l3289: ldrsh R12, [sp, -R4]
-l3290: clz R0, R14
-l3291: rsb R3, R1, R14
-interrupt_594: l3292: bicVS R3, R7, R14, LSL R4
-l3293: andVSs R10, R9, #226
-l3294: mov R5, #44
-l3295: strVSh R2, [sp, -R5]
-l3296: b l3302
-l3297: add R1, R0, #14
-l3298: sbcMI R14, R15, R5, ASR #22
-l3299: tstPL R10, #-939524094
-l3300: orrs R6, R0, R6, ASR #23
-l3301: b l3303
-interrupt_996: l3302: b l3298
-l3303: movCCs R2, R4
-interrupt_938: l3304: movCSs R5, R10, ROR R5
-interrupt_219: l3305: andLS R7, R8, #50331648
-interrupt_869: l3306: mov R14, #15
-l3307: strGEB R10, [sp, -R14]
-l3308: addLT R8, R14, #2688
-l3309: ldrh R7, [sp, #-2]
-l3310: cmnGE R10, R12
-l3311: ldrsh R3, [sp, #-14]
-l3312: eorCS R12, R4, #15232
-l3313: stmMIDA R13, {R3, R5, R6, R7, R8, R9, R11, R13, R15}
-l3314: sub R1, R1, #80
-interrupt_387: l3315: mov R1, #18
-interrupt_49: l3316: ldrsh R6, [sp, +R1]
-interrupt_772: l3317: andVS R8, R6, R2, LSR #21
-l3318: stmDA R13!, {R0, R7, R10, R12, R15}
-l3319: mov R8, #20
-l3320: ldrLSB R5, [sp, +R8]
-interrupt_242: l3321: stmNEIA R13, {R0, R1, R3, R6, R7, R8, R9, R12, R13}
-l3322: ldr R2, l3324
-l3323: b l3325
-l3324: .word 1048540
-l3325: swpEQ R7, R6, [R2]
-l3326: teqCC R14, #827392
-interrupt_96: l3327: mov R2, #17
-interrupt_697: l3328: strLSB R10, [sp, -R2]
-l3329: rsbHIs R3, R0, R6, LSR R8
-l3330: ldmIB R13!, {R0, R2, R4, R5, R8, R11, R14}
-l3331: rscEQ R0, R12, R10, ROR #14
-interrupt_384: l3332: eorEQs R10, R6, R9
-l3333: swi #6433337
-l3334: ldrB R5, [sp, #-25]
-l3335: mov R14, #36
-l3336: ldr R1, [sp], -R14
-l3337: mov R6, #41
-l3338: ldrCSsb R2, [sp, +R6]
-l3339: mov R9, #7
-interrupt_635: l3340: ldrCSsb R3, [sp, -R9]
-interrupt_248: l3341: eors R11, R5, R9, ROR R12
-l3342: mov R11, #2
-l3343: strLTB R9, [sp, +R11]
-l3344: mov R8, #4
-l3345: strh R8, [sp, -R8]
-l3346: clz R1, R5
-l3347: sbcPLs R0, R8, R11, LSR #2
-interrupt_118: l3348: sbcNE R3, R8, R9, LSL #30
-l3349: strh R4, [sp, #+40]
-l3350: bicEQs R12, R12, R6
-l3351: subEQ R12, R3, R10, RRX 
-l3352: mov R2, #40
-l3353: ldr R12, [sp], +R2
-l3354: mvns R12, R7, ROR #31
-l3355: mvn R9, R5, LSL #22
-l3356: ands R12, R6, R9, ROR R14
-l3357: subs R7, R1, R14
-l3358: mov R6, #57
-l3359: ldrsb R7, [sp, -R6]
-l3360: stmLEDA R13, {R0, R2, R4, R7, R8, R10, R12, R13, R14}
-interrupt_300: l3361: sub R3, R1, R8, RRX 
-interrupt_113: l3362: stmIA R13!, {R6, R8, R14}
-interrupt_406: l3363: mvnGT R5, R4, ROR #27
-l3364: bicGT R10, R6, R12, LSL #22
-l3365: rsbs R8, R12, R12
-l3366: teq R14, R4, RRX 
-l3367: and R3, R2, #194
-interrupt_628: l3368: ldr R6, l3370
-interrupt_170: l3369: b l3371
-l3370: .word 1048536
-interrupt_284: l3371: swpLE R10, R0, [R6]
-l3372: orr R0, R4, R12, LSR #10
-interrupt_764: l3373: orrs R1, R11, R9
-l3374: ldr R1, l3376
-l3375: b l3377
-l3376: .word 1048516
-l3377: swpLSb R10, R12, [R1]
-l3378: mvn R4, R14, ASR #12
-l3379: clzVC R1, R5
-l3380: ldrsb R9, [sp, #-10]
-l3381: eorGT R4, R5, R2, RRX 
-interrupt_915: l3382: ldr R7, l3384
-l3383: b l3385
-l3384: .word 1048500
-l3385: swpHIb R10, R4, [R7]
-l3386: ldr R4, l3388
-l3387: b l3389
-l3388: .word 1048484
-l3389: swpGEb R9, R0, [R4]
-l3390: ldrNEsh R12, [sp, #-20]
-l3391: strB R4, [sp, #-24]
-l3392: ldrNEh R12, [sp, #-16]
-l3393: mov R14, #64
-l3394: strEQh R1, [sp, -R14]
-l3395: eorHI R14, R12, R14, ROR #11
-l3396: addGT R4, R8, #1644167168
-l3397: str R1, [sp, #-40]!
-l3398: b l3399
-interrupt_482: l3399: clzNE R6, R7
-l3400: subEQ R11, R6, R6
-l3401: tst R5, R6, LSL R6
-l3402: teqGE R15, R4, ROR #1
-l3403: adcs R12, R2, R3, ROR R11
-l3404: movs R2, R11, RRX 
-l3405: bGE l3413
-l3406: add R1, R0, #235
-l3407: clzGT R14, R3
-l3408: subs R10, R5, R0, LSR R8
-interrupt_378: l3409: sbcGE R0, R11, R9, LSR #13
-l3410: movVCs R11, R6, LSL R5
-l3411: orrs R14, R10, #12288
-l3412: b l3414
-l3413: b l3407
-l3414: ldrh R1, [sp, #+34]
-l3415: mov R8, #21
-l3416: strB R9, [sp, +R8]
-l3417: adds R8, R14, R0
-l3418: ldmIA R13!, {R2, R5, R8, R9, R12}
-l3419: clzVS R1, R12
-l3420: orr R11, R8, #856
-l3421: mov R8, #18
-l3422: ldrB R0, [sp, -R8]
-l3423: mov R8, #38
-l3424: strLTB R10, [sp, -R8]
-l3425: ldmIA R13!, {R4}
-l3426: ldr R11, l3428
-l3427: b l3429
-l3428: .word 1048500
-interrupt_606: l3429: swpb R4, R8, [R11]
-l3430: bicLS R8, R7, #2719744
-l3431: andPLs R9, R8, R2, RRX 
-l3432: ldr R10, l3434
-l3433: b l3435
-l3434: .word 1048484
-l3435: swpPL R0, R14, [R10]
-interrupt_66: l3436: clz R5, R10
-l3437: ldrh R4, [sp, #-52]
-l3438: b l3445
-l3439: subHI R8, R15, R2, ASR #19
-l3440: rscs R1, R2, R11, ASR R2
-l3441: sub R2, R11, R9, RRX 
-l3442: subLE R3, R11, R7
-interrupt_275: l3443: teqHI R10, R2, RRX 
-l3444: adcLTs R7, R9, R12, LSL R4
-l3445: add R6, R6, R14, LSR R1
-l3446: mvnMIs R4, R9, LSR R8
-l3447: mov R9, #4
-l3448: ldrLT R14, [sp, -R9]
-interrupt_14: l3449: ldr R4, l3451
-l3450: b l3452
-l3451: .word 1048508
-l3452: swp R7, R12, [R4]
-interrupt_376: l3453: adcCCs R0, R11, R10, LSR R6
-l3454: ldr R6, l3456
-interrupt_951: l3455: b l3457
-l3456: .word 1048500
-l3457: swpVC R0, R10, [R6]
-l3458: rsbCS R10, R11, R2
-l3459: mvnPL R5, R6
-l3460: ldrLSB R3, [sp, #+19]
-l3461: ldrsh R0, [sp, #-30]
-l3462: rscMI R11, R11, #262144
-l3463: rsbs R12, R0, R12, ASR #7
-l3464: eorMIs R10, R0, R3, LSR R10
-l3465: adcPLs R0, R14, #2342912
-l3466: ldmIB R13, {R0, R1, R7, R12}
-interrupt_585: l3467: swi #1065330
-interrupt_164: l3468: mvns R9, R7, ASR R2
-l3469: swi #946922
-l3470: bNE l3475
-l3471: eorPL R1, R10, R12, LSL R3
-l3472: tst R12, R4, LSR #28
-l3473: addLT R10, R0, #56320
-l3474: rsbs R9, R5, #-2147483648
-interrupt_558: l3475: cmpHI R10, #-1610612726
-l3476: bVC l3483
-l3477: clz R7, R4
-l3478: adcCCs R1, R1, R14, ROR #4
-l3479: teqLT R14, R6
-l3480: adcCC R9, R7, R11
-interrupt_646: l3481: rsbs R11, R9, R11, LSL R8
-l3482: bics R3, R8, R1
-l3483: rscGT R12, R2, #-1140850685
-l3484: ldr R14, [sp, #-8]!
-l3485: rsc R6, R15, R11
-l3486: clzPL R6, R1
-l3487: eorNE R8, R11, R0, ROR #18
-l3488: subs R6, R11, R6, ASR R5
-l3489: subLE R3, R11, R4
-interrupt_706: l3490: subs R7, R4, R12, LSR #31
-l3491: mov R14, #18
-l3492: ldrPLsh R3, [sp, -R14]
-l3493: ldr R10, l3495
-l3494: b l3496
-l3495: .word 1048484
-l3496: swpCSb R1, R12, [R10]
-l3497: mov R9, #20
-l3498: ldrCC R5, [sp, -R9]
-l3499: mov R3, #38
-l3500: strLEB R10, [sp, -R3]
-l3501: subGTs R9, R7, R4, RRX 
-l3502: mov R5, #8
-l3503: ldrMIh R11, [sp, +R5]
-l3504: ands R4, R15, R15
-l3505: sbc R0, R14, R15
-l3506: subGT R12, R12, R2, RRX 
-l3507: strGEh R11, [sp, #-8]
-l3508: mov R2, #20
-l3509: ldrB R5, [sp, -R2]
-l3510: ldrsh R11, [sp, #-46]
-l3511: mov R9, #10
-l3512: strCSh R12, [sp, +R9]
-l3513: ldr R1, l3515
-l3514: b l3516
-l3515: .word 1048484
-l3516: swp R2, R12, [R1]
-l3517: clz R2, R8
-l3518: mov R8, #5
-l3519: strCCB R9, [sp, -R8]
-l3520: sbcEQs R2, R6, R1, ROR R7
-l3521: tst R15, R15, RRX 
-l3522: swi #1525106
-l3523: b l3528
-interrupt_522: l3524: add R1, R0, #121
-l3525: rsbLEs R1, R1, R7
-interrupt_532: l3526: sbc R4, R5, R0, LSL #23
-l3527: b l3529
-l3528: b l3525
-l3529: bic R0, R10, R5
-l3530: ldrsh R14, [sp, #-14]
-interrupt_805: l3531: ldrh R14, [sp, #-40]
-interrupt_871: l3532: ldr R0, l3534
-l3533: b l3535
-l3534: .word 1048492
-l3535: swpEQb R5, R8, [R0]
-interrupt_65: l3536: strh R9, [sp, #+12]
-l3537: ldmDA R13!, {R2, R3, R4, R5, R8, R10, R11, R12}
-l3538: rscLEs R2, R0, R14
-l3539: mov R11, #56
-l3540: str R7, [sp, +R11]!
-l3541: swi #12306520
-interrupt_17: l3542: sub R8, R11, R10
-interrupt_318: l3543: bic R5, R4, R7
-interrupt_289: l3544: ldr R14, [sp], #-28
-l3545: adc R11, R4, #191488
-l3546: mvnVSs R14, R1
-l3547: bGE l3556
-interrupt_244: l3548: cmnVS R9, R3
-l3549: rsb R6, R2, R4
-l3550: cmp R4, R6, RRX 
-l3551: cmnNE R5, R7, LSR #4
-l3552: teqLE R14, R3, RRX 
-l3553: rsb R11, R8, R8
-interrupt_85: l3554: rsbs R2, R3, R4, LSR R3
-l3555: sbcCC R10, R2, R14, LSR #21
-l3556: rsc R12, R7, R6
-l3557: orrs R3, R15, R15
-l3558: swi #1217248
-l3559: subGE R10, R12, R9
-l3560: b l3561
-l3561: sbcs R6, R6, R2, LSL R14
-l3562: orr R11, R12, R4, ROR #16
-interrupt_544: l3563: teq R3, R5, LSR #21
-l3564: clzCC R8, R9
-l3565: andEQ R14, R9, R0
-l3566: subNEs R2, R0, R2
-l3567: ldrLEB R5, [sp, #+28]
-l3568: ands R11, R9, #4112384
-l3569: movs R6, R0
-l3570: subs R12, R6, #1409286144
-l3571: swi #11430564
-l3572: mvnGEs R7, R0, ROR R4
-l3573: strB R11, [sp, #+12]
-l3574: eorPLs R11, R11, R11
-l3575: eorVS R7, R4, R4
-interrupt_479: l3576: swi #6448926
-l3577: b l3578
-interrupt_530: l3578: bic R9, R5, #-1845493760
-l3579: mov R0, #15
-l3580: ldrMIB R6, [sp, +R0]
-l3581: subCC R5, R6, R6, LSR #12
-l3582: b l3583
-l3583: orrNE R7, R12, R11, ROR #7
-l3584: swi #5610668
-l3585: mov R12, #24
-l3586: ldrsh R9, [sp, +R12]
-l3587: tst R9, R9, LSR #4
-l3588: ldrVSsb R4, [sp, #-42]
-interrupt_588: l3589: cmnLS R14, R11, LSR R7
-l3590: mov R4, #28
-l3591: ldr R4, [sp], +R4
-l3592: bGT l3596
-l3593: orrGE R0, R3, R1, LSR R5
-interrupt_928: l3594: rsbHI R2, R0, #994050048
-l3595: sbc R5, R2, R2, ROR #21
-l3596: movEQ R11, R9, LSL R10
-l3597: add R7, R6, R9, ROR R1
-l3598: swi #9269265
-interrupt_728: l3599: mov R0, #44
-l3600: ldrVC R7, [sp, -R0]
-l3601: ldrLEB R11, [sp, #-42]
-l3602: ldr R8, l3604
-l3603: b l3605
-l3604: .word 1048496
-l3605: swpVSb R0, R5, [R8]
-l3606: mov R1, #28
-l3607: strh R3, [sp, -R1]
-l3608: orrCCs R2, R2, #1835008
-interrupt_611: l3609: andVCs R12, R10, R10, ASR R9
-l3610: mov R12, #43
-l3611: ldrsb R4, [sp, -R12]
-l3612: clzHI R8, R11
-l3613: cmnHI R4, R2
-l3614: movs R1, R4
-l3615: ldrGT R0, [sp, #-32]
-l3616: mov R14, #26
-l3617: ldrCCB R6, [sp, -R14]
-interrupt_350: l3618: subHI R7, R15, R7
-interrupt_797: l3619: nop
-l3620: subNE R4, R12, R0, RRX 
-l3621: sub R9, R10, #16777216
-interrupt_590: l3622: eor R9, R5, #14848
-interrupt_694: l3623: str R8, [sp], #-4
-l3624: mov R7, #2
-interrupt_236: l3625: ldrVCsh R10, [sp, +R7]
-l3626: andLEs R3, R14, #54525952
-l3627: tstLT R9, #171008
-interrupt_547: l3628: ldr R7, l3630
-l3629: b l3631
-l3630: .word 1048500
-l3631: swpHIb R14, R4, [R7]
-interrupt_93: l3632: swi #14840190
-interrupt_918: l3633: adds R0, R8, R6
-interrupt_227: l3634: teqVC R5, R3, ROR R6
-l3635: subs R0, R6, R1
-interrupt_107: l3636: teq R10, #-738197502
-l3637: cmnLE R3, R14, ROR R5
-interrupt_516: l3638: tst R12, R15, LSL #15
-l3639: rsbGE R2, R1, R1, ROR #20
-l3640: b l3648
-l3641: add R1, R0, #62
-l3642: adcCC R10, R10, R11, ASR #13
-l3643: mov R3, R4
-l3644: mov R14, R2
-interrupt_366: l3645: rsbCC R11, R14, R3
-l3646: bic R12, R0, R8, RRX 
-l3647: b l3649
-l3648: b l3642
-l3649: movGEs R7, #212
-l3650: swi #8914816
-l3651: adcCC R4, R4, R10
-l3652: ldr R3, l3654
-l3653: b l3655
-l3654: .word 1048544
-l3655: swpHIb R4, R0, [R3]
-l3656: mov R0, #43
-l3657: strB R6, [sp, -R0]
-l3658: mov R12, #12
-l3659: ldr R6, [sp], -R12
-l3660: mov R1, #4
-l3661: ldrLT R6, [sp, -R1]
-l3662: cmnCS R1, R9
-l3663: swi #13511285
-l3664: clz R9, R7
-l3665: swi #1419343
-l3666: sbc R4, R3, #1073741826
-l3667: mov R3, #3
-l3668: ldrVCsb R0, [sp, -R3]
-interrupt_159: l3669: stmVSIA R13, {R0}
-l3670: nop
-l3671: cmpCC R1, R9
-l3672: swi #827505
-l3673: ldr R1, l3675
-l3674: b l3676
-interrupt_90: l3675: .word 1048508
-l3676: swpb R0, R4, [R1]
-l3677: cmnCC R12, R9, ROR #28
-l3678: mov R11, #12
-l3679: ldrPLsh R12, [sp, -R11]
-l3680: str R6, [sp, #-56]!
-l3681: cmn R8, R3, LSL R14
-l3682: eorVC R2, R5, #-1073741822
-interrupt_641: l3683: ldr R0, [sp, #+44]!
-l3684: and R5, R3, R14
-interrupt_388: l3685: mvnCC R7, #13107200
-l3686: and R10, R14, R7
-l3687: rsb R12, R0, R12
-l3688: adcVS R10, R2, R6
-l3689: teqGT R12, R15, LSL #9
-l3690: rsbs R4, R12, #142606336
-interrupt_492: l3691: adcNEs R10, R14, #-805306368
-l3692: swi #8128882
-l3693: rsbLE R14, R15, #372736
-l3694: clzLS R9, R2
-l3695: ldr R7, l3697
-l3696: b l3698
-l3697: .word 1048512
-l3698: swpCC R2, R10, [R7]
-interrupt_599: l3699: str R9, [sp, #-12]!
-l3700: add R11, R3, R10, ASR #27
-l3701: addCS R3, R12, R7, ROR #16
-l3702: ldr R9, [sp, #+36]!
-l3703: ldrsh R7, [sp, #-28]
-interrupt_948: l3704: sub R10, R10, R2, LSL #10
-interrupt_178: l3705: ldr R14, l3707
-l3706: b l3708
-interrupt_100: l3707: .word 1048520
-l3708: swpLS R6, R11, [R14]
-l3709: strCS R2, [sp, #-68]
-l3710: mov R8, #26
-l3711: ldrsh R10, [sp, -R8]
-l3712: tstHI R8, R1, ASR #1
-l3713: sbcGE R1, R14, #41680896
-l3714: ldmDB R13!, {R6, R10}
-interrupt_22: l3715: bEQ l3721
-interrupt_775: l3716: add R8, R11, #6976
-l3717: tstPL R14, #2816
-l3718: ands R3, R1, #-805306368
-interrupt_349: l3719: cmp R0, R11, ROR #10
-l3720: movCCs R1, #636
-l3721: eorNE R14, R2, R14, LSR R2
-l3722: ldrB R1, [sp, #+15]
-interrupt_682: l3723: bLE l3731
-interrupt_480: l3724: clzEQ R12, R0
-l3725: addMIs R3, R1, R4
-l3726: subMIs R6, R1, R12, LSR R3
-l3727: sub R2, R10, R12, RRX 
-l3728: movs R14, #9437184
-l3729: rsbs R2, R7, R9, LSR R8
-l3730: cmnNE R12, R4
-l3731: mvnPLs R0, R12, RRX 
-l3732: bEQ l3742
-l3733: subVSs R7, R6, R14
-interrupt_269: l3734: eors R6, R1, #50432
-l3735: teqVC R14, R3, ROR R2
-l3736: ands R11, R7, R3
-l3737: cmnVS R11, #41472
-l3738: sbcs R1, R14, #65011712
-interrupt_301: l3739: clzEQ R14, R11
-l3740: addMI R12, R9, R0, LSR #7
-l3741: eor R6, R9, R0
-l3742: teqGT R1, R9
-interrupt_637: l3743: add R3, R8, R10, ASR R1
-interrupt_666: l3744: cmpEQ R0, #-738197502
-interrupt_345: l3745: ldrLEB R7, [sp, #-5]
-l3746: swi #4903896
-interrupt_525: l3747: tst R7, R5, ROR #14
-interrupt_438: l3748: swi #6260939
-l3749: subLE R5, R7, R10, LSR #17
-interrupt_38: l3750: adcCSs R2, R6, R0, ROR #10
-l3751: mov R1, #34
-interrupt_937: l3752: strB R5, [sp, -R1]
-interrupt_702: l3753: ldmIA R13!, {R4, R11, R12}
-l3754: strh R1, [sp, #-20]
-l3755: swi #5157415
-interrupt_681: l3756: rsc R11, R3, R4, ASR R2
-l3757: swi #16563615
-l3758: strHIB R3, [sp, #-24]
-interrupt_768: l3759: mov R8, #44
-l3760: ldrsb R7, [sp, -R8]
-l3761: adds R9, R7, R4, ASR #29
-l3762: andVS R12, R2, R10, ASR #6
-interrupt_781: l3763: addHI R4, R4, R4, ASR #3
-interrupt_194: l3764: swi #5943654
-l3765: rsbNE R10, R0, R4
-l3766: subLTs R1, R12, R1, LSR R6
-l3767: strCSh R2, [sp, #-6]
-interrupt_649: l3768: mvnEQ R2, R2
-interrupt_465: l3769: bLS l3771
-l3770: eorGE R4, R1, R1, ASR R3
-interrupt_56: l3771: rsbEQs R4, R12, R8
-l3772: mov R5, #32
-l3773: ldrsb R9, [sp, -R5]
-l3774: subHIs R4, R6, R5, ROR #15
-l3775: mov R12, #32
-l3776: ldr R2, [sp, -R12]!
-l3777: ldr R9, l3779
-l3778: b l3780
-interrupt_362: l3779: .word 1048544
-l3780: swpHIb R6, R5, [R9]
-l3781: cmnPL R15, #-1577058304
-l3782: mov R4, #22
-interrupt_718: l3783: ldrh R11, [sp, +R4]
-l3784: eor R5, R1, R2, RRX 
-l3785: ldrB R4, [sp, #-33]
-l3786: mov R10, #22
-l3787: strGEh R11, [sp, +R10]
-l3788: eorLS R0, R9, R12, ASR #8
-l3789: mov R4, #22
-l3790: ldrCCsh R0, [sp, +R4]
-l3791: ldr R5, l3793
-interrupt_453: l3792: b l3794
-l3793: .word 1048508
-l3794: swpNEb R11, R14, [R5]
-l3795: orrVS R9, R7, R10, RRX 
-l3796: ldr R11, l3798
-interrupt_634: l3797: b l3799
-l3798: .word 1048548
-interrupt_225: l3799: swpHI R7, R4, [R11]
-l3800: orrs R6, R15, #733184
-l3801: cmn R10, #141312
-l3802: teq R7, R1, RRX 
-interrupt_539: l3803: ldrh R8, [sp, #+2]
-l3804: mov R9, #13
-l3805: ldrB R2, [sp, +R9]
-l3806: rsbCS R10, R3, R6
-l3807: andCCs R0, R10, R8, ROR R9
-l3808: clz R8, R4
-l3809: ldr R3, l3811
+l3072: .word 1048500
+interrupt_507: l3073: swpLEb R9, R7, [R4]
+l3074: swi #6927629
+l3075: ldr R5, l3077
+interrupt_333: l3076: b l3078
+l3077: .word 1048492
+interrupt_316: l3078: swpb R4, R8, [R5]
+l3079: eor R0, R3, R15
+l3080: mvns R5, R2, LSR #7
+interrupt_387: l3081: strEQ R9, [sp, #-8]
+l3082: swi #11950039
+l3083: strGTh R10, [sp, #-24]
+l3084: subNE R9, R3, R3, ROR R7
+l3085: ldrVS R4, [sp, #+8]
+l3086: mvns R1, R1, LSR #12
+interrupt_463: l3087: cmp R0, R9, LSR R2
+l3088: eors R2, R5, #41418752
+l3089: orrs R10, R4, R10
+l3090: mov R2, #36
+l3091: strLEh R0, [sp, -R2]
+l3092: cmnVS R0, R9, LSL R2
+l3093: mov R10, #34
+l3094: strHIh R11, [sp, -R10]
+l3095: ldrHIsb R12, [sp, #+22]
+l3096: cmn R11, #3342336
+l3097: tstLE R5, #154624
+l3098: tstCC R0, R10, RRX 
+interrupt_707: l3099: sbcEQs R14, R10, #131
+l3100: bics R11, R9, #1064960
+interrupt_121: l3101: ands R10, R8, R2, LSR #1
+interrupt_690: l3102: movPLs R12, R5
+l3103: bGT l3109
+l3104: sub R9, R3, R11, ROR #17
+l3105: and R1, R7, R14, LSR R14
+l3106: orrLEs R5, R7, #76
+interrupt_628: l3107: clzGE R0, R0
+l3108: addVC R0, R14, R12
+l3109: rsb R2, R3, R1, ASR #14
+l3110: cmp R3, R4, LSR #8
+l3111: strNEB R5, [sp, #-6]
+l3112: andGE R14, R11, R0, LSL R4
+l3113: ldrh R12, [sp, #-8]
+interrupt_441: l3114: movEQ R14, R12, LSL R6
+l3115: swi #7823679
+interrupt_624: l3116: bic R6, R6, R14
+l3117: tstHI R2, R11, LSR R7
+l3118: cmnHI R7, R6, RRX 
+l3119: mov R8, #0
+interrupt_617: l3120: str R9, [sp, +R8]!
+interrupt_288: l3121: b l3129
+l3122: add R1, R0, #47
+l3123: bic R5, R1, R11
+l3124: rscs R1, R14, #7864320
+l3125: movVC R7, R7
+l3126: cmnGE R3, R6, RRX 
+interrupt_731: l3127: tst R7, #16
+l3128: b l3130
+l3129: b l3123
+l3130: rsbPLs R8, R0, #2640
+l3131: bics R0, R8, R2, ASR R3
+interrupt_4: l3132: mov R11, #4
+interrupt_451: l3133: str R14, [sp, +R11]!
+l3134: ldr R6, l3136
+l3135: b l3137
+interrupt_419: l3136: .word 1048480
+l3137: swp R7, R10, [R6]
+l3138: sbcNEs R10, R6, R6, LSL R4
+l3139: bics R11, R2, R4, RRX 
+l3140: adc R4, R8, R8
+l3141: stmDB R13!, {R2}
+l3142: clz R0, R6
+l3143: stmDB R13!, {R13}
+l3144: strPL R5, [sp, #+16]
+l3145: subVC R5, R8, R11
+l3146: strGTB R2, [sp, #-3]
+l3147: ldrVSsh R4, [sp, #+2]
+interrupt_827: l3148: bicHI R9, R7, R14, ROR #13
+interrupt_76: l3149: swi #819639
+l3150: bicGEs R6, R7, #38
+l3151: ldr R8, l3153
+l3152: b l3154
+l3153: .word 1048512
+l3154: swpb R9, R4, [R8]
+l3155: ldr R2, l3157
+l3156: b l3158
+l3157: .word 1048532
+l3158: swpPLb R10, R14, [R2]
+l3159: bHI l3163
+l3160: sbcLEs R4, R8, #2896
+l3161: subEQ R6, R6, R5
+l3162: add R4, R4, #-805306359
+l3163: subGE R1, R5, #616562688
+l3164: ldrB R5, [sp, #+33]
+l3165: bLE l3174
+interrupt_792: l3166: add R1, R0, #28
+l3167: mvns R12, #-2147483599
+l3168: bicLTs R11, R0, R1
+l3169: movGTs R4, R1, ROR #13
+l3170: rscVS R7, R10, R8, ROR #8
+l3171: mvnLE R0, R11, LSR #20
+l3172: adcs R6, R14, #-1174405120
+l3173: b l3175
+l3174: b l3167
+l3175: eor R8, R4, R2
+l3176: b l3180
+l3177: add R1, R0, #44
+l3178: rscVCs R8, R2, R14, ASR #18
+interrupt_724: l3179: b l3181
+interrupt_525: l3180: b l3178
+l3181: sub R10, R1, R3, LSR R5
+l3182: mov R9, #6
+l3183: ldrsh R8, [sp, +R9]
+interrupt_742: l3184: rsb R4, R10, R10
+l3185: cmpGE R9, R9, ASR #24
+l3186: mvnGE R12, R0, LSR R5
+l3187: ldmDB R13!, {R0, R1, R3, R7, R8, R10}
+l3188: subs R2, R1, R4
+interrupt_646: l3189: orrPLs R8, R1, R0, RRX 
+l3190: mvnCSs R0, R8, LSL R8
+l3191: addLEs R14, R12, R4, ROR #5
+l3192: mov R0, #38
+l3193: ldrPLh R6, [sp, +R0]
+interrupt_396: l3194: cmpLS R1, R11, ROR #13
+l3195: bCC l3203
+l3196: add R1, R0, #229
+l3197: mov R9, #15400960
+l3198: adcMIs R10, R4, R12, LSL #25
+l3199: adcPL R11, R1, #4030464
+l3200: sbc R11, R2, R11, ASR #30
+l3201: eorLE R9, R0, R3, LSR R7
+l3202: b l3204
+l3203: b l3197
+l3204: strGEh R10, [sp, #+0]
+interrupt_714: l3205: bCC l3211
+interrupt_896: l3206: add R1, R0, #138
+interrupt_466: l3207: rscGEs R4, R14, #8576
+l3208: adcHIs R6, R9, #851968
+l3209: teqPL R8, R5
+l3210: b l3212
+l3211: b l3207
+l3212: movNEs R2, R15, RRX 
+l3213: adcGEs R5, R3, #7864320
+l3214: ldmIB R13!, {R0, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R14}
+l3215: cmpPL R6, R2
+l3216: ldrMIh R7, [sp, #-32]
+l3217: bics R1, R4, R9, LSL R11
+l3218: teqVC R6, R6, RRX 
+interrupt_952: l3219: eorHIs R14, R5, R6, LSL R11
+l3220: rscLEs R9, R3, R14, LSR R9
+l3221: sub R4, R14, #884736
+l3222: addGE R3, R10, R10, ASR #22
+interrupt_312: l3223: ldr R7, l3225
+l3224: b l3226
+l3225: .word 1048552
+l3226: swpb R12, R8, [R7]
+interrupt_750: l3227: sbcs R12, R10, R5
+l3228: ldr R3, l3230
+l3229: b l3231
+l3230: .word 1048540
+l3231: swpCSb R8, R7, [R3]
+l3232: adc R10, R2, R9, ASR R4
+l3233: clzNE R6, R7
+l3234: orrCC R12, R5, R9, ASR R4
+l3235: teqMI R3, R12, ASR R10
+interrupt_561: l3236: rsbPL R5, R12, #935329792
+l3237: eorVCs R11, R11, R15, LSL #27
+l3238: sub R0, R12, R0, RRX 
+l3239: ldr R5, l3241
+l3240: b l3242
+l3241: .word 1048508
+l3242: swpGE R12, R9, [R5]
+l3243: b l3248
+interrupt_965: l3244: adds R10, R3, R8
+l3245: rscGT R0, R2, R1
+l3246: sbc R11, R10, R15
+l3247: teq R2, R12, RRX 
+l3248: bics R3, R4, R9
+l3249: andGE R10, R7, #344
+interrupt_33: l3250: ldrsh R3, [sp, #-14]
+l3251: mov R14, R4
+l3252: mov R0, #38
+l3253: ldrPLsh R4, [sp, -R0]
+l3254: ldr R5, l3256
+l3255: b l3257
+l3256: .word 1048504
+l3257: swpLEb R10, R3, [R5]
+l3258: rscGEs R8, R7, #629145600
+l3259: cmn R3, R3
+l3260: ldr R6, l3262
+l3261: b l3263
+l3262: .word 1048492
+interrupt_844: l3263: swpEQb R7, R4, [R6]
+l3264: subEQ R7, R9, #176160768
+l3265: swi #6650490
+l3266: bVC l3275
+interrupt_126: l3267: add R1, R0, #65
+l3268: subCCs R4, R1, #2080
+l3269: addPL R0, R4, R7, LSL #30
+l3270: andLEs R11, R10, #174063616
+l3271: rsbLEs R14, R3, R5, LSR #4
+l3272: and R8, R9, R7, LSR R8
+l3273: bics R10, R12, R7, RRX 
+l3274: b l3276
+interrupt_78: l3275: b l3268
+l3276: movVSs R12, R3, LSR #30
+l3277: teqLE R4, R15, RRX 
+l3278: cmnLE R0, R11
+l3279: sbc R14, R9, R0, LSL R11
+l3280: strCSh R10, [sp, #+0]
+l3281: swi #696629
+l3282: strLEB R9, [sp, #-56]
+l3283: ldmIA R13!, {R6}
+l3284: sbcs R4, R5, R5
+interrupt_614: l3285: ldmDB R13!, {R1, R5, R6, R8, R9, R10, R11, R12, R14}
+l3286: mov R7, #28
+l3287: str R9, [sp, -R7]!
+l3288: ldmIB R13!, {R0, R2, R4, R6, R9, R10, R12}
+l3289: bicMIs R11, R6, R0, ROR R7
+l3290: ldr R2, l3292
+l3291: b l3293
+l3292: .word 1048492
+l3293: swpVC R6, R11, [R2]
+l3294: subs R4, R4, #218103808
+l3295: ldr R12, [sp, #+28]
+l3296: bMI l3302
+l3297: clzVS R14, R2
+l3298: rsbPL R7, R6, #1
+l3299: clzVS R7, R0
+l3300: andGT R6, R14, R15, ROR #23
+l3301: adcLTs R14, R3, #-805306362
+interrupt_674: l3302: sbcCSs R8, R3, #-2147483637
+l3303: mov R3, #26
+interrupt_378: l3304: ldrh R0, [sp, +R3]
+l3305: swi #6836853
+l3306: bHI l3313
+l3307: add R1, R0, #77
+l3308: cmn R10, R2
+l3309: mvnMIs R4, R6
+l3310: tst R2, R0
+l3311: addPL R14, R14, R10, LSR #28
+interrupt_842: l3312: b l3314
+interrupt_145: l3313: b l3308
+l3314: ldrsh R14, [sp, #-14]
+l3315: swi #11491092
+interrupt_314: l3316: ldr R9, l3318
+l3317: b l3319
+l3318: .word 1048504
+l3319: swpb R14, R7, [R9]
+l3320: bEQ l3324
+l3321: sub R2, R6, R10, ROR #6
+l3322: adcs R9, R14, R14
+l3323: rscMI R2, R6, R10, LSR #0
+l3324: mvnVCs R7, R9, RRX 
+l3325: sub R14, R2, R7, ROR R12
+l3326: bicGE R10, R8, R5, ASR #28
+l3327: ldr R9, l3329
+l3328: b l3330
+l3329: .word 1048548
+l3330: swpMIb R4, R11, [R9]
+interrupt_334: l3331: teq R0, R8, ASR R3
+interrupt_576: l3332: orrPLs R2, R0, #30146560
+l3333: b l3337
+interrupt_268: l3334: add R1, R0, #84
+l3335: teq R10, R14
+interrupt_214: l3336: b l3338
+interrupt_651: l3337: b l3335
+interrupt_911: l3338: orrLE R4, R11, R3
+l3339: eor R7, R6, #536870925
+interrupt_638: l3340: ldmIB R13!, {R0, R1, R2, R4, R6, R7, R8, R11}
+l3341: mvnGE R0, R4, ASR #18
+interrupt_637: l3342: mov R4, #16
+interrupt_320: l3343: ldrLTh R1, [sp, -R4]
+l3344: b l3353
+l3345: bicVSs R5, R9, R15, ROR #30
+l3346: orrHI R12, R14, R0, ROR R6
+l3347: eor R2, R1, R8, ASR R0
+interrupt_810: l3348: teq R14, R4, LSR #15
+l3349: eorVSs R2, R2, R10, RRX 
+interrupt_519: l3350: eorNEs R2, R11, R8, LSL #4
+l3351: cmn R14, R9
+interrupt_23: l3352: andVSs R5, R1, #49283072
+l3353: orrVC R3, R3, R2, LSL R10
+l3354: bicNEs R0, R2, R9, ROR #30
+l3355: mvn R4, #38797312
+l3356: swi #7721823
+l3357: ldr R0, l3359
+l3358: b l3360
+l3359: .word 1048488
+l3360: swpGE R7, R11, [R0]
+l3361: sbcs R10, R6, R11, LSR R8
+l3362: subGTs R10, R12, #944
+l3363: str R8, [sp, #-36]!
+interrupt_891: l3364: bics R14, R10, #805306372
+l3365: bicCC R4, R4, R5
+interrupt_488: l3366: strLTB R7, [sp, #+36]
+l3367: mvnCS R12, R12, ROR #6
+l3368: tstLE R5, R7, RRX 
+l3369: bicCS R7, R7, R15
+l3370: mov R5, #4
+interrupt_424: l3371: strGE R15, [sp, -R5]
+interrupt_261: l3372: nop
+l3373: rsbLEs R10, R14, R10, ASR #20
+l3374: ldrsh R3, [sp, #-20]
+l3375: rsc R0, R10, R1, ROR R0
+l3376: rscPL R6, R9, R14, LSL #6
+interrupt_694: l3377: cmn R4, R10, LSR R3
+l3378: subNE R8, R11, R5, RRX 
+l3379: cmpLS R10, #1441792
+l3380: adcs R0, R11, R9, LSL R9
+l3381: ldr R12, [sp, #-12]!
+l3382: swi #8868115
+l3383: teq R11, #1984
+l3384: ldrGEB R8, [sp, #+8]
+interrupt_535: l3385: clz R12, R2
+l3386: mvnLS R7, #46080
+l3387: ldr R12, l3389
+l3388: b l3390
+interrupt_603: l3389: .word 1048496
+l3390: swpVSb R10, R9, [R12]
+l3391: bic R8, R8, R3, RRX 
+l3392: ldr R4, [sp], #+16
+l3393: mov R7, #8
+l3394: ldrLSB R6, [sp, -R7]
+l3395: cmp R5, R2
+l3396: cmp R11, R8, ROR #1
+l3397: ldrB R3, [sp, #+3]
+l3398: mov R8, #20
+l3399: str R5, [sp, +R8]!
+l3400: tstVC R15, #1140850688
+l3401: adcs R8, R12, R12
+l3402: tstLS R6, R14, ASR R4
+l3403: cmpEQ R5, R1, ROR R8
+l3404: ldrNEsh R7, [sp, #-2]
+interrupt_509: l3405: mov R14, #49
+interrupt_877: l3406: ldrsb R11, [sp, -R14]
+interrupt_426: l3407: movEQ R7, R15
+l3408: rsbs R11, R9, R1, LSL #25
+l3409: mov R9, #16
+interrupt_942: l3410: strHIB R0, [sp, -R9]
+l3411: ldr R5, l3413
+interrupt_862: l3412: b l3414
+l3413: .word 1048484
+interrupt_935: l3414: swpb R10, R1, [R5]
+l3415: orrLEs R1, R14, R7
+l3416: addHIs R0, R10, R7, ASR #17
+l3417: addLEs R0, R11, R5, RRX 
+l3418: eors R2, R3, R4, ASR #24
+interrupt_522: l3419: cmn R14, R7, LSL #9
+l3420: ldr R9, [sp], #-40
+l3421: nop
+l3422: bNE l3429
+l3423: bic R7, R3, R11, LSL R9
+l3424: eorMI R8, R11, #236
+interrupt_826: l3425: mvnGEs R3, R6
+l3426: rscMI R6, R8, R3, LSR #16
+l3427: rsbEQs R0, R6, #195035136
+l3428: subs R2, R15, R10, ROR #11
+l3429: teqPL R6, R4, ROR #23
+interrupt_620: l3430: subGEs R12, R0, R1
+l3431: mov R7, #4
+l3432: strh R2, [sp, +R7]
+l3433: sbcPL R1, R14, R7
+l3434: mov R8, #6
+l3435: strh R7, [sp, +R8]
+l3436: orrVS R0, R14, #54788096
+l3437: bVS l3438
+l3438: adcNEs R12, R11, R12, LSL #0
+l3439: swi #9777055
+l3440: adcPL R2, R7, R3
+interrupt_276: l3441: swi #3383025
+l3442: adc R2, R14, R3, ASR R3
+l3443: cmp R2, R5, LSR #12
+l3444: teqNE R0, R10, ROR R4
+l3445: eorGT R14, R5, R10
+interrupt_200: l3446: and R0, R10, R1
+interrupt_643: l3447: strB R1, [sp, #+39]
+l3448: mov R11, #44
+l3449: ldrh R14, [sp, +R11]
+l3450: rsbCC R9, R15, #994050048
+l3451: b l3460
+l3452: add R1, R0, #55
+l3453: rsbCC R12, R2, #312
+l3454: mvns R8, #73
+interrupt_96: l3455: addCS R7, R2, R7, ROR R6
+l3456: sub R2, R11, R4, LSR #16
+l3457: sbcPL R6, R9, R9, ASR R0
+l3458: sub R4, R7, R10, LSR R3
+interrupt_684: l3459: b l3461
+l3460: b l3453
+l3461: andGE R11, R8, R11, LSL #5
+l3462: stmIA R13, {R1, R3, R4, R7, R8, R9, R10, R11, R12, R13, R14}
+l3463: sbcGEs R7, R10, #7
+l3464: b l3472
+l3465: add R1, R0, #63
+l3466: rscs R2, R3, R6, RRX 
+l3467: sbc R12, R2, R12, ASR #22
+l3468: mvn R11, #45056
+l3469: rscVC R5, R1, R8, LSL R2
+interrupt_255: l3470: eorLSs R11, R10, R11, LSL #10
+interrupt_238: l3471: b l3473
+interrupt_983: l3472: b l3466
+l3473: stmNEIB R13, {R1, R2, R3, R5, R6, R9, R11, R13, R14, R15}
+l3474: add R2, R12, #15597568
+l3475: ldrLSB R4, [sp, #+54]
+l3476: cmpCS R5, R7
+l3477: rscs R5, R0, #6094848
+l3478: clzCC R2, R14
+l3479: clzCS R8, R6
+l3480: bic R3, R11, R1, LSR #21
+interrupt_976: l3481: strLTh R0, [sp, #+16]
+interrupt_28: l3482: sbcLE R10, R15, R15, RRX 
+l3483: rsc R7, R4, R2, ASR #4
+interrupt_865: l3484: stmDB R13, {R4}
+l3485: stmIB R13!, {R1, R2, R3, R4, R5, R7, R8, R9, R10, R12, R15}
+l3486: ldr R8, l3488
+l3487: b l3489
+l3488: .word 1048488
+l3489: swp R2, R3, [R8]
+l3490: sbcVS R3, R11, R6, RRX 
+interrupt_247: l3491: swi #8269429
+l3492: rsbHI R0, R5, #-805306354
+l3493: stmDA R13!, {R6}
+l3494: mov R3, #18
+l3495: ldrh R7, [sp, +R3]
+interrupt_888: l3496: andGT R4, R12, R7
+l3497: swi #7029750
+l3498: andLE R1, R6, R14
+l3499: cmpGE R0, R15, RRX 
+interrupt_590: l3500: ldmDA R13!, {R2, R4, R6, R7, R9, R10, R14}
+l3501: swi #9487388
+l3502: ldrMIsb R8, [sp, #+38]
+l3503: str R3, [sp, #+44]!
+interrupt_840: l3504: subs R1, R14, R2
+l3505: swi #7436006
+l3506: rsc R4, R10, R6, ROR R6
+l3507: cmn R12, R7
+l3508: clzMI R9, R0
+l3509: teq R6, R0
+interrupt_546: l3510: ldr R8, l3512
+l3511: b l3513
+interrupt_239: l3512: .word 1048520
+interrupt_287: l3513: swpEQb R9, R3, [R8]
+l3514: adcVC R10, R11, R7, LSR R11
+l3515: strLTh R3, [sp, #-46]
+l3516: mov R12, #6
+l3517: strPLB R9, [sp, +R12]
+l3518: ldrsb R3, [sp, #-41]
+l3519: subLSs R2, R4, R1, LSR #11
+l3520: bLT l3529
+l3521: adcs R10, R15, #1459617792
+l3522: adds R9, R5, R3, ROR #9
+l3523: clzHI R10, R7
+l3524: clzLT R1, R8
+l3525: rsb R12, R9, #-2147483599
+l3526: teqGE R9, R8, LSR R8
+l3527: movCS R0, #638976
+l3528: orrMI R1, R10, #157696
+l3529: sbcLS R8, R12, #922746880
+l3530: stmDA R13!, {R4, R6}
+l3531: subs R10, R10, R15, ASR #19
+l3532: cmpEQ R2, R7, RRX 
+l3533: subLEs R12, R12, R7, LSR #17
+l3534: bics R4, R11, #6684672
+interrupt_60: l3535: str R3, [sp], #-12
+interrupt_860: l3536: cmp R2, R8
+l3537: mov R0, #0
+l3538: ldrGTsh R1, [sp, +R0]
+l3539: mvnVC R9, R6
+l3540: subs R8, R8, R4
+interrupt_201: l3541: rsbCS R5, R0, #4064
+interrupt_22: l3542: movVSs R11, R6, LSL #2
+l3543: ldr R12, l3545
+interrupt_151: l3544: b l3546
+l3545: .word 1048508
+l3546: swpCSb R10, R7, [R12]
+l3547: orrEQs R14, R11, #876609536
+l3548: mvnGE R0, R8, ROR R8
+l3549: rsc R4, R4, R3, ASR #29
+interrupt_467: l3550: tst R8, R6
+l3551: ldrsh R14, [sp, #-30]
+l3552: addEQs R12, R14, R14, RRX 
+interrupt_202: l3553: subs R7, R15, R4, RRX 
+interrupt_345: l3554: swi #12226322
+l3555: strEQh R7, [sp, #+8]
+l3556: mov R5, #8
+l3557: ldrsh R8, [sp, -R5]
+l3558: mov R8, #10
+l3559: ldrHIh R10, [sp, -R8]
+l3560: stmDB R13!, {R13, R15}
+l3561: str R7, [sp, #-4]
+l3562: addLE R5, R6, R10, ROR R0
+l3563: cmn R7, #55574528
+l3564: mov R6, #0
+l3565: ldrh R7, [sp, +R6]
+l3566: eors R0, R3, R5, LSR R6
+l3567: subMI R8, R9, R5, ASR R9
+l3568: sbcGEs R10, R14, R2, LSR R9
+l3569: ldrHIsh R3, [sp, #-26]
+l3570: orrGT R5, R15, R11
+l3571: cmp R9, R1, LSR R7
+l3572: subs R5, R3, R9
+l3573: strh R7, [sp, #-32]
+interrupt_174: l3574: bHI l3578
+interrupt_538: l3575: add R1, R0, #254
+l3576: rsbGTs R5, R4, R4, RRX 
+interrupt_388: l3577: b l3579
+l3578: b l3576
+l3579: addCSs R4, R6, R11, ROR #2
+interrupt_219: l3580: orrLEs R0, R8, #6336
+interrupt_828: l3581: stmDA R13, {R1, R7}
+l3582: ldr R6, l3584
+l3583: b l3585
+l3584: .word 1048520
+l3585: swpPL R12, R5, [R6]
+l3586: swi #13132528
+interrupt_568: l3587: mov R14, #6
+l3588: strh R11, [sp, -R14]
+l3589: stmHIDB R13, {R0, R6, R8, R9, R15}
+l3590: clz R2, R0
+l3591: tstHI R3, R4, RRX 
+l3592: ldr R0, l3594
+l3593: b l3595
+l3594: .word 1048544
+l3595: swp R12, R8, [R0]
+l3596: mvnVS R2, #65024
+l3597: mov R1, #1
+l3598: ldrEQsb R6, [sp, +R1]
+l3599: cmp R10, #1523712
+l3600: ldmDA R13!, {R0, R4, R11}
+l3601: mov R10, #11
+l3602: ldrLEB R14, [sp, -R10]
+l3603: adcGTs R0, R14, #11534336
+l3604: strLEh R12, [sp, #-10]
+l3605: ldr R14, l3607
+interrupt_224: l3606: b l3608
+l3607: .word 1048496
+l3608: swpb R11, R1, [R14]
+l3609: b l3613
+interrupt_34: l3610: rsbVS R12, R15, #3997696
+interrupt_537: l3611: sbcHI R9, R15, #7
+interrupt_913: l3612: bicLE R10, R6, #3260416
+l3613: eors R8, R1, #50855936
+interrupt_555: l3614: ldmDB R13!, {R4, R5, R8, R12}
+interrupt_839: l3615: mov R11, #22
+l3616: strMIh R0, [sp, +R11]
+interrupt_425: l3617: bCC l3623
+l3618: add R1, R0, #60
+l3619: clz R9, R0
+interrupt_142: l3620: eors R2, R2, #536870922
+l3621: mov R12, R7
+l3622: b l3624
+l3623: b l3619
+l3624: andNEs R6, R1, R8
+l3625: swi #5653321
+l3626: stmIB R13, {R2, R4, R5, R6, R7, R9, R10, R11, R12, R14}
+l3627: movPLs R4, R0
+l3628: teqEQ R11, R9, LSL #13
+l3629: cmp R3, R15, RRX 
+l3630: sbc R3, R11, R0, LSR #15
+l3631: adc R8, R9, #-889192448
+l3632: cmp R3, R10, LSR #17
+l3633: orrLS R12, R6, R10, ASR #21
+l3634: ands R3, R15, #16384
+l3635: mov R3, #4
+interrupt_821: l3636: strh R11, [sp, -R3]
+l3637: ldrLSsb R8, [sp, #-4]
+l3638: andLS R14, R6, #61696
+l3639: eors R5, R7, R5, ASR R9
+l3640: adcMIs R14, R11, #46
+l3641: ldrEQsh R10, [sp, #+58]
+l3642: mvnLE R4, R1, RRX 
+interrupt_715: l3643: ldr R7, [sp], #-12
+l3644: subGTs R12, R11, R5, RRX 
+l3645: ldr R11, l3647
+l3646: b l3648
+l3647: .word 1048496
+l3648: swpHI R10, R8, [R11]
+l3649: teq R11, R2
+interrupt_669: l3650: cmpLS R0, R11, LSL R0
+interrupt_575: l3651: mov R7, #18
+interrupt_428: l3652: ldrh R7, [sp, +R7]
+l3653: subVCs R12, R7, R8, RRX 
+l3654: orrMIs R5, R10, R1, RRX 
+l3655: rscs R5, R4, R6, ROR R4
+interrupt_109: l3656: strB R7, [sp, #+55]
+interrupt_765: l3657: nop
+l3658: b l3662
+l3659: add R1, R0, #211
+interrupt_418: l3660: addLT R7, R6, R6, ASR R9
+l3661: b l3663
+l3662: b l3660
+l3663: swi #14446511
+l3664: b l3670
+l3665: add R1, R0, #141
+l3666: tstNE R12, R14
+l3667: mvns R8, R9
+interrupt_327: l3668: rsbs R14, R8, R9
+interrupt_931: l3669: b l3671
+l3670: b l3666
+l3671: mvn R1, R0, ASR #17
+interrupt_508: l3672: mov R9, #73
+l3673: strB R9, [sp, +R9]
+l3674: strVSB R11, [sp, #+49]
+l3675: clz R9, R5
+l3676: subMIs R7, R1, #-2147483609
+l3677: ldmIA R13!, {R3, R4, R5, R6, R8, R9, R10, R11, R12}
+l3678: swi #13075333
+l3679: mov R9, #13
+l3680: strB R12, [sp, +R9]
+l3681: ldr R9, l3683
+interrupt_49: l3682: b l3684
+l3683: .word 1048512
+interrupt_186: l3684: swpLEb R11, R2, [R9]
+l3685: mov R4, #39
+interrupt_705: l3686: ldrLEB R7, [sp, +R4]
+l3687: swi #12394771
+l3688: eorEQ R10, R14, R3, ASR #8
+interrupt_453: l3689: bPL l3693
+interrupt_59: l3690: eor R5, R5, R9, RRX 
+interrupt_198: l3691: mov R0, R0, LSR R5
+l3692: cmpCS R8, R5
+l3693: subGTs R6, R15, R0
+l3694: ldrh R10, [sp, #-8]
+l3695: subNEs R1, R10, R3
+l3696: ldmDB R13!, {R3, R4}
+interrupt_541: l3697: mvns R4, #1946157056
+l3698: swi #14769855
+l3699: cmpHI R0, R14, LSR R11
+l3700: mov R12, R14, ASR R5
+interrupt_275: l3701: subPLs R0, R7, R4, RRX 
+interrupt_393: l3702: mov R3, #15
+l3703: strB R2, [sp, +R3]
+l3704: addPL R5, R10, R5, ASR R2
+l3705: bicCSs R6, R10, R11, ROR #7
+l3706: ldr R12, l3708
+l3707: b l3709
+l3708: .word 1048540
+l3709: swpLSb R1, R10, [R12]
+l3710: adcHIs R10, R6, #77824
+interrupt_934: l3711: mov R8, #6
+l3712: ldrLEh R14, [sp, -R8]
+l3713: eorEQ R9, R7, R3, RRX 
+l3714: cmpVS R2, R10, LSL #15
+l3715: mvnVC R14, R7
+l3716: rsbLT R9, R12, R1, ROR R8
+l3717: mov R3, #4
+interrupt_406: l3718: strh R2, [sp, -R3]
+l3719: movGT R8, #2032
+l3720: ldmDA R13!, {R10, R12, R14}
+interrupt_681: l3721: tstLT R6, #244736
+l3722: stmIA R13!, {R3, R7}
+l3723: ldmIB R13!, {R5}
+l3724: strPLB R6, [sp, #-6]
+interrupt_332: l3725: mov R8, #42
+l3726: strVSh R0, [sp, +R8]
+l3727: clz R6, R12
+l3728: rsb R8, R10, R1
+interrupt_382: l3729: mov R2, #44
+l3730: ldrB R0, [sp, +R2]
+l3731: ldrsb R12, [sp, #+30]
+interrupt_866: l3732: stmVCIA R13, {R0, R3, R9, R12, R14}
+l3733: sbcLTs R11, R7, #-889192448
+l3734: sub R10, R3, #-805306362
+l3735: rscHIs R10, R14, R2, LSL R14
+l3736: mov R3, #4
+l3737: strMIB R2, [sp, -R3]
+l3738: cmnGT R5, #-268435450
+interrupt_307: l3739: mvn R4, #40960
+l3740: bicNE R4, R10, R8, ROR R6
+l3741: mvnLE R14, R14, RRX 
+l3742: sbcs R8, R9, #56623104
+l3743: andLEs R2, R10, R5, ROR #15
+l3744: adcs R6, R3, R14, LSL #2
+l3745: cmnGE R2, R3, LSR R6
+l3746: subVC R9, R15, #-1610612735
+l3747: bic R8, R14, #36
+l3748: cmnGT R4, #-1879048189
+l3749: strCS R11, [sp, #+0]
+interrupt_549: l3750: cmnCS R15, R8
+l3751: and R9, R9, #1002438656
+l3752: mov R6, #20
+l3753: strLT R9, [sp, -R6]
+l3754: mov R2, #16
+l3755: ldrLTh R14, [sp, -R2]
+l3756: ldrNEB R0, [sp, #+3]
+l3757: b l3761
+l3758: addLSs R2, R12, R12, ROR #14
+l3759: cmp R8, R5, LSL R12
+interrupt_548: l3760: rsbVCs R11, R12, R15
+l3761: cmnGT R6, R14
+interrupt_630: l3762: subLE R10, R7, R5, RRX 
+l3763: movMIs R6, R8
+l3764: ldrsh R1, [sp, #-22]
+l3765: bicHI R9, R7, R12
+l3766: stmDB R13, {R2, R7, R8, R10}
+l3767: clzLE R3, R12
+l3768: eors R1, R11, R12, ASR R8
+l3769: mvnPL R0, #57
+interrupt_170: l3770: clzEQ R7, R6
+l3771: movHI R8, R6, LSL R5
+interrupt_718: l3772: teqLE R2, R2, RRX 
+l3773: ldr R3, l3775
+l3774: b l3776
+l3775: .word 1048480
+l3776: swpb R9, R0, [R3]
+l3777: b l3785
+interrupt_299: l3778: add R1, R0, #133
+l3779: rscLTs R10, R11, R10, ASR R3
+l3780: teq R9, R0, ASR R9
+l3781: teq R1, R8, ROR R14
+l3782: sbc R11, R12, R11, ASR #3
+l3783: mvnMIs R4, R11, LSL R12
+l3784: b l3786
+interrupt_818: l3785: b l3779
+l3786: cmnPL R5, R4, LSL #26
+l3787: subLTs R11, R0, R10
+l3788: swi #8988666
+l3789: sub R0, R3, R15, LSR #13
+l3790: mov R7, #16
+l3791: ldrh R8, [sp, +R7]
+l3792: cmn R2, #-2147483595
+l3793: ldr R4, [sp], #+8
+l3794: strMIB R14, [sp, #-14]
+l3795: subs R10, R9, R8, RRX 
+l3796: ldr R7, l3798
+l3797: b l3799
+l3798: .word 1048480
+l3799: swpb R3, R9, [R7]
+interrupt_498: l3800: stmIB R13!, {R13, R15}
+l3801: mov R4, #8
+l3802: ldr R11, [sp], +R4
+l3803: mov R8, #20
+l3804: str R4, [sp], +R8
+l3805: adcPL R10, R9, R1
+l3806: ldrB R6, [sp, #-41]
+interrupt_745: l3807: mov R4, #44
+l3808: strh R0, [sp, -R4]
+interrupt_139: l3809: ldr R11, l3811
 l3810: b l3812
-l3811: .word 1048544
-l3812: swpLSb R10, R1, [R3]
-l3813: swi #13021904
-interrupt_658: l3814: ldr R8, l3816
-l3815: b l3817
-l3816: .word 1048492
-l3817: swpPL R10, R12, [R8]
-l3818: stmEQDA R13, {R2, R3, R10, R11, R14}
-interrupt_693: l3819: mvnEQs R9, R14
-l3820: rsc R12, R6, #3456
-l3821: mvnCCs R2, R9, LSL R10
-l3822: sub R14, R15, R7, ROR #15
-l3823: cmnVC R3, R14, LSL #21
-l3824: orrVS R2, R1, #81920
-l3825: cmpGE R6, R6
-l3826: tst R7, R2
-l3827: ldrLEsb R11, [sp, #+19]
-l3828: ldr R2, l3830
-l3829: b l3831
-interrupt_9: l3830: .word 1048524
-l3831: swpLTb R5, R12, [R2]
-l3832: teqHI R10, R4
-l3833: mov R6, #8
-interrupt_489: l3834: ldrLTB R8, [sp, -R6]
-interrupt_975: l3835: rscLEs R2, R8, R7, RRX 
-l3836: teqGT R3, R15, RRX 
-interrupt_817: l3837: mov R11, #16
-l3838: ldrVCB R6, [sp, -R11]
-l3839: ldrNE R12, [sp, #-12]
-l3840: sub R0, R3, R1, LSL R2
-l3841: subLTs R4, R8, R11, LSR R14
-interrupt_21: l3842: cmn R4, #-1073741767
-l3843: mov R11, #5
-l3844: ldrCCB R6, [sp, +R11]
-interrupt_536: l3845: bicCSs R14, R1, R10, ASR R6
-l3846: ldr R2, l3848
-interrupt_57: l3847: b l3849
-l3848: .word 1048536
-l3849: swpb R5, R8, [R2]
-l3850: ldmCSIA R13, {R1, R6}
-l3851: rsc R9, R11, #32
-l3852: cmnEQ R11, R0, RRX 
-l3853: cmpCC R9, #10
-interrupt_30: l3854: adds R3, R5, R0, LSL R5
-l3855: ldmDB R13, {R0, R1, R10, R12}
-l3856: bic R11, R3, R9, LSL R11
-l3857: movs R4, R4, ASR #8
-interrupt_330: l3858: sbcNE R14, R11, #218
-l3859: mov R2, #12
-l3860: strPLh R1, [sp, -R2]
-l3861: clzLS R1, R12
-interrupt_323: l3862: bLS l3869
-l3863: teq R7, R12, LSR #9
-l3864: adcLT R12, R7, R10
-l3865: rsc R7, R7, #536576
-l3866: teqGT R3, R1
-l3867: cmp R3, R1, RRX 
-l3868: bicCC R9, R0, R9
-interrupt_375: l3869: cmpGE R0, R12, LSL R3
-l3870: mvn R4, R6, LSL #1
-l3871: strB R0, [sp, #+14]
-l3872: sbc R5, R8, R5, ROR #24
-l3873: sbcGEs R3, R12, R12
-interrupt_730: l3874: teqVC R5, R3, LSL R4
-l3875: ldrsh R6, [sp, #+16]
-l3876: ldrHIB R11, [sp, #-5]
-interrupt_686: l3877: bCS l3886
-l3878: add R1, R0, #157
-interrupt_360: l3879: subNEs R14, R1, R14, LSL #20
-l3880: rsc R12, R14, #1526726656
-l3881: adds R7, R11, #-1476395008
-l3882: subLEs R0, R14, R7
-l3883: bicEQ R8, R1, R2
-l3884: eorNE R14, R0, R12
-l3885: b l3887
-l3886: b l3879
-interrupt_560: l3887: bic R12, R2, #204472320
-l3888: addGTs R0, R3, #40704
-l3889: eor R12, R0, R0, RRX 
-l3890: bLE l3894
-l3891: bic R10, R1, #48
-l3892: teq R15, R1
-l3893: subHIs R11, R5, R6
-l3894: orrs R6, R15, R8, LSL #25
-l3895: subEQ R3, R5, #20185088
-interrupt_221: l3896: subNE R3, R4, #128
-l3897: andVSs R7, R15, #13952
-l3898: rscNE R10, R7, R0
-l3899: mov R3, #18
-l3900: strCSh R4, [sp, +R3]
-l3901: bLE l3905
-l3902: movVSs R10, R6, LSL R6
-l3903: sbcLTs R11, R12, R2, LSL #3
-l3904: rscPL R4, R1, R15
-l3905: ands R7, R6, #819200
-l3906: mov R5, #36
-l3907: ldr R2, [sp, -R5]!
-l3908: addGE R10, R5, R3, LSR R8
-l3909: addGEs R5, R14, R0, RRX 
-interrupt_31: l3910: tstLT R10, R6, ROR #31
-l3911: rsbEQs R8, R10, R6, LSL R14
-interrupt_363: l3912: mov R10, R11, ROR #6
-l3913: ldr R7, [sp, #+68]
-l3914: movHIs R7, R5, ASR R12
-l3915: subHIs R9, R4, R10
-l3916: cmpCS R9, R1
-l3917: cmp R2, R4, RRX 
-l3918: cmn R3, R6, ROR R9
-l3919: tst R6, R5, RRX 
-l3920: andVCs R3, R5, R1, RRX 
-interrupt_352: l3921: sbcGE R9, R0, #-2147483642
-l3922: mov R7, #3
-l3923: strB R12, [sp, +R7]
-l3924: clz R1, R14
-l3925: rsbHI R6, R14, R11, LSR R6
-interrupt_466: l3926: stmIA R13!, {R2, R4, R5, R7, R8, R11}
-l3927: swi #9456753
-l3928: ldr R5, l3930
-l3929: b l3931
-interrupt_511: l3930: .word 1048492
-l3931: swpLSb R2, R2, [R5]
-l3932: teq R8, R12, ROR R2
-l3933: stmDA R13!, {R6, R7, R9}
-interrupt_158: l3934: bLE l3942
-interrupt_965: l3935: add R1, R0, #43
-l3936: sub R0, R14, R10
-l3937: orrs R12, R12, R7, ROR R2
-l3938: addLS R4, R9, R1, ROR R1
-interrupt_727: l3939: orrGTs R3, R5, R5, LSL R7
-interrupt_266: l3940: cmpPL R12, R10, ROR #14
-l3941: b l3943
-interrupt_901: l3942: b l3936
-l3943: stmDA R13!, {R4}
-interrupt_935: l3944: add R11, R10, R15
-l3945: movNEs R5, R1
-interrupt_608: l3946: addNE R7, R1, R14, ASR #7
-l3947: b l3955
-interrupt_722: l3948: mov R0, R4, ROR #26
-l3949: bicLTs R0, R11, R1, ROR #14
-interrupt_335: l3950: mvn R2, R4, LSL #23
-interrupt_419: l3951: rscs R5, R3, R8
-l3952: cmpHI R5, R1, LSL #14
-l3953: rsbs R10, R11, R11
-l3954: eorMI R12, R7, R7, ROR #30
-interrupt_137: l3955: sub R1, R8, R15
-l3956: ldrLEh R7, [sp, #+30]
-l3957: mvnHIs R11, #1312
-l3958: bic R14, R11, R9, LSR #10
-interrupt_356: l3959: mov R11, #4
-l3960: str R0, [sp, +R11]!
-l3961: sbcLS R4, R7, R9, LSR #23
-l3962: mov R8, #16056320
-l3963: sbcEQ R12, R6, R11, ROR #4
-l3964: cmnHI R9, R1, ROR #1
-l3965: bicLTs R11, R8, R2, LSR R1
-interrupt_814: l3966: tstVC R11, R9
-l3967: mov R0, #36
-l3968: str R14, [sp, +R0]!
-l3969: eorLE R10, R12, R11, ASR R12
-l3970: bCC l3974
-interrupt_344: l3971: tstGE R15, R1
-l3972: andLT R7, R7, R0, RRX 
-l3973: cmn R11, R1, ASR #28
-l3974: mvnLS R0, R2
-l3975: teqGE R5, R1
-interrupt_432: l3976: mov R0, #20
-l3977: strLEB R14, [sp, -R0]
-l3978: ldmIB R13!, {R8}
-l3979: teq R2, #124
-l3980: addNEs R6, R9, R3, ROR #6
-interrupt_417: l3981: ldmDB R13!, {R6, R7}
-l3982: rsc R9, R4, R10
-l3983: swi #12096576
-l3984: adcs R12, R7, R2, LSL #10
-interrupt_182: l3985: ldrh R9, [sp, #-30]
-l3986: swi #1079414
-l3987: clz R5, R8
-l3988: rsbCCs R11, R14, R8, ASR #2
-l3989: andVC R0, R0, R9, ROR #3
-l3990: mov R2, #10
-interrupt_577: l3991: strGEB R10, [sp, +R2]
-l3992: adcVS R2, R2, R9, ASR R9
-l3993: cmp R5, R15
-l3994: mov R3, #12
-l3995: strLT R1, [sp, -R3]
-l3996: mov R10, #36
-l3997: ldrEQsh R5, [sp, -R10]
-interrupt_831: l3998: bicHI R1, R9, R4, ROR R0
-l3999: ldrNEh R3, [sp, #+20]
-l4000: ldrPLsh R8, [sp, #+16]
-interrupt_491: l4001: mov R12, #8
-interrupt_167: l4002: str R0, [sp], -R12
-l4003: ldr R2, l4005
-l4004: b l4006
-l4005: .word 1048516
-l4006: swp R11, R6, [R2]
-l4007: movMIs R4, R5, LSL #30
-l4008: nop
-interrupt_745: l4009: subs R7, R14, #503316480
-interrupt_155: l4010: cmpMI R0, R4, LSL #7
-l4011: mov R8, #20
-l4012: strh R3, [sp, +R8]
-l4013: mov R4, #4
-l4014: ldrsh R2, [sp, -R4]
-l4015: bVC l4023
-l4016: add R1, R0, #224
-l4017: cmnMI R1, R4, ROR #10
-l4018: movLT R2, #-150994944
-l4019: mov R12, #-2113929216
-interrupt_2: l4020: tst R8, R8
-l4021: movVS R10, R1, LSR #14
-interrupt_669: l4022: b l4024
-interrupt_756: l4023: b l4017
-l4024: movs R4, R7, ROR #23
-l4025: movEQs R8, R14, LSR #11
-l4026: add R6, R3, R6
-interrupt_605: l4027: sbc R2, R11, #1472
-l4028: orrs R4, R6, R1
-l4029: rsbLEs R0, R14, R8, LSL #6
-l4030: teq R14, R14, LSR #10
-l4031: bGT l4032
-l4032: rsbCS R14, R14, #335544321
-l4033: addLEs R6, R3, #3604480
-l4034: ldr R10, l4036
-l4035: b l4037
-l4036: .word 1048488
-interrupt_425: l4037: swpNEb R4, R9, [R10]
-l4038: ldr R9, l4040
-l4039: b l4041
-l4040: .word 1048524
-l4041: swpMIb R2, R6, [R9]
-interrupt_877: l4042: teq R11, R10, LSL R5
-l4043: ands R8, R12, R12, ASR #25
-l4044: clz R2, R11
-l4045: swi #14275034
-interrupt_752: l4046: rsb R1, R6, R7
-l4047: cmp R2, R11, LSL #7
-l4048: rsbMI R4, R9, R11, LSR R1
-interrupt_444: l4049: bicEQ R10, R10, R10
-l4050: mvnLEs R3, R14, LSR R6
-l4051: cmn R3, R11
-interrupt_493: l4052: mov R10, #30
-l4053: strB R1, [sp, +R10]
-interrupt_185: l4054: swi #6549356
-l4055: clzLE R7, R10
-l4056: cmnLT R5, #2277376
-l4057: ldrsb R12, [sp, #-31]
-l4058: mvnGE R3, R12, LSR R5
-interrupt_932: l4059: strLE R8, [sp, #-28]
-l4060: mov R1, #21
-l4061: ldrB R7, [sp, -R1]
-l4062: eorNE R10, R15, #1536
-l4063: and R8, R8, R11, ROR R6
-l4064: subVC R8, R5, R11, ROR R8
-l4065: eors R5, R1, R9, ASR R4
-interrupt_273: l4066: adc R12, R6, R2
-l4067: bicLE R4, R10, R10
-l4068: subs R0, R1, R5, LSL R6
-l4069: rsb R12, R4, #3997696
-interrupt_445: l4070: subNE R9, R15, R0
-l4071: ldrVSB R6, [sp, #-22]
-l4072: swi #12226820
-interrupt_469: l4073: rscVCs R0, R6, R7, LSR R4
-l4074: mov R6, #6
-l4075: ldrLTh R2, [sp, -R6]
-l4076: addVC R8, R3, R9, LSL #31
-l4077: mvnGE R5, #308
-l4078: mvns R0, R12
-interrupt_562: l4079: addVC R10, R10, R14
-l4080: cmnLE R5, #2560
-l4081: swi #7042049
-interrupt_128: l4082: nop
-interrupt_779: l4083: tstLS R2, R6, LSL R4
-l4084: bLT l4088
-l4085: add R1, R0, #132
-l4086: subPLs R7, R10, R15, ASR #4
-l4087: b l4089
-l4088: b l4086
-l4089: movs R6, R7, LSL #18
-l4090: stmIB R13!, {R13}
-l4091: adds R0, R14, R3, RRX 
-l4092: movEQ R0, R3, ROR #31
-interrupt_582: l4093: add R7, R3, #253952
-interrupt_249: l4094: cmp R5, R12
-l4095: mov R4, #2
-l4096: ldrsh R4, [sp, -R4]
-l4097: mov R9, #34
-l4098: ldrLEsb R10, [sp, -R9]
-l4099: cmnVC R8, R2, LSR #7
-l4100: mvnVCs R7, R15
-l4101: cmp R4, R4
-l4102: addPLs R6, R10, R0, ASR #1
-l4103: teq R0, #18
-l4104: swi #15503356
-l4105: clzMI R4, R4
-l4106: eor R8, R8, R4, RRX 
-l4107: movGEs R7, R8
-interrupt_169: l4108: swi #12331542
-l4109: bic R7, R10, #241664
-l4110: tstGE R5, #2031616
-interrupt_796: l4111: cmpGE R8, #116391936
-interrupt_545: l4112: stmIA R13!, {R10, R14}
-l4113: swi #15646200
-l4114: cmnLT R0, #11520
-l4115: mov R7, #7
-interrupt_574: l4116: ldrVSsb R7, [sp, -R7]
-interrupt_977: l4117: ldr R12, [sp, #+16]!
-l4118: ldrCCB R11, [sp, #+5]
-l4119: strPLh R7, [sp, #+6]
-l4120: ands R9, R7, R1, LSL R1
-interrupt_69: l4121: ldmDB R13!, {R3}
-l4122: addCS R0, R10, R4, RRX 
-l4123: subCC R2, R11, R6, LSR R11
-l4124: mov R0, #44
-interrupt_808: l4125: strLEB R0, [sp, -R0]
-l4126: strB R8, [sp, #-13]
-interrupt_931: l4127: mov R6, #4
-l4128: ldrh R8, [sp, +R6]
-l4129: swi #14855733
-l4130: ldr R1, l4132
-l4131: b l4133
-l4132: .word 1048532
-l4133: swpMIb R12, R2, [R1]
-l4134: ldmIB R13!, {R0, R1}
-l4135: sbcLT R7, R14, R0, ROR #10
-l4136: subCCs R10, R8, R5, RRX 
-l4137: rscCS R9, R2, #630784
-l4138: swi #5196357
-l4139: b l4146
-l4140: add R1, R0, #111
-l4141: bicVSs R7, R15, R7
-interrupt_729: l4142: clzVS R2, R6
-interrupt_852: l4143: rsbVS R14, R10, R6, ROR #31
-l4144: eorCCs R5, R6, R7
-interrupt_861: l4145: b l4147
-l4146: b l4141
-l4147: b l4154
-l4148: clz R2, R9
-l4149: cmp R6, R4
-l4150: cmpEQ R9, R8, ASR R4
-l4151: clzVC R5, R6
-interrupt_136: l4152: mvnCSs R4, R14
-l4153: mvn R3, R12
-l4154: subEQ R11, R10, R1, ASR R14
-l4155: nop
-l4156: sbcCCs R12, R8, #-335544317
-l4157: strB R2, [sp, #-30]
-l4158: rsbLS R12, R8, #63438848
-l4159: ldr R3, l4161
-l4160: b l4162
-interrupt_655: l4161: .word 1048504
-interrupt_293: l4162: swpPL R7, R12, [R3]
-l4163: eorNEs R3, R14, #-1677721600
-l4164: sub R10, R9, R1
-l4165: ldrLSsh R11, [sp, #-24]
-interrupt_258: l4166: ldrLSsh R3, [sp, #-40]
-l4167: strh R12, [sp, #-58]
-l4168: ldr R7, l4170
-l4169: b l4171
-l4170: .word 1048516
-l4171: swpNEb R2, R11, [R7]
-l4172: rsbVS R9, R11, R4
-interrupt_105: l4173: addHIs R8, R1, R11, ASR #10
-l4174: movLE R12, R5, RRX 
-l4175: bics R12, R3, R5
-l4176: eorCS R6, R2, R1, LSL R10
-l4177: mov R6, #16
-l4178: ldrsh R14, [sp, -R6]
-l4179: ldr R5, [sp, #-44]!
-interrupt_364: l4180: sbcs R14, R2, #3792
-l4181: ldrGEB R3, [sp, #+8]
-l4182: mvns R7, R0
-l4183: adcHI R5, R14, #9472
-interrupt_333: l4184: eorGEs R5, R10, #616
-l4185: b l4191
-l4186: add R1, R0, #191
-l4187: andPL R12, R3, R11
-l4188: orrVSs R7, R3, R5, LSR R10
-l4189: adds R0, R7, #2031616
-l4190: b l4192
-l4191: b l4187
-l4192: eor R10, R11, R11, LSR R5
-l4193: sub R3, R1, R9
-l4194: orrHI R7, R11, R6, LSL #17
-l4195: adcLSs R9, R10, R15
-l4196: eorNEs R14, R14, R7, ROR #23
-l4197: stmDA R13, {R7, R11, R12, R14}
-l4198: adcNE R8, R15, #4160
-l4199: mov R3, #31
-l4200: ldrLEsb R6, [sp, +R3]
-l4201: mvnNE R10, #745472
-l4202: ldr R1, l4204
-l4203: b l4205
-l4204: .word 1048540
-l4205: swp R0, R4, [R1]
-l4206: sbcCCs R10, R0, #397312
-l4207: mov R14, #24
-l4208: ldrCSh R6, [sp, +R14]
-l4209: eor R7, R15, R14, ROR #6
-l4210: ldr R6, l4212
-l4211: b l4213
-interrupt_141: l4212: .word 1048520
-interrupt_264: l4213: swpGTb R5, R4, [R6]
-l4214: teqVC R7, R4, ASR #29
-l4215: ldmDB R13, {R1, R2, R9}
-l4216: ldmIA R13!, {R0, R2, R5, R8, R10, R12, R14}
-l4217: ldr R11, l4219
-l4218: b l4220
-l4219: .word 1048508
-l4220: swp R1, R3, [R11]
-l4221: eorLTs R7, R6, R10, RRX 
-l4222: mvnLS R14, R14
-l4223: strCSh R7, [sp, #+2]
-l4224: sbcHI R9, R5, R14
-l4225: nop
-l4226: stmDB R13, {R8, R11}
-interrupt_416: l4227: bicVCs R7, R11, R2
-l4228: tst R15, R11, LSL #29
-l4229: mov R10, #32
-interrupt_894: l4230: ldrEQsh R4, [sp, -R10]
-interrupt_835: l4231: mov R5, #22
-l4232: strGEB R12, [sp, -R5]
-l4233: rscLE R6, R12, R8, LSL #30
-l4234: bCS l4243
-l4235: add R1, R0, #13
-l4236: tstGT R12, R5, LSL #25
-interrupt_455: l4237: sub R5, R15, R4, RRX 
-l4238: bicEQs R3, R7, R3
-l4239: cmn R4, #18944
-interrupt_70: l4240: sub R2, R4, R2, LSL #28
-l4241: rsb R1, R8, R10, ASR R4
-l4242: b l4244
-l4243: b l4236
-l4244: rsbNE R12, R6, #3899392
-l4245: eorLE R5, R3, R5, RRX 
-interrupt_91: l4246: swi #3100856
-l4247: adc R14, R9, R12
-l4248: addLS R4, R7, R14
-l4249: swi #16286427
-l4250: mov R14, #24
-l4251: ldr R0, [sp, -R14]!
-l4252: clz R6, R0
-l4253: mov R0, #8
-l4254: strB R0, [sp, +R0]
-l4255: mov R6, #6
-l4256: ldrLSsb R7, [sp, +R6]
-l4257: bGT l4263
-l4258: mvns R14, R11, RRX 
-interrupt_922: l4259: orrMIs R4, R8, #30408704
-l4260: cmpGE R14, R7
-l4261: subs R14, R5, R11
-l4262: clz R0, R8
-l4263: subGTs R3, R2, #-2147483592
-l4264: strh R4, [sp, #-10]
-l4265: mov R0, #14
-l4266: ldrCCh R7, [sp, -R0]
-l4267: bMI l4272
-l4268: cmpMI R1, R10
-l4269: movs R1, R8
-l4270: sbc R10, R0, R11
-l4271: adcGEs R1, R11, R10, ASR #5
-interrupt_157: l4272: ands R11, R10, R6, RRX 
-interrupt_800: l4273: mov R7, #38
-interrupt_879: l4274: ldrh R11, [sp, +R7]
-interrupt_10: l4275: mov R14, #10
-l4276: ldrsh R5, [sp, -R14]
-l4277: ldmDB R13!, {R8, R9, R10, R12, R14}
-l4278: teqHI R1, R10, LSL #10
-l4279: mov R5, #19
-l4280: ldrGTsb R4, [sp, +R5]
-l4281: mov R14, #36
-l4282: ldrCCsh R4, [sp, +R14]
-l4283: rscPL R14, R5, R15, LSR #14
-l4284: rscs R3, R6, #7104
-l4285: mov R5, #22
-interrupt_29: l4286: ldrh R8, [sp, +R5]
-l4287: tstCC R1, R6, ASR #6
-l4288: subs R8, R14, R12, RRX 
-l4289: clz R0, R2
-l4290: ldr R8, [sp, #+52]!
-l4291: clzGE R7, R1
-interrupt_929: l4292: clz R0, R5
-interrupt_751: l4293: teq R3, R15, LSL #23
-l4294: nop
-l4295: stmIA R13!, {R0}
-l4296: tstLS R9, R7, ASR #11
-l4297: rscLEs R4, R2, #822083584
-l4298: movEQ R6, R7
-interrupt_220: l4299: stmIB R13!, {R3}
-l4300: eorHI R9, R8, R3, ASR #19
-l4301: b l4307
-interrupt_664: l4302: mov R9, R9, ROR #7
-l4303: ands R6, R11, R8, LSR #29
-l4304: adcEQ R10, R0, #4194304
-l4305: adcPLs R0, R11, R7, ROR R12
-l4306: tstPL R10, R9, RRX 
-l4307: movHIs R12, R7
-l4308: mov R8, #23
-interrupt_708: l4309: strB R0, [sp, -R8]
-interrupt_224: l4310: cmnPL R5, R1, ROR R8
-l4311: mov R4, #0
-l4312: ldrsh R10, [sp, +R4]
-l4313: movVS R14, #3696
-l4314: sbcLTs R9, R5, R12, RRX 
-l4315: swi #6712580
-interrupt_88: l4316: nop
-interrupt_324: l4317: bHI l4323
-l4318: add R1, R0, #213
-l4319: andLT R9, R9, R12, ROR #3
-l4320: rscGE R4, R1, R10
-l4321: orrMI R10, R15, #2816
-interrupt_305: l4322: b l4324
-l4323: b l4319
-l4324: mov R0, #516
-interrupt_358: l4325: rsc R11, R15, R10, RRX 
-l4326: mov R9, #13
-l4327: ldrsb R5, [sp, -R9]
-l4328: sbcLE R5, R11, R2, RRX 
-l4329: adcs R3, R4, R7, ROR #4
-l4330: mvn R1, R5, LSR R6
-interrupt_190: l4331: ldrLSh R12, [sp, #-18]
-interrupt_799: l4332: mov R3, #50
-l4333: strh R2, [sp, -R3]
-interrupt_127: l4334: tstNE R1, R4
-l4335: strVSh R2, [sp, #-54]
-l4336: mov R4, #8
-l4337: ldr R10, [sp, -R4]!
-l4338: bMI l4347
-l4339: add R1, R0, #151
-l4340: orr R0, R15, R14, LSL #31
-l4341: adcEQs R11, R8, R15
-l4342: bicMIs R5, R9, R3, ASR #8
-l4343: sbc R2, R10, R3
-interrupt_431: l4344: eorLSs R3, R6, R1
-l4345: sbcLT R5, R14, R0, LSR R14
-l4346: b l4348
-l4347: b l4340
-l4348: stmGTDB R13, {R2, R3, R7, R8, R12}
-l4349: teqPL R7, R7, ASR R5
-l4350: adcCC R11, R12, R0
-l4351: subHI R11, R4, R14
-l4352: mov R6, #40
-l4353: str R1, [sp], -R6
-l4354: addLE R11, R3, R2, RRX 
-l4355: rsc R4, R4, R7
-l4356: mov R7, #12
-l4357: ldrCCsb R10, [sp, -R7]
-interrupt_907: l4358: subVCs R10, R11, #104
-l4359: orrLT R7, R12, R6, LSL R10
-l4360: ldr R7, l4362
-l4361: b l4363
-l4362: .word 1048492
-l4363: swpb R4, R6, [R7]
-l4364: str R2, [sp, #+20]!
-l4365: movGEs R3, R4
-l4366: mov R0, #14
-l4367: ldrVCsh R8, [sp, -R0]
-l4368: ldr R2, l4370
-interrupt_568: l4369: b l4371
-l4370: .word 1048492
-l4371: swpEQb R14, R12, [R2]
-l4372: rscLT R12, R6, R1, LSL #5
-l4373: tstCS R10, R14, LSR #10
-l4374: teq R6, R10, LSL R12
-l4375: mov R9, #20
-l4376: ldrh R9, [sp, -R9]
-l4377: bPL l4382
-l4378: rsbHI R5, R14, R12, LSR R6
-l4379: bic R3, R4, R6, ROR #2
-l4380: rsc R9, R6, R12, LSL #20
-interrupt_824: l4381: rsbs R8, R4, R10, ROR #4
-l4382: bicPL R5, R7, R11, LSL R0
-l4383: subs R11, R4, #804
-l4384: tstLE R2, R11, RRX 
-l4385: teqLT R8, R15, ASR #1
-interrupt_12: l4386: swi #1440568
-l4387: ldr R12, l4389
-interrupt_518: l4388: b l4390
-interrupt_132: l4389: .word 1048520
-l4390: swpb R1, R9, [R12]
-l4391: strB R0, [sp, #-43]
-l4392: bGT l4397
-l4393: movPL R1, R15, RRX 
-interrupt_47: l4394: cmpGT R11, #14464
-l4395: mov R0, R5, RRX 
-l4396: adcGEs R6, R9, #976
-l4397: rsbVSs R11, R1, #137
-interrupt_670: l4398: rsbLTs R0, R3, R5, LSL #30
-l4399: movGE R0, R5, RRX 
-l4400: sbcLEs R7, R10, R14
-l4401: addCSs R12, R1, R6, LSL R1
-l4402: mvns R5, #227328
-interrupt_741: l4403: rsb R11, R4, #64749568
-l4404: rsbCS R11, R2, R15, LSL #29
-l4405: b l4412
-l4406: add R1, R0, #100
-l4407: sbcCS R9, R1, #2670592
-l4408: teq R7, #42752
-l4409: cmp R10, #583008256
-l4410: teqVS R1, R11, LSL R2
-l4411: b l4413
-l4412: b l4407
-l4413: ldrGTsh R3, [sp, #+30]
-l4414: sbc R12, R6, R11
-l4415: mov R3, #2
-l4416: ldrh R4, [sp, -R3]
-l4417: mov R6, R7, RRX 
-l4418: mov R12, #31
-interrupt_43: l4419: ldrLSsb R10, [sp, -R12]
-interrupt_355: l4420: andNE R12, R1, #3792
-l4421: ldr R0, l4423
-l4422: b l4424
-l4423: .word 1048492
-l4424: swpb R10, R5, [R0]
-l4425: orr R5, R10, R1
-interrupt_867: l4426: subMIs R0, R9, #65280
-interrupt_598: l4427: sub R5, R11, R9, LSR #19
-l4428: sbcVC R1, R14, R5, RRX 
-l4429: ldmCCIB R13, {R2, R6, R8, R10, R11}
-l4430: ldmDB R13, {R7, R9}
-l4431: mov R6, #20
-l4432: ldrsb R9, [sp, +R6]
-interrupt_770: l4433: swi #3390156
-l4434: ldrh R0, [sp, #-20]
-l4435: ldrh R10, [sp, #-6]
-l4436: andLTs R12, R4, R4
-l4437: mov R10, #26
-l4438: ldrsh R8, [sp, -R10]
-interrupt_46: l4439: andLTs R14, R1, #1073741842
-l4440: ldrLEB R2, [sp, #+26]
-l4441: orr R6, R6, R0, LSR R0
-l4442: rscEQs R2, R12, #196
-l4443: bics R10, R10, R3
-l4444: mov R8, #26
-interrupt_187: l4445: strB R10, [sp, +R8]
-l4446: b l4452
-l4447: add R1, R0, #99
-interrupt_528: l4448: sbc R8, R7, R11, RRX 
-interrupt_252: l4449: rscs R0, R12, R6
-l4450: rscs R7, R1, R14, LSR #7
-l4451: b l4453
-l4452: b l4448
-l4453: ldrB R12, [sp, #+4]
-interrupt_514: l4454: subGT R6, R4, #-2147483601
-interrupt_533: l4455: mov R4, #38
-l4456: ldrLTh R8, [sp, -R4]
-l4457: subs R11, R2, #26
-l4458: and R5, R14, R3
-l4459: cmpCC R14, #1879048192
-l4460: swi #12774808
-l4461: ldr R9, l4463
-interrupt_704: l4462: b l4464
-l4463: .word 1048484
-l4464: swpMIb R6, R8, [R9]
-l4465: orr R9, R3, #724
-l4466: adc R14, R14, R1
-l4467: mov R7, #16
-l4468: strVC R9, [sp, +R7]
-l4469: b l4475
-l4470: add R1, R0, #177
-l4471: movLSs R10, R5
-l4472: addNEs R3, R10, R12
-l4473: bicLT R3, R3, R14, LSR #23
-l4474: b l4476
-l4475: b l4471
-interrupt_819: l4476: eorGEs R2, R7, R10
-l4477: addCCs R7, R7, #125952
-interrupt_821: l4478: teqCC R14, R8
-l4479: mov R14, #27
-interrupt_580: l4480: ldrB R2, [sp, +R14]
-interrupt_615: l4481: ldr R2, l4483
-l4482: b l4484
-l4483: .word 1048552
-l4484: swpb R8, R12, [R2]
-l4485: ldr R5, l4487
-l4486: b l4488
-interrupt_102: l4487: .word 1048508
-l4488: swp R0, R6, [R5]
-l4489: mov R11, #25
-l4490: ldrNEsb R0, [sp, +R11]
-interrupt_967: l4491: sbcLTs R10, R12, R7, ASR R3
-l4492: eorLTs R4, R5, #218112
-interrupt_476: l4493: ldrsb R14, [sp, #-14]
-l4494: clz R8, R4
-l4495: cmpEQ R7, R3
-l4496: subs R0, R14, R6, ASR #11
-l4497: mov R3, #2
-l4498: ldrLTsb R2, [sp, +R3]
-l4499: addHI R5, R1, R4, LSR #2
-interrupt_698: l4500: eorHI R3, R9, R8, RRX 
-interrupt_776: l4501: ldr R0, l4503
+interrupt_313: l3811: .word 1048548
+interrupt_193: l3812: swpb R4, R0, [R11]
+l3813: cmpVC R8, R4, RRX 
+interrupt_226: l3814: stmDB R13, {R0, R3, R4, R6, R7, R8, R9, R10, R12, R13, R14, R15}
+l3815: adcCSs R3, R14, R9, LSL R4
+l3816: mvnGT R5, #18874368
+l3817: nop
+l3818: clz R1, R0
+l3819: mvnMIs R7, R4
+l3820: movNEs R0, R8, LSL #17
+l3821: rsb R11, R2, R3, LSR #6
+l3822: rsbLTs R9, R7, R0, ROR #14
+l3823: sub R1, R2, R15, RRX 
+l3824: ldr R7, l3826
+interrupt_84: l3825: b l3827
+l3826: .word 1048492
+interrupt_743: l3827: swpb R5, R2, [R7]
+l3828: mov R0, #47
+l3829: ldrLSsb R7, [sp, -R0]
+interrupt_808: l3830: subPLs R6, R7, R11
+l3831: str R3, [sp, #-20]
+l3832: mov R9, R14, RRX 
+interrupt_228: l3833: ldrVSsh R9, [sp, #-2]
+l3834: mov R3, #34
+l3835: strh R6, [sp, -R3]
+l3836: ldr R3, l3838
+l3837: b l3839
+l3838: .word 1048548
+l3839: swpNE R5, R11, [R3]
+l3840: swi #600969
+l3841: andLSs R2, R2, #376
+l3842: bicPL R5, R0, #57147392
+l3843: tst R3, R5, LSR R10
+l3844: ldrLSB R0, [sp, #-52]
+l3845: addVS R12, R4, R15
+l3846: b l3848
+l3847: orrCCs R4, R6, R5, LSL #6
+l3848: mov R12, #125952
+l3849: subHI R3, R4, R14, LSL #5
+interrupt_342: l3850: ldr R4, l3852
+l3851: b l3853
+l3852: .word 1048512
+l3853: swpNEb R11, R8, [R4]
+l3854: cmp R10, R3, LSL #0
+l3855: bicHI R12, R1, R12, ASR #3
+l3856: tst R10, R3
+l3857: mov R1, #60
+l3858: ldrh R6, [sp, -R1]
+l3859: rscEQ R1, R7, R6, ROR #26
+l3860: ldrVSB R2, [sp, #-4]
+interrupt_346: l3861: adcCS R8, R15, #86016
+l3862: mov R10, #12
+l3863: ldrLTh R10, [sp, -R10]
+interrupt_798: l3864: ldr R14, [sp, #-24]
+l3865: eorCSs R11, R9, R1, ASR R4
+l3866: str R11, [sp, #-8]
+l3867: clz R14, R11
+interrupt_258: l3868: bicVC R4, R15, R8, ROR #31
+interrupt_578: l3869: ldr R9, l3871
+l3870: b l3872
+l3871: .word 1048508
+l3872: swpGE R7, R10, [R9]
+l3873: mov R3, #12
+interrupt_859: l3874: ldrHI R12, [sp, -R3]
+l3875: cmn R4, #116
+l3876: strLTh R3, [sp, #-38]
+l3877: subPLs R5, R0, #6016
+l3878: movLSs R10, R11, RRX 
+l3879: ldr R5, l3881
+l3880: b l3882
+l3881: .word 1048548
+l3882: swpLT R7, R4, [R5]
+l3883: swi #7927135
+l3884: mov R4, R6, RRX 
+l3885: adcVSs R9, R1, #228
+l3886: nop
+interrupt_306: l3887: adds R12, R2, R5, LSL R12
+interrupt_456: l3888: orrLT R9, R9, R9, LSL #7
+l3889: mov R6, #24
+l3890: strHI R5, [sp, -R6]
+l3891: rsbLTs R10, R3, R2
+l3892: ldr R8, l3894
+l3893: b l3895
+l3894: .word 1048512
+l3895: swpb R12, R7, [R8]
+l3896: ldr R1, l3898
+l3897: b l3899
+l3898: .word 1048488
+l3899: swpb R3, R5, [R1]
+l3900: ldr R6, l3902
+l3901: b l3903
+l3902: .word 1048536
+l3903: swpb R3, R11, [R6]
+l3904: nop
+l3905: swi #13014636
+l3906: rsc R10, R2, R1
+l3907: nop
+l3908: clz R1, R0
+l3909: rsbPLs R2, R2, #257024
+l3910: mov R1, #4
+l3911: ldr R12, [sp, -R1]!
+l3912: swi #9602354
+l3913: mov R4, #1584
+l3914: rsc R14, R1, R0, RRX 
+interrupt_497: l3915: teqGT R15, #50
+l3916: mov R12, #14
+l3917: strh R12, [sp, -R12]
+l3918: movs R12, #973078528
+l3919: adcs R2, R4, R14
+l3920: swi #6212889
+l3921: eorGTs R14, R6, R15
+l3922: b l3929
+l3923: cmn R15, #323584
+l3924: ands R4, R11, R9, ASR #4
+l3925: mov R4, R5
+l3926: sbcs R11, R6, R4
+l3927: mvns R12, R3, ASR R1
+interrupt_133: l3928: orrGTs R7, R3, #7680
+l3929: rsb R6, R4, R3, ASR #29
+l3930: orrNEs R11, R6, R8
+l3931: ldmPLDB R13, {R1, R9, R12}
+l3932: sbcVSs R0, R2, R10
+l3933: rsc R8, R7, R10
+l3934: teq R14, #1342177286
+l3935: adds R9, R11, R1, LSL #24
+l3936: b l3942
+l3937: add R1, R0, #227
+interrupt_588: l3938: teq R1, #56
+l3939: rsbLSs R3, R9, R14, RRX 
+l3940: cmn R9, #888832
+interrupt_185: l3941: b l3943
+l3942: b l3938
+l3943: mov R8, #14
+l3944: ldrCCh R9, [sp, -R8]
+l3945: mvnVS R5, R9, RRX 
+interrupt_7: l3946: sbcNEs R5, R2, R12, LSL #3
+l3947: mov R10, #3
+l3948: ldrsb R10, [sp, +R10]
+l3949: strB R2, [sp, #-46]
+l3950: nop
+l3951: rscLEs R1, R2, R0
+l3952: swi #8923616
+l3953: stmIA R13!, {R11}
+interrupt_220: l3954: cmp R10, R11, LSR #8
+l3955: teq R12, R11, RRX 
+interrupt_459: l3956: sbcEQ R10, R8, R2
+l3957: eors R10, R12, R8
+l3958: rscCC R8, R11, R12
+l3959: ldr R10, [sp], #-64
+l3960: ldr R3, [sp, #-8]
+l3961: subLTs R3, R12, R10, LSR R4
+l3962: adcCS R3, R9, R4
+interrupt_647: l3963: swi #4765743
+l3964: bics R8, R15, R9, LSL #17
+interrupt_768: l3965: nop
+interrupt_883: l3966: cmnLE R12, R10
+l3967: ldrB R8, [sp, #+26]
+l3968: cmn R12, R6, LSR #4
+l3969: stmIB R13, {R3, R4, R7, R10, R11, R12, R13, R14, R15}
+interrupt_304: l3970: ldr R5, l3972
+interrupt_868: l3971: b l3973
+l3972: .word 1048488
+l3973: swpGEb R0, R0, [R5]
+l3974: teq R3, R7
+l3975: teqLT R9, R12, ASR R12
+l3976: cmn R1, #-1073741813
+l3977: orrVS R12, R14, R7, ASR #31
+interrupt_252: l3978: eorMI R2, R4, R3, ASR R14
+l3979: bCC l3980
+l3980: sbc R3, R2, #-2147483591
+l3981: adds R10, R15, R14, ROR #12
+l3982: mov R0, #28
+l3983: ldrsb R4, [sp, +R0]
+l3984: rscs R1, R8, #238
+interrupt_937: l3985: bEQ l3992
+interrupt_39: l3986: add R1, R0, #200
+l3987: cmnNE R0, R8
+l3988: subEQ R8, R14, #672
+l3989: adds R14, R0, #13696
+l3990: adc R0, R7, R8, LSR R4
+l3991: b l3993
+l3992: b l3987
+interrupt_577: l3993: teqLE R6, R3, RRX 
+l3994: tst R9, R12
+l3995: ldr R14, l3997
+l3996: b l3998
+interrupt_521: l3997: .word 1048536
+l3998: swpLT R9, R10, [R14]
+l3999: ldrLTh R12, [sp, #+34]
+l4000: clzEQ R0, R10
+l4001: tst R2, #2368
+l4002: teqCS R9, R12, ASR #30
+l4003: swi #7484425
+l4004: clz R10, R1
+l4005: subHIs R14, R12, R2, ASR R0
+l4006: teqGT R11, #245366784
+l4007: swi #752248
+l4008: cmpLE R5, R8
+l4009: b l4018
+l4010: add R1, R0, #141
+l4011: add R6, R2, R10, LSR #0
+l4012: orrVSs R14, R1, R5
+interrupt_182: l4013: sbc R14, R7, #-268435453
+interrupt_500: l4014: and R2, R0, #245760
+interrupt_553: l4015: rscs R2, R5, R12
+interrupt_103: l4016: rsbs R12, R9, R6, RRX 
+l4017: b l4019
+l4018: b l4011
+l4019: str R0, [sp, #+12]
+l4020: eorEQs R10, R10, R6, LSR R12
+interrupt_42: l4021: swi #16762136
+l4022: eorCCs R10, R2, #42991616
+l4023: nop
+l4024: cmpCC R15, R1, LSR #12
+interrupt_496: l4025: teqVS R4, R14, ROR R6
+l4026: movCCs R7, R7
+l4027: ldr R1, l4029
+l4028: b l4030
+l4029: .word 1048524
+interrupt_91: l4030: swp R5, R2, [R1]
+l4031: swi #12690300
+l4032: mov R0, #45
+l4033: strB R3, [sp, +R0]
+l4034: mov R6, #12
+l4035: ldrHIsh R12, [sp, +R6]
+l4036: mov R9, #44
+interrupt_517: l4037: ldr R6, [sp, +R9]
+l4038: subGT R1, R4, R2, LSR #11
+interrupt_609: l4039: andVC R0, R3, R1
+l4040: movVSs R2, R10, ASR #13
+l4041: cmnGE R10, R11, LSR #31
+interrupt_129: l4042: ldrsb R11, [sp, #+63]
+l4043: movVSs R14, R4, RRX 
+interrupt_676: l4044: eors R14, R0, R0, ASR R7
+l4045: mvn R2, R11, LSL R4
+l4046: andCSs R8, R15, R11, ASR #13
+l4047: ldr R2, l4049
+l4048: b l4050
+l4049: .word 1048504
+l4050: swpPL R1, R9, [R2]
+l4051: mov R4, #58
+l4052: strMIh R1, [sp, +R4]
+l4053: orrNEs R1, R15, R3, ROR #13
+l4054: teq R10, R14, ROR R5
+l4055: ldr R14, l4057
+l4056: b l4058
+l4057: .word 1048480
+l4058: swpb R11, R11, [R14]
+l4059: rsbLS R14, R9, R0
+interrupt_243: l4060: sbcMI R2, R8, R2
+l4061: strB R0, [sp, #+7]
+interrupt_470: l4062: swi #770731
+l4063: cmpPL R9, R5
+interrupt_416: l4064: rsbs R5, R15, R9, RRX 
+interrupt_776: l4065: b l4075
+l4066: eorEQ R10, R4, R15
+l4067: andPLs R4, R2, R12, LSR R0
+l4068: orr R9, R9, #348
+interrupt_208: l4069: addCSs R11, R5, R10
+l4070: eors R3, R9, R5, LSL #18
+l4071: addGT R12, R3, R3, ROR #15
+l4072: orrLSs R7, R7, R5, ROR #30
+l4073: mov R7, #704512
+l4074: clz R5, R0
+l4075: subs R10, R0, R9, LSR R7
+interrupt_787: l4076: adcPLs R5, R0, R10, ASR #2
+l4077: and R7, R4, #135168
+interrupt_591: l4078: cmpNE R8, R2, LSR #10
+l4079: mov R6, #64
+l4080: ldr R7, [sp], +R6
+interrupt_604: l4081: ands R1, R4, R2
+l4082: teq R3, #2
+interrupt_928: l4083: add R4, R11, R11, ROR #5
+l4084: tst R12, R0, ASR R3
+l4085: b l4093
+l4086: add R1, R0, #34
+l4087: sbcLS R11, R11, R9, ASR #27
+interrupt_315: l4088: rscPLs R4, R7, #192512
+interrupt_704: l4089: orrLEs R0, R7, R12
+interrupt_610: l4090: addGEs R12, R8, R6
+interrupt_20: l4091: tst R14, R11, RRX 
+l4092: b l4094
+l4093: b l4087
+l4094: bicLS R7, R8, R4, ASR R6
+l4095: ldrsh R9, [sp, #-24]
+l4096: mov R12, #24
+l4097: ldrEQB R12, [sp, -R12]
+l4098: ldrLT R11, [sp, #-36]
+l4099: mov R2, #14
+interrupt_30: l4100: ldrLTh R3, [sp, -R2]
+l4101: mov R5, #52
+interrupt_10: l4102: strGTh R0, [sp, -R5]
+l4103: strHI R2, [sp, #-24]
+l4104: mov R4, #31
+interrupt_978: l4105: ldrVCB R14, [sp, -R4]
+l4106: nop
+l4107: ldr R14, l4109
+l4108: b l4110
+l4109: .word 1048532
+l4110: swpMIb R12, R12, [R14]
+interrupt_793: l4111: ldrLS R1, [sp, #-32]
+l4112: mov R3, #27
+interrupt_250: l4113: ldrsb R10, [sp, -R3]
+l4114: ldrLEh R2, [sp, #-18]
+l4115: subLT R4, R12, #1409286147
+interrupt_218: l4116: cmpMI R6, R14, LSL R10
+l4117: bPL l4120
+l4118: clz R5, R11
+interrupt_462: l4119: rsbCSs R3, R0, R14
+l4120: rscVS R2, R9, R4
+l4121: subs R8, R12, #901120
+l4122: bicPLs R3, R3, R7, ASR R9
+l4123: ldr R14, l4125
+l4124: b l4126
+l4125: .word 1048500
+interrupt_353: l4126: swpEQb R12, R0, [R14]
+l4127: ldr R10, l4129
+l4128: b l4130
+l4129: .word 1048548
+l4130: swpMIb R14, R6, [R10]
+l4131: mov R9, #44
+interrupt_682: l4132: ldrB R5, [sp, -R9]
+interrupt_605: l4133: ldrh R7, [sp, #-64]
+interrupt_551: l4134: rscGTs R2, R7, R14
+l4135: movVCs R3, R8, RRX 
+l4136: ldrh R11, [sp, #-22]
+l4137: cmnLT R5, R1
+l4138: rscVC R2, R7, #-2147483601
+l4139: cmn R5, R0
+interrupt_386: l4140: bicGEs R9, R0, R5
+l4141: mov R8, #52
+l4142: strLE R9, [sp, -R8]
+l4143: teqCS R11, #1769472
+l4144: strPL R15, [sp, #-56]
+l4145: strh R7, [sp, #-4]
+l4146: b l4150
+l4147: add R1, R0, #192
+l4148: rscs R1, R10, R2
+l4149: b l4151
+l4150: b l4148
+l4151: rscGT R4, R12, #679477248
+l4152: tstLT R3, R12, LSR R14
+l4153: bEQ l4155
+l4154: subNEs R0, R8, R12
+l4155: ands R8, R1, R1
+l4156: subGEs R3, R4, R8
+l4157: swi #5588204
+interrupt_222: l4158: bHI l4164
+l4159: add R1, R0, #100
+l4160: andLS R5, R6, R9
+l4161: eorEQs R0, R11, R6, ROR #11
+l4162: orrLEs R7, R6, R14, LSL #23
+l4163: b l4165
+l4164: b l4160
+l4165: teq R3, R6, RRX 
+l4166: ldr R9, l4168
+l4167: b l4169
+l4168: .word 1048484
+l4169: swp R2, R11, [R9]
+interrupt_44: l4170: orrs R7, R10, R10, RRX 
+l4171: ldrEQ R14, [sp, #-12]
+l4172: mov R10, #36
+l4173: ldr R6, [sp, -R10]
+l4174: mov R12, #66
+l4175: ldrLTsh R11, [sp, -R12]
+l4176: cmpVC R14, #1073741851
+l4177: strLEh R8, [sp, #-64]
+l4178: mov R14, #20
+l4179: str R11, [sp], -R14
+l4180: ldmDB R13!, {R0, R3, R5, R8, R11, R12}
+l4181: mov R4, #11
+l4182: strGEB R5, [sp, -R4]
+l4183: ldrLSB R10, [sp, #+47]
+l4184: clz R1, R4
+l4185: movMIs R1, #1007616
+l4186: mov R0, #16
+l4187: ldrh R5, [sp, +R0]
+l4188: b l4192
+l4189: add R1, R0, #77
+l4190: mvnCCs R4, R8, ASR #2
+interrupt_807: l4191: b l4193
+l4192: b l4190
+interrupt_92: l4193: strGT R6, [sp, #+0]
+l4194: swi #11492153
+l4195: ldmDA R13!, {R10, R12}
+l4196: mvnVC R10, R7
+l4197: andGTs R7, R0, #158
+l4198: ldmEQIA R13, {R0, R2, R3, R4, R7, R14}
+l4199: ldrGEsb R1, [sp, #+5]
+l4200: adcLEs R12, R1, R1, RRX 
+l4201: eorPL R1, R4, R4, ROR R3
+l4202: stmDA R13!, {R1, R8}
+l4203: nop
+l4204: rsbs R11, R2, R9, ROR R7
+interrupt_357: l4205: mvnHI R4, R4
+l4206: ldrh R14, [sp, #+14]
+interrupt_175: l4207: ldr R14, l4209
+l4208: b l4210
+l4209: .word 1048504
+interrupt_824: l4210: swpLT R10, R5, [R14]
+l4211: ldr R3, l4213
+l4212: b l4214
+l4213: .word 1048484
+l4214: swp R8, R4, [R3]
+l4215: ldr R8, l4217
+l4216: b l4218
+l4217: .word 1048508
+l4218: swp R4, R10, [R8]
+interrupt_125: l4219: mov R0, #11
+l4220: ldrNEsb R0, [sp, -R0]
+l4221: cmn R5, R3, ASR #10
+l4222: ldr R12, l4224
+l4223: b l4225
+l4224: .word 1048528
+interrupt_195: l4225: swp R7, R9, [R12]
+interrupt_929: l4226: bVC l4232
+l4227: add R1, R0, #107
+l4228: cmp R10, R5
+l4229: tstPL R11, R4
+l4230: rsc R3, R6, R0, RRX 
+l4231: b l4233
+l4232: b l4228
+l4233: ldr R6, l4235
+l4234: b l4236
+l4235: .word 1048532
+l4236: swpLTb R11, R7, [R6]
+l4237: ldrLSsh R11, [sp, #+8]
+interrupt_922: l4238: mvnGE R7, R2, ASR #24
+l4239: cmn R4, R11, LSR R8
+l4240: swi #2232133
+l4241: andLTs R12, R2, R1, RRX 
+l4242: stmIB R13!, {R2, R3, R5, R6, R9, R11, R14}
+l4243: ldrGTsb R2, [sp, #-40]
+l4244: strLSB R7, [sp, #-15]
+l4245: mov R0, #16
+l4246: strB R12, [sp, +R0]
+l4247: and R2, R10, R3, RRX 
+l4248: stmDB R13!, {R11, R12}
+l4249: teqHI R8, R2
+l4250: mvnPLs R10, R3, RRX 
+l4251: tst R6, R3, ROR #24
+l4252: strB R10, [sp, #-15]
+l4253: movs R4, R10, LSL #10
+interrupt_40: l4254: mov R9, #18
+l4255: ldrsb R10, [sp, +R9]
+l4256: andPLs R2, R11, R15
+interrupt_668: l4257: stmDB R13!, {R2, R5}
+l4258: rsb R8, R4, R1
+l4259: tstVS R9, #52224
+l4260: bLT l4268
+l4261: cmp R15, #672
+l4262: eors R10, R8, R15
+interrupt_473: l4263: cmn R5, R0
+interrupt_295: l4264: orrs R12, R7, R6, ROR #17
+interrupt_642: l4265: cmp R15, #100
+interrupt_640: l4266: adcs R4, R11, R6
+interrupt_773: l4267: andLE R1, R14, R7, LSR #15
+l4268: tst R6, R12, ROR #22
+l4269: strh R4, [sp, #+44]
+interrupt_887: l4270: andLEs R12, R10, R8, LSL R11
+l4271: adcVC R14, R8, R7, ROR R12
+l4272: mov R6, #28
+interrupt_82: l4273: ldrGTB R9, [sp, +R6]
+l4274: adc R6, R12, R0, ROR #2
+interrupt_53: l4275: cmpCS R7, R5
+l4276: ldr R7, l4278
+l4277: b l4279
+interrupt_131: l4278: .word 1048544
+interrupt_947: l4279: swpb R9, R4, [R7]
+interrupt_411: l4280: ldmDA R13!, {R3, R4, R10}
+l4281: eorCS R7, R10, R1
+l4282: mov R11, #40
+l4283: str R0, [sp, +R11]
+l4284: strh R1, [sp, #-2]
+l4285: and R14, R6, R7, ASR R5
+l4286: cmpVC R14, R3, ASR #6
+l4287: cmn R3, R9, ROR #7
+l4288: tstHI R10, R9
+l4289: swi #3073863
+interrupt_183: l4290: cmp R5, R15, ROR #26
+l4291: ldr R4, l4293
+l4292: b l4294
+l4293: .word 1048500
+l4294: swpNEb R3, R6, [R4]
+l4295: sbcs R10, R9, R7
+l4296: mov R1, #50
+l4297: ldrLEB R8, [sp, +R1]
+interrupt_678: l4298: adc R6, R12, R3, LSL R5
+l4299: adds R12, R15, #570425344
+l4300: mov R5, #52
+l4301: ldrLT R6, [sp, +R5]
+l4302: mvns R9, R3
+interrupt_991: l4303: mov R8, #62
+l4304: ldrGTB R10, [sp, +R8]
+l4305: clzEQ R10, R1
+l4306: mov R7, #8
+interrupt_259: l4307: ldr R11, [sp], +R7
+interrupt_858: l4308: bics R5, R8, R10
+l4309: ldr R7, l4311
+interrupt_17: l4310: b l4312
+interrupt_939: l4311: .word 1048544
+l4312: swpGEb R14, R1, [R7]
+interrupt_475: l4313: andCS R14, R12, #37
+interrupt_526: l4314: stmIA R13!, {R15}
+l4315: mvnLT R7, R7, ROR R1
+l4316: swi #6365775
+l4317: cmpLE R3, R5, LSR #22
+l4318: rsc R14, R7, R15
+l4319: cmnMI R7, R4, ASR R12
+l4320: tstHI R9, R2, RRX 
+l4321: ldr R10, l4323
+l4322: b l4324
+l4323: .word 1048548
+l4324: swp R3, R1, [R10]
+l4325: eorEQs R9, R8, R0, LSR #31
+l4326: addCS R1, R14, R10, LSR #3
+interrupt_778: l4327: cmpGE R1, R1
+interrupt_916: l4328: stmDB R13!, {R13}
+l4329: subLT R3, R8, R1, LSL #5
+l4330: tstCC R10, #-251658240
+l4331: mov R2, #25
+interrupt_14: l4332: strB R5, [sp, +R2]
+l4333: swi #8025253
+interrupt_739: l4334: strGTB R6, [sp, #-4]
+l4335: cmp R1, R9, LSR #24
+l4336: rscs R12, R2, R5
+l4337: b l4342
+l4338: add R1, R0, #114
+l4339: movVSs R10, R2, LSL R8
+l4340: eorGEs R6, R3, R3, LSR R4
+l4341: b l4343
+interrupt_283: l4342: b l4339
+interrupt_25: l4343: b l4345
+l4344: bics R3, R11, R8
+l4345: sbcCCs R7, R11, R8, RRX 
+l4346: rsbHI R9, R15, R3
+interrupt_100: l4347: mov R9, #12
+l4348: ldrGEsb R12, [sp, +R9]
+l4349: subGEs R4, R3, R2, ASR #21
+l4350: addGE R6, R3, R1
+l4351: addEQs R2, R1, R1, RRX 
+l4352: ldr R14, l4354
+l4353: b l4355
+l4354: .word 1048540
+l4355: swpLSb R2, R7, [R14]
+l4356: sbcs R11, R2, R5, LSR R14
+l4357: subHIs R14, R3, R0
+l4358: rsbLSs R9, R5, R0, ASR R5
+l4359: ldrsb R7, [sp, #+30]
+l4360: mov R3, #20
+l4361: str R10, [sp], +R3
+l4362: teq R14, R14, RRX 
+l4363: tst R9, R4, ASR #13
+l4364: rscLTs R8, R6, #134217728
+l4365: ldr R2, [sp], #-28
+interrupt_557: l4366: cmn R4, R11, LSL R2
+l4367: movGEs R5, R2, LSR R5
+interrupt_599: l4368: b l4373
+l4369: add R1, R0, #246
+l4370: subVCs R6, R10, R7, LSL #7
+l4371: subGE R7, R8, R1, ASR R9
+l4372: b l4374
+l4373: b l4370
+l4374: nop
+l4375: addLE R0, R12, #3801088
+l4376: addCC R11, R4, #872448
+l4377: swi #9823657
+l4378: andGE R3, R0, R2, ROR R10
+interrupt_70: l4379: cmp R11, R5
+interrupt_68: l4380: tst R10, R6
+l4381: b l4382
+l4382: tstCC R1, #1879048195
+l4383: orrs R9, R5, R5, ROR R10
+interrupt_245: l4384: rscs R7, R12, R7, LSL #29
+l4385: rsbLT R14, R6, R6
+l4386: bicHIs R2, R8, #2352
+l4387: eors R9, R12, #3145728
+l4388: tst R14, R3
+l4389: cmnGT R12, R15
+interrupt_94: l4390: b l4393
+l4391: orr R3, R4, #-2147483610
+l4392: mvnHI R11, #4672
+l4393: subs R10, R6, R7, LSL R8
+l4394: sbcCSs R4, R4, R3
+l4395: ldr R5, l4397
+l4396: b l4398
+l4397: .word 1048496
+l4398: swpLE R2, R7, [R5]
+l4399: strh R6, [sp, #+34]
+l4400: teqLE R6, #14745600
+l4401: ldrsb R3, [sp, #+29]
+l4402: adcLEs R7, R6, R3
+interrupt_779: l4403: swi #2107505
+l4404: mvns R2, R1, ROR R11
+l4405: adcPL R9, R8, #6094848
+l4406: mvn R1, R5, ASR R9
+l4407: subCC R11, R15, R12, ROR #10
+l4408: ldr R3, l4410
+l4409: b l4411
+l4410: .word 1048488
+l4411: swpGTb R5, R11, [R3]
+interrupt_587: l4412: swi #3820846
+l4413: stmIA R13!, {R1, R2, R3, R4, R8, R11, R14, R15}
+l4414: adcHI R1, R15, R11, ROR #2
+l4415: swi #4479127
+l4416: rsbVC R3, R0, #-2063597568
+l4417: andHIs R1, R8, R14, ASR #16
+l4418: mov R6, R8, LSR R8
+l4419: subCSs R2, R12, R1, RRX 
+l4420: mov R5, #36
+interrupt_837: l4421: strVC R8, [sp, -R5]
+l4422: teqHI R6, R10
+l4423: eor R8, R0, R14, LSL #23
+l4424: subGT R6, R11, R15, RRX 
+l4425: tst R12, R0, ASR #0
+l4426: orrGT R4, R3, R8, LSL R14
+l4427: tst R7, R12, LSR #16
+l4428: ldr R3, l4430
+l4429: b l4431
+l4430: .word 1048532
+l4431: swpNEb R7, R2, [R3]
+interrupt_993: l4432: subGT R8, R1, R8
+interrupt_120: l4433: mvnEQs R12, #222208
+l4434: ldr R7, l4436
+l4435: b l4437
+l4436: .word 1048524
+interrupt_199: l4437: swpb R9, R11, [R7]
+l4438: ldrB R3, [sp, #-16]
+l4439: adcs R1, R14, R0, RRX 
+l4440: mvnLSs R4, R4, LSR #9
+l4441: rscMI R14, R0, R5, LSL #10
+l4442: ldr R3, l4444
+l4443: b l4445
+l4444: .word 1048488
+l4445: swp R1, R0, [R3]
+interrupt_152: l4446: mvnVC R8, R0, ROR R2
+l4447: sbcVS R2, R7, #-1744830463
+l4448: mvnCC R10, R1, ROR R0
+l4449: ldrMIB R9, [sp, #-38]
+l4450: clz R0, R8
+l4451: ldr R5, l4453
+l4452: b l4454
+l4453: .word 1048524
+l4454: swpVC R10, R0, [R5]
+l4455: cmpCC R1, R12, RRX 
+l4456: ldmDB R13!, {R6, R7, R9, R10, R12}
+interrupt_683: l4457: stmCSDB R13, {R1, R2, R6, R11}
+l4458: teqHI R10, R1, RRX 
+l4459: sbcLTs R6, R9, R4, ASR #15
+l4460: ldrLSB R0, [sp, #+50]
+l4461: bHI l4468
+l4462: add R1, R0, #133
+l4463: cmnLT R4, R6, ROR #17
+l4464: mvnEQs R8, R11, LSL #0
+l4465: orrVCs R7, R14, R14
+l4466: movLE R5, R11, RRX 
+l4467: b l4469
+interrupt_232: l4468: b l4463
+interrupt_601: l4469: mov R1, #8
+l4470: ldrh R4, [sp, -R1]
+l4471: bic R5, R1, #496
+l4472: orrCS R3, R14, R12, LSL R3
+l4473: stmDA R13!, {R4, R11, R15}
+l4474: stmLSDB R13, {R3}
+interrupt_455: l4475: strNEh R14, [sp, #+12]
+l4476: sbcVS R1, R8, R4, LSL #28
+l4477: ldrh R12, [sp, #+42]
+l4478: orrMI R10, R14, R15
+l4479: teq R8, #2899968
+l4480: swi #3692773
+l4481: str R12, [sp, #+32]
+l4482: ldr R9, l4484
+l4483: b l4485
+interrupt_720: l4484: .word 1048548
+l4485: swp R7, R0, [R9]
+l4486: teq R14, R10
+l4487: mov R6, #2
+l4488: ldrsh R11, [sp, +R6]
+l4489: swi #15783839
+l4490: mov R11, #13
+l4491: ldrB R0, [sp, +R11]
+interrupt_679: l4492: rscPLs R5, R14, R14
+interrupt_771: l4493: rsbPLs R5, R0, R11, RRX 
+interrupt_223: l4494: strh R3, [sp, #+62]
+l4495: clzMI R7, R0
+interrupt_782: l4496: b l4503
+interrupt_698: l4497: add R1, R0, #26
+l4498: rsb R11, R2, #-1342177278
+l4499: addEQ R3, R5, R6, LSR #18
+l4500: eorLE R14, R3, R8, RRX 
+l4501: movs R3, R2, RRX 
 l4502: b l4504
-l4503: .word 1048512
-interrupt_51: l4504: swpPL R12, R1, [R0]
-l4505: tst R3, R2
-l4506: cmn R11, R11, LSR #20
-l4507: ldr R5, l4509
-l4508: b l4510
-l4509: .word 1048540
-l4510: swp R1, R6, [R5]
-l4511: clz R2, R1
-interrupt_188: l4512: mvnNEs R10, R8, LSR #1
-l4513: cmp R9, R10
-l4514: bics R9, R3, R0, RRX 
-interrupt_784: l4515: adcGTs R10, R0, R0
-l4516: ands R2, R6, #97517568
-interrupt_288: l4517: subs R8, R1, R2, LSL R5
-l4518: eorLS R10, R9, R6, LSR R12
-l4519: tstHI R3, R14
-l4520: mov R5, #27
-l4521: strB R14, [sp, +R5]
-l4522: stmIA R13!, {R4, R7, R8, R11, R12, R14}
-l4523: andVCs R11, R11, #19398656
-l4524: subCS R0, R7, R1, LSL #28
-interrupt_120: l4525: rsbEQs R7, R14, R5
-interrupt_572: l4526: mov R9, #32
-l4527: ldrsh R10, [sp, -R9]
-l4528: tstVS R9, R11
-interrupt_495: l4529: nop
-interrupt_755: l4530: adds R12, R8, #-2147483593
-interrupt_8: l4531: clzCS R14, R11
-l4532: rsbs R5, R3, R3, RRX 
-l4533: sbcGTs R9, R0, R4, RRX 
-l4534: mov R9, #42
-l4535: ldrsh R14, [sp, -R9]
-l4536: mov R7, #8
-interrupt_659: l4537: str R3, [sp, -R7]!
-l4538: mov R9, #60
-l4539: ldr R3, [sp, -R9]
-l4540: ldrh R7, [sp, #-28]
-l4541: mov R11, #48
-l4542: ldr R14, [sp], -R11
-l4543: strB R8, [sp, #+19]
-interrupt_570: l4544: ldr R7, l4546
-l4545: b l4547
-interrupt_956: l4546: .word 1048528
-interrupt_201: l4547: swpCCb R10, R3, [R7]
-l4548: mov R3, #31
-l4549: strLSB R2, [sp, +R3]
-l4550: stmDA R13!, {R2}
-l4551: ldrCSsb R3, [sp, #+41]
-l4552: movGT R3, R2, ASR R5
-l4553: andMI R14, R2, R8, ROR R1
-l4554: mov R4, #24
-interrupt_420: l4555: ldr R9, [sp, +R4]!
-l4556: sub R7, R0, R3, LSL R4
-l4557: mov R0, #40
-interrupt_104: l4558: strNEh R9, [sp, +R0]
-l4559: ldr R8, l4561
-l4560: b l4562
-interrupt_241: l4561: .word 1048508
-l4562: swpLT R2, R4, [R8]
-interrupt_498: l4563: mov R10, #4
-l4564: strh R8, [sp, -R10]
-l4565: swi #14957520
-l4566: rsc R6, R4, #201326594
-interrupt_519: l4567: stmIA R13!, {R1, R3, R6}
-l4568: ands R4, R4, R0
-l4569: adc R5, R11, R15, ASR #0
-l4570: bic R6, R4, #218
-interrupt_16: l4571: addNEs R11, R15, R1, ROR #18
-l4572: sbcs R11, R12, R0, LSL R10
-l4573: ands R8, R14, R12
-interrupt_592: l4574: ldmIA R13!, {R1, R2, R6, R8, R11, R14}
-l4575: cmp R4, R10
-l4576: cmpPL R4, #37
-l4577: clz R0, R2
-l4578: ldr R2, l4580
-l4579: b l4581
-l4580: .word 1048528
-interrupt_272: l4581: swp R6, R12, [R2]
-l4582: bNE l4589
-l4583: add R1, R0, #155
-interrupt_603: l4584: rsbLT R5, R7, R14, ASR R5
-interrupt_930: l4585: mvns R10, #-738197501
-l4586: addCS R1, R11, R4
-l4587: tstVS R6, R3, ROR #10
-interrupt_758: l4588: b l4590
-l4589: b l4584
-interrupt_139: l4590: rsbVC R5, R7, R7, LSL #30
-l4591: ldrGEsh R3, [sp, #-46]
-l4592: mvnCC R6, #72704
-l4593: stmEQIB R13, {R8}
-l4594: stmIB R13, {R6}
-l4595: ldr R8, l4597
-interrupt_826: l4596: b l4598
-interrupt_437: l4597: .word 1048512
-l4598: swpGE R14, R1, [R8]
-interrupt_640: l4599: adcs R0, R4, R3, ASR #0
-l4600: ldrsh R5, [sp, #-68]
-l4601: mov R11, #26
-l4602: ldrLTh R10, [sp, -R11]
-interrupt_195: l4603: clzGE R5, R2
-l4604: rsb R8, R5, R9
-l4605: mov R12, #46
-interrupt_160: l4606: ldrEQsb R12, [sp, -R12]
-l4607: mov R3, #42
-l4608: strPLh R11, [sp, -R3]
-l4609: nop
-l4610: teqLS R6, R8, RRX 
-interrupt_812: l4611: str R3, [sp], #-68
-l4612: cmnLT R6, R6, LSL #17
-interrupt_503: l4613: subs R11, R6, R12, ASR #6
-interrupt_172: l4614: ldrsb R1, [sp, #+1]
-l4615: mov R8, #4
-l4616: ldr R4, [sp, +R8]!
-l4617: mvn R6, #59
-l4618: swi #16528944
-l4619: orrMI R10, R0, R14, ASR #0
-l4620: rsbHIs R10, R5, R7
-l4621: orrs R2, R2, R14
-l4622: mov R14, #7
-l4623: ldrGEsb R9, [sp, +R14]
-l4624: b l4625
-interrupt_753: l4625: tst R0, R11, LSL R6
-l4626: ldr R9, l4628
-l4627: b l4629
-l4628: .word 1048548
-interrupt_76: l4629: swpVSb R11, R7, [R9]
-l4630: subs R0, R6, #59
-l4631: teqMI R6, R9
-l4632: teqLS R5, R4, LSR R5
-l4633: swi #9492096
-interrupt_359: l4634: mov R0, #8
-l4635: str R1, [sp, +R0]
-l4636: rsbNE R6, R10, R4, LSL #23
-l4637: ldr R8, l4639
-l4638: b l4640
-l4639: .word 1048496
-l4640: swp R10, R4, [R8]
-l4641: ldmIA R13!, {R0, R2, R3, R4, R8, R12, R14}
-l4642: movs R6, R4
-interrupt_260: l4643: bVC l4652
-l4644: add R1, R0, #12
-l4645: cmpVC R8, R7, ASR R3
-l4646: subLEs R1, R2, R9, ROR R7
-l4647: clzLE R7, R14
-l4648: teqPL R2, #-2147483638
-interrupt_106: l4649: sbcs R6, R15, #1073741835
-l4650: rsbNEs R2, R12, R4, ASR R5
-l4651: b l4653
-l4652: b l4645
-l4653: ldr R7, l4655
-interrupt_60: l4654: b l4656
-interrupt_757: l4655: .word 1048504
-l4656: swp R4, R2, [R7]
-interrupt_163: l4657: tst R6, R9, ROR R14
-interrupt_663: l4658: teq R14, R3
-l4659: nop
-interrupt_412: l4660: mov R2, #22
-l4661: strVSh R0, [sp, +R2]
-l4662: cmnGT R4, R8, RRX 
-l4663: ldmDB R13!, {R10}
-interrupt_94: l4664: movPLs R6, #3129344
-interrupt_607: l4665: adds R12, R8, R14, LSL R1
-l4666: adcs R2, R5, R12
-l4667: cmn R4, #394264576
-l4668: clzPL R8, R4
-l4669: ldmDA R13!, {R2, R10, R12}
-l4670: bLE l4672
-l4671: adcs R4, R0, R8, ROR R2
-l4672: subHI R6, R0, #17039360
-l4673: swi #15390707
-l4674: subs R3, R12, #939524096
-l4675: adcEQ R0, R14, #1073741853
-interrupt_892: l4676: bLS l4683
-l4677: add R1, R0, #161
-l4678: tstPL R2, R6
-l4679: sbcs R7, R9, R1
-l4680: rsbHI R2, R3, R1
-l4681: bicLT R5, R9, R2, LSR R8
-l4682: b l4684
-interrupt_923: l4683: b l4678
-l4684: sbcGT R11, R8, R11, ROR #23
-l4685: adcs R4, R7, R12
-interrupt_243: l4686: ldr R4, [sp, #+44]!
-l4687: swi #2283586
-l4688: ldrLSsh R7, [sp, #-10]
-l4689: tst R6, R15, LSR #23
-l4690: ldmDB R13!, {R0, R1, R2, R3, R5, R6, R8, R9, R10, R14}
-l4691: clzCC R11, R3
-l4692: rsb R2, R8, R0
-l4693: cmp R12, R11, ASR #24
-l4694: ldr R4, [sp, #+8]
-l4695: nop
-l4696: mov R9, #18
-l4697: ldrNEsh R3, [sp, -R9]
-interrupt_99: l4698: ldr R2, l4700
-l4699: b l4701
-l4700: .word 1048512
-interrupt_20: l4701: swpGTb R6, R3, [R2]
-interrupt_116: l4702: mov R14, #18
-l4703: ldrh R9, [sp, +R14]
-l4704: mvns R7, #1061158912
-interrupt_742: l4705: ldrPLB R14, [sp, #+55]
-l4706: teq R5, R10, ASR #5
-l4707: eor R4, R8, R5, RRX 
-l4708: mov R7, #53
-l4709: ldrsb R8, [sp, +R7]
-l4710: ldrLEB R4, [sp, #-20]
-l4711: adcVCs R7, R1, R10, ROR #22
-l4712: mov R7, #42
-l4713: ldrsb R12, [sp, +R7]
-l4714: tst R3, R1, LSL R8
-l4715: sbcCCs R12, R12, R5, RRX 
-interrupt_146: l4716: tstNE R2, R11, LSR R8
-l4717: ldr R3, l4719
-l4718: b l4720
-l4719: .word 1048532
-l4720: swpLS R7, R2, [R3]
-l4721: bGT l4730
-l4722: add R1, R0, #176
-l4723: eor R14, R2, R14, ASR #28
-interrupt_798: l4724: adcs R14, R12, R7, ASR R10
-l4725: andVCs R2, R0, R9
-l4726: mvnEQs R1, R3, ROR #16
-l4727: rsbLEs R5, R11, R10
-l4728: movLE R1, R12, RRX 
-l4729: b l4731
-l4730: b l4723
-interrupt_994: l4731: movs R11, R2, ASR #30
-l4732: addVS R10, R4, R8
-interrupt_761: l4733: swi #6937158
-l4734: ldrB R0, [sp, #+1]
-l4735: str R4, [sp, #+44]!
-interrupt_464: l4736: ldmDB R13!, {R9}
-l4737: cmnLT R15, R14, RRX 
-l4738: ldrVCsh R6, [sp, #-52]
-l4739: stmDA R13!, {R2, R7, R8, R9, R10, R14, R15}
-l4740: rscCS R10, R15, #-2147483625
-interrupt_855: l4741: ldmDA R13!, {R10}
-l4742: subs R11, R0, R11, LSR #5
-l4743: bicCS R11, R3, #114294784
-l4744: ldmIB R13, {R1, R3, R4, R5, R8, R14}
-l4745: eorPLs R12, R6, #29440
-l4746: bicEQs R14, R5, R0, ROR #29
-l4747: ldr R6, l4749
-l4748: b l4750
-l4749: .word 1048496
-l4750: swpVCb R1, R11, [R6]
-l4751: subs R8, R11, #-2147483623
-l4752: swi #6984410
-l4753: ldr R7, l4755
-interrupt_211: l4754: b l4756
-l4755: .word 1048488
-l4756: swpb R2, R10, [R7]
-l4757: str R6, [sp], #+8
-l4758: tstPL R4, R3, RRX 
-l4759: cmn R12, R7, LSL #20
-interrupt_78: l4760: ldr R1, l4762
-interrupt_943: l4761: b l4763
-l4762: .word 1048512
-interrupt_981: l4763: swpHIb R4, R11, [R1]
-l4764: cmn R12, #2850816
-l4765: mov R2, #18
-l4766: strB R10, [sp, -R2]
-interrupt_45: l4767: mov R5, #18
-interrupt_62: l4768: ldrCCsh R8, [sp, -R5]
-l4769: swi #12728663
-l4770: mov R4, #34
-l4771: ldrsb R9, [sp, -R4]
-l4772: sub R2, R3, R3, LSR R12
-l4773: bMI l4780
-interrupt_383: l4774: rsbGTs R7, R6, R7, LSL #7
-l4775: adcHI R8, R8, #843055104
-l4776: subCSs R12, R15, R7, LSR #7
-l4777: orrLTs R2, R6, R8, LSR R7
-interrupt_940: l4778: cmp R9, R1
-interrupt_233: l4779: rsbCSs R10, R8, R4
-l4780: rscGEs R1, R3, R2, LSL #10
-l4781: orrs R10, R12, R6, ASR R4
-l4782: rsbCSs R10, R6, R3, RRX 
-l4783: swi #5131892
-l4784: sbcGE R7, R12, R1, LSR #12
-l4785: strGTh R8, [sp, #+32]
-l4786: adds R9, R12, #738197504
-l4787: mov R5, #14
-l4788: ldrGTB R6, [sp, +R5]
-l4789: and R0, R11, R4, ROR #29
-l4790: rsbGTs R14, R7, R9
-l4791: bicEQ R4, R3, R4
-l4792: stmIA R13!, {R0, R1, R4, R5, R6, R7, R8, R11}
-l4793: addLTs R8, R5, #1073741862
-l4794: movs R6, R8, ASR #6
-l4795: mov R9, #57
-l4796: strB R11, [sp, -R9]
-interrupt_902: l4797: swi #15383193
-interrupt_313: l4798: cmpMI R10, R14
-l4799: strLT R6, [sp, #-44]
-l4800: bVS l4807
-l4801: add R1, R0, #233
-l4802: movs R6, R10, ROR #6
-l4803: eorGEs R0, R15, #1140850689
-l4804: rsbCC R14, R12, R14, LSR #12
-l4805: clzEQ R0, R8
-l4806: b l4808
-l4807: b l4802
-l4808: subNEs R0, R1, R7
-l4809: tstLS R12, R11
-l4810: tst R4, R8, LSR #16
-interrupt_365: l4811: ldr R5, [sp, #-48]
-l4812: subVC R2, R3, R8
-l4813: swi #13647870
-l4814: clzHI R6, R7
-l4815: bGE l4822
-interrupt_748: l4816: rscLT R7, R12, #159383552
-l4817: subs R12, R6, R12, ASR #1
-l4818: bicEQs R2, R8, R3, ROR R5
-l4819: teqGT R1, R6, RRX 
-l4820: cmp R8, R0, LSR #1
-l4821: cmnNE R7, #2000
-l4822: mov R1, R11, LSR R10
-l4823: cmp R2, #1442840576
-interrupt_110: l4824: swi #1372365
-l4825: adds R6, R0, R7, LSR R7
-interrupt_955: l4826: clz R1, R7
-l4827: subVS R10, R10, R4, ASR R12
-interrupt_148: l4828: mov R10, #6
-l4829: ldrGEh R8, [sp, +R10]
-interrupt_55: l4830: swi #11787191
-l4831: and R5, R6, #107
-l4832: ldr R5, l4834
-l4833: b l4835
-l4834: .word 1048480
-l4835: swpLE R7, R0, [R5]
-l4836: ldrsb R4, [sp, #-45]
-interrupt_71: l4837: mvns R8, #200
-interrupt_422: l4838: ldrB R6, [sp, #-62]
-interrupt_428: l4839: addVCs R4, R3, #741376
-interrupt_656: l4840: clzLT R14, R14
-interrupt_870: l4841: subEQs R10, R5, R5, LSL R6
-l4842: mov R6, #36
-l4843: str R3, [sp], -R6
-interrupt_806: l4844: mov R4, #15
-l4845: ldrsb R7, [sp, -R4]
-l4846: adcs R3, R10, R9
-l4847: subEQs R5, R7, #24832
-l4848: stmIA R13!, {R0, R1, R4, R8}
-l4849: eor R2, R0, R5, LSL R8
-interrupt_81: l4850: nop
-l4851: mov R9, #24
-l4852: strLTh R8, [sp, -R9]
-l4853: clzNE R11, R10
-interrupt_488: l4854: strB R4, [sp, #+26]
-l4855: adcVC R7, R11, R1
-l4856: tst R4, R2
-l4857: str R10, [sp], #+16
-l4858: subLEs R8, R12, R9, RRX 
-l4859: rsbs R1, R5, R6, LSL #8
-l4860: bHI l4864
-l4861: adc R8, R10, R1
-l4862: and R4, R0, #1610612736
-l4863: clz R2, R3
-l4864: clz R4, R14
-l4865: swi #16129181
-l4866: ldr R9, l4868
-l4867: b l4869
-l4868: .word 1048500
-l4869: swpNE R14, R3, [R9]
-l4870: subMI R2, R11, R3, ASR #7
-l4871: teq R6, R3, LSL #5
-l4872: clzPL R7, R8
-l4873: subLT R10, R5, R2
-l4874: mov R9, #3
-l4875: ldrB R12, [sp, +R9]
-l4876: ldr R8, l4878
-l4877: b l4879
-l4878: .word 1048488
-interrupt_191: l4879: swp R14, R6, [R8]
-l4880: swi #4193920
-l4881: strB R14, [sp, #-13]
-interrupt_763: l4882: swi #3408777
-l4883: cmpCC R5, R7, ROR R9
-l4884: stmDB R13!, {R7}
-l4885: eor R8, R4, R5, LSR R12
-l4886: subLTs R3, R9, #1073741824
-l4887: strGTB R3, [sp, #-57]
-interrupt_0: l4888: str R2, [sp], #-12
-l4889: ldmIB R13!, {R0, R1, R5, R6, R8, R10}
-interrupt_214: l4890: bic R14, R0, R15
-interrupt_403: l4891: sbcHIs R5, R3, R6
-l4892: teqVC R14, R3, LSL #9
-l4893: ldrVCsb R3, [sp, #-45]
-l4894: tstLT R6, #1493172224
-l4895: mvnGE R6, R4, LSL R14
-l4896: ldmPLDB R13, {R1, R10}
-l4897: sub R10, R8, #3047424
-l4898: ldr R7, l4900
-l4899: b l4901
-l4900: .word 1048528
-l4901: swpCCb R9, R11, [R7]
-interrupt_540: l4902: ldr R4, [sp, #-64]
-l4903: tstLS R11, R8, LSL #28
-l4904: ldrGTh R10, [sp, #-22]
-interrupt_263: l4905: cmpLE R6, R6
-l4906: swi #418372
-l4907: b l4916
-l4908: mov R2, R14, ASR R14
-interrupt_927: l4909: eorLEs R5, R12, R4, RRX 
-l4910: addVSs R10, R1, #929792
-interrupt_538: l4911: ands R6, R8, #3072
-l4912: rsbMI R5, R4, R12, ASR #15
-l4913: teq R2, R11, ASR #7
-l4914: cmn R11, R8
-interrupt_794: l4915: eor R1, R10, R8, LSL R10
-l4916: subPLs R10, R11, R10, ROR #1
-l4917: sbc R6, R6, R2, ASR #27
-interrupt_865: l4918: eor R1, R10, R9, LSL #7
-interrupt_633: l4919: cmn R6, R4, ASR #22
-l4920: ldr R2, [sp, #-52]!
-l4921: andVS R11, R4, R2, ASR R14
-l4922: movs R4, R0, LSL R12
-interrupt_842: l4923: mov R8, #46
-l4924: ldrh R8, [sp, +R8]
-l4925: ands R11, R1, R5, LSL #18
-l4926: bicCS R10, R7, #65798144
-l4927: andNE R14, R11, R14, LSL R10
-l4928: rscLT R9, R15, #8388608
-interrupt_957: l4929: b l4933
-l4930: add R1, R0, #65
-l4931: mvnLE R12, R14
-l4932: b l4934
-l4933: b l4931
-l4934: mov R12, #9
-l4935: ldrLTB R10, [sp, +R12]
-l4936: eorPLs R4, R3, R3
-interrupt_460: l4937: cmp R9, #4194304
-l4938: addHI R12, R10, R8, ASR R6
-l4939: b l4947
-interrupt_379: l4940: add R1, R0, #106
-l4941: cmnEQ R14, #9792
-l4942: bicVS R14, R10, R6
-interrupt_421: l4943: adcs R4, R0, #-1342177277
-interrupt_212: l4944: clz R14, R1
-l4945: teq R0, R10, ROR R1
-l4946: b l4948
-l4947: b l4941
-l4948: rsc R9, R7, R8, ASR #13
-l4949: add R5, R5, R7, ASR #27
-l4950: rscVS R8, R2, #335544320
-interrupt_551: l4951: rsc R10, R3, #29360128
-interrupt_42: l4952: movLSs R3, R12, ROR R14
-l4953: mvnLSs R2, R4, LSR R10
-l4954: bLT l4960
-interrupt_616: l4955: add R1, R0, #104
-interrupt_685: l4956: orrs R2, R10, R12
-l4957: sbc R2, R9, #7168
-l4958: rscCSs R4, R0, #897024
-l4959: b l4961
-interrupt_654: l4960: b l4956
-l4961: movs R11, #-268435453
-l4962: rsbs R8, R9, R8, RRX 
-l4963: nop
-l4964: mov R2, #50
-l4965: ldrh R10, [sp, +R2]
-l4966: subLT R10, R6, R15
-l4967: ldr R3, l4969
-interrupt_972: l4968: b l4970
-interrupt_68: l4969: .word 1048548
-interrupt_721: l4970: swpGEb R11, R9, [R3]
-l4971: stmDB R13!, {R10, R11}
-interrupt_737: l4972: mov R6, #8
-l4973: ldrB R0, [sp, -R6]
-l4974: ldrsh R12, [sp, #+6]
-l4975: mov R0, #4
-l4976: str R10, [sp, +R0]!
-interrupt_573: l4977: ands R7, R6, R5
-l4978: andVC R14, R7, R2, LSL R2
-l4979: andPLs R11, R1, R0, LSL R12
-l4980: swi #9773826
-l4981: swi #472145
-l4982: cmpVS R5, R5, RRX 
-l4983: cmnMI R1, #53248
-interrupt_875: l4984: rsb R12, R4, R1, ASR #16
-l4985: and R14, R9, R5, LSL #30
-l4986: rsb R8, R6, R5
-l4987: bics R11, R10, R3, LSL #14
-interrupt_117: l4988: bicVSs R6, R8, R0, ROR #10
-l4989: swi #3172584
-l4990: mvns R14, R14, LSR R7
-l4991: rsbGE R11, R0, R4, LSR #13
-interrupt_504: l4992: eors R11, R5, R1
-interrupt_396: l4993: ldrsh R14, [sp, #-8]
-l4994: rsc R11, R6, #4030464
-l4995: andMI R4, R2, R0
-l4996: mvn R8, R0, ASR R4
+l4503: b l4498
+l4504: orr R8, R11, R8, LSR #23
+interrupt_99: l4505: rsb R2, R5, R15, ASR #20
+l4506: ldrh R3, [sp, #+42]
+l4507: rscEQs R0, R7, R1, ROR #20
+l4508: mov R5, #25
+l4509: ldrsb R2, [sp, +R5]
+l4510: subCCs R6, R8, #-1140850686
+l4511: ldr R11, l4513
+interrupt_592: l4512: b l4514
+l4513: .word 1048508
+l4514: swp R8, R12, [R11]
+l4515: stmIB R13!, {R7, R12, R14, R15}
+interrupt_374: l4516: bics R11, R6, #-1392508928
+l4517: cmp R2, R4
+l4518: stmIA R13!, {R0, R2, R3, R5, R7, R8, R9, R10, R11, R14, R15}
+l4519: addHIs R14, R11, R4
+l4520: ldr R6, l4522
+interrupt_83: l4521: b l4523
+l4522: .word 1048508
+l4523: swp R10, R4, [R6]
+l4524: adcNEs R0, R4, #3833856
+l4525: mov R3, #20
+l4526: strLEB R1, [sp, -R3]
+interrupt_13: l4527: nop
+l4528: mov R11, #4
+l4529: ldrLTsh R9, [sp, -R11]
+interrupt_486: l4530: bEQ l4535
+l4531: add R1, R0, #100
+l4532: clzCC R2, R9
+l4533: teqHI R1, R1, RRX 
+l4534: b l4536
+l4535: b l4532
+l4536: orr R1, R11, R2
+l4537: ldr R10, l4539
+interrupt_427: l4538: b l4540
+l4539: .word 1048540
+l4540: swpMIb R5, R2, [R10]
+interrupt_380: l4541: andLTs R2, R10, R3
+l4542: swi #10404374
+l4543: andLEs R2, R11, #13248
+l4544: rsbGEs R1, R6, R6, RRX 
+interrupt_181: l4545: tstHI R10, R4, ASR #9
+l4546: tstCC R3, R9, LSR R10
+interrupt_582: l4547: swi #14287534
+l4548: tst R6, R4
+l4549: subLS R14, R14, R7
+l4550: eorVS R4, R7, #58368
+interrupt_951: l4551: mov R1, #8
+l4552: ldrVSh R5, [sp, -R1]
+interrupt_423: l4553: cmnLS R5, R6
+l4554: mov R3, #70
+l4555: ldrLEh R2, [sp, -R3]
+l4556: swi #11682881
+interrupt_350: l4557: swi #14306663
+l4558: eorCSs R14, R11, R2, RRX 
+l4559: cmnGT R1, R10, ASR R12
+l4560: ldrh R9, [sp, #-56]
+l4561: rscLT R0, R6, #47185920
+l4562: tstMI R1, R8, RRX 
+l4563: subPLs R11, R14, #14417920
+l4564: swi #13143435
+interrupt_875: l4565: orrs R14, R10, R11, ASR #23
+interrupt_330: l4566: eorNE R1, R7, R6
+interrupt_660: l4567: mov R10, #60
+interrupt_206: l4568: ldrVCsh R8, [sp, -R10]
+interrupt_483: l4569: bicNEs R1, R6, R4, LSL R12
+l4570: b l4577
+l4571: add R1, R0, #27
+l4572: rsc R6, R12, R10
+l4573: eorLE R9, R11, R2
+l4574: adc R9, R1, #18176
+l4575: ands R2, R8, R10
+interrupt_600: l4576: b l4578
+l4577: b l4572
+l4578: subEQs R14, R14, #206
+interrupt_1: l4579: clz R2, R5
+interrupt_717: l4580: subGTs R9, R9, R9, RRX 
+l4581: nop
+l4582: ldr R14, l4584
+l4583: b l4585
+l4584: .word 1048532
+l4585: swpLEb R7, R9, [R14]
+interrupt_105: l4586: ldr R12, l4588
+l4587: b l4589
+l4588: .word 1048524
+l4589: swpGT R9, R14, [R12]
+l4590: eors R1, R9, R1
+l4591: bVC l4598
+l4592: sbc R11, R11, R5, ROR #27
+l4593: mvnEQs R9, R9, ROR #13
+interrupt_998: l4594: cmnMI R15, R11, ROR #21
+l4595: addHIs R6, R8, R8, RRX 
+interrupt_112: l4596: sbcCC R14, R1, #2539520
+l4597: cmpVC R15, #16064
+l4598: teq R3, R0
+l4599: orr R11, R9, R11, LSR R9
+l4600: bicPL R9, R7, R2, ROR R8
+l4601: teq R3, #2785280
+l4602: rsbs R4, R7, #-1157627904
+l4603: b l4611
+l4604: add R1, R0, #232
+l4605: adds R3, R1, #13369344
+l4606: rsbLS R14, R12, R5, LSL #27
+l4607: cmn R11, #788
+l4608: subLT R7, R1, R12, LSR R9
+interrupt_5: l4609: subs R1, R4, #62652416
+l4610: b l4612
+interrupt_925: l4611: b l4605
+l4612: strLEB R5, [sp, #-56]
+l4613: ldr R4, l4615
+l4614: b l4616
+l4615: .word 1048520
+l4616: swpLSb R5, R10, [R4]
+interrupt_957: l4617: tst R14, R5
+l4618: strB R1, [sp, #-46]
+l4619: eorHIs R12, R6, R14
+l4620: swi #13084124
+l4621: ldr R1, l4623
+l4622: b l4624
+l4623: .word 1048552
+l4624: swpEQb R6, R10, [R1]
+l4625: ands R4, R0, R6
+l4626: mov R8, #48
+l4627: ldr R2, [sp], -R8
+l4628: cmn R5, R7, RRX 
+l4629: ldr R10, l4631
+l4630: b l4632
+l4631: .word 1048484
+interrupt_871: l4632: swp R0, R4, [R10]
+l4633: sub R0, R3, #23552
+l4634: str R5, [sp], #+8
+l4635: movHI R10, R5, RRX 
+interrupt_527: l4636: mov R14, #3
+l4637: ldrLEsb R1, [sp, +R14]
+l4638: stmDB R13!, {R7, R15}
+l4639: swi #4516258
+l4640: tst R5, R1, RRX 
+l4641: adcs R9, R5, R7, LSR #31
+l4642: cmpVC R6, #-268435450
+l4643: cmp R9, R9
+l4644: addEQs R0, R6, R2, RRX 
+l4645: swi #3046556
+l4646: andHI R3, R14, #208
+l4647: str R11, [sp], #+8
+l4648: tst R11, R7, RRX 
+interrupt_143: l4649: rsc R1, R4, R3, ASR R9
+interrupt_52: l4650: ldrVCh R8, [sp, #-12]
+l4651: ldmCCIB R13, {R0, R3, R5, R6, R7, R8, R9, R14}
+l4652: eor R4, R9, R2, RRX 
+l4653: mov R11, #30
+l4654: ldrGEsh R4, [sp, +R11]
+l4655: cmp R15, R8
+l4656: movLTs R3, #2080
+l4657: rscs R0, R9, #9024
+l4658: ldrh R7, [sp, #+4]
+l4659: mov R8, #16
+l4660: ldrLEsh R2, [sp, +R8]
+l4661: mvnMIs R11, R5, RRX 
+l4662: mov R3, #31
+l4663: ldrB R9, [sp, -R3]
+l4664: cmnEQ R6, R3, ROR #28
+l4665: mov R14, #32
+l4666: strh R10, [sp, -R14]
+interrupt_671: l4667: sub R8, R9, #392
+interrupt_598: l4668: tstLT R5, #36096
+l4669: mov R6, #8
+l4670: ldrHI R4, [sp, +R6]
+l4671: teqCC R12, R15, RRX 
+interrupt_191: l4672: clzPL R11, R12
+interrupt_270: l4673: mvnEQs R1, R5, RRX 
+l4674: mvn R2, R0, LSR R6
+l4675: rsbGEs R1, R14, R5
+l4676: adcs R2, R14, #13056
+l4677: movs R3, R10
+interrupt_751: l4678: teqHI R2, R9, ASR #5
+l4679: subGT R6, R11, R8, RRX 
+l4680: strB R3, [sp, #+14]
+l4681: rscVSs R0, R8, R5
+l4682: ldr R5, l4684
+interrupt_867: l4683: b l4685
+l4684: .word 1048484
+l4685: swp R9, R6, [R5]
+l4686: ldrHIsb R10, [sp, #+9]
+l4687: orrs R4, R11, R9, ASR R11
+l4688: mvnLS R9, R1, ROR #30
+l4689: mov R12, #40
+l4690: strMI R2, [sp, +R12]
+interrupt_27: l4691: add R2, R4, R2
+interrupt_813: l4692: eorGT R7, R4, R14
+interrupt_692: l4693: ldrsb R2, [sp, #+30]
+l4694: nop
+l4695: tstHI R10, R9, RRX 
+l4696: subGT R3, R2, R12, RRX 
+interrupt_392: l4697: str R10, [sp, #-28]
+l4698: mov R5, #4
+l4699: strGEh R7, [sp, -R5]
+l4700: mov R1, #37
+l4701: ldrB R8, [sp, +R1]
+l4702: movCSs R9, #634880
+interrupt_741: l4703: eor R11, R5, #335544320
+l4704: cmp R4, R15
+l4705: swi #2309816
+l4706: bCS l4713
+l4707: add R1, R0, #59
+l4708: cmpLT R14, #-2147483596
+l4709: orr R5, R12, R14, ASR #27
+l4710: subEQ R1, R12, R2, LSR #10
+l4711: subLSs R7, R11, #116
+interrupt_504: l4712: b l4714
+l4713: b l4708
+interrupt_670: l4714: orrGTs R12, R5, R4
+l4715: teqCC R5, #193986560
+l4716: swi #10197066
+l4717: adcHIs R12, R0, #6160384
+l4718: ldrHIsb R6, [sp, #-15]
+l4719: subs R6, R1, #5632
+l4720: sub R9, R1, R1, LSL #12
+interrupt_618: l4721: clzMI R8, R2
+l4722: sub R3, R10, R3, LSL R1
+l4723: clz R9, R4
+interrupt_240: l4724: mov R4, #23
+l4725: ldrB R4, [sp, -R4]
+l4726: mov R2, #0
+l4727: ldrsh R12, [sp, +R2]
+l4728: ldmDB R13, {R1, R6, R11, R12}
+interrupt_697: l4729: ldr R14, l4731
+l4730: b l4732
+l4731: .word 1048528
+l4732: swp R9, R9, [R14]
+l4733: rsbVS R8, R3, R0
+l4734: movGT R9, R1, LSR R14
+l4735: ldrLSsb R1, [sp, #-4]
+l4736: swi #80871
+l4737: subGE R11, R3, R9, ROR R8
+interrupt_65: l4738: ldr R0, l4740
+l4739: b l4741
+l4740: .word 1048484
+l4741: swpCSb R9, R3, [R0]
+interrupt_579: l4742: cmpNE R9, R4
+l4743: sbcPL R5, R15, #973078528
+l4744: tstCS R11, R3, RRX 
+l4745: tstCS R11, R6
+interrupt_565: l4746: mov R8, #28
+interrupt_160: l4747: ldrVCsh R14, [sp, +R8]
+l4748: swi #12435646
+l4749: ldrLE R6, [sp, #+24]
+interrupt_162: l4750: orrs R12, R1, R15, ASR #21
+l4751: rscGEs R0, R12, R11
+interrupt_914: l4752: ands R0, R4, R12, ASR #2
+l4753: mov R6, #12
+l4754: ldrsh R1, [sp, +R6]
+l4755: cmnHI R2, R0, ROR R8
+l4756: andLE R10, R15, R1, ROR #25
+interrupt_360: l4757: cmnGT R3, R8, RRX 
+l4758: andNEs R2, R14, R14, LSL #27
+l4759: strGTB R4, [sp, #+39]
+l4760: ldr R5, l4762
+l4761: b l4763
+l4762: .word 1048504
+interrupt_257: l4763: swpb R9, R10, [R5]
+l4764: sbcLE R7, R5, R14, ROR #8
+l4765: clzNE R7, R12
+interrupt_233: l4766: adcs R0, R11, R6, RRX 
+l4767: mov R7, #20
+l4768: ldr R4, [sp, +R7]!
+interrupt_664: l4769: cmpGT R14, #409600
+l4770: bic R0, R0, R4
+interrupt_476: l4771: strNEh R10, [sp, #+4]
+l4772: str R12, [sp, #-52]!
+l4773: ldmIB R13!, {R0, R1, R2, R5, R6, R9, R10, R11, R14}
+interrupt_135: l4774: mov R6, #12
+l4775: str R15, [sp], -R6
+l4776: mvn R3, R14, RRX 
+interrupt_932: l4777: ldmDB R13!, {R3, R11, R14}
+interrupt_0: l4778: strNE R1, [sp, #+28]
+interrupt_400: l4779: strLSB R12, [sp, #+23]
+l4780: swi #4948565
+l4781: andGTs R9, R5, #23808
+interrupt_923: l4782: adds R0, R6, R7, ASR R9
+l4783: clz R14, R7
+l4784: orr R1, R7, R0
+l4785: ldrCSsb R11, [sp, #+54]
+l4786: teqEQ R9, R6
+l4787: sbcGTs R14, R2, R7, LSR R6
+l4788: b l4793
+interrupt_161: l4789: add R1, R0, #137
+l4790: movEQs R1, R4, ROR R0
+l4791: subCSs R1, R1, R11, RRX 
+l4792: b l4794
+l4793: b l4790
+l4794: cmnHI R1, R12, ROR #7
+l4795: ldrB R4, [sp, #+31]
+l4796: subs R8, R12, R3, ASR R3
+l4797: mov R9, #8
+interrupt_841: l4798: ldrh R6, [sp, -R9]
+l4799: bHI l4800
+l4800: adcGT R4, R7, R8, LSR #7
+l4801: mov R11, #29
+l4802: ldrGEsb R3, [sp, +R11]
+interrupt_102: l4803: tst R14, #15616
+l4804: teqEQ R3, R4
+l4805: adds R8, R3, R4
+l4806: rsbLSs R5, R12, #105906176
+l4807: rsbGE R12, R11, R12
+l4808: ldr R12, l4810
+l4809: b l4811
+l4810: .word 1048508
+l4811: swpb R14, R2, [R12]
+l4812: cmp R6, #651264
+l4813: ldr R3, l4815
+l4814: b l4816
+interrupt_371: l4815: .word 1048520
+l4816: swpEQb R6, R4, [R3]
+l4817: andPL R4, R10, R4, LSL R4
+l4818: teq R5, R9, ASR R8
+l4819: ldrMIh R8, [sp, #-10]
+l4820: mov R1, #53
+l4821: strVCB R9, [sp, +R1]
+l4822: orr R6, R1, R14
+l4823: subCS R0, R12, R4, RRX 
+l4824: eors R9, R14, #15073280
+l4825: ldrsb R5, [sp, #+46]
+l4826: bics R0, R11, R4
+l4827: tst R5, R2
+l4828: clzVS R12, R12
+l4829: ldmIB R13!, {R0, R1, R2, R3, R4, R5, R8, R10, R12}
+l4830: clz R14, R14
+l4831: cmp R4, R2, RRX 
+l4832: strh R10, [sp, #+6]
+l4833: mov R4, #2
+l4834: ldrVSh R12, [sp, +R4]
+l4835: bVC l4839
+l4836: add R1, R0, #5
+l4837: subs R4, R14, #8060928
+l4838: b l4840
+interrupt_167: l4839: b l4837
+l4840: mov R2, #20
+l4841: ldr R1, [sp, +R2]!
+interrupt_552: l4842: ldr R4, l4844
+l4843: b l4845
+l4844: .word 1048488
+interrupt_29: l4845: swpGTb R1, R14, [R4]
+interrupt_468: l4846: teqGE R10, R3, ASR R2
+l4847: ldr R9, [sp], #-60
+l4848: ldr R14, l4850
+l4849: b l4851
+l4850: .word 1048516
+l4851: swp R5, R9, [R14]
+l4852: subGE R4, R8, R10
+l4853: ldrLSh R3, [sp, #+48]
+l4854: cmpMI R0, R1, ROR #29
+l4855: bCC l4864
+interrupt_949: l4856: adcLSs R3, R2, #-268435450
+l4857: subCSs R9, R5, R5, ROR R12
+l4858: orrHIs R9, R6, R5
+interrupt_442: l4859: subs R1, R3, #-1191182336
+l4860: and R9, R8, #-402653183
+l4861: adcs R12, R12, R0, RRX 
+l4862: movPLs R8, #839680
+l4863: orr R1, R7, R9, ASR R0
+l4864: orr R2, R3, R10, RRX 
+l4865: ldrVSsb R4, [sp, #-6]
+interrupt_165: l4866: subHI R5, R6, #1504
+l4867: ldmGEIB R13, {R0, R1, R4, R5}
+l4868: teqVS R4, #1536
+l4869: swi #8126290
+l4870: adc R5, R15, R8, LSL #12
+l4871: mov R3, #64
+l4872: ldrCS R14, [sp, +R3]
+l4873: swi #8434583
+l4874: bMI l4880
+l4875: add R1, R0, #2
+l4876: teqVC R7, R3, ASR #9
+l4877: mvns R7, R3
+l4878: subs R2, R11, R5, LSR #16
+l4879: b l4881
+l4880: b l4876
+l4881: bic R4, R7, R12
+l4882: ldr R8, l4884
+l4883: b l4885
+l4884: .word 1048488
+l4885: swpPLb R4, R4, [R8]
+l4886: stmIB R13!, {R0, R1, R3, R4, R8, R9, R10}
+l4887: ldr R2, l4889
+l4888: b l4890
+l4889: .word 1048520
+interrupt_294: l4890: swp R6, R1, [R2]
+l4891: b l4899
+l4892: add R1, R0, #5
+l4893: addVCs R12, R10, R4
+l4894: teqLS R11, R7
+interrupt_367: l4895: clzLS R11, R11
+l4896: andLT R11, R7, #-2147483615
+l4897: clz R8, R5
+l4898: b l4900
+l4899: b l4893
+l4900: mvns R1, R6, ROR #19
+l4901: strh R14, [sp, #-16]
+l4902: mov R14, #32
+l4903: ldrHIsh R0, [sp, +R14]
+interrupt_192: l4904: stmIA R13, {R6, R7}
+l4905: bGT l4913
+interrupt_740: l4906: orrPL R7, R9, R4, ROR #19
+l4907: subEQs R8, R11, R14, LSL #8
+l4908: sbcCCs R12, R7, R9, ASR #27
+l4909: subLE R10, R6, R9
+l4910: sbcs R10, R3, R7, ROR #29
+l4911: addMI R3, R7, #742391808
+interrupt_572: l4912: subLTs R4, R11, R5, ASR #15
+l4913: subs R6, R8, R3, LSR #24
+interrupt_495: l4914: orrGTs R12, R10, #13376
+interrupt_910: l4915: ldmLTIB R13, {R1, R2, R6}
+l4916: mov R4, #32
+l4917: ldrVCB R10, [sp, -R4]
+l4918: ldr R7, l4920
+l4919: b l4921
+l4920: .word 1048528
+l4921: swpLS R14, R10, [R7]
+l4922: swi #12796368
+l4923: adcs R14, R7, R11, ASR R12
+l4924: stmDB R13!, {R0, R4, R8, R9, R10}
+l4925: rsb R0, R14, R15, ASR #0
+interrupt_216: l4926: mov R6, #46
+l4927: strMIh R7, [sp, +R6]
+l4928: addCCs R2, R1, R9
+l4929: movs R3, #9371648
+interrupt_644: l4930: bLS l4935
+l4931: addVC R10, R14, #236978176
+interrupt_391: l4932: sbc R4, R6, R9, RRX 
+l4933: bicVSs R7, R2, R8
+l4934: adcVS R8, R1, R8, ASR R8
+l4935: teqVC R10, R2
+l4936: andEQ R9, R9, #1425408
+l4937: cmnVS R2, #39059456
+interrupt_321: l4938: addPLs R1, R6, R15, RRX 
+l4939: movVCs R0, R5
+interrupt_414: l4940: sbc R8, R5, R7, ASR #13
+l4941: ldr R9, l4943
+l4942: b l4944
+l4943: .word 1048504
+l4944: swpHI R3, R1, [R9]
+l4945: bLS l4953
+l4946: bicVC R6, R6, R9
+interrupt_971: l4947: adcs R3, R9, #-2147483618
+l4948: orrCCs R7, R4, #851968
+l4949: clzLS R9, R7
+l4950: eorHI R1, R10, R12, RRX 
+l4951: orrVCs R7, R0, R1, LSR R12
+l4952: subPL R12, R14, R11
+l4953: subGEs R4, R3, R3
+l4954: strLSB R12, [sp, #+4]
+l4955: sbc R5, R7, R12, LSL R5
+l4956: mov R0, #33
+l4957: strB R14, [sp, +R0]
+l4958: b l4963
+l4959: add R1, R0, #232
+l4960: ands R10, R8, R12, LSR R5
+l4961: ands R3, R4, #684032
+interrupt_225: l4962: b l4964
+l4963: b l4960
+l4964: orrCCs R1, R5, #232
+l4965: mov R14, #16
+interrupt_985: l4966: strCS R1, [sp, +R14]
+l4967: ldr R11, l4969
+l4968: b l4970
+l4969: .word 1048492
+l4970: swpb R8, R10, [R11]
+l4971: sub R10, R11, #25952256
+l4972: mov R12, #4
+l4973: ldrCSsh R2, [sp, +R12]
+l4974: ldrB R7, [sp, #-10]
+l4975: ldr R2, l4977
+l4976: b l4978
+l4977: .word 1048552
+l4978: swpVCb R9, R9, [R2]
+l4979: subLT R14, R8, R12
+l4980: mov R10, #8
+interrupt_432: l4981: ldrVCh R6, [sp, -R10]
+l4982: bicVC R14, R2, #-2147483634
+interrupt_274: l4983: ldmVSDB R13, {R5}
+interrupt_532: l4984: cmpEQ R3, R5, RRX 
+l4985: rsbs R4, R7, R10
+l4986: rsc R0, R4, R0, ROR R9
+interrupt_445: l4987: mov R11, #22
+l4988: ldrh R5, [sp, +R11]
+l4989: mov R5, #32
+l4990: ldr R2, [sp], +R5
+l4991: ldmIB R13, {R3, R6, R8, R9, R10, R14}
+l4992: andMIs R11, R15, R3
+l4993: ands R8, R1, #7488
+l4994: rsbVC R8, R1, R0
+l4995: mov R8, R7
+l4996: mvns R2, R1
 l4997: nop
-l4998: swi #5351990
-interrupt_881: l4999: ldrMIB R10, [sp, #-4]
-l5000: nop
-end: b end
+l4998: ldr R2, l5000
+l4999: b l5001
+interrupt_358: l5000: .word 1048528
+l5001: swpNE R1, R3, [R2]
+interrupt_323: end: b end
 
