@@ -30,7 +30,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   flopr #(2) IRQ_FIQ_Sync(clk, reset, {IRQEnabled, FIQEnabled}, {IRQEn_sync, FIQEn_sync});
 
   // helper signal to enter or cancel interrupt sequence
-  assign interruptPending = (FIQ & FIQEn_sync) | (IRQ & IRQEn_sync);
+  assign interruptPending = ( (FIQ & FIQEn_sync) | (IRQ & IRQEn_sync) ) & ~instrTriggeredException;
   assign instrTriggeredException = PrefetchAbortE | UndefinedInstrE | SWIE;
 
 
