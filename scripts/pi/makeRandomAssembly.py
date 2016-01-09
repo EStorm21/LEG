@@ -635,6 +635,8 @@ def ror(value, amt, bits = 32):
 def init_fiq_handler(name):
 	program = "{}:\n".format(name)
 	program += "stmfd sp!, {r4-r9, r12}\n"
+	program += "ldr r5, UART_DR\n"
+	program += "ldr r5, [r5]\n"
 	program += "ldmfd sp, {r5-r10, r12}^\n" # load user mode. can't wb, but don't care.
 	program += "subs pc,r14,#4\n"
 	program += "\n"
@@ -654,7 +656,7 @@ def init_swi_handler(name):
 	program += "stmfd sp!, {r0-r3, r12, r14}\n"
 	program += "ldr r0, [r14, #-4]\n"  # recover swi argument
 	program += "bic r0, r0, #0xff000000\n"
-	program += makeUndefInstr(0)
+	#program += makeUndefInstr(0)
 	program += "ldmfd sp!, {r0-r3, r12, pc}^\n" # a fairly complicated instruction
 	program += "\n"
 	return program
@@ -686,7 +688,7 @@ def init_irq_handler(name):
 	program += "push {r1}\n"
 	program += "stmfd sp, {r13}^\n" # very sneaky store user mode
 	program += "ldr r1, UART_DR\n"
-	program += "str r1, [r1]\n"
+	program += "ldr r1, [r1]\n"
 	program += "ldmfd sp, {r1}\n"
 	program += "pop {r1}\n"
 	program += "subs pc,r14,#4\n"

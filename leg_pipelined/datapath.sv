@@ -49,13 +49,12 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic [31:0] WA3W, RA1D, RA2D);
 
                           
-  logic [31:0] PCPlus4F, PCnext1F, PCnext2F, PCnextF, PCPlus4D, PCPlus0D, PC_in, Instr_1D;
+  logic [31:0] PCPlus4F, PCnext1F, PCnext2F, PCnextF, PCPlus4D, PCPlus0D, PC_in;
   logic [31:0] ExtImmD, Rd1D, Rd2D, PCPlus8D, RotImmD;
   logic ZeroRotateD, ZeroRotateE;
-  logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ALUSrcB4E, ShiftBE;
-  logic [31:0] MultOutputBE, MultOutputAE;
+  logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ShiftBE;
   logic [31:0] ReadDataRawW, ReadDataW, Result1_W, ResultW;
-  logic [31:0] ALUSrcA, ALUSrcB, MultOutputE, ZerosE, OperationOutputE;
+  logic [31:0] MultOutputE, ZerosE, OperationOutputE;
   logic [31:0] ALUorCP15_M;
   // Keep PC and instruction in each stage for debugging
   logic [31:0] PCD, PCE, PCM, PCW;
