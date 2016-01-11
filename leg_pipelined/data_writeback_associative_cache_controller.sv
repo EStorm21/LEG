@@ -33,7 +33,7 @@ module data_writeback_associative_cache_controller
   // Control Signals
   // Create Counter for sequential bus access
   always_ff @(posedge clk, posedge reset)
-    if(reset | ResetBlockOff) begin
+    if(reset | ResetBlockOff | ~enable) begin
         CounterMid <= 0;
     end else begin
         if (BusReady) begin

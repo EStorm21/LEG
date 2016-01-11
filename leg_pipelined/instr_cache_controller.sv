@@ -46,7 +46,7 @@ module instr_cache_controller #(parameter tbits = 14) (
                     nextstate <= MEMREAD;  
                   end
       NEXTINSTR:  nextstate <= READY;
-      MEMREAD:    nextstate <= ( BusReady & ( (Counter == 3) | ~enable ) ) ? LASTREAD : MEMREAD;
+      MEMREAD:    nextstate <= ( BusReady & ( (Counter == 2) | ~enable ) ) ? LASTREAD : MEMREAD;
       LASTREAD:    nextstate <= BusReady ? NEXTINSTR : LASTREAD;
       default: nextstate <= READY;
     endcase
@@ -59,11 +59,12 @@ module instr_cache_controller #(parameter tbits = 14) (
   assign HRequestF  = (state == MEMREAD) & PAReadyF |
     (state == READY) & ~Hit & PAReadyF | 
     (state == LASTREAD) & ~BusReady & PAReadyF;
-  assign ResetBlockOff = ( state == READY ) | ( state == NEXTINSTR );
+  assign ResetBlockOff = ( state == READY ) & ~(nextstate== MEMREAD) | 
+    ( state == NEXTINSTR );
 
   // Create Counter for sequential bus access
-  always_ff @(posedge clk, posedge reset)
-    if(reset | ResetBlockOff) begin
+  always_ff @(posedge clk)
+    if(reset | ResetBlockOff | ~enable) begin
       CounterMid <= 2'b00;
     end else begin
       if (BusReady) begin
@@ -74,7 +75,9 @@ module instr_cache_controller #(parameter tbits = 14) (
     end
 
   // Data phase counter is one cycle behind address phase
-  assign DataCounter = CounterMid - 1'b1;
+  flopenr #(2) DataCntFlop(clk, reset, BusReady, CounterMid, DataCounter);
+  // assign DataCounter = CounterMid - 1'b1;
+  // Create Counter for sequential bus access
 
   mux2 #(2) cenMux(WordOffset, CounterMid, enable, Counter);
 
