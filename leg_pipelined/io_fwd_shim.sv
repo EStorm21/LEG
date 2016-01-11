@@ -7,7 +7,8 @@ module io_fwd_shim(input  logic        HCLK,
                    input  logic        HWRITE,
                    input  logic [31:0] HWDATA,
                    output logic [31:0] HRDATA,
-                   output logic        fiq, irq);
+                   output logic        fiq, irq,
+                   output logic        HREADY);
 
     logic [31:0] readAddrs[$];
     logic [31:0] readVals[$];
@@ -24,7 +25,9 @@ module io_fwd_shim(input  logic        HCLK,
     flopr #(3) delayflop(HCLK, ~HRESETn, {HSEL, HREQUEST, HWRITE}, {HSEL_d, HREQUEST_d, HWRITE_d});
 
     always_ff @(posedge HCLK ) begin
-        if(HREQUEST_d & HSEL_d) begin
+        if (~HRESETn) HREADY <= 0;
+        else if(HREQUEST_d & HSEL_d & ~HREADY) begin
+            HREADY <= 1;
             if(HWRITE_d) begin
                 $displayh("IO write data %h to %h", HWDATA, HADDR_d);
                 // Ignore writes (Qemu can handle it)
@@ -42,7 +45,8 @@ module io_fwd_shim(input  logic        HCLK,
                     HRDATA <= 32'hxxxxxxxx;
                 end
             end
-        end
+        end else if (~(HREQUEST_d & HSEL_d)) HREADY <= 0;
+        else HREADY <= HREADY;
     end
 
     // Called from ModelSim using

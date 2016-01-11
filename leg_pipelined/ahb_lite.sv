@@ -13,6 +13,7 @@ module ahb_lite (
   // TODO: Make memRE functional
   logic [ 1:0] HSEL   ;
   logic [31:0] HRDATA0, HRDATA1; // NOTE: This assumes memory outputs 4 words at a time
+  logic        HREADY0, HREADY1;
   logic [31:0] rawFIQVec, rawIRQVecPart, rawIRQVec, rawSICVec;
   logic        SICinterrupt; // says whether an interrupt is pending in the SIC
 
@@ -24,7 +25,8 @@ module ahb_lite (
   
   // Memory map decoding
   ahb_decoder dec(HADDR, HSEL);
-  ahb_mux     mux(HSEL, HRDATA0, HRDATA1, HRDATA);
+  ahb_mux     datamux(HSEL, HRDATA0, HRDATA1, HRDATA);
+  ahb_mux #(1) readymux(HSEL, HREADY0, HREADY1, HREADY);
   
   // Memory and peripherals
   // mem_simulation mem (.clk(HCLK), .we(HWRITE), .re(HREQUEST & ~HWRITE), 
@@ -47,18 +49,19 @@ module ahb_lite (
     .we   (HWRITE            ),
     .re   (HREQUEST & ~HWRITE),
     .HSEL (HSEL[0]           ),
-    .HReady(HREADY),
+    .HReady(HREADY0),
     .HResetn(HRESETn),
     .a    (HADDR             ),
     .wd   (HWDATA            ),
     .HSIZE(HSIZE             ),
     .rd   (HRDATA0           ),
-    .Valid(HREADY            )
+    .Valid(HREADY0            )
   );
 
 io_fwd_shim ioShim(  .*,
   .HSEL  (HSEL[1]   ),
-  .HRDATA(HRDATA1   )
+  .HRDATA(HRDATA1   ),
+  .HREADY(HREADY1)
 );
   
 endmodule
