@@ -533,6 +533,11 @@ def debugFromHere(with_gui, qemu, test_file, found_bugs, run_dir, goal_pc=None):
 		traceback.print_exc()
 		reason = LOCKSTEP_BUG_ABORT
 		print "Terminated due to exception."
+		try:
+			with open(os.path.join(run_dir,'errlog'), 'a') as f:
+				f.write(traceback.format_exc())
+		except Exception, e:
+			print "could not write exception to file"
 	markWorking(run_dir, False)
 
 	if with_gui:
