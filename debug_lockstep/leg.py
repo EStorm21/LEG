@@ -37,7 +37,7 @@ def parseStateW(msState):
 		print "Invalid writeback state {}".format(msState)
 		raise
 
-stateEParser = re.compile("(.+) (.+) (.+) (.+) (.+)")
+stateEParser = re.compile("(.+) (.+) (.+) (.+) (.+) (.+)")
 def parseStateE(msState):
 	try:
 		stateMatch = stateEParser.match(msState)
@@ -46,7 +46,8 @@ def parseStateE(msState):
 		irq_assert_delay = stateMatch.group(3) == '1'
 		fiq_assert_delay = stateMatch.group(4) == '1'
 		interrupt_delay = stateMatch.group(5) == '1'
-		return (pc, instr), irq_assert_delay, fiq_assert_delay, interrupt_delay
+		high_vec 		= stateMatch.group(6) == '1'
+		return (pc, instr), irq_assert_delay, fiq_assert_delay, interrupt_delay, high_vec
 	except Exception, e:
 		print "Invalid execute state {}".format(msState)
 		raise

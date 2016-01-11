@@ -2,6 +2,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic        clk, reset,
                   input  logic [31:0] InstrF,  
                   input  logic [31:0] ReadDataM, CP15rd_M,
+                  input logic        HighVec,
 
                 /// ------ To TOP (Memory & Coproc) ------
                   output logic [31:0] PCF, WriteDataM,
@@ -71,7 +72,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   // ====================================================================================
   mux2 #(32) pcnextmux(PCPlus4F, ResultW, PCSrcW, PCnext1F);
   mux2 #(32) branchmux(PCnext1F, ALUResultE, BranchTakenE, PCnext2F);
-  mux2 #(32) exceptionmux(PCnext2F, {27'b0, VectorPCnextF, 2'b0}, ExceptionSavePC, PCnextF);
+  mux2 #(32) exceptionmux(PCnext2F, {{16{HighVec}}, 11'b0, VectorPCnextF, 2'b0}, ExceptionSavePC, PCnextF);
   flopenr #(32) pcreg(clk, reset, ~StallF, PCnextF, PCF);
   adder #(32) pcaddfour(PCF, 32'h4, PCPlus4F);
   
