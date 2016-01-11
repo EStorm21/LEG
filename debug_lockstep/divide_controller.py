@@ -70,8 +70,9 @@ def restart_division(test_file, rundir, subprocs, divisions, target):
 def overview_msg(subprocs):
 	msg = "Overview:\n"
 	num_done = sum(1 if sp.poll() is not None else 0 for sp,_ in subprocs)
+	num_err = sum(1 if os.path.isfile(os.path.join(sdir,"errlog")) else 0 for _,sdir in subprocs)
 	msg += "{} workers working\n".format(len(subprocs)-num_done)
-	msg += "{} workers finished\n".format(num_done)
+	msg += "{} workers finished, {} with errors\n".format(num_done, num_err)
 
 	nbugs = 0
 	for sp, sdir in subprocs:
@@ -90,7 +91,10 @@ def statuslist_msg(subprocs, divisions, running_only):
 			continue
 		identifier = format_division(division)
 		is_working = os.path.isfile(os.path.join(sdir,"working"))
-		if sp.poll() is not None:
+		is_error = os.path.isfile(os.path.join(sdir,"errlog"))
+		if is_error:
+			run_status = "FINISHED WITH ERROR"
+		elif sp.poll() is not None:
 			run_status = "FINISHED"
 		elif is_working:
 			run_status = "working"

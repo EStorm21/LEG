@@ -79,8 +79,9 @@ proc check_advancing_e {t} {
 proc inspect_e {t irq_assert_trigger fiq_assert_trigger interrupt_trigger} {
 	set pc_e [examine -time $t -radix hex sim:/testbench/dut/leg/dp/PCE]; list
 	set instr_e [examine -time $t -radix hex sim:/testbench/dut/leg/dp/instrEdebug]; list
+	set high_vec [examine -time $t -radix hex sim:/testbench/dut/leg/dp/HighVec]; list
 
-	return [list $pc_e $instr_e $irq_assert_trigger $fiq_assert_trigger $interrupt_trigger]
+	return [list $pc_e $instr_e $irq_assert_trigger $fiq_assert_trigger $interrupt_trigger $high_vec]
 }
 
 proc check_advancing_w {t} {

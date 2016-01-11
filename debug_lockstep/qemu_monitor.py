@@ -171,9 +171,10 @@ class QemuMonitor(object):
 	def get_state_prev_writeback(self):
 		return self.states[self.prev_writeback_head]
 
-	def do_interrupt(self, is_fast):
+	def do_interrupt(self, is_fast, is_high):
 		gdbQueryCmd("qemu.sstep="+QemuMonitor.SSTEP_IRQ)
-		interrupt_pc = 0x1c if is_fast else 0x18
+		if is_high: interrupt_pc = 0xffff001c if is_fast else 0xffff0018
+		else:       interrupt_pc = 0x1c       if is_fast else 0x18
 		ios = self._step(interrupt_pc)
 		if not self.allow_spontaneous_interrupts:
 			gdbQueryCmd("qemu.sstep="+QemuMonitor.SSTEP_NOIRQ)

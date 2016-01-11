@@ -1062,7 +1062,7 @@ always_comb
 		 * LDM and STM
 		 */
 		ldmstm:begin
-			// ldr/str user mode if bit 22 and either stm or ldm r15
+			// ldr/str user mode if bit 22 and either stm or ldm ~r15
 			if(defaultInstrD[22] & (~defaultInstrD[15] | ~defaultInstrD[20])) 
 				Reg_usr_D = 1;
 			else
