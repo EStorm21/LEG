@@ -380,7 +380,7 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 						build_bug_writeback_mismatch(qmon,advance_w_state))
 
 		if advance_e_state_plus_irq is not None:
-			advance_e_state, irq_assert_trigger, fiq_assert_trigger, interrupt_trigger = advance_e_state_plus_irq
+			advance_e_state, irq_assert_trigger, fiq_assert_trigger, interrupt_trigger, high_vec = advance_e_state_plus_irq
 			pc, instr = advance_e_state
 			expected_pc = qmon.execute_lookahead_pc
 
@@ -388,11 +388,11 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 				if irq_assert_next_e:
 					print "Executing IRQ"
 					irq_assert_next_e = False
-					ios = qmon.do_interrupt(False)
+					ios = qmon.do_interrupt(False, high_vec)
 				elif fiq_assert_next_e:
 					print "Executing FIQ"
 					fiq_assert_next_e = False
-					ios = qmon.do_interrupt(True)
+					ios = qmon.do_interrupt(True, high_vec)
 				elif irq_assert_trigger | fiq_assert_trigger:
 					print "ModelSim interrupting!"
 					# Ignore this instruction
