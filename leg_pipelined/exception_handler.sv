@@ -80,7 +80,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
     // NEXT CYCLE OF DATA ABORT
     DataAbort2: begin
       {ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW} = 4'b1011;
-      nextState = ready;
+      nextState = StallE ? DataAbort2 : ready;
     end
 
     // M STAGE OF PREFETCH ABORT / UNDEFINED / SWI
