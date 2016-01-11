@@ -7,38 +7,31 @@ module io_fwd_shim(input  logic        HCLK,
                    input  logic        HWRITE,
                    input  logic [31:0] HWDATA,
                    output logic [31:0] HRDATA,
-                   output logic        fiq, irq);
+                   output logic        fiq, irq, HREADY);
 
     logic [31:0] readAddrs[$];
     logic [31:0] readVals[$];
-    logic [31:0] HADDR_d;
-    logic HSEL_d, HREQUEST_d, HWRITE_d;
 
     initial begin
         fiq <= 1'b0;
         irq <= 1'b0;
     end
 
-    // Delay signals for ahb pipelining
-    flopr #(32) addrdelay(HCLK, ~HRESETn, HADDR, HADDR_d);
-    flopr #(3) delayflop(HCLK, ~HRESETn, {HSEL, HREQUEST, HWRITE}, {HSEL_d, HREQUEST_d, HWRITE_d});
-
     always_ff @(posedge HCLK ) begin
-        if(HREQUEST_d & HSEL_d) begin
-            if(HWRITE_d) begin
-                $displayh("IO write data %h to %h", HWDATA, HADDR_d);
+        if(HREQUEST & HSEL) begin
+            if(HWRITE) begin
+                $displayh("IO write data %h to %h", HWDATA, HADDR);
                 // Ignore writes (Qemu can handle it)
             end else begin
-                // $display("IO read data from %h", HADDR_d);
-                if(readAddrs[0] == HADDR_d) begin
+                // $display("IO read data from %h", HADDR);
+                if(readAddrs[0] == HADDR) begin
                     // Pop the recorded read off, to match Qemu
                     $displayh("IO read data %h from %h", readVals[0], readAddrs[0]);
                     void'( readAddrs.pop_front() );
                     HRDATA <= readVals.pop_front();
                 end else begin
                     // This is an invalid read. Give garbage data
-                    $displayh("IO read invalid data (xxxxxxxx) from %h", HADDR_d);
-                    $displayh("Data at %h", readAddrs[0]);
+                    $displayh("IO read invalid data (xxxxxxxx) from %h", HADDR);
                     HRDATA <= 32'hxxxxxxxx;
                 end
             end

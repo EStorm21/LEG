@@ -46,7 +46,7 @@ module instr_cache_controller #(parameter tbits = 14) (
                     nextstate <= MEMREAD;  
                   end
       NEXTINSTR:  nextstate <= READY;
-      MEMREAD:    nextstate <= ( BusReady & ( (Counter == 2) | ~enable ) ) ? LASTREAD : MEMREAD;
+      MEMREAD:    nextstate <= ( BusReady & ( (Counter == 3) | ~enable ) ) ? LASTREAD : MEMREAD;
       LASTREAD:    nextstate <= BusReady ? NEXTINSTR : LASTREAD;
       default: nextstate <= READY;
     endcase
@@ -67,7 +67,7 @@ module instr_cache_controller #(parameter tbits = 14) (
     if(reset | ResetBlockOff | ~enable) begin
       CounterMid <= 2'b00;
     end else begin
-      if (BusReady) begin
+      if (BusReady | (nextstate == MEMREAD)) begin
         CounterMid <= CounterMid + 1;
       end else begin
         CounterMid <= CounterMid;

@@ -88,7 +88,7 @@ module top (
     .FlushD(FlushD), 
     .FlushE(FlushE));
 
-  // `define ECACHES 1
+  `define ECACHES 1
   initial
     begin
       `ifdef ECACHES

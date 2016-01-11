@@ -1,11 +1,13 @@
-module ahb_mux(input  logic [1:0]  HSEL,
-               input  logic [31:0] HRDATA0, HRDATA1, // HRDATA2, HRDATA3,
-               output logic [31:0] HRDATA);
+module ahb_mux #(parameter WIDTH = 8) (
+	input  logic [ 1:0] HSEL   ,
+	input  logic [WIDTH-1:0] IN0, IN1, 
+	output logic [WIDTH-1:0] OUT 
+);
                
-  //assign HRDATA = HRDATA0;
+  //assign OUT = IN0;
   always_comb
     casez(HSEL)
-      2'b?1: HRDATA <= HRDATA0;
-      2'b10: HRDATA <= HRDATA1;
+      2'b?1: OUT <= IN0;
+      2'b10: OUT <= IN1;
     endcase
 endmodule
