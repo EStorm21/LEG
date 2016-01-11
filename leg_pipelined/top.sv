@@ -48,16 +48,38 @@ module top (
 
   synchronizer synchro(.*);
   // instantiate processor core
-  leg leg(clk, reset, PCF, InstrF, MemWriteM, DataAdrM,
+  leg leg(
+    .clk(clk), 
+    .reset(reset), 
+    .PCF(PCF),
+    .InstrF(InstrF), 
+    .MemWriteM(MemWriteM), 
+    .ALUOutM(DataAdrM),
     // Added for memory (DStall, MemtoRegM)
-    WriteDataM, ReadDataM, DStall, IStall, MemtoRegM, ByteMaskM,
+    .WriteDataM(WriteDataM), 
+    .ReadDataM(ReadDataM), 
+    .DStall(DStall), 
+    .IStall(IStall), 
+    .MemtoRegM(MemtoRegM), 
+    .ByteMaskM(ByteMaskM),
     // Added for exceptions
-    PrefetchAbort, DataAbort, IRQsync, FIQsync,
+    .PrefetchAbort(PrefetchAbort), 
+    .DataAbort(DataAbort), 
+    .IRQ(IRQsync), 
+    .FIQ(FIQsync),
     // Added for Coprocessor
-    CoProc_WrEnM, CoProc_EnM, CoProc_AddrM, CoProc_CRmM, CoProc_Op2M,
-    CPUWriteData, CP15rd_M,
+    .CoProc_WrEnM(CoProc_WrEnM), 
+    .CoProc_EnM(CoProc_EnM), 
+    .CoProc_AddrM(CoProc_AddrM), 
+    .CoProc_CRmM(CoProc_CRmM), 
+    .CoProc_Op2M(CoProc_Op2M),
+    .CPUWriteData(CPUWriteData), 
+    .CP15rd_M(CP15rd_M),
+    .HighVec(control[13]),
     // Added for MMU
-    StallD, FlushD, FlushE);
+    .StallD(StallD), 
+    .FlushD(FlushD), 
+    .FlushE(FlushE));
 
   //`define ECACHES 1
   initial
@@ -200,7 +222,7 @@ module top (
 
   assign WordAccess = 1'b0;   // Assuming byte or halfword accesses
   assign SupMode    = 1'b1;   // in supervisor mode
-  // assign SBit = control[7];         // Give the most permissions with S and R
+  // assign SBit = control[7];         // Give the most permissions with S and R SD 1/10/2016: S is bit 8
   // assign RBit = control[9];
   // assign control = 32'h0000_0000; // Fake Control signal
   assign DataAccess = 1'b1;   // Trying to access data memory, not instruction memory

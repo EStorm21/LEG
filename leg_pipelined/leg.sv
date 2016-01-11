@@ -16,6 +16,7 @@ module leg(input  logic        clk, reset,
            output logic [2:0]  CoProc_Op2M, 
            output logic [31:0] CPUWriteData, 
            input logic  [31:0] CP15rd_M,
+           input logic         HighVec, // high exception vectors. To dp
            // Added for MMU
            output logic StallD, FlushD, FlushE);
 
