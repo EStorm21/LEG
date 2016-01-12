@@ -9,7 +9,7 @@ module data_writeback_associative_cache #(
     parameter tbits = 30-blockbits-setbits
 ) (
     input  logic             clk, reset, enable, MemWriteM, MemtoRegM,
-    BusReady, IStall, invalidate, clean, PAReady,
+    BusReady, IStall, invalidate, clean, PAReady, MSel,
     // BusReady, IStall, invalidate, clean,
     input  logic [     31:0] VirtA, WD,
     input  logic [     31:0] HRData  ,
@@ -72,5 +72,6 @@ module data_writeback_associative_cache #(
     mux2 #(32) CacheOutMux(W2RD, W1RD, WaySel, CacheOut);
 
     // Select from cache or memory
+    // TODO: See if RDSel is necessary
     mux2 #(32) RDMux(CacheOut, WD, RDSel, RD);
 endmodule

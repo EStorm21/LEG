@@ -3,16 +3,17 @@
 // 2-Way Set Associative Instruction cache for LEG Processor
 
 module instr_cache #(
-    parameter bsize = 4                   , parameter lines = 2,
+    parameter bsize = 4,
+    parameter lines = 2,
     parameter setbits = $clog2(lines),
     parameter blockbits = $clog2(bsize),
     parameter tbits = 30-blockbits-setbits
 ) (
     input  logic             clk, reset, enable, BusReady, invalidate,
-    input  logic             PAReadyF,
-    input  logic [     31:0] A      ,
-    input  logic [tbits-1:0] PhysTag,
-    input  logic [     31:0] HRData ,
+    input  logic             PAReadyF, FSel,
+    input  logic [     31:0] A       ,
+    input  logic [tbits-1:0] PhysTag ,
+    input  logic [     31:0] HRData  ,
     output logic [     31:0] RD, HAddrF,
     output logic             IStall, HRequestF
 );
@@ -67,25 +68,26 @@ module instr_cache #(
 
     // Cache Controller
     instr_cache_controller #(tbits) icc (
-        .clk          (clk          ),
-        .reset        (reset        ),
-        .enable       (enable       ),
+        .clk           (clk           ),
+        .reset         (reset         ),
+        .enable        (enable        ),
         .PAReadyF      (PAReadyF      ),
-        .W1V          (W1V          ),
-        .W2V          (W2V          ),
-        .CurrLRU      (CurrLRU      ),
-        .BusReady     (BusReady     ),
-        .WordOffset   (WordOffset   ),
-        .W1Tag        (W1Tag        ),
-        .W2Tag        (W2Tag        ),
-        .PhysTag      (PhysTag      ),
-        .Counter      (Counter      ),
-        .W1WE         (W1WE         ),
-        .W2WE         (W2WE         ),
-        .WaySel       (WaySel       ),
-        .IStall       (IStall       ),
+        .W1V           (W1V           ),
+        .W2V           (W2V           ),
+        .CurrLRU       (CurrLRU       ),
+        .BusReady      (BusReady      ),
+        .FSel          (FSel          ),
+        .WordOffset    (WordOffset    ),
+        .W1Tag         (W1Tag         ),
+        .W2Tag         (W2Tag         ),
+        .PhysTag       (PhysTag       ),
+        .Counter       (Counter       ),
+        .W1WE          (W1WE          ),
+        .W2WE          (W2WE          ),
+        .WaySel        (WaySel        ),
+        .IStall        (IStall        ),
         .ResetBlockOff (ResetBlockOff ),
-        .HRequestF    (HRequestF    ),
+        .HRequestF     (HRequestF     ),
         .AddrWordOffset(AddrWordOffset),
         .DataWordOffset(DataWordOffset)
     );

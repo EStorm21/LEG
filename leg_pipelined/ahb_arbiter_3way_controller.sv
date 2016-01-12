@@ -12,13 +12,13 @@ module ahb_arbiter_3way_controller (
     input  logic       HRequestM, HRequestF, HRequestT,
     input  logic [2:0] HSizeM   ,
     output logic       HReadyF, HReadyM, HReadyT,
+    output logic       FSel, MSel, TSel,
     output logic       HRequest,
     output logic       HWrite,
     output logic [1:0] HAddrSel,
     output logic [2:0] HSIZE
 );
 
-    logic TSel, MSel, FSel;    // Indicate stage in use
     logic PTSel, PMSel, PFSel; // Indicate stage previously used
 
     // Priority of the bus is as follows:
@@ -91,16 +91,10 @@ module ahb_arbiter_3way_controller (
 
     // =============== Data Phase Logic ================
 
-    // Data phase logic is based on the previous address phase
-    flopenr #(2) prevSel(clk, reset, HReady, {TSel, MSel}, {PTSel, PMSel});
+    assign NoDataPending = ~PTSel & ~PMSel & ~PFSel;
 
-    // PFSel flop that resets to 1
-    always_ff @(posedge clk) 
-        if(reset) begin
-            PFSel <= 1'b0;
-        end else begin
-            PFSel <= FSel;
-        end
+    // Data phase logic is based on the previous address phase
+    flopenr #(3) prevSel(clk, reset, HReady | NoDataPending, {FSel, TSel, MSel}, {PFSel, PTSel, PMSel});
 
     assign HReadyT = PTSel & HReady;
     assign HReadyM = PMSel & HReady;

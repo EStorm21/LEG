@@ -4,6 +4,7 @@
 
 module instr_cache_controller #(parameter tbits = 14) (
   input  logic             clk, reset, enable, PAReadyF, W1V, W2V, CurrLRU, BusReady,
+  input  logic             FSel,
   input  logic [      1:0] WordOffset   ,
   input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag,
   output logic [      1:0] Counter      ,
@@ -67,7 +68,7 @@ module instr_cache_controller #(parameter tbits = 14) (
     if(reset | ResetBlockOff | ~enable) begin
       CounterMid <= 2'b00;
     end else begin
-      if (BusReady | (nextstate == MEMREAD)) begin
+      if (BusReady | (nextstate == MEMREAD) & FSel) begin
         CounterMid <= CounterMid + 1;
       end else begin
         CounterMid <= CounterMid;
