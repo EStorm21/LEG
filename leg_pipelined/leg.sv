@@ -18,11 +18,11 @@ module leg(input  logic        clk, reset,
            input logic  [31:0] CP15rd_M,
            input logic         HighVec, // high exception vectors. To dp
            // Added for MMU
-           output logic StallD, FlushD, FlushE);
+           output logic StallF, StallD, FlushD, FlushE);
 
   /// Output from Hazard Unit
   logic [1:0]  ForwardAE, ForwardBE;
-  logic        StallF, StallE, StallM, FlushM, FlushW, StallW, StalluOp;
+  logic        StallE, StallM, FlushM, FlushW, StallW, StalluOp;
   logic        ExceptionSavePC;
 
   /// Output from Datapath

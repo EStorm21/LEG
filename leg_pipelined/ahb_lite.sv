@@ -13,6 +13,7 @@ module ahb_lite (
   // TODO: Make memRE functional
   logic [ 1:0] HSEL   ;
   logic [31:0] HRDATA0, HRDATA1; // NOTE: This assumes memory outputs 4 words at a time
+  logic        HREADY0, HREADY1;
   logic [31:0] rawFIQVec, rawIRQVecPart, rawIRQVec, rawSICVec;
   logic        SICinterrupt; // says whether an interrupt is pending in the SIC
 
@@ -62,5 +63,6 @@ module ahb_lite (
     .HRDATA(HRDATA1),
     .HREADY(HREADY1)
   );
+
   
 endmodule

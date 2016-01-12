@@ -1,4 +1,4 @@
-module ahb_mux #(parameter WIDTH = 8) (
+module ahb_mux #(parameter WIDTH = 32) (
 	input  logic [ 1:0] HSEL   ,
 	input  logic [WIDTH-1:0] IN0, IN1, 
 	output logic [WIDTH-1:0] OUT 

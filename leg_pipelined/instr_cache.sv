@@ -10,12 +10,12 @@ module instr_cache #(
     parameter tbits = 30-blockbits-setbits
 ) (
     input  logic             clk, reset, enable, BusReady, invalidate,
-    input  logic             PAReadyF, FSel,
+    input  logic             PAReadyF, FSel, StallF,
     input  logic [     31:0] A       ,
     input  logic [tbits-1:0] PhysTag ,
     input  logic [     31:0] HRData  ,
     output logic [     31:0] RD, HAddrF,
-    output logic             IStall, HRequestF
+    output logic             IStall, HRequestF 
 );
 
     // Signal Declaration
@@ -71,6 +71,7 @@ module instr_cache #(
         .clk           (clk           ),
         .reset         (reset         ),
         .enable        (enable        ),
+        .StallF        (StallF),
         .PAReadyF      (PAReadyF      ),
         .W1V           (W1V           ),
         .W2V           (W2V           ),

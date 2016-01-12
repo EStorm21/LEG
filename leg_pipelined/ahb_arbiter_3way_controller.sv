@@ -94,7 +94,7 @@ module ahb_arbiter_3way_controller (
     assign NoDataPending = ~PTSel & ~PMSel & ~PFSel;
 
     // Data phase logic is based on the previous address phase
-    flopenr #(3) prevSel(clk, reset, HReady | NoDataPending, {FSel, TSel, MSel}, {PFSel, PTSel, PMSel});
+    flopenr #(3) prevSel(clk, reset, HReady | NoDataPending & ~reset, {FSel, TSel, MSel}, {PFSel, PTSel, PMSel});
 
     assign HReadyT = PTSel & HReady;
     assign HReadyM = PMSel & HReady;

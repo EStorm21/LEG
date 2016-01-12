@@ -12,15 +12,25 @@ module io_fwd_shim(input  logic        HCLK,
     logic [31:0] readAddrs[$];
     logic [31:0] readVals[$];
 
+    logic [31:0] HADDR_d;
+    logic HSEL_d, HREQUEST_d, HWRITE_d;
+
     initial begin
         fiq <= 1'b0;
         irq <= 1'b0;
     end
 
+    // Delay signals for ahb pipelining
+    flopr #(32) addrdelay(HCLK, ~HRESETn, HADDR, HADDR_d);
+    flopr #(3) delayflop(HCLK, ~HRESETn, {HSEL, HREQUEST, HWRITE}, {HSEL_d, HREQUEST_d, HWRITE_d});
+
     always_ff @(posedge HCLK ) begin
-        if(HREQUEST & HSEL) begin
-            if(HWRITE) begin
-                $displayh("IO write data %h to %h", HWDATA, HADDR);
+
+        if (~HRESETn) HREADY <= 0;
+        else if(HREQUEST_d & HSEL_d & ~HREADY) begin
+            HREADY <= 1;
+            if(HWRITE_d) begin
+                $displayh("IO write data %h to %h", HWDATA, HADDR_d);
                 // Ignore writes (Qemu can handle it)
             end else begin
                 // $display("IO read data from %h", HADDR);
@@ -35,7 +45,8 @@ module io_fwd_shim(input  logic        HCLK,
                     HRDATA <= 32'hxxxxxxxx;
                 end
             end
-        end
+        end else if (~(HREQUEST_d & HSEL_d)) HREADY <= 0;
+        else HREADY <= HREADY;
     end
 
     // Called from ModelSim using

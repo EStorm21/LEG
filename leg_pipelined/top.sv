@@ -17,7 +17,7 @@ module top (
   logic [31:0] HRData; 
 
   // ----- tlb arbiter -----
-  logic RequestPA, DRequestPA, IRequestPA;
+  logic RequestPA, RequestPAM, RequestPAF;
   logic PAReady, PAReadyF, PAReadyM;
 
   // ----- data cache -----
@@ -85,11 +85,12 @@ module top (
     .CP15rd_M(CP15rd_M),
     .HighVec(control[13]),
     // Added for MMU
+    .StallF(StallF),
     .StallD(StallD), 
     .FlushD(FlushD), 
     .FlushE(FlushE));
 
-  `define ECACHES 1
+  // `define ECACHES 1
   initial
     begin
       `ifdef ECACHES
@@ -141,6 +142,7 @@ module top (
     .clk       (clk      ),
     .reset     (reset    ),
     .enable    (ENI      ),
+    .StallF    (StallF),
     .invalidate(INVI     ),
     .BusReady  (HReadyF  ),
     .A         (PCF      ),
@@ -167,7 +169,7 @@ module top (
     .PAReady   (PAReadyM  ),
     .MSel      (MSel      ),
     .ANew      (DANew     ),
-    .RequestPA (DRequestPA),
+    .RequestPA (RequestPAM),
     // .clean(CLEAND),
     .MemWriteM (MemWriteM ),
     .MemtoRegM (MemtoRegM ),

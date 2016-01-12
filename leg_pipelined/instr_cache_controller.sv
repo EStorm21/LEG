@@ -4,17 +4,17 @@
 
 module instr_cache_controller #(parameter tbits = 14) (
   input  logic             clk, reset, enable, PAReadyF, W1V, W2V, CurrLRU, BusReady,
-  input  logic             FSel,
+  input  logic             FSel, StallF,
   input  logic [      1:0] WordOffset   ,
   input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag,
   output logic [      1:0] Counter      ,
-  output logic             W1WE, W2WE, WaySel,
+  output logic             W1WE, W2WE, WaySel, 
   output logic             IStall, ResetBlockOff, HRequestF,
   output logic [      1:0] AddrWordOffset,
   output logic [      1:0] DataWordOffset
 );
 
-  logic             W1EN, W2EN, Hit, W2Hit;
+  logic             W1EN, W2EN, Hit, W2Hit, AdvanceCounter;
   logic [tbits-1:0] Tag, PrevPTag;
   logic [      1:0] CounterMid, DataCounter, WayWordOffset;
 
@@ -46,6 +46,7 @@ module instr_cache_controller #(parameter tbits = 14) (
                   end else begin
                     nextstate <= MEMREAD;  
                   end
+      // NEXTINSTR:  nextstate <= StallF ? NEXTINSTR : READY;
       NEXTINSTR:  nextstate <= READY;
       MEMREAD:    nextstate <= ( BusReady & ( (Counter == 3) | ~enable ) ) ? LASTREAD : MEMREAD;
       LASTREAD:    nextstate <= BusReady ? NEXTINSTR : LASTREAD;
@@ -63,12 +64,17 @@ module instr_cache_controller #(parameter tbits = 14) (
   assign ResetBlockOff = ( state == READY ) & ~(nextstate== MEMREAD) | 
     ( state == NEXTINSTR );
 
+  // This logic assumes the Instruction Cache has continuous control
+  // over the Bus
+  assign AdvanceCounter = BusReady | 
+    (state == READY) & (nextstate == MEMREAD) & FSel & HRequestF;
+
   // Create Counter for sequential bus access
   always_ff @(posedge clk)
     if(reset | ResetBlockOff | ~enable) begin
       CounterMid <= 2'b00;
     end else begin
-      if (BusReady | (nextstate == MEMREAD) & FSel) begin
+      if (AdvanceCounter) begin
         CounterMid <= CounterMid + 1;
       end else begin
         CounterMid <= CounterMid;
@@ -76,8 +82,8 @@ module instr_cache_controller #(parameter tbits = 14) (
     end
 
   // Data phase counter is one cycle behind address phase
-  flopenr #(2) DataCntFlop(clk, reset, BusReady, CounterMid, DataCounter);
-  // assign DataCounter = CounterMid - 1'b1;
+  // flopenr #(2) DataCntFlop(clk, reset, BusReady, CounterMid, DataCounter);
+  assign DataCounter = CounterMid - 1'b1;
   // Create Counter for sequential bus access
 
   mux2 #(2) cenMux(WordOffset, CounterMid, enable, Counter);

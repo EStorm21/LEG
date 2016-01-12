@@ -6,7 +6,7 @@ module tfh (
   input logic CPSR4,
   input logic [3:0] statebits,
   input logic MMUExtInt,
-  input logic DRequestPA,
+  input logic RequestPAM,
   input logic WordAccess,
   input logic DataAccess,
   input logic SBit,
@@ -238,11 +238,11 @@ module tfh (
   always_comb
     casez({CurrAP, SBit, RBit})
       4'b0000: APMidFault <= 1'b1;
-      4'b0010: APMidFault <= (SupMode & (~HWrite | ~DRequestPA)); // TODO: Fix this to handle correct writes
-      4'b0001: APMidFault <= (~HWrite | ~DRequestPA);
+      4'b0010: APMidFault <= (SupMode & (~HWrite | ~RequestPAM)); // TODO: Fix this to handle correct writes
+      4'b0001: APMidFault <= (~HWrite | ~RequestPAM);
       4'b0011: APMidFault <= 1'b0; // Don't care
       4'b01??: APMidFault <= SupMode;
-      4'b10??: APMidFault <= SupMode | ~(~HWrite | ~DRequestPA);
+      4'b10??: APMidFault <= SupMode | ~(~HWrite | ~RequestPAM);
       4'b11??: APMidFault <= 1'b0;
     endcase
 

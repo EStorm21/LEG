@@ -160,9 +160,10 @@ def build_bug_writeback_mismatch(qmon, bad_state):
 	if qmon.get_state_writeback() is None:
 		msg += "(Warning: ModelSim did not execute the right instruction! Assuming no interrupts)\n"
 		qmon.advance_execute()
-	msg += build_state_diff(qmon.get_state_prev_writeback(),
-							qmon.get_state_writeback(),
-							bad_state)
+	else:
+		msg += build_state_diff(qmon.get_state_prev_writeback(),
+								qmon.get_state_writeback(),
+								bad_state)
 	msg += "\n"
 	msg += build_qemu_msg()
 	msg += "\n"
@@ -358,8 +359,7 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 
 					# print "Writeback Match: {}".format(expected_state)
 					checked_count += 1
-					if not is_linux:
-						print ".",
+					print ".",
 					if checked_count % 500 == 0:
 						print "\nChecked about {} instructions! Just checked 0x{:x}. Currently executing:".format(checked_count, expected_state[0])
 						gdb.execute("where 20")
@@ -474,7 +474,11 @@ def markWorking(run_dir, working):
 asmInstrParser = re.compile(".+:\\s+(.+)")
 def handleBug(prev_state, state, bug_msg, found_bugs, run_dir, test_file):
 	if state is None:
-		state = prev_state
+		if prev_state is None:
+			print "Modelsim had no state or previous state!"
+			state = [0,0]
+		else:	
+			state = prev_state
 
 	bug_pc = state[0]
 	bug_instr = state[1]
@@ -536,6 +540,9 @@ def debugFromHere(with_gui, qemu, test_file, found_bugs, run_dir, goal_pc=None):
 		try:
 			with open(os.path.join(run_dir,'errlog'), 'a') as f:
 				f.write(traceback.format_exc())
+			with open(os.path.join(run_dir,'runlog'),'a') as f:
+				f.write(traceback.format_exc())
+				f.write('\n\n')
 		except Exception, e:
 			print "could not write exception to file"
 	markWorking(run_dir, False)
