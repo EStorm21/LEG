@@ -28,22 +28,6 @@ module ahb_lite (
   ahb_mux #(32) mux (HSEL,HRDATA0,HRDATA1,HRDATA);
   ahb_mux #(1) ready_mux (HSEL,HREADY0,HREADY1,HREADY);
   
-  // Memory and peripherals
-  // mem_simulation mem (.clk(HCLK), .we(HWRITE), .re(HREQUEST & ~HWRITE), 
-  //                     .a(HADDR), .wd(HWDATA), .rd(HRDATA0), .Valid(HREADY));
-
-// Byte Addressable memory simulation
-// dmem mem (
-//   .clk  (HCLK              ),
-//   .we   (HWRITE            ),
-//   .re   (HREQUEST & ~HWRITE),
-//   .a    (HADDR             ),
-//   .wd   (HWDATA            ),
-//   .rd   (HRDATA0           ),
-//   .Valid(HREADY            ),
-//   .HSEL (HSEL[0]           ),
-//   .HSIZE(HSIZE             )
-// );
   dmem_ahb mem (
     .clk    (HCLK              ),
     .we     (HWRITE            ),
