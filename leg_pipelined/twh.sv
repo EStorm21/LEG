@@ -3,7 +3,7 @@ module twh #(parameter tagbits = 16) (
   input  logic               clk           , // Clock
   input  logic               reset         , // Asynchronous reset active low
   input  logic               Enable        ,
-  input  logic               Fault         ,
+  // input  logic               Fault         , TODO: Reconnect
   input  logic               PAReady       ,
   input  logic               RequestPA   ,
   input  logic               DataAccess    ,
@@ -38,6 +38,7 @@ module twh #(parameter tagbits = 16) (
 logic C, B;
 logic [1:0] AP;
 logic [3:0] Domain;
+logic Fault = 1'b0;
 assign C = 1'b1;
 assign B = 1'b1;
 assign AP = 2'b11;
@@ -49,8 +50,7 @@ assign TableEntry = TLBwe ? {HAddrT[31:32-tagbits], C, B, AP, Domain, 1'b1} : 'b
 // ================== Translation State Machine ==============================
 // ===========================================================================
 
-typedef enum logic [3:0] {READY, SECTIONTRANS, COARSEFETCH, FINEFETCH, 
-  SMALLTRANS, LARGETRANS, TINYTRANS, INSTRFAULT, FAULTFSR, FAULTFAR} statetype;
+typedef enum logic [3:0] {READY, FLD, COARSEFETCH, FINEFETCH, FINED, COARSED, INSTRFAULT, FAULTFSR, FAULTFAR} statetype;
 
 // import mmu_pkg::statetype;
 statetype state, nextstate;
@@ -70,54 +70,48 @@ case (state)
                   nextstate <= DataAccess ? FAULTFSR : INSTRFAULT;
                 end else if (~HReadyT | ~RequestPA | ~Enable | Fault | reset | PAReady) begin 
                   nextstate <= READY;
+                end else begin
+                  nextstate <= FLD;
+                end
+
+  FLD:          if ( Fault ) begin
+                  nextstate <= DataAccess ? READY : INSTRFAULT;
+                end else if(~HReadyT) begin
+                  nextstate <= FLD;
+                end else if(HRData[1:0] == 2'b10) begin // section Trans
+                  nextstate <= READY;
                 end else if(HRData[1:0] == 2'b01) begin
                   nextstate <= COARSEFETCH;
                 end else if(HRData[1:0] == 2'b11) begin
                   nextstate <= FINEFETCH;
-		end else begin
-		    nextstate <= SECTIONTRANS;
-		end
-                //end else if(HRData[10] == 2'b10) begin
-                //  nextstate <= SECTIONTRANS;
-                //end else begin
-		 // nextstate <= DataAccess ? FAULTFSR : INSTRFAULT;
-		//end
-  SECTIONTRANS: if ( Fault ) begin
-                  nextstate <= DataAccess ? READY : INSTRFAULT;
-                end else begin
-                  nextstate <=  READY;
                 end
+
   COARSEFETCH:  if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
                 end else if (~HReadyT) begin
                   nextstate <= COARSEFETCH;
-                end else if(HRData[1:0] == 2'b01) begin 
-                  nextstate <= LARGETRANS;
                 end else begin
-                  nextstate <= SMALLTRANS;
+                  nextstate <= COARSED;
                 end
   FINEFETCH:    if ( Fault ) begin
                   nextstate <= DataAccess ? READY: INSTRFAULT;
                 end else if (~HReadyT) begin
                   nextstate <= FINEFETCH;
-                end else if(HRData[1:0] == 2'b11) begin 
-                  nextstate <= TINYTRANS;
                 end else begin
-                  nextstate <= SMALLTRANS;
+                  nextstate <= FINED;
                 end
-  SMALLTRANS:   if ( Fault ) begin
+  COARSED:      if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
-                end else begin
-                  nextstate <= READY;
-                end
-  LARGETRANS:   if ( Fault ) begin
-                  nextstate <= DataAccess ? READY : INSTRFAULT;
+                end else if(~HReadyT) begin
+                  nextstate <= COARSED;
                 end else begin
                   nextstate <= READY;
                 end
-  TINYTRANS:    if ( Fault ) begin
+  FINED:        if ( Fault ) begin
                   nextstate <= DataAccess ? READY : INSTRFAULT;
-                end else begin 
+                end else if(~HReadyT) begin
+                  nextstate <= FINED;
+                end else begin
                   nextstate <= READY;
                 end
   INSTRFAULT:   if (InstrExecuting | InstrCancelled) begin
@@ -140,12 +134,19 @@ always_comb
 case (state)
   READY:        HAddrT = PAReady ? {TableEntry[tagbits+8:9], VirtAdr[31-tagbits:0]} : 
                            {TBase,  VirtAdr[31:20], 2'b00};
-  SECTIONTRANS: HAddrT = {PHRData[31:20], VirtAdr[19:0]}; 
+  FLD:          HAddrT = {PHRData[31:20], VirtAdr[19:0]}; 
   COARSEFETCH:  HAddrT = {PHRData[31:10], VirtAdr[19:12], 2'b0};
   FINEFETCH:    HAddrT = {PHRData[31:12], VirtAdr[19:10], 2'b0};
-  SMALLTRANS:   HAddrT = {PHRData[31:12], VirtAdr[11:0]};
-  TINYTRANS:    HAddrT = {PHRData[31:10], VirtAdr[9:0]};
-  LARGETRANS:   HAddrT = {PHRData[31:16], VirtAdr[15:0]};
+  FINED:        if(PHRData[1:0] == 2'b10) begin 
+                  HAddrT = {PHRData[31:12], VirtAdr[11:0]}; // Small Trans
+                end else begin
+                  HAddrT = {PHRData[31:10], VirtAdr[9:0]};  // Tiny Trans
+                end
+  COARSED:      if(PHRData[1:0] == 2'b01) begin 
+                  HAddrT = {PHRData[31:16], VirtAdr[15:0]}; // Large Trans
+                end else begin
+                  HAddrT = {PHRData[31:12], VirtAdr[11:0]}; // Small Trans
+                end
   default: HAddrT = 32'h9999_9999;
 endcase
 
@@ -155,7 +156,8 @@ endcase
 // HRequestT Logic
 assign HRequestT = ( (state == COARSEFETCH) |
                 (state == FINEFETCH)    & RequestPA |
-                (state == SMALLTRANS)   & RequestPA |
+                (state == COARSED)   & ~HReadyT |
+                (state == FINED)   & ~HReadyT |
                ( (state == READY) & RequestPA & ~PAReady) ) & Enable;
 
 // CPUHReadyT Logic  
@@ -168,10 +170,9 @@ assign HRequestT = ( (state == COARSEFETCH) |
 
 // PAReady logic
 // assign PAReady = MMUEn |
-assign TLBwe = (state == SECTIONTRANS) |
-              (state == LARGETRANS)   |
-              (state == SMALLTRANS) |
-              (state == TINYTRANS);
+assign TLBwe = (state == FLD) & (HRData[1:0] == 2'b10) & HReadyT  |
+              (state == COARSED) & HReadyT |
+              (state == FINED) & HReadyT;
 
 // CP15 Logic (WDSel, MMUEn, MMUWriteEn)
 assign MMUEn = (state == READY) & HReadyT;
