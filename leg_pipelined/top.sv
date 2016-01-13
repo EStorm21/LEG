@@ -10,13 +10,14 @@ module top (
   logic        HWrite, HWriteM;
   logic        HRequest, HRequestM, HRequestF, HRequestT;
   logic        HReady, HReadyM, HReadyF, HReadyT;
+  logic        FSel, MSel, TSel;
   logic [ 2:0] HSIZE, HSizeM;
   logic [31:0] HAddrT, HAddrM, HAddrF, HAddr;
   logic [31:0] HWData, HWDataM;
   logic [31:0] HRData; 
 
   // ----- tlb arbiter -----
-  logic RequestPA, DRequestPA, IRequestPA;
+  logic RequestPA, RequestPAM, RequestPAF;
   logic PAReady, PAReadyF, PAReadyM;
 
   // ----- data cache -----
@@ -84,11 +85,12 @@ module top (
     .CP15rd_M(CP15rd_M),
     .HighVec(control[13]),
     // Added for MMU
+    .StallF(StallF),
     .StallD(StallD), 
     .FlushD(FlushD), 
     .FlushE(FlushE));
 
-  //`define ECACHES 1
+  // `define ECACHES 1
   initial
     begin
       `ifdef ECACHES
@@ -137,19 +139,21 @@ module top (
   parameter ibsize = 4; // bsize of the I$
   // I$
   instr_cache #(ibsize,iLines) instr_cache (
-    .clk       (clk         ),
-    .reset     (reset       ),
-    .enable    (ENI         ),
-    .invalidate(INVI        ),
-    .BusReady  (HReadyF   ),
-    .A         (PCF         ),
-    .HRData    (HRData      ),
-    .RD        (InstrF      ),
-    .PhysTag   (PhysTag),
-    .PAReadyF  (PAReadyF    ),
-    .IStall    (IStall      ),
-    .HAddrF    (HAddrF      ),
-    .HRequestF (HRequestF   )
+    .clk       (clk      ),
+    .reset     (reset    ),
+    .enable    (ENI      ),
+    .StallF    (StallF),
+    .invalidate(INVI     ),
+    .BusReady  (HReadyF  ),
+    .A         (PCF      ),
+    .HRData    (HRData   ),
+    .RD        (InstrF   ),
+    .PhysTag   (PhysTag  ),
+    .PAReadyF  (PAReadyF ),
+    .FSel      (FSel     ),
+    .IStall    (IStall   ),
+    .HAddrF    (HAddrF   ),
+    .HRequestF (HRequestF)
   );
 
   parameter dLines = 64;   // Number of lines in D$
@@ -157,30 +161,31 @@ module top (
 
   // D$
   data_writeback_associative_cache #(dbsize,dLines) data_cache (
-    .clk       (clk         ),
-    .reset     (reset       ),
-    .enable    (END         ),
-    .invalidate(INVD        ),
-    .clean     (CLEAND      ),
-    .PAReady   (PAReadyM    ),
-    .ANew      (DANew       ),
-    .RequestPA (DRequestPA  ),
+    .clk       (clk       ),
+    .reset     (reset     ),
+    .enable    (END       ),
+    .invalidate(INVD      ),
+    .clean     (CLEAND    ),
+    .PAReady   (PAReadyM  ),
+    .MSel      (MSel      ),
+    .ANew      (DANew     ),
+    .RequestPA (RequestPAM),
     // .clean(CLEAND),
-    .MemWriteM (MemWriteM   ),
-    .MemtoRegM (MemtoRegM   ),
+    .MemWriteM (MemWriteM ),
+    .MemtoRegM (MemtoRegM ),
     .BusReady  (HReadyM   ),
-    .IStall    (IStall      ),
-    .PhysTag   (PhysTag),
-    .VirtA     (DataAdrM    ),
-    .WD        (WriteDataM  ),
-    .HRData    (HRData      ),
-    .ByteMask  (ByteMaskM   ),
-    .HWData    (HWDataM     ),
-    .RD        (ReadDataM   ),
-    .HAddr     (HAddrM      ),
-    .Stall     (DStall      ),
-    .HRequestM (HRequestM   ),
-    .HWriteM   (HWriteM     )
+    .IStall    (IStall    ),
+    .PhysTag   (PhysTag   ),
+    .VirtA     (DataAdrM  ),
+    .WD        (WriteDataM),
+    .HRData    (HRData    ),
+    .ByteMask  (ByteMaskM ),
+    .HWData    (HWDataM   ),
+    .RD        (ReadDataM ),
+    .HAddr     (HAddrM    ),
+    .Stall     (DStall    ),
+    .HRequestM (HRequestM ),
+    .HWriteM   (HWriteM   )
   );
 
   ahb_arbiter_3way ahb_arb(.*);

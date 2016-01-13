@@ -1,7 +1,7 @@
 module data_writeback_associative_cache_controller 
   #(parameter lines, parameter bsize, parameter tbits = 14)
   (input  logic clk, reset, enable, W1V, W2V, CurrLRU, W1D, W2D, clean,
-   input  logic IStall, MemWriteM, MemtoRegM, BusReady, PAReady,
+   input  logic IStall, MemWriteM, MemtoRegM, BusReady, PAReady, MSel,
    input  logic [1:0] WordOffset,
    input  logic [3:0] ByteMask,
    input  logic [31:0] A,
@@ -33,10 +33,10 @@ module data_writeback_associative_cache_controller
   // Control Signals
   // Create Counter for sequential bus access
   always_ff @(posedge clk, posedge reset)
-    if(reset | ResetBlockOff) begin
+    if(reset | ResetBlockOff | ~enable) begin
         CounterMid <= 0;
     end else begin
-        if (BusReady) begin
+        if (BusReady | (nextstate == MEMREAD) & MSel) begin
             CounterMid <= CounterMid + 1;
         end else begin
             CounterMid <= CounterMid;
@@ -94,7 +94,7 @@ module data_writeback_associative_cache_controller
   mux2 #(1) DirtyMux(W2D, W1D, W1EN, Dirty);
 
   // Select Data source and Byte Mask for the data cache
-  assign UseWD = ~BlockWE | ( BlockWE & MemWriteM & (Counter == WordOffset) );
+  assign UseWD = ~BlockWE | ( BlockWE & MemWriteM & (WordOffset == DataWordOffset) );
   mux2 #(4)  MaskMux(4'b1111, ByteMask, ( UseWD & ~(state == MEMREAD) ), 
     ActiveByteMask);
   assign WDSel = ~(ActiveByteMask ^ {4{UseWD}});
@@ -200,12 +200,14 @@ module data_writeback_associative_cache_controller
   // RDSel makes WD the output for disabled cache behavior
   assign RDSel = (state == DWRITE);
 
-  assign BlockWE = (state == LASTREAD) | 
-                   (state == MEMREAD) | 
-                   ( (state == NEXTINSTR)  & (~MemWriteM | MemWriteM & ~Dirty) ) |
-                   ( (state == READY) & ~Hit & ~Dirty );
-  assign ResetBlockOff = ((state == READY) & Hit) | (state == NEXTINSTR) | 
-                        (state == FLUSH);
+  assign BlockWE = (state == LASTREAD) |
+  (state == MEMREAD) |
+  ( (state == NEXTINSTR)  & (~MemWriteM | MemWriteM & ~Dirty) ) |
+  ( (state == READY) & ~Hit & ~Dirty );
+  assign ResetBlockOff = ((state == READY) & Hit) |
+  (state == READY) & ~PAReady |
+  (state == NEXTINSTR) |
+  (state == FLUSH);
 
   // Select output from Way 1 or Way 2
   assign WaySelMid = enable & W1Hit | ~enable;

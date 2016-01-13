@@ -24,9 +24,9 @@ module ahb_lite (
   assign rawIRQVec = {rawIRQVecPart[31:27], SICinterrupt, rawIRQVecPart[25:0]};
   
   // Memory map decoding
-  ahb_decoder dec(HADDR, HSEL);
-  ahb_mux     datamux(HSEL, HRDATA0, HRDATA1, HRDATA);
-  ahb_mux #(1) readymux(HSEL, HREADY0, HREADY1, HREADY);
+  ahb_decoder dec (HADDR,HSEL);
+  ahb_mux #(32) mux (HSEL,HRDATA0,HRDATA1,HRDATA);
+  ahb_mux #(1) ready_mux (HSEL,HREADY0,HREADY1,HREADY);
   
   // Memory and peripherals
   // mem_simulation mem (.clk(HCLK), .we(HWRITE), .re(HREQUEST & ~HWRITE), 
@@ -45,23 +45,24 @@ module ahb_lite (
 //   .HSIZE(HSIZE             )
 // );
   dmem_ahb mem (
-    .clk  (HCLK              ),
-    .we   (HWRITE            ),
-    .re   (HREQUEST & ~HWRITE),
-    .HSEL (HSEL[0]           ),
-    .HReady(HREADY0),
-    .HResetn(HRESETn),
-    .a    (HADDR             ),
-    .wd   (HWDATA            ),
-    .HSIZE(HSIZE             ),
-    .rd   (HRDATA0           ),
-    .Valid(HREADY0            )
+    .clk    (HCLK              ),
+    .we     (HWRITE            ),
+    .re     (HREQUEST & ~HWRITE),
+    .HSEL   (HSEL[0]           ),
+    .HReady (HREADY            ),
+    .HResetn(HRESETn           ),
+    .a      (HADDR             ),
+    .wd     (HWDATA            ),
+    .HSIZE  (HSIZE             ),
+    .rd     (HRDATA0           ),
+    .Valid  (HREADY0           )
   );
 
-io_fwd_shim ioShim(  .*,
-  .HSEL  (HSEL[1]   ),
-  .HRDATA(HRDATA1   ),
-  .HREADY(HREADY1)
-);
+  io_fwd_shim ioShim (    .*,
+    .HSEL  (HSEL[1]),
+    .HRDATA(HRDATA1),
+    .HREADY(HREADY1)
+  );
+
   
 endmodule

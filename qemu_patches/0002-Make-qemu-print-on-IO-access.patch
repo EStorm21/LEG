@@ -1,7 +1,7 @@
 From 937346f2bb17baaba5d1d3b3a3071955c4c3563f Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Sun, 4 Oct 2015 14:13:00 -0700
-Subject: [PATCH 02/10] Make qemu print on IO access
+Subject: [PATCH 02/11] Make qemu print on IO access
 
 ---
  memory.c |    2 ++

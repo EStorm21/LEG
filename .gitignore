@@ -6,6 +6,8 @@
 *.fls
 *.out
 *.toc
+*.dat
+*~
 ## Extras from latexmk
 *.fdb_latexmk
 *.synctex.gz

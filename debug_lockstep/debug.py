@@ -129,7 +129,7 @@ class LegLockstepCommand (gdb.Command):
 	def invoke (self, arg, from_tty):
 		print "Starting lockstep from here"
 		try:
-			lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir)
+			lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir, ignore_irq=(arg=="--noirq"))
 		except:
 			print traceback.format_exc()
 
@@ -144,7 +144,7 @@ class LegLockstepGuiCommand (gdb.Command):
 	def invoke (self, arg, from_tty):
 		print "Starting lockstep from here, with GUI"
 		try:
-			lockstep.debugFromHere(True, qemu, TEST_FILE, found_bugs, run_dir)
+			lockstep.debugFromHere(True, qemu, TEST_FILE, found_bugs, run_dir, ignore_irq=(arg=="--noirq"))
 		except:
 			print traceback.format_exc()
 
@@ -161,7 +161,7 @@ class LegAutoCommand (gdb.Command):
 		while True:
 			print "Starting lockstep from:"
 			gdb.execute("where 20")
-			reason = lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir)
+			reason = lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir, ignore_irq=(arg=="--noirq"))
 			if reason == lockstep.LOCKSTEP_BUG_RESUMABLE:
 				print "Stopping automatic lockstep (run leg-lockstep-auto again to resume)"
 				break
@@ -478,6 +478,17 @@ class LegVirtToPhysCommand (gdb.Command):
 
 LegVirtToPhysCommand()
 
+class LegGetCPRegCommand (gdb.Command):
+	""" Get a coprocessor15 register's contents """
+
+	def __init__ (self):
+		super (LegGetCPRegCommand, self).__init__ ("leg-get-cp-reg", gdb.COMMAND_USER)
+
+	def invoke (self, arg, from_tty):
+		gdb.execute('maint packet qqemu.getcpreg {}'.format(arg))
+
+LegGetCPRegCommand()
+
 class LegCheckpointCommand (gdb.Command):
 	""" Create a ModelSim checkpoint corresponding to the current state """
 
@@ -596,9 +607,9 @@ else:
 	print ""
 	print "Welcome to the interactive LEG debugger!"
 	print "You can run:"
-	print "    leg-lockstep: Start lockstepping from here"
-	print "    leg-lockstep-auto: Repeatedly lockstep and restart after bugs"
-	print "    leg-lockstep-gui: Start lockstepping from here with the ModelSim GUI, and stop for debugging."
+	print "    leg-lockstep [--noirq]: Start lockstepping from here"
+	print "    leg-lockstep-auto [--noirq]: Repeatedly lockstep and restart after bugs"
+	print "    leg-lockstep-gui [--noirq]: Start lockstepping from here with the ModelSim GUI, and stop for debugging."
 	print "    leg-lockstep-goal PCADDRESS: Like leg-lockstep-auto, but stop when we reach PCADDRESS"
 	print "    leg-jump BREAK_LOC: Shortcut to skip to a function or address using breakpoints"
 	print "    leg-frombug BUGFILE: Jump to the last matching state before a bug "
@@ -608,6 +619,7 @@ else:
 	print "    leg-qemu-state: Print qemu's current state"
 	print "    leg-qemu-full-dump: Save qemu's current state and memory to files in current directory"
 	print "    leg-virt-to-phys VIRTUAL_ADDRESS: Translate a virtual address to a physical "
+	print "    leg-get-cp-reg CRN [CRM] [OPC1] [OPC2]: Read a cp15 register "
 	print "    leg-checkpoint NAME: Create a ModelSim checkpoint corresponding to the current state"
 	print "    leg-restart: Restart qemu"
 	print "    leg-rec N FILENAME [-d]: Record N instrucitons to a file. -d records the instructions addresses and decoded instructions"

@@ -1,9 +1,11 @@
-module tlb_arbiter( input logic PAReady, DRequestPA,
+module tlb_arbiter( input logic PAReady, RequestPAM, StallF, IStall,
                     output logic PAReadyF, PAReadyM, RequestPA);
-    assign PAReadyF = ~DRequestPA & PAReady;
-    assign PAReadyM = DRequestPA & PAReady;
+    logic RequestPAF;
+    assign PAReadyF = RequestPAF & ~RequestPAM & PAReady;
+    assign PAReadyM = RequestPAM & PAReady;
+    assign RequestPAF = ~(StallF & ~IStall);
     // TODO: Replace PArequest with logic that accounts for StallF.
     // The constant assignement assumes that the instruction cache always requests
     // a physical address.
-    assign RequestPA= 1'b1;
+    assign RequestPA = RequestPAF | RequestPAM;
 endmodule

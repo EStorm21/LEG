@@ -43,6 +43,11 @@ if __name__ == "__main__":
 						help="Don't allow writeback",
 						action="store_true")
 
+	parser.add_argument("--mmu", 
+						help="Enable MMU",
+						action="store_true")
+
+
 	parser.add_argument("--conds", 
 						nargs="*",
 						help="All the conds to use. Use any if not specified.",
@@ -66,6 +71,7 @@ if __name__ == "__main__":
 	inc = args["include"]
 	exc = args["exclude"]
 	nowb = args["nowb"]
+        mmu = args["mmu"]
 	conds = args["conds"]
 	numInstru = args["count"]
 	interrupt_ratio = args["interrupt_ratio"]
@@ -712,7 +718,45 @@ def init_reg(regnum, label, nextReg=None, value=None):
 		program += "reg_{0}_{1}_end: nop\n".format(regnum, label)
 	return program
 
-# initializes a stack with random values, but leaves sp untouched
+def init_mmu():
+
+	program = """#S = 1 
+# R = 1
+# MMU disabled
+# Caches disabled
+ldr     r1, =0x00000300;
+mcr     p15, 0, r1, cr1, cr0, 0;    # disable MMU
+
+# ***pagetable.asm***
+LDR R1, =0x00300000;
+LDR R2, =0x00000c0e;
+STR R2, [R1];
+
+# Set the pagetable base
+ldr     r1, =0x00300000;            # pagetable base
+mcr     p15, 0, r1, cr2, cr0, 0;    # store the pagetable in the coprocessor
+
+# Set the domain access permissions
+mov r1, #0x3;
+mcr p15, 0, r1, cr3, cr0, 0;
+
+# Turn on the MMU
+mrc     p15, 0, r7, cr1, cr0, 0;    # Read in the control register
+orr     r1, r1, #1;
+mcr     p15, 0, r1, cr1, cr0, 0;    # Turn on the MMU for translation
+
+# Enable the I$
+mrc     p15, 0, r1, cr1, cr0, 0;   # Read in the control register
+orr     r1, r1, #4096;             # Set the I Bit (bit 12)
+mcr     p15, 0, r1, cr1, cr0, 0;
+
+# Enable D$
+mrc     15, 0, r1, cr1, cr0, 0;    # Read in the control register
+orr     r1, r1, #4;                # Set the C Bit (bit 2)
+mcr     15, 0, r1, cr1, cr0, 0;"""
+
+	return program
+
 def init_stack(entries, label, sp):
 	program = ""
 	for i in range(entries): 
@@ -830,6 +874,10 @@ def initializeProgram():
 	program += goto_mode("sys")
 	program += init_stack(stackSize, "stack", sp)
 	program += "\n"
+
+	if(mmu):
+		program += "# ENABLING MMU AND CACHES\n"
+		program += init_mmu()
 
 	program += goto_mode("usr")
 	program +="\n"

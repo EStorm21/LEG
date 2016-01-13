@@ -290,7 +290,7 @@ def check_states(state_a, state_b, interrupting):
 LOCKSTEP_BUG_RESUMABLE = 1
 LOCKSTEP_BUG_ABORT = 2
 LOCKSTEP_FINISHED = 3
-def lockstep(lsim, qemu_proc, is_linux, goal_pc):
+def lockstep(lsim, qemu_proc, is_linux, goal_pc, ignore_irq):
 
 	gdb.execute("set mem inaccessible-by-default on")
 	qmon = QemuMonitor(qemu_proc, NON_LOCKSTEP_INTERRUPTS)
@@ -425,7 +425,11 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc):
 				print "Enqueuing IO read at 0x{:x} of data 0x{:x}".format(ioaddr, ioval)
 				lsim.enqueue_io_read(ioaddr, ioval)
 
-			irq, fiq = qmon.get_irq_lines()
+			if ignore_irq:
+				irq, fiq = False, False
+			else:
+				irq, fiq = qmon.get_irq_lines()
+
 			lsim.set_interrupts(irq, fiq)
 
 			if (not is_linux) and qmon.same_instr_ct > 10:
@@ -519,7 +523,7 @@ def handleBug(prev_state, state, bug_msg, found_bugs, run_dir, test_file):
 	else:
 		print "Skipped writing this bug to file (already found)"
 
-def debugFromHere(with_gui, qemu, test_file, found_bugs, run_dir, goal_pc=None):
+def debugFromHere(with_gui, qemu, test_file, found_bugs, run_dir, goal_pc=None, ignore_irq=False):
 	lsim = LegSim(qemuDump.fullDump, test_file=="", with_gui)
 	if with_gui:
 		print "Giving ModelSim control to do initial wave configuration"
@@ -527,7 +531,7 @@ def debugFromHere(with_gui, qemu, test_file, found_bugs, run_dir, goal_pc=None):
 
 	markWorking(run_dir, True)
 	try:
-		reason, prev_state, state, msg = lockstep(lsim, qemu, test_file=="", goal_pc)
+		reason, prev_state, state, msg = lockstep(lsim, qemu, test_file=="", goal_pc, ignore_irq)
 		print msg
 		if reason != LOCKSTEP_FINISHED:
 			handleBug(prev_state, state, msg, found_bugs, run_dir, test_file)

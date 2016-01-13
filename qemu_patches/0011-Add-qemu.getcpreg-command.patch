@@ -1,0 +1,112 @@
+From 5ee3223312f9e86eea9e8ff8422717bc146c126a Mon Sep 17 00:00:00 2001
+From: Daniel Johnson <hexahedria@gmail.com>
+Date: Tue, 12 Jan 2016 18:17:54 -0800
+Subject: [PATCH 11/11] Add qemu.getcpreg command
+
+Add a command to get the contents of a cp15 register, for debugging purposes.
+Uses the same function-pointer hack as the virt-to-phys command.
+---
+ gdbstub.c              |   24 ++++++++++++++++++++++++
+ include/qom/cpu.h      |    3 +++
+ target-arm/translate.c |   15 +++++++++++++++
+ 3 files changed, 42 insertions(+), 0 deletions(-)
+
+diff --git a/gdbstub.c b/gdbstub.c
+index dc3c651..9a6cb86 100644
+--- a/gdbstub.c
++++ b/gdbstub.c
+@@ -782,6 +782,7 @@ static int is_query_packet(const char *p, const char *query, char separator)
+ }
+ 
+ typedef hwaddr (*virt_to_phys_fn)(CPUState*, target_ulong);
++typedef unsigned int (*get_coprocessor_reg_full_fn)(CPUState *cs, int crn, int crm, int opc1, int opc2);
+ 
+ static int gdb_handle_packet(GDBState *s, const char *line_buf)
+ {
+@@ -1125,6 +1126,29 @@ static int gdb_handle_packet(GDBState *s, const char *line_buf)
+ 
+             snprintf(buf, sizeof(buf), "0x%x", (unsigned int)phys_addr);
+             put_packet(s, buf);
++            break;
++        } else if (!strncmp(p,"qemu.getcpreg ", 14)) {
++            get_coprocessor_reg_full_fn gcpr_fn;
++            int crn = 0;
++            int crm = 0;
++            int opc1 = 0;
++            int opc2 = 0;
++            unsigned int res;
++            int scan_check;
++
++            p+=14;
++            scan_check = sscanf(p, "%d%d%d%d", &crn, &crm, &opc1, &opc2);
++
++            if(scan_check < 1){
++                put_packet(s, "Bad input");
++            } else {
++                cpu_dump_state(first_cpu,(FILE*)&gcpr_fn,NULL,CPU_DUMP_ARM_FN_PTR__GET_CP_REG);
++                res = gcpr_fn(first_cpu, crn, crm, opc1, opc2);
++
++                snprintf(buf, sizeof(buf), "0x%x", res);
++                put_packet(s, buf);
++            }
++            break;
+         } else if (strcmp(p,"C") == 0) {
+             /* "Current thread" remains vague in the spec, so always return
+              *  the first CPU (gdb returns the first thread). */
+diff --git a/include/qom/cpu.h b/include/qom/cpu.h
+index eeb5d96..017ace5 100644
+--- a/include/qom/cpu.h
++++ b/include/qom/cpu.h
+@@ -400,6 +400,8 @@ int cpu_write_elf32_qemunote(WriteCoreDumpFunction f, CPUState *cpu,
+  *     instead of dumping normally
+  * @CPU_DUMP_ARM_FN_PTR__VIRT_TO_PHYS: in ARM, super hacky way to obtain a
+  *     specific function pointer to the virtual-to-physical address translation.
++ * @CPU_DUMP_ARM_FN_PTR__GET_CP_REG: in ARM, super hacky way to obtain a
++ *     specific function pointer to a coprocessor15 raw read.
+  */
+ enum CPUDumpFlags {
+     CPU_DUMP_CODE = 0x00010000,
+@@ -407,6 +409,7 @@ enum CPUDumpFlags {
+     CPU_DUMP_CCOP = 0x00040000,
+     CPU_DUMP_ARM_ALLSTORED = 0x00080000,
+     CPU_DUMP_ARM_FN_PTR__VIRT_TO_PHYS = 0x00100000,
++    CPU_DUMP_ARM_FN_PTR__GET_CP_REG = 0x00200000,
+ };
+ 
+ /**
+diff --git a/target-arm/translate.c b/target-arm/translate.c
+index c0f0b59..fc5025f 100644
+--- a/target-arm/translate.c
++++ b/target-arm/translate.c
+@@ -11570,6 +11570,16 @@ unsigned int get_spsr_in_mode(CPUARMState *env, int mode) {
+     }
+ }
+ 
++unsigned int get_coprocessor_reg_full(CPUState *cs, int crn, int crm, int opc1, int opc2) {
++    ARMCPU *cpu = ARM_CPU(cs);
++    CPUARMState *env = &cpu->env;
++    const ARMCPRegInfo *ri = get_arm_cp_reginfo(cpu->cp_regs, ENCODE_CP_REG(15,0,1,crn,crm,opc1,opc2));
++    unsigned int res = read_raw_cp_reg(env, ri);
++
++    return res;
++}
++typedef unsigned int (*get_coprocessor_reg_full_fn)(CPUState *cs, int crn, int crm, int opc1, int opc2);
++
+ unsigned int get_coprocessor_reg(ARMCPU *cpu, int crn) {
+     CPUARMState *env = &cpu->env;
+     const ARMCPRegInfo *ri = get_arm_cp_reginfo(cpu->cp_regs, ENCODE_CP_REG(15,0,1,crn,0,0,0));
+@@ -11670,6 +11680,11 @@ void arm_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
+         virt_to_phys_fn *fptr = (virt_to_phys_fn *)f;
+         *fptr = virt_to_phys;
+         return;
++    } else if (flags & CPU_DUMP_ARM_FN_PTR__GET_CP_REG) {
++        // f is not actually a file pointer, it's a pointer to a function pointer
++        get_coprocessor_reg_full_fn *fptr = (get_coprocessor_reg_full_fn *)f;
++        *fptr = get_coprocessor_reg_full;
++        return;
+     }
+ 
+     if (is_a64(env)) {
+-- 
+1.7.1
+

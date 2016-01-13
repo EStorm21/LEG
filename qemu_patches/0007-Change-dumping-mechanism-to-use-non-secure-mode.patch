@@ -1,7 +1,7 @@
 From 599032d09f090127b756ea440a56110f617aa317 Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Thu, 5 Nov 2015 18:18:56 -0800
-Subject: [PATCH 07/10] Change dumping mechanism to use non-secure mode
+Subject: [PATCH 07/11] Change dumping mechanism to use non-secure mode
 
 ---
  target-arm/translate.c |    6 ++++--

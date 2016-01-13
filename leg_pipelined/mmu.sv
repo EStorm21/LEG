@@ -1,5 +1,5 @@
 module mmu #(parameter tbits = 22) (
-  input  logic        clk, reset, MMUExtInt, RequestPA, DRequestPA,
+  input  logic        clk, reset, MMUExtInt, RequestPA, RequestPAM,
   input  logic        HWrite, HReadyT,
   input  logic        DataAccess, CPSR4,
   input  logic        SupMode, WordAccess,
@@ -78,7 +78,7 @@ module mmu #(parameter tbits = 22) (
 
   // Virtual Address MUX TODO: Remove and just use VirtAdr
   // This mux was placed here to protoype a bug fix
-  mux2 #(32) VirtAdrMux(PCF, DataAdrM, DRequestPA, VirtAdr);
+  mux2 #(32) VirtAdrMux(PCF, DataAdrM, RequestPAM, VirtAdr);
 
   // Translation Look-Aside Buffer
   parameter tlb_size = 16;
