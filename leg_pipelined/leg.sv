@@ -18,11 +18,11 @@ module leg(input  logic        clk, reset,
            input logic  [31:0] CP15rd_M,
            input logic         HighVec, // high exception vectors. To dp
            // Added for MMU
-           output logic StallF, StallD, FlushD, FlushE);
+           output logic uOpStallD, StallD, FlushD, FlushE);
 
   /// Output from Hazard Unit
   logic [1:0]  ForwardAE, ForwardBE;
-  logic        StallE, StallM, FlushM, FlushW, StallW, StalluOp;
+  logic        StallE, StallF, StallM, FlushM, FlushW, StallW, StalluOp;
   logic        ExceptionSavePC;
 
   /// Output from Datapath
@@ -42,7 +42,7 @@ module leg(input  logic        clk, reset,
   logic [31:0] InstrE, ALUResultE;
   logic        RegWriteM, MemtoRegE, PCWrPendingF, WriteByteE, StrHalfwordE, LdrHalfwordW, HalfwordOffsetW;
   logic        Ldr_SignBW, Ldr_SignHW;
-  logic        DoNotWriteRegE, uOpStallD, PrevRSRstateD, PrevRSRstateE, CPSRtoRegW;
+  logic        DoNotWriteRegE, PrevRSRstateD, PrevRSRstateE, CPSRtoRegW;
   logic        LDMSTMforwardD, LDMSTMforwardE, LDRSTRshiftE, MultSelectD, RselectE;
   logic [3:0]  FlagsE; // [1] is C, [0] is V
   logic [1:0]  ResultSelectE, ByteOffsetW;

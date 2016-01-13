@@ -4,31 +4,32 @@
 
 module instr_cache_controller #(parameter tbits = 14) (
   input  logic             clk, reset, enable, PAReadyF, W1V, W2V, CurrLRU, BusReady,
-  input  logic             FSel, StallF,
+  input  logic             FSel, uOpStallD,
   input  logic [      1:0] WordOffset   ,
   input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag,
   output logic [      1:0] Counter      ,
   output logic             W1WE, W2WE, WaySel, 
-  output logic             IStall, ResetBlockOff, HRequestF,
+  output logic             IStall, ResetBlockOff, HRequestF, RequestPA,
+  output logic [tbits-1:0] Tag,
   output logic [      1:0] AddrWordOffset,
   output logic [      1:0] DataWordOffset
 );
 
   logic             W1EN, W2EN, Hit, W2Hit, AdvanceCounter;
-  logic [tbits-1:0] Tag, PrevPTag;
+  logic [tbits-1:0] PrevPTag;
   logic [      1:0] CounterMid, DataCounter, WayWordOffset;
-
-  // Create Hit signal 
-  assign W1Hit = (W1V & (PhysTag == W1Tag));
-  assign W2Hit = (W2V & (PhysTag == W2Tag));
-  assign Hit = (W1Hit | W2Hit) & PAReadyF;
-
-  // Select output from Way 1 or Way 2
-  assign WaySel = enable & W1Hit | ~enable;
-
+  
   // FSM States
   typedef enum logic [1:0] {READY, MEMREAD, LASTREAD, NEXTINSTR} statetype;
   statetype state, nextstate;
+
+  // Create Hit signal 
+  assign W1Hit = (W1V & (Tag == W1Tag));
+  assign W2Hit = (W2V & (Tag == W2Tag));
+  assign Hit = (W1Hit | W2Hit) & (PAReadyF | ~(state == READY));
+
+  // Select output from Way 1 or Way 2
+  assign WaySel = enable & W1Hit | ~enable;
 
   // state register
   always_ff @(posedge clk)
@@ -38,7 +39,9 @@ module instr_cache_controller #(parameter tbits = 14) (
   // next state logic
   always_comb
     case (state)
-      READY:      if(Hit | ~PAReadyF | reset) begin
+      READY:      if(Hit & PAReadyF & uOpStallD & ~reset) begin
+                    nextstate <= NEXTINSTR;
+                  end else if(Hit | ~PAReadyF | reset) begin
                     nextstate <= READY;
      // Only one memread is desired. Transition on reset because previous flops aren't setup
                   end else if(~enable) begin 
@@ -46,8 +49,8 @@ module instr_cache_controller #(parameter tbits = 14) (
                   end else begin
                     nextstate <= MEMREAD;  
                   end
-      // NEXTINSTR:  nextstate <= StallF ? NEXTINSTR : READY;
-      NEXTINSTR:  nextstate <= READY;
+      NEXTINSTR:  nextstate <= uOpStallD ? NEXTINSTR : READY;
+      // NEXTINSTR:  nextstate <= READY;
       MEMREAD:    nextstate <= ( BusReady & ( (Counter == 3) | ~enable ) ) ? LASTREAD : MEMREAD;
       LASTREAD:    nextstate <= BusReady ? NEXTINSTR : LASTREAD;
       default: nextstate <= READY;
@@ -58,11 +61,12 @@ module instr_cache_controller #(parameter tbits = 14) (
                    (state == LASTREAD);
   assign CWE    = 
      (state == MEMREAD) & BusReady | (state == LASTREAD) & BusReady;
-  assign HRequestF  = (state == MEMREAD) & PAReadyF |
+  assign HRequestF  = (state == MEMREAD) |
     (state == READY) & ~Hit & PAReadyF | 
-    (state == LASTREAD) & ~BusReady & PAReadyF;
+    (state == LASTREAD) & ~BusReady;
   assign ResetBlockOff = ( state == READY ) & ~(nextstate== MEMREAD) | 
     ( state == NEXTINSTR );
+  assign RequestPA = (state == READY);
 
   // This logic assumes the Instruction Cache has continuous control
   // over the Bus
@@ -85,6 +89,10 @@ module instr_cache_controller #(parameter tbits = 14) (
   // flopenr #(2) DataCntFlop(clk, reset, BusReady, CounterMid, DataCounter);
   assign DataCounter = CounterMid - 1'b1;
   // Create Counter for sequential bus access
+
+  //-----------------TAG LOGIC--------------------
+  flopenr #(tbits) tagReg(clk, reset, PAReadyF, PhysTag, PrevPTag);
+  mux2 #(tbits) tagMux(PrevPTag, PhysTag, (state == READY), Tag);
 
   mux2 #(2) cenMux(WordOffset, CounterMid, enable, Counter);
 

@@ -11,13 +11,13 @@ module data_writeback_associative_cache_controller
    output logic cleanCurr, RequestPA,
    output logic [1:0] CacheRDSel, 
    output logic [3:0] ActiveByteMask, WDSel,
-   output logic [tbits-1:0] CachedTag,
+   output logic [tbits-1:0] CachedTag, Tag,
    output logic [$clog2(lines)-1:0] BlockNum,
    output logic [$clog2(bsize)-1:0] AddrWordOffset,
    output logic [$clog2(bsize)-1:0] DataWordOffset
 );
 
-  logic [      tbits-1:0] Tag, PrevPTag;
+  logic [      tbits-1:0] PrevPTag;
   logic [$clog2(lines):0] FlushA    ; // Create block address to increment
   logic                   IncFlush, ResetBlockOff;
   logic                   WordAccess, CWE, Hit, W2Hit, W1Hit, TagSel, writeW1;
@@ -70,7 +70,7 @@ module data_writeback_associative_cache_controller
   assign W1Hit = (W1V & (Tag == W1Tag));
   assign W2Hit = (W2V & (Tag == W2Tag));
   assign CHit = (W1Hit | W2Hit);
-  assign Hit = CHit & enable & PAReady; 
+  assign Hit = CHit & enable & (PAReady | ~(state == READY)); 
   
   // Write-to logic
   // IN: W1V, W2V, LRU 
@@ -185,17 +185,17 @@ module data_writeback_associative_cache_controller
     );
   assign CWE =  (state == MEMREAD) & BusReady |
     (state == READY) & ( (MemWriteM & Hit) | MemWriteM & ~enable ) |
-    (state == LASTREAD) & BusReady & PAReady;
+    (state == LASTREAD) & BusReady;
   assign HWriteM = (state == WRITEBACK) |
     ((state == READY) & ~Hit & Dirty & ~clean) |
     (nextstate == DWRITE) | 
     (state == DWRITE);
   assign HRequestM = (state == READY) & MemtoRegM & PAReady |
-		(state == READY) & MemWriteM & enable & PAReady & ~Hit |
-		(state == DWRITE) & PAReady & ~BusReady |
-    (state == LASTREAD) & PAReady & ~BusReady |
-    (state == MEMREAD) & PAReady |
-    (state == WRITEBACK) & PAReady; 
+		(state == READY) & MemWriteM & enable & ~Hit & PAReady |
+		(state == DWRITE) & ~BusReady |
+    (state == LASTREAD) & ~BusReady |
+    (state == MEMREAD) |
+    (state == WRITEBACK); 
 
   // RDSel makes WD the output for disabled cache behavior
   assign RDSel = (state == DWRITE);
@@ -207,6 +207,7 @@ module data_writeback_associative_cache_controller
   assign ResetBlockOff = ((state == READY) & Hit) |
   (state == READY) & ~PAReady |
   (state == NEXTINSTR) |
+  (state == WAIT) |
   (state == FLUSH);
 
   // Select output from Way 1 or Way 2

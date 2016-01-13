@@ -155,7 +155,7 @@ endcase
 
 // HRequestT Logic
 assign HRequestT = ( (state == COARSEFETCH) |
-                (state == FINEFETCH)    & RequestPA |
+                (state == FINEFETCH) |
                 (state == COARSED)   & ~HReadyT |
                 (state == FINED)   & ~HReadyT |
                ( (state == READY) & RequestPA & ~PAReady) ) & Enable;

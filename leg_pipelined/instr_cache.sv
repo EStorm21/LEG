@@ -10,17 +10,17 @@ module instr_cache #(
     parameter tbits = 30-blockbits-setbits
 ) (
     input  logic             clk, reset, enable, BusReady, invalidate,
-    input  logic             PAReadyF, FSel, StallF,
+    input  logic             PAReadyF, FSel, uOpStallD,
     input  logic [     31:0] A       ,
-    input  logic [tbits-1:0] PhysTag ,
+    input  logic [tbits-1:0] PhysTag , 
     input  logic [     31:0] HRData  ,
     output logic [     31:0] RD, HAddrF,
-    output logic             IStall, HRequestF 
+    output logic             IStall, HRequestF, RequestPA
 );
 
     // Signal Declaration
     logic [         31:0] CacheWD, W1RD, W2RD, CacheOut, ANew;
-    logic [    tbits-1:0] W1Tag, W2Tag; 
+    logic [    tbits-1:0] W1Tag, W2Tag, Tag; 
     logic [          3:0] ActiveByteMask;
     logic [blockbits-1:0] DataWordOffset ;
     logic [blockbits-1:0] AddrWordOffset ;
@@ -30,7 +30,7 @@ module instr_cache #(
     // Create New Address using the counter as the word offset
     assign WordOffset     = A[blockbits+1:2];
     assign ANew           = {A[31:4], DataWordOffset, A[1:0]};
-    assign HAddrF         = {PhysTag, A[31-tbits:4], AddrWordOffset, A[1:0]};
+    assign HAddrF         = {Tag, A[31-tbits:4], AddrWordOffset, A[1:0]};
 
     assign CacheWD        = HRData;
     assign CacheRDSel     = WordOffset;
@@ -67,31 +67,7 @@ module instr_cache #(
     );
 
     // Cache Controller
-    instr_cache_controller #(tbits) icc (
-        .clk           (clk           ),
-        .reset         (reset         ),
-        .enable        (enable        ),
-        .StallF        (StallF),
-        .PAReadyF      (PAReadyF      ),
-        .W1V           (W1V           ),
-        .W2V           (W2V           ),
-        .CurrLRU       (CurrLRU       ),
-        .BusReady      (BusReady      ),
-        .FSel          (FSel          ),
-        .WordOffset    (WordOffset    ),
-        .W1Tag         (W1Tag         ),
-        .W2Tag         (W2Tag         ),
-        .PhysTag       (PhysTag       ),
-        .Counter       (Counter       ),
-        .W1WE          (W1WE          ),
-        .W2WE          (W2WE          ),
-        .WaySel        (WaySel        ),
-        .IStall        (IStall        ),
-        .ResetBlockOff (ResetBlockOff ),
-        .HRequestF     (HRequestF     ),
-        .AddrWordOffset(AddrWordOffset),
-        .DataWordOffset(DataWordOffset)
-    );
+    instr_cache_controller #(tbits) icc (.*);
 
     // Select from the ways
     mux2 #(32) CacheOutMux(W2RD, W1RD, WaySel, CacheOut);

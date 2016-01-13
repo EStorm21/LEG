@@ -22,7 +22,7 @@ module data_writeback_associative_cache #(
 
     // Cache way outputs
     logic                W1V, W2V, W1EN, W1WE, W2WE, W1D, W2D;
-    logic [   tbits-1:0] W1Tag, W2Tag, CachedTag;
+    logic [   tbits-1:0] W1Tag, W2Tag, CachedTag, Tag;
     logic [bsize*32-1:0] W1BlockOut, W2BlockOut; // Way output (4 words)
     logic [        31:0] W1RD, W2RD, CacheOut, CachedAddr, CacheWD;
 
@@ -66,7 +66,7 @@ module data_writeback_associative_cache #(
 
     // HAddr Mux's
     assign CachedAddr = {CachedTag, A[31-tbits:4], AddrWordOffset, A[1:0]};
-    mux2 #(32) HAddrMux({PhysTag, A[31-tbits:4], AddrWordOffset, A[1:0]}, CachedAddr, UseCacheA, HAddr);
+    mux2 #(32) HAddrMux({Tag, A[31-tbits:4], AddrWordOffset, A[1:0]}, CachedAddr, UseCacheA, HAddr);
 
     // Select from the ways
     mux2 #(32) CacheOutMux(W2RD, W1RD, WaySel, CacheOut);

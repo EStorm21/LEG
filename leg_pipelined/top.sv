@@ -85,12 +85,12 @@ module top (
     .CP15rd_M(CP15rd_M),
     .HighVec(control[13]),
     // Added for MMU
-    .StallF(StallF),
+    .uOpStallD    (uOpStallD),
     .StallD(StallD), 
     .FlushD(FlushD), 
     .FlushE(FlushE));
 
-  // `define ECACHES 1
+  `define ECACHES 1
   initial
     begin
       `ifdef ECACHES
@@ -142,7 +142,7 @@ module top (
     .clk       (clk      ),
     .reset     (reset    ),
     .enable    (ENI      ),
-    .StallF    (StallF),
+    .uOpStallD  (uOpStallD),
     .invalidate(INVI     ),
     .BusReady  (HReadyF  ),
     .A         (PCF      ),
@@ -153,6 +153,7 @@ module top (
     .FSel      (FSel     ),
     .IStall    (IStall   ),
     .HAddrF    (HAddrF   ),
+    .RequestPA (RequestPAF),
     .HRequestF (HRequestF)
   );
 
