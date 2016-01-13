@@ -478,6 +478,17 @@ class LegVirtToPhysCommand (gdb.Command):
 
 LegVirtToPhysCommand()
 
+class LegGetCPRegCommand (gdb.Command):
+	""" Get a coprocessor15 register's contents """
+
+	def __init__ (self):
+		super (LegGetCPRegCommand, self).__init__ ("leg-get-cp-reg", gdb.COMMAND_USER)
+
+	def invoke (self, arg, from_tty):
+		gdb.execute('maint packet qqemu.getcpreg {}'.format(arg))
+
+LegGetCPRegCommand()
+
 class LegCheckpointCommand (gdb.Command):
 	""" Create a ModelSim checkpoint corresponding to the current state """
 
@@ -608,6 +619,7 @@ else:
 	print "    leg-qemu-state: Print qemu's current state"
 	print "    leg-qemu-full-dump: Save qemu's current state and memory to files in current directory"
 	print "    leg-virt-to-phys VIRTUAL_ADDRESS: Translate a virtual address to a physical "
+	print "    leg-get-cp-reg CRN [CRM] [OPC1] [OPC2]: Read a cp15 register "
 	print "    leg-checkpoint NAME: Create a ModelSim checkpoint corresponding to the current state"
 	print "    leg-restart: Restart qemu"
 	print "    leg-rec N FILENAME [-d]: Record N instrucitons to a file. -d records the instructions addresses and decoded instructions"
