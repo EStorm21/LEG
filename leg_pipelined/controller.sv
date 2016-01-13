@@ -95,6 +95,7 @@ module controller (
   logic        ExceptionResetMicrop, interrupting;
   logic        CondExM, CondExW;
   logic        CondAndD;
+  logic        bkpt_D, bkpt_E;
 
   // For debugging
   logic        validDdebug, validEdebug, validMdebug, validWdebug;
@@ -131,7 +132,6 @@ module controller (
         else if (~InstrD[22] & InstrD[20] & LdrStr_HalfD)  ControlsD = 13'b00_11_0110_00010;  // LDH R-type
         else if (InstrD[22] & ~InstrD[20] & LdrStr_HalfD)  ControlsD = 13'b10_11_1101_00010;  // STH I-type
         else if (~InstrD[22] & ~InstrD[20] & LdrStr_HalfD) ControlsD = 13'b10_11_0101_00010;  // STH R-type
-        // "Move register to status register" not implemented
         else if ((InstrD[24:20] == 5'b10010) & (InstrD[19:4] == 16'hFFF1))
           ControlsD = 13'b01_00_0000_10001; // BX
         // else if (InstrD[24:23] == 2'b10 & (&InstrD[21:16]) & ~(|InstrD[11:0]))  ControlsD = 13'b00_00_0  // MRS
@@ -241,6 +241,7 @@ module controller (
   assign undefD         = (InstrD[27:25] == 3'b011 & InstrD[4]) 
                         | (CondAndD & ( InstrD[27:24] == 4'b1111 | InstrD[27:25] == 3'b100 | ~InstrD[27])) 
                         | (InstrD[27:23] == 5'b00110 & InstrD[21:20] == 2'b00);
+  assign bkpt_D         = (InstrD[27:20] == 8'b00010010) & (InstrD[7:4] == 4'b0111);
   // === END ===
 
   // === DEBUGGING ===
@@ -258,7 +259,7 @@ module controller (
   flopenrc #(1) shftrCarryOut(clk, reset, ~StallE, FlushE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
   flopenrc #(1) restoreCPSR_DE(clk, reset, ~StallE, FlushE, restoreCPSR_D, restoreCPSR_E);
   flopenrc #(1) longMultRegWritePt2(clk, reset, ~StallE, FlushE, CondExE, CondExE2);
-  flopenrc #(2) undef_exception(clk, reset, ~StallE, FlushE, {undefD, SWI_D}, {undefE, SWI_0E});
+  flopenrc #(3) undef_exception(clk, reset, ~StallE, FlushE, {undefD, SWI_D, bkpt_D}, {undefE, SWI_0E, bkpt_E});
   flopenrc #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);
   flopenrc #(3) CoprocE(clk, reset, ~StallE, FlushE, {CoProc_FlagUpd_D, CoProc_EnD, CoProc_WrEnD}, {CoProc_FlagUpd_E, CoProc_EnE, CoProc_WrEnE});
   flopenrc #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
@@ -311,7 +312,7 @@ module controller (
   // === END ===
 
 
- exception_handler exh(clk, reset, undefE, SWI_E, PrefetchAbort, DataAbort, IRQ, FIQ, 
+ exception_handler exh(clk, reset, undefE, SWI_E, PrefetchAbort | bkpt_E, DataAbort, IRQ, FIQ, 
                        ~CPSRW[7], ~CPSRW[6], StallD, StallE, StallM, StallW, PCWrPendingF, PCSrcW & CondExW,
                        undefW, SWI_W, PrefetchAbortW, DataAbortAssert, IRQAssert, FIQAssert, // undefW, SWI_W, and PrefetchAbortW are for saving CPSR only.
                        interrupting, ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
