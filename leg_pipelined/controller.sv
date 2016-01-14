@@ -11,14 +11,12 @@ module controller (
   /// ------ From Datapath ------
   input  logic [31:0] InstrD, ALUOutW        ,
   input  logic [ 3:0] ALUFlagsE              ,
-  input  logic [ 1:0] MultFlagsE             ,
   input  logic [31:0] ALUResultE, DefaultInstrD,
   input  logic        ShifterCarryOutE,
   /// ------ To   Datapath ------
   output logic [ 1:0] RegSrcD, ImmSrcD       ,
   output logic        ALUSrcE, ALUSrcD, BranchTakenE,
   output logic [ 3:0] ALUControlE            ,
-  output logic [ 1:0] MultControlE           ,
   output logic        MemWriteM              ,
   output logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE,
   // For ALU logic unit
@@ -27,9 +25,9 @@ module controller (
   output logic [ 3:0] FlagsE                 ,
   // For micro-op decoding
   output logic        RselectE, LDRSTRshiftE, LDMSTMforwardD, LDMSTMforwardE,
-  output logic [ 1:0] ResultSelectE          ,
+  output logic        ResultSelectE          ,
   output logic [ 6:4] ShiftOpCode_E          ,
-  output logic        MultSelectD, MultEnableE,
+  output logic        MultSelectD,
   output logic [31:0] InstrE                 ,
   // To handle memory load/store byte and halfword
   output logic [ 3:0] ByteMaskM              ,
@@ -53,12 +51,11 @@ module controller (
   output logic        ExceptionSavePC,
   output logic  [2:0] VectorPCnextF);
 
-  logic [12:0] ControlsD          ;
+  logic [11:0] ControlsD          ;
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
   logic [ 3:0] ALUControlD, ByteMaskE;
   logic [ 4:0] MSRmaskD, MSRmaskE, MSRmaskM, MSRmaskW;
   logic [ 1:0] MultControlD       ;
-  logic        MultEnableD        ;
   logic        MemtoRegD, CondExE2;
   logic        RegWriteD, RegWriteE, RegWriteGatedE;
   logic        MemWriteD, MemWriteE, MemWriteGatedE;
@@ -75,7 +72,7 @@ module controller (
   logic        PCSrcD, PCSrcE, PCSrcM;
   logic [ 3:0] FlagsNext0E, FlagsNextE, FlagsNextM, FlagsNext0M, FlagsNextW, CondE;
   logic        RegWritepreMuxE, RselectD, RSRselectD, LdrStrRtypeD;
-  logic [ 1:0] ResultSelectD      ;
+  logic        ResultSelectD      ;
   logic        ByteOrWordE, ByteOrWordM, LdrStr_HalfD, LdrStr_HalfE, LdrHalfwordE, LdrHalfwordM;
   logic        Ldr_SignBD, Ldr_SignHD, Ldr_SignBE, Ldr_SignHE, Ldr_SignBM, Ldr_SignHM;
   logic [ 1:0] ByteOffsetE, ByteOffsetM;
@@ -120,40 +117,42 @@ module controller (
 
 
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevRSRstateD, 
-    KeepVD, KeepZD, KeepCD, AddCarryD, AddZeroD, noRotateD, uOpRtypeLdrStrD, MultControlD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, interrupting);
+    KeepVD, KeepCD, noRotateD, uOpRtypeLdrStrD, MultControlD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, interrupting); 
+  assign MultSelectD = 0;
 
   // === Control Logic for Datapath ===
   always_comb
     casex(InstrD[27:26])
       // If 2'b00, then this is data processing instruction  SD 10/1/2015: Dangerous! Not all with this code are DP.
-      2'b00: if (InstrD[25]) ControlsD = 13'b00_00_1010_01000; // Data processing immediate   0x52
-        else if (InstrD[7:4] == 4'b1001 & ~InstrD[24])     ControlsD = 13'b00_00_0010_01100; // Multiply
-        else if (InstrD[22] & InstrD[20] & LdrStr_HalfD)   ControlsD = 13'b00_11_1110_00010;  // LDH I-type
-        else if (~InstrD[22] & InstrD[20] & LdrStr_HalfD)  ControlsD = 13'b00_11_0110_00010;  // LDH R-type
-        else if (InstrD[22] & ~InstrD[20] & LdrStr_HalfD)  ControlsD = 13'b10_11_1101_00010;  // STH I-type
-        else if (~InstrD[22] & ~InstrD[20] & LdrStr_HalfD) ControlsD = 13'b10_11_0101_00010;  // STH R-type
+      2'b00: if (InstrD[25])                                ControlsD = 13'b00_00_1010_0100; // Data processing immediate   0x52
+        else if (InstrD[7:4] == 4'b1001 & ~InstrD[24])      ControlsD = 13'b00_00_0010_0100; // Multiply
+        else if (InstrD[22] & InstrD[20] & LdrStr_HalfD)    ControlsD = 13'b00_11_1110_0010;  // LDH I-type
+        else if (~InstrD[22] & InstrD[20] & LdrStr_HalfD)   ControlsD = 13'b00_11_0110_0010;  // LDH R-type
+        else if (InstrD[22] & ~InstrD[20] & LdrStr_HalfD)   ControlsD = 13'b10_11_1101_0010;  // STH I-type
+        else if (~InstrD[22] & ~InstrD[20] & LdrStr_HalfD)  ControlsD = 13'b10_11_0101_0010;  // STH R-type
         else if ((InstrD[24:20] == 5'b10010) & (InstrD[19:4] == 16'hFFF1))
-          ControlsD = 13'b01_00_0000_10001; // BX
+                                                            ControlsD = 13'b01_00_0000_1001; // BX
         // else if (InstrD[24:23] == 2'b10 & (&InstrD[21:16]) & ~(|InstrD[11:0]))  ControlsD = 13'b00_00_0  // MRS
-        else if (InstrD[27:20] == 8'b00010110 & InstrD[7:4] == 4'b0001) ControlsD = 13'b00_00_0010_00000;  // CLZ. Exactly like CMN RSR, but S=0
-        else  ControlsD = 13'b00_00_0010_01000; // Data processing register
-      2'b01: if (InstrD[25] & InstrD[4])      ControlsD = 13'b00_00_0000_00000;  // Exception: UNDEFINED INSTRUCTION
-        else if (InstrD[20] & ~InstrD[25])    ControlsD = 13'b00_01_1110_00010; // LDR, "I-type" 0xf0
-        else if (InstrD[20] & InstrD[25])     ControlsD = 13'b00_01_0110_00010; // LDR, "R-Type" 0xb0
-        else if (~InstrD[20] & ~InstrD[25])   ControlsD = 13'b10_01_1001_00010; // STR, "I-type"
-        else if (~InstrD[20] & InstrD[25])    ControlsD = 13'b10_01_0001_00010; // STR, "R-type"
-      2'b10:  ControlsD = 13'b01_10_1000_10000; // B                           0x344
-      2'b11: if(InstrD[25:24] == 2'b11)                  ControlsD = 13'b00_00_0000_00000; // Exception: SWI
-        else if (CoProc_MCR_D)                           ControlsD = 13'b10_00_0000_00000; // MCR (move to coprocessor from register)
-        else if (CoProc_MRC_D & InstrD[15:12] == 4'hF)   ControlsD = 13'b10_00_0000_00000; // MRC (R15 update flags only)
-        else if (CoProc_MRC_D)                           ControlsD = 13'b10_00_0010_00000; // MRC (move to register from coprocessor)
-      default:          ControlsD = 13'bx;      // unimplemented
+        else if (InstrD[27:20] == 8'b00010110 & InstrD[7:4] == 4'b0001) 
+                                                            ControlsD = 13'b00_00_0010_0000;  // CLZ. Exactly like CMN RSR, but S=0
+        else                                                ControlsD = 13'b00_00_0010_0100; // Data processing register
+      2'b01: if (InstrD[25] & InstrD[4])                    ControlsD = 13'b00_00_0000_0000;  // Exception: UNDEFINED INSTRUCTION
+        else if (InstrD[20] & ~InstrD[25])                  ControlsD = 13'b00_01_1110_0010; // LDR, "I-type" 0xf0
+        else if (InstrD[20] & InstrD[25])                   ControlsD = 13'b00_01_0110_0010; // LDR, "R-Type" 0xb0
+        else if (~InstrD[20] & ~InstrD[25])                 ControlsD = 13'b10_01_1001_0010; // STR, "I-type"
+        else if (~InstrD[20] & InstrD[25])                  ControlsD = 13'b10_01_0001_0010; // STR, "R-type"
+      2'b10:                                                ControlsD = 13'b01_10_1000_1000; // B                         
+      2'b11: if(InstrD[25:24] == 2'b11)                     ControlsD = 13'b00_00_0000_0000; // Exception: SWI
+        else if (CoProc_MCR_D)                              ControlsD = 13'b10_00_0000_0000; // MCR (move to coprocessor from register)
+        else if (CoProc_MRC_D & InstrD[15:12] == 4'hF)      ControlsD = 13'b10_00_0000_0000; // MRC (R15 update flags only)
+        else if (CoProc_MRC_D)                              ControlsD = 13'b10_00_0010_0000; // MRC (move to register from coprocessor)
+      default:                                              ControlsD = 13'bx;      // unimplemented
     endcase
 
   // Notes: ldrstrALUopD gives Loads and Stores the ability to choose alu function add or subtract.
   assign {RegSrcD, ImmSrcD,     // 2 bits each
     ALUSrcD, MemtoRegD, RegWriteD, MemWriteD,
-    BranchD, ALUOpD, MultSelectD, ldrstrALUopD, BXInstrD} = ControlsD & {5'b11_11_1, {3{nonFlushedInstrD | InstrMuxD}}, 5'b11111}; // And here to kill writeback in flush.
+    BranchD, ALUOpD, ldrstrALUopD, BXInstrD} = ControlsD & {5'b11_11_1, {3{nonFlushedInstrD | InstrMuxD}}, 4'b1111}; // And here to kill writeback in flush.
   // === END ===
 
   // === Controlling the ALU ===
@@ -172,7 +171,7 @@ module controller (
       FlagWriteD      = 2'b00;        // Ignore flags for now
     end else if (ALUOpD) begin                     // which Data-processing Instr?
       ALUControlD = InstrD[24:21];  // Always passes Instruction codes to ALUControlD
-      FlagWriteD[1:0]   = {{InstrD[20] & ~DataRestoreCPSR_D}, {InstrD[20] & ~DataRestoreCPSR_D} & ~KeepVD};       // update flags if S bit is set. Don't update CV in multiply
+      FlagWriteD[1:0]   = {{InstrD[20] & ~DataRestoreCPSR_D}, {InstrD[20] & ~DataRestoreCPSR_D & ~KeepVD}};       // update flags if S bit is set. Don't update CV in multiply
     end else begin
       ALUControlD     = 4'b0100;      // perform addition for non-dataprocessing instr (branch...)
       FlagWriteD[1:0] = 2'b00;        // don't update Flags
@@ -195,20 +194,13 @@ module controller (
   // SD 11/19/2015 Should this really be | BranchD? This has the effect of stalling everything when there may be a branch
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~RegFileRzD[2] & ~CPSRtoRegD & ~RegtoCPSR_D) | BranchD); // Chooses program counter either from DMEM or from ALU calculation
   assign PSRtypeD      = (CPSRtoRegD & InstrD[22]);
-  assign ResultSelectD = {MultSelectD, RSRselectD};
+  assign ResultSelectD = RSRselectD;
   // CLZ: looks like MVN but S not set. Actually in the misc. instructions group. 
   // We need to check all these things to extract only this case. 
   // Check all of 7:4 in case we implement E variant later. Really could do just (~7 & 4)
   assign ClzSelectE = InstrE[27:20] == 8'b00010110 & InstrE[7:4]==4'b0001;
   // === END ===
 
-  // === Handling all Multiplication Stalls Decode ===
-  // assign MultControlD  = InstrD[23:21];   // Control for the Multiplier Block
-  // assign MultStallD = (InstrD[27:24] == 4'b0) & InstrD[23] & (InstrD[7:4] == 4'b1001) & ~InstrD[25] & ~WriteMultLoE; //For Long Multiply
-  assign MultEnableD = InstrD[7:4] == 4'b1001 && InstrD[27:24] == 4'b0;
-
-  // flopenrc #(1)  MultOutputSrc(clk, reset, ~StallE, FlushE, MultStallD, WriteMultLoE);
-  // flopenrc #(1)  MultOutputSrc1(clk, reset, ~StallE, FlushE, WriteMultLoE, WriteMultLoKeptE); //write the low register on the second cycle
   // === END ===
 
   // === MSR or MRS (CPSR) INSTRUCTIONS ===
@@ -253,33 +245,26 @@ module controller (
   // ======================================= Execute Stage ==============================================
   // ====================================================================================================
 
-  flopenrc #(1) MultZeroPrev(clk, reset, ~StallE & KeepZE, FlushE, FlagsOutE[2], ZFlagKeptE);
   flopenrc #(1) MlalCarryPrev(clk, reset, ~StallE & KeepCE, FlushE, FlagsOutE[1], CFlagKeptE);
-  flopenrc #(5)  keepV(clk, reset, ~StallE, FlushE, {KeepVD, KeepZD, KeepCD, AddCarryD, AddZeroD}, {KeepVE, KeepZE, KeepCE, AddCarryE, AddZeroE});
+  flopenrc #(1)  keepV(clk, reset, ~StallE, FlushE, {KeepCD}, {KeepCE});
   flopenrc #(1) shftrCarryOut(clk, reset, ~StallE, FlushE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
   flopenrc #(1) restoreCPSR_DE(clk, reset, ~StallE, FlushE, restoreCPSR_D, restoreCPSR_E);
-  flopenrc #(1) longMultRegWritePt2(clk, reset, ~StallE, FlushE, CondExE, CondExE2);
   flopenrc #(3) undef_exception(clk, reset, ~StallE, FlushE, {undefD, SWI_D, bkpt_D}, {undefE, SWI_0E, bkpt_E});
   flopenrc #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);
   flopenrc #(3) CoprocE(clk, reset, ~StallE, FlushE, {CoProc_FlagUpd_D, CoProc_EnD, CoProc_WrEnD}, {CoProc_FlagUpd_E, CoProc_EnE, CoProc_WrEnE});
   flopenrc #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
-  flopenrc  #(9) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD, LDRSTRshiftD, LdrStr_HalfD, Ldr_SignHD, Ldr_SignBD},
+  flopenrc  #(8) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD, LDRSTRshiftD, LdrStr_HalfD, Ldr_SignHD, Ldr_SignBD},
                                                             {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE, LDRSTRshiftE, LdrStr_HalfE, Ldr_SignHE, Ldr_SignBE});
   flopenrc #(11) flushedregsE(clk, reset, ~StallE, FlushE,
     {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD, ldrstrALUopD, BXInstrD, CPSRtoRegD,  RegtoCPSR_D},
     {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE, ldrstrALUopE, BXInstrE, CPSRtoReg0E, RegtoCPSR_0E});
-  flopenrc #(14)  regsE(clk, reset, ~StallE, FlushE, {ALUSrcD, ALUControlD, MultControlD, MultEnableD, PSRtypeD, MSRmaskD},
-                                                     {ALUSrcE, ALUControlE, MultControlE, MultEnableE, PSRtypeE, MSRmaskE});
+  flopenrc #(11)  regsE(clk, reset, ~StallE, FlushE, {ALUSrcD, ALUControlD, PSRtypeD, MSRmaskD},
+                                                     {ALUSrcE, ALUControlE, PSRtypeE, MSRmaskE});
   flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE, {(ALUOpD|ldrstrALUopD), InstrD}, {ALUOpE, InstrE});
   flopenrc #(1) flushWBE(clk, reset, ~StallE, FlushE, nonFlushedInstrD, nonFlushedInstrE);
 
-
-  // < Handling all Multiplication Stalls Execute>
-  // assign MultStallE = (InstrD[27:24] == 4'b0) & InstrE[23] & (InstrE[7:4] == 4'b1001) & ~InstrD[25]; //For Long Multiply
-  // assign MultEnable = InstrE[7:4] == 4'b1001;
-
   // === ALU Decoding ===
-  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], AddCarryE, CFlagKeptE, BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryInE, DoNotWriteRegE);
+  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], CFlagKeptE, BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryInE, DoNotWriteRegE);
   // === END ===
 
   /*** BRIEF ***
@@ -297,7 +282,7 @@ module controller (
   // === CONDITIONAL EXECUTION CHECKING ===
   assign FlagsE     = SetNextFlagsM ? FlagsNextM : (SetNextFlagsW ? FlagsNextW : CPSRW[31:28]);
   assign FlagsNextE = (RegtoCPSR_E & InstrE[19]) ? ALUResultE[31:28] : FlagsNext0E; // If flags field is set by MSR, update flags now!
-  conditional Cond(CondE, FlagsE, ALUFlagsE, MultFlagsE, FlagWriteE, CondExE, FlagsNext0E, FlagsOutE, ResultSelectE[1], ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, CVUpdateE, MultControlE[0], ZFlagKeptE, AddZeroE, KeepVE);
+  conditional Cond(CondE, FlagsE, ALUFlagsE, FlagWriteE, CondExE, FlagsNext0E, FlagsOutE, ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, CVUpdateE);
   assign BranchTakenE    = BranchE & CondExE;
   assign RegWritepreMuxE = (RegWriteE & CondExE);
   assign MemWriteGatedE  = MemWriteE & CondExE;

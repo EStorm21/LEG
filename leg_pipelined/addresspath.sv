@@ -2,7 +2,7 @@ module addresspath( /// ------ From TOP ------
                     input  logic        clk, reset,
                     /// From Controller
                     input  logic [31:0] InstrE,					  
-                    input  logic        WriteMultLoE, MultSelectD, ALUSrcD, 
+                    input  logic        MultSelectD, ALUSrcD, 
                     input  logic [3:0]  RegFileRzD,
                     input  logic [1:0]  RegSrcD,
                     input  logic [7:0]  CPSR8_W, 
@@ -31,7 +31,7 @@ module addresspath( /// ------ From TOP ------
   * -- Also needed for exception vector addresses in the Writeback stage.
   */
   
-  logic [31:0]  WA3D, WA3M, WA3E, RA1E, RA2E, RdLoE;
+  logic [31:0]  WA3D, WA3M, WA3E, RA1E, RA2E;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D, WA3_4b_D;
   logic user_sys, fiq, irq, svc, abort, undef, system;
   logic [5:0] ModeOneHotD;
@@ -82,8 +82,6 @@ module addresspath( /// ------ From TOP ------
 
   eqcmp #(32) m4a(WA3E, RA1D, Match_1D_E);
   eqcmp #(32) m4b(WA3E, RA2D, Match_2D_E);
-  
-  longmult_addressdecode multAddr(InstrE[15:12], CPSR8_W, RdLoE);
   
 
 

@@ -1,15 +1,12 @@
 module conditional(input  logic [3:0] Cond,
                    input  logic [3:0] Flags,    // Previous flags
                    input  logic [3:0] ALUFlagsE,// incoming ALU flags
-                   input  logic [1:0] MultFlagsE, // incoming multiplier flags
                    input  logic [1:0] FlagsWrite, // {update NZ, update CV}
                    output logic       CondEx,     // whether the instruction will be executed
                    output logic [3:0] FlagsNext,  // The new flags to base conditions on in the future
                    output logic [3:0] FlagsOut,   // The flags from the ALU or multiplier. Used by micro ops.
-                   input  logic        MultSelectE, // Whether this is a multiply or ALU instruction
                    input  logic ShifterCarryOut_cycle2E, ShifterCarryOut_cycle1E, PrevRSRstateE, // Extra junk for using the shifter carry in a micro op
-                   input  logic [2:0] CVUpdate, // Classes of ALU operations that do special things to the flags
-                   input  logic LongMultHigh, LongMultlowZ, addZeroE, keepVE);  
+                   input  logic [2:0] CVUpdate); // Classes of ALU operations that do special things to the flags  
 
 /***** Brief Description *******
  * First Created by Ivan Wong for Clay Wolkin 2014-2015
@@ -20,7 +17,6 @@ module conditional(input  logic [3:0] Cond,
  ******************************/
   logic neg, zero, carry, overflow, ge;
   logic negNext, zeroNext, carryNext, overflowNext;
-  logic aluZ, multZ;
   logic ShifterCarryOut;
 
   // Compute conditional execution
@@ -52,14 +48,11 @@ module conditional(input  logic [3:0] Cond,
 
   // Negative flag
   // no special cases
-  assign negNext = MultSelectE ? MultFlagsE[1] : ALUFlagsE[3];
+  assign negNext = ALUFlagsE[3];
 
   // Zero flag
-  // Long multiplies must have zero in both high and low results. 
-  // The ALU flags need to know about this too for mlal.
-  assign multZ = LongMultHigh ? LongMultlowZ & MultFlagsE[0] : MultFlagsE[0];
-  assign aluZ = addZeroE ? LongMultlowZ & ALUFlagsE[2] : ALUFlagsE[2];
-  assign zeroNext = MultSelectE ? multZ : aluZ;
+  // No special case when no long multiplies
+  assign zeroNext = ALUFlagsE[2];
 
 
   // Carry flag
@@ -71,7 +64,7 @@ module conditional(input  logic [3:0] Cond,
   // Overflow flag
   // Multiplies require the ALU to keep the V flag UNAFFECTED
   // The same DP instructions special cased in C require V UNAFFECTED
-  assign overflowNext = (CVUpdate == 3'b000 | (CVUpdate == 3'b110 & keepVE) ) ? Flags[0] : ALUFlagsE[0];
+  assign overflowNext = (CVUpdate == 3'b000 ) ? Flags[0] : ALUFlagsE[0];
 
   assign FlagsNext[3:2] = (FlagsWrite[1] & CondEx) ? {negNext, zeroNext}       : Flags[3:2];
   assign FlagsNext[1:0] = (FlagsWrite[0] & CondEx) ? {carryNext, overflowNext} : Flags[1:0]; // [1] is C flag, [0] is V flag

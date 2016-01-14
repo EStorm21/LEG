@@ -10,7 +10,6 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                 ///  ------- From Controller ------
                   input  logic [1:0]  ImmSrcD,
                   input  logic        ALUSrcE, BranchTakenE,
-                  input  logic [1:0]  MultControlE,
                   input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE, ExceptionSavePC,
                   input  logic [31:0] InstrE, PSR_W, 
                   input  logic [2:0]  VectorPCnextF,
@@ -20,7 +19,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic        InvertBE, ReverseInputsE, ALUCarryInE,
                   // To handle micro-op decoding
                   input  logic        RselectE, LDRSTRshiftE, 
-                  input  logic [1:0]  ResultSelectE, // 2 bits Comes from {MultSelectE, RSRselectE}
+                  input  logic        ResultSelectE,
                   input  logic [6:4]  ShiftOpCode_E,
                   // To handle load-store half-words and bytes
                   input  logic        LoadLengthW, HalfwordOffsetW, Ldr_SignBW, Ldr_SignHW,
@@ -35,7 +34,6 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   output logic [31:0] InstrD,
                   output logic [31:0] ALUOutM, ALUOutW,
                   output logic [3:0]  ALUFlagsE, 
-                  output logic [1:0]  MultFlagsE,
                   output logic [31:0] ALUResultE, DefaultInstrD,
                   output logic        ShifterCarryOutE,
 
@@ -55,7 +53,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   logic ZeroRotateD, ZeroRotateE;
   logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ShiftBE;
   logic [31:0] ReadDataRawW, ReadDataW, Result1_W, ResultW;
-  logic [31:0] MultOutputE, ZerosE, OperationOutputE;
+  logic [31:0] ZerosE, OperationOutputE;
   logic [31:0] ALUorCP15_M;
   // Keep PC and instruction in each stage for debugging
   logic [31:0] PCD, PCE, PCM, PCW;
@@ -117,19 +115,13 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
 
   // TODO: implement as a barrel shift
-  shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE[0], LDRSTRshiftE, ZeroRotateE, FlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
+  shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE, LDRSTRshiftE, ZeroRotateE, FlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
   
   alu         alu(SrcAE, SrcBE, ALUOperationE, InvertBE, ReverseInputsE, ALUCarryInE, ALUOutputE, ALUFlagsE); 
   zero_counter clz(SrcBE, ZerosE);
   mux2 #(32) aluorclzmux(ALUOutputE, ZerosE, ClzSelectE, OperationOutputE);
-
-
-  // TODO: Use a signle multiplier for both signed and unsigned
-  // - Turn this into structural block
-  // - Move relevant signals to controller
-  multiplier  mult(SrcAE, SrcBE, MultControlE, MultOutputE, MultFlagsE);
   
-  mux3 #(32)  aluoutputmux(OperationOutputE, ShiftBE, MultOutputE, ResultSelectE, ALUResultE); 
+  mux2 #(32)  aluoutputmux(OperationOutputE, ShiftBE, ResultSelectE, ALUResultE); 
   data_replicator memReplicate(WriteByteE, StrHalfwordE, WriteDataE, WriteDataReplE);
   
   // ====================================================================================

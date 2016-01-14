@@ -1,7 +1,7 @@
 module micropsfsm(input  logic        clk, reset,
                input  logic [31:0] defaultInstrD,
                output logic        InstrMuxD, uOpStallD, LDMSTMforward, Reg_usr_D, MicroOpCPSRrestoreD,
-               output logic 	   prevRSRstate, KeepVD, KeepZD, KeepCD, addCarry, AddZeroD, noRotate, ldrstrRtype, 
+               output logic 	   prevRSRstate, KeepVD, KeepCD, noRotate, ldrstrRtype, 
                output logic [1:0]  multControlD, 
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
@@ -72,6 +72,9 @@ always_comb
 // --------------------------- END LDM/STM -------------------------------------
 // -----------------------------------------------------------------------------
 
+// Stores shift amount for shift and add multiplication
+logic [4:0] MULShift;
+
 
 // set reset state to READY, else set state to nextState
 always_ff @ (posedge clk)
@@ -103,14 +106,14 @@ always_comb
 		 * READY STATE 
 		 */
 		ready: begin
+			// MUL shift is the same for any case in ready state
+			MULShift = 5'b00001;
+
 			// Exception handling: mov r14, pc. By the time this comes back to wb we will be in
 			// the exception mode and thus will use the correct registers
 			if (ExceptionSavePC) begin
 				InstrMuxD = 1;
 				uOpStallD = 0; 
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				LDMSTMforward = 0;
 				Reg_usr_D = 0; 
 				MicroOpCPSRrestoreD = 0;
@@ -132,9 +135,6 @@ always_comb
 				uOpStallD = 0;
 				prevRSRstate = 0;
 				KeepVD = 0;
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of RA2D and RA1D
 				uOpInstrD = {32'b0};
@@ -158,9 +158,6 @@ always_comb
 				prevRSRstate = 0;
 				nextState = rsr;
 				KeepVD = 0;
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				LDMSTMforward = 0;
 				Reg_usr_D = 0; 
 				MicroOpCPSRrestoreD = 0;
@@ -183,9 +180,6 @@ always_comb
 				prevRSRstate = 0;
 				nextState = swp_str;
 				KeepVD = 0;
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				LDMSTMforward = 0;
 				Reg_usr_D = 0; 
 				MicroOpCPSRrestoreD = 0;
@@ -206,9 +200,6 @@ always_comb
 				InstrMuxD = 1;
 				uOpStallD = 0;
 				KeepVD = 1;
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				prevRSRstate = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
@@ -228,9 +219,6 @@ always_comb
 				InstrMuxD = 1;
 				uOpStallD = 1;
 				KeepVD = 1;
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				prevRSRstate = 0;
 				multControlD = 2'b00; //unsigned low
 				regFileRz = {1'b1, // Control inital mux for RA1D
@@ -253,9 +241,6 @@ always_comb
 				InstrMuxD = 1;
 				uOpStallD = 1;
 				KeepVD = 1;
-				KeepZD = 1; 
-				AddZeroD = 0;
-				addCarry = 0;
 				prevRSRstate = 0;
 				multControlD = {defaultInstrD[22], 1'b0}; //unsigned/signed low. [22]==1 if Signed
 				regFileRz = {1'b0, // Control inital mux for RA1D
@@ -276,9 +261,6 @@ always_comb
 				InstrMuxD = 1;
 				uOpStallD = 1;
 				KeepVD = 1;
-				KeepZD = 0; 
-				AddZeroD = 0;
-				addCarry = 0;
 				prevRSRstate = 0;
 				multControlD = {defaultInstrD[22], 1'b0}; //unsigned/signed low. [22]==1 if Signed
 				regFileRz = {1'b1, // Control inital mux for RA1D
@@ -302,9 +284,6 @@ always_comb
 				LDMSTMforward = 0;
 				nextState = bl;
 				KeepVD = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
-				addCarry = 0;
 				Reg_usr_D = 0; 
 				MicroOpCPSRrestoreD = 0;
 				KeepCD = 0;  
@@ -320,14 +299,11 @@ always_comb
 			else if(defaultInstrD[27:4]== {8'b00010010, 12'hfff, 4'b0011}) begin // blx
 				debugText = "blx";
 				InstrMuxD = 1;
-				addCarry = 0;
 				uOpStallD = 1;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
 				prevRSRstate = 0;
 				LDMSTMforward = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				nextState = blx;
 				KeepVD = 0;
 				Reg_usr_D = 0; 
@@ -349,9 +325,6 @@ always_comb
 				InstrMuxD = 1;
 				uOpStallD = 1;
 				LDMSTMforward = 0;
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				regFileRz = {1'b0,  // Control inital mux for RA1D
 							 3'b100}; // 5th bit of WA3, RA2D and RA1D
 				nextState = ldmstm; 
@@ -383,9 +356,6 @@ always_comb
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
 					uOpStallD = 1;
-					addCarry = 0;
-					KeepZD = 0;
-					AddZeroD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of WA3, RA2D and RA1D
 					LDMSTMforward = 0;
@@ -408,9 +378,6 @@ always_comb
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
 					uOpStallD = 1;
-					addCarry = 0;
-					KeepZD = 0;
-					AddZeroD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of WA3, RA2D and RA1D 
 					LDMSTMforward = 0;
@@ -434,9 +401,6 @@ always_comb
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
 					uOpStallD = 1;
-					addCarry = 0;
-					KeepZD = 0;
-					AddZeroD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of WA3, RA2D and RA1D
 					LDMSTMforward = 0;
@@ -459,9 +423,6 @@ always_comb
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
 					uOpStallD = 1;
-					addCarry = 0;
-					KeepZD = 0;
-					AddZeroD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of WA3, RA2D and RA1D
 					LDMSTMforward = 0;
@@ -487,9 +448,6 @@ always_comb
 					InstrMuxD = 1;
 					ldrstrRtype = 1;
 					uOpStallD = 1;
-					addCarry = 0;
-					KeepZD = 0;
-					AddZeroD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b100}; // 5th bit of WA3, RA2D and RA1D
 					prevRSRstate = 0;
@@ -513,9 +471,6 @@ always_comb
 					uOpStallD = 0;
 					prevRSRstate = 0;
 					KeepVD = 0;
-					addCarry = 0;
-					KeepZD = 0;
-					AddZeroD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of RA2D and RA1D
 					uOpInstrD = {defaultInstrD};
@@ -539,9 +494,6 @@ always_comb
 					ldrstrRtype = 0;
 					uOpStallD = 1;
 					noRotate = 1;
-					addCarry = 0;
-					KeepZD = 0;
-					AddZeroD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b100}; // 5th bit of WA3, RA2D and RA1D
 
@@ -568,9 +520,6 @@ always_comb
 					ldrstrRtype = 0;
 					uOpStallD = 1;
 					noRotate = 1;
-					addCarry = 0;
-					KeepZD = 0;
-					AddZeroD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of WA3, RA2D and RA1D 
 					LDMSTMforward = 0;
@@ -594,9 +543,6 @@ always_comb
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
 					uOpStallD = 1;
-					addCarry = 0;
-					KeepZD = 0;
-					AddZeroD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of WA3, RA2D and RA1D
 					LDMSTMforward = 0;
@@ -622,9 +568,6 @@ always_comb
 					ldrstrRtype = 0;
 					uOpStallD = 1;
 					noRotate = 1;
-					addCarry = 0;
-					KeepZD = 0;
-					AddZeroD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b100}; // 5th bit of WA3, RA2D and RA1D
 					LDMSTMforward = 0;
@@ -648,9 +591,6 @@ always_comb
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
 					uOpStallD = 1;
-					KeepZD = 0;
-					AddZeroD = 0;
-					addCarry = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of WA3, RA2D and RA1D
 					LDMSTMforward = 0;
@@ -675,9 +615,6 @@ always_comb
 					prevRSRstate = 0;
 					noRotate = 1;
 					KeepVD = 0;
-					addCarry = 0;
-					KeepZD = 0;
-					AddZeroD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of RA2D and RA1D
 					uOpInstrD = {defaultInstrD};
@@ -699,9 +636,6 @@ always_comb
 				uOpStallD = 0;
 				prevRSRstate = 0;
 				KeepVD = 0;
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of RA2D and RA1D
 				uOpInstrD = {defaultInstrD};
@@ -723,9 +657,6 @@ always_comb
 			prevRSRstate = 0;
 			nextState = swp_mov;
 			KeepVD = 0;
-			addCarry = 0;
-			KeepZD = 0;
-			AddZeroD = 0;
 			LDMSTMforward = 0;
 			Reg_usr_D = 0; 
 			MicroOpCPSRrestoreD = 0;
@@ -749,9 +680,6 @@ always_comb
 			prevRSRstate = 0;
 			nextState = ready;
 			KeepVD = 0;
-			addCarry = 0;
-			KeepZD = 0;
-			AddZeroD = 0;
 			LDMSTMforward = 0;
 			Reg_usr_D = 0; 
 			MicroOpCPSRrestoreD = 0;
@@ -759,7 +687,6 @@ always_comb
 			noRotate = 0;  
 			ldrstrRtype = 0;  
 			multControlD = 2'b00;  
-
 			uOpInstrD = {defaultInstrD[31:28], 3'b000, // Condition bits and RSR-type
 						4'b1101, 1'b0, // MOV instruction, Do not update flags [24:20]
 						4'b0000, defaultInstrD[15:12], // Store to Rd
@@ -773,9 +700,6 @@ always_comb
 				nextState = ready;
 				InstrMuxD = 1;
 				ldrstrRtype = 0;
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				uOpStallD = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b001}; // 5th bit of WA3, RA2D and RA1D
@@ -798,9 +722,6 @@ always_comb
 				nextState = ready;
 				InstrMuxD = 1;
 				ldrstrRtype = 0;
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				uOpStallD = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
@@ -824,10 +745,7 @@ always_comb
 				nextState = ready;
 				InstrMuxD = 1;
 				ldrstrRtype = 0;
-				addCarry = 0;
 				noRotate = 1;
-				KeepZD = 0;
-				AddZeroD = 0;
 				uOpStallD = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
@@ -852,9 +770,6 @@ always_comb
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
 					uOpStallD = 1;
-					KeepZD = 0;
-					AddZeroD = 0;
-					addCarry = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of WA3, RA2D and RA1D  
 					LDMSTMforward = 0;
@@ -878,9 +793,6 @@ always_comb
 				nextState = ready;
 				InstrMuxD = 1;
 				ldrstrRtype = 0;
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				uOpStallD = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
@@ -903,12 +815,9 @@ always_comb
 					nextState = ready;
 					InstrMuxD = 0;
 					uOpStallD = 0;
-					addCarry = 0;
 					noRotate = 1;
 					prevRSRstate = 0;
 					KeepVD = 0;
-					KeepZD = 0;
-					AddZeroD = 0;
 					regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b000}; // 5th bit of RA2D and RA1D
 					uOpInstrD = {defaultInstrD};
@@ -928,9 +837,6 @@ always_comb
 			nextState = ready;
 			InstrMuxD = 1;
 			ldrstrRtype = 0;
-			addCarry = 0;
-			KeepZD = 0;
-			AddZeroD = 0;
 			uOpStallD = 0;
 			regFileRz = {1'b0, // Control inital mux for RA1D
 						3'b010}; // 5th bit of WA3, RA2D and RA1D 
@@ -955,12 +861,9 @@ always_comb
 				InstrMuxD = 1;
 				uOpStallD = 0;
 				prevRSRstate = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b001}; // 5th bit of WA3, RA2D and RA1D
 				noRotate = 0;
-				addCarry = 0;
 				ldrstrRtype = 0;
 				nextState = ready; 
 				LDMSTMforward = 0;
@@ -989,9 +892,6 @@ always_comb
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
 				noRotate = 0;
 				ldrstrRtype = 0;
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				nextState = ready;
 				LDMSTMforward = 0;
 				Reg_usr_D = 0; 
@@ -1012,9 +912,6 @@ always_comb
 				InstrMuxD = 1;
 				uOpStallD = 0;
 				prevRSRstate = 0;
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
 				noRotate = 0;
@@ -1036,9 +933,6 @@ always_comb
 				InstrMuxD = 1;
 				uOpStallD = 0;
 				prevRSRstate = 0;
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
 				noRotate = 0;
@@ -1084,10 +978,7 @@ always_comb
 			begin			// load next register
 				debugText = "ldmstm part2";
 				InstrMuxD = 1;
-				KeepZD = 0;
-				AddZeroD = 0;
 				uOpStallD = ~(ZeroRegsLeft & ~defaultInstrD[21]);
-				addCarry = 0;
 				prevRSRstate = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 								3'b001}; //5th bit of WA3, RA2D and RA1D
@@ -1117,10 +1008,7 @@ always_comb
 			nextState = ready;
 			InstrMuxD = 1;
 			noRotate = 0;
-			KeepZD = 0;
-			AddZeroD = 0;
 			uOpStallD = 0;
-			addCarry = 0;
 			prevRSRstate = 0;
 			regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
@@ -1148,9 +1036,6 @@ always_comb
 			uOpStallD = 0;
 			prevRSRstate = 0;
 			KeepVD = 0;
-			addCarry = 0;
-			KeepZD = 0;
-			AddZeroD = 0;
 			LDMSTMforward = 0;
 			regFileRz = {1'b0, // Control inital mux for RA1D
 						3'b000}; // 5th bit of WA3, RA2D and RA1D
@@ -1170,9 +1055,6 @@ always_comb
 				uOpStallD = 0;
 				prevRSRstate = 0;
 				KeepVD = 0;
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				LDMSTMforward = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
@@ -1192,9 +1074,6 @@ always_comb
 			uOpStallD = 0;
 			prevRSRstate = 1;
 			KeepVD = 0;
-			addCarry = 0;
-			KeepZD = 0;
-			AddZeroD = 0;
 			LDMSTMforward = 0;
 			regFileRz = {1'b0, // Control inital mux for RA1D
 						3'b010}; // 5th bit of WA3, RA2D and RA1D
@@ -1217,9 +1096,6 @@ always_comb
 				prevRSRstate = 1;
 				KeepVD = 1;
 				KeepCD = 1;
-				addCarry = 0;
-				KeepZD = 0;
-				AddZeroD = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b001}; // 5th bit of WA3, RA2D and RA1D
 				nextState = ready;
@@ -1238,7 +1114,6 @@ always_comb
 				InstrMuxD = 1;
 				uOpStallD = 0;
 				KeepVD = 1;
-				addCarry = 0;
 				prevRSRstate = 0;
 				multControlD = {defaultInstrD[22], 1'b1}; //unsigned/signed high
 				regFileRz = {1'b0, // Control inital mux for RA1D
@@ -1247,9 +1122,7 @@ always_comb
 				LDMSTMforward = 0;
 				Reg_usr_D = 0; 
 				MicroOpCPSRrestoreD = 0;
-				KeepZD = 0;  
 				KeepCD = 0;  
-				AddZeroD = 0;  
 				noRotate = 0;  
 				ldrstrRtype = 0;  
 				uOpInstrD = {defaultInstrD[31:16], 4'b0, defaultInstrD[11:0]}; 
@@ -1261,9 +1134,6 @@ always_comb
 				prevRSRstate = 1;
 				KeepVD = 1;
 				KeepCD = 1;
-				KeepZD = 1;
-				addCarry = 0;
-				AddZeroD = 0;
 				multControlD = {defaultInstrD[22], 1'b0}; //unsigned/signed high. SD 5/6/2015 not 1, but probably ok for just add
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b001}; // 5th bit of WA3, RA2D and RA1D
@@ -1283,15 +1153,12 @@ always_comb
 				prevRSRstate = 0;
 				uOpStallD = 0;
 				KeepVD = 1;
-				addCarry = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of RA2D and RA1D
 				LDMSTMforward = 0;
 				Reg_usr_D = 0; 
 				MicroOpCPSRrestoreD = 0;
-				KeepZD = 0;  
 				KeepCD = 0;  
-				AddZeroD = 0;  
 				noRotate = 0;  
 				ldrstrRtype = 0;  
 				multControlD = 2'b00;  
@@ -1304,10 +1171,7 @@ always_comb
 			InstrMuxD = 1;
 			uOpStallD = 1;
 			KeepVD = 1;
-			KeepZD = 0; 
 			KeepCD = 0;
-			addCarry = 0;
-			AddZeroD = 0;
 			prevRSRstate = 0;
 			multControlD = {defaultInstrD[22], 1'b1}; //unsigned/signed high
 			regFileRz = {1'b1, // Control inital mux for RA1D
@@ -1326,9 +1190,6 @@ always_comb
 			uOpStallD = 0;
 			prevRSRstate = 1;
 			KeepVD = 1;
-			KeepZD = 0;
-			addCarry = 1;
-			AddZeroD = 1;
 			multControlD = {defaultInstrD[22], 1'b1}; //unsigned/signed high
 			regFileRz = {1'b0, // Control inital mux for RA1D
 						3'b001}; // 5th bit of WA3, RA2D and RA1D
@@ -1347,9 +1208,6 @@ always_comb
 			nextState = ready;
 			InstrMuxD = 0;
 			KeepVD = 0;
-			KeepZD = 0;
-			addCarry = 0;
-			AddZeroD = 0;
 			LDMSTMforward = 0;
 			prevRSRstate = 0;
 			uOpStallD = 0;
