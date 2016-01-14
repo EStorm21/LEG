@@ -75,7 +75,7 @@ module controller (
   logic        ByteOrWordE, ByteOrWordM, LdrStr_HalfD, LdrStr_HalfE, LdrHalfwordE, LdrHalfwordM;
   logic        Ldr_SignBD, Ldr_SignHD, Ldr_SignBE, Ldr_SignHE, Ldr_SignBM, Ldr_SignHM;
   logic [ 1:0] ByteOffsetE, ByteOffsetM;
-  logic        PrevRSRstateD, uOpRtypeLdrStrD;
+  logic        PrevCycleCarryD, uOpRtypeLdrStrD;
   logic        RegWriteKillE   ;
   logic        CoProc_MCR_D, CoProc_MRC_D, CoProc_FlagUpd_D, CoProc_WrEnD, CoProc_EnD;
   logic        CoProc_FlagUpd_E, CoProc_FlagUpd_M, CoProc_FlagUpd_W;
@@ -115,8 +115,8 @@ module controller (
   flopenrc #(1) flushWBD(clk, reset | ExceptionResetMicrop, ~StallD, FlushD, 1'b1, nonFlushedInstrD);
 
 
-  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevRSRstateD, 
-    KeepVD, KeepCD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, interrupting); 
+  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevCycleCarryD, 
+    KeepVD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, interrupting); 
   assign MultSelectD = 0;
 
   // === Control Logic for Datapath ===
@@ -244,16 +244,14 @@ module controller (
   // ======================================= Execute Stage ==============================================
   // ====================================================================================================
 
-  flopenrc #(1) MlalCarryPrev(clk, reset, ~StallE & KeepCE, FlushE, FlagsOutE[1], CFlagKeptE);
-  flopenrc #(1)  keepV(clk, reset, ~StallE, FlushE, {KeepCD}, {KeepCE});
   flopenrc #(1) shftrCarryOut(clk, reset, ~StallE, FlushE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
   flopenrc #(1) restoreCPSR_DE(clk, reset, ~StallE, FlushE, restoreCPSR_D, restoreCPSR_E);
   flopenrc #(3) undef_exception(clk, reset, ~StallE, FlushE, {undefD, SWI_D, bkpt_D}, {undefE, SWI_0E, bkpt_E});
   flopenrc #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);
   flopenrc #(3) CoprocE(clk, reset, ~StallE, FlushE, {CoProc_FlagUpd_D, CoProc_EnD, CoProc_WrEnD}, {CoProc_FlagUpd_E, CoProc_EnE, CoProc_WrEnE});
   flopenrc #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
-  flopenrc  #(8) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevRSRstateD, LDMSTMforwardD, LDRSTRshiftD, LdrStr_HalfD, Ldr_SignHD, Ldr_SignBD},
-                                                            {RselectE, ResultSelectE, PrevRSRstateE, LDMSTMforwardE, LDRSTRshiftE, LdrStr_HalfE, Ldr_SignHE, Ldr_SignBE});
+  flopenrc  #(8) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevCycleCarryD, LDMSTMforwardD, LDRSTRshiftD, LdrStr_HalfD, Ldr_SignHD, Ldr_SignBD},
+                                                            {RselectE, ResultSelectE, PrevCycleCarryE, LDMSTMforwardE, LDRSTRshiftE, LdrStr_HalfE, Ldr_SignHE, Ldr_SignBE});
   flopenrc #(11) flushedregsE(clk, reset, ~StallE, FlushE,
     {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD, ldrstrALUopD, BXInstrD, CPSRtoRegD,  RegtoCPSR_D},
     {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE, ldrstrALUopE, BXInstrE, CPSRtoReg0E, RegtoCPSR_0E});
@@ -263,7 +261,7 @@ module controller (
   flopenrc #(1) flushWBE(clk, reset, ~StallE, FlushE, nonFlushedInstrD, nonFlushedInstrE);
 
   // === ALU Decoding ===
-  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], CFlagKeptE, BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryInE, DoNotWriteRegE);
+  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryInE, DoNotWriteRegE);
   // === END ===
 
   /*** BRIEF ***
@@ -281,7 +279,7 @@ module controller (
   // === CONDITIONAL EXECUTION CHECKING ===
   assign FlagsE     = SetNextFlagsM ? FlagsNextM : (SetNextFlagsW ? FlagsNextW : CPSRW[31:28]);
   assign FlagsNextE = (RegtoCPSR_E & InstrE[19]) ? ALUResultE[31:28] : FlagsNext0E; // If flags field is set by MSR, update flags now!
-  conditional Cond(CondE, FlagsE, ALUFlagsE, FlagWriteE, CondExE, FlagsNext0E, FlagsOutE, ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevRSRstateE, CVUpdateE);
+  conditional Cond(CondE, FlagsE, ALUFlagsE, FlagWriteE, CondExE, FlagsNext0E, FlagsOutE, ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevCycleCarryE, CVUpdateE);
   assign BranchTakenE    = BranchE & CondExE;
   assign RegWritepreMuxE = (RegWriteE & CondExE);
   assign MemWriteGatedE  = MemWriteE & CondExE;
