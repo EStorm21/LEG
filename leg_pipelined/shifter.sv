@@ -4,6 +4,7 @@ module shifter(input  logic [31:0] a,
               input logic isRtype, isRSRtype, isLDRSTR_shift, ZeroRotate,
               input logic [1:0] prevCVflag, // [1] is C, [0] is V
               input logic [6:4] shiftOpCode_E,
+              input logic       shiftCarryIn, // for multiplies. There may be a more elegant way
               output logic      shifterCarryOutE);
  
  /***** Brief Description *******
@@ -38,7 +39,7 @@ if (isRtype & ~isLDRSTR_shift) // R type
                 shifterCarryOutE = b[31];
               end
               else begin
-                shiftBE = b >> a[11:7]; 
+                shiftBE = {shiftCarryIn, b[30:0]} >> a[11:7]; 
                 shifterCarryOutE = b[a[11:7] - 1];
                 end
               end

@@ -4,7 +4,10 @@ module micropsfsm(input  logic        clk, reset,
                output logic 	   PrevCycleCarry, KeepVD, noRotate, ldrstrRtype, 
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
-			   input  logic		   StalluOp, ExceptionSavePC, interrupting);
+			   input  logic		   StalluOp, ExceptionSavePC, interrupting, 
+			   input  logic [1:0]  Rs_D,
+			   output logic [1:0]  multCarryIn,
+			   output logic        multPrevZFlag);
 
  /***** Brief Description *******
  * First Created by Ivan Wong for Clay Wolkin 2014-2015
@@ -15,7 +18,7 @@ module micropsfsm(input  logic        clk, reset,
 
 
 // define states READY and RSR 
-typedef enum {ready, rsr, ldmstm, bl, ldmstmWriteback, ls_word, str, blx, strHalf, ls_halfword, ls_word_byte, ls_word_byte_wb, swp_str, swp_mov, MUL_done, MUL_add, MUL_mov_Rs, MUL_shift_Rz, MUL_add_Cout, MUL_gen_flags, MUL_mov_RdHi, MUL_shift_RdLo, MUL_replace_RdHi, MUL_shift_Rd_RdHi, MUL_replace_RdLo} statetype; // theres a bug if we get rid of strHalf... need to figoure out why
+typedef enum {ready, rsr, ldmstm, bl, ldmstmWriteback, ls_word, str, blx, strHalf, ls_halfword, ls_word_byte, ls_word_byte_wb, swp_str, swp_mov, MUL_add, MUL_mov_Rs, MUL_shift_Rz, MUL_add_Cout, MUL_gen_flags, MUL_mov_RdHi, MUL_shift_RdLo, MUL_replace_RdHi, MUL_shift_Rd_RdHi, MUL_replace_RdLo} statetype; // theres a bug if we get rid of strHalf... need to figoure out why
 statetype state, nextState;
 
 string debugText;
@@ -73,9 +76,8 @@ always_comb
 // For multiplies, we need to shift and add 32 times. Thus start at 31 and subtract 1 before it is time to check the result.
 // Let's do it in the MUL_add stage, since all paths go through that.
 logic [4:0] MUL_counter;
-logic MUL_done;
-always_ff @ (posedge clk)
-  begin
+logic MUL_done, partialProduct_en;
+always_ff @ (posedge clk) begin
   	if (reset | state == ready)
   		MUL_counter <= 5'b11111;
   	else if (StalluOp)
@@ -84,10 +86,38 @@ always_ff @ (posedge clk)
   		MUL_counter <= MUL_counter - 1'b1;
   	else 
   		MUL_counter <= MUL_counter;
-  end
+end
 assign MUL_done = MUL_counter == 5'b00000;
 
 
+// Save the value of Rs[0] when we manipulate it so we will be able to use it later.
+// This is in the states MUL_mov_Rs and MUL_shift_Rd_RdHi.
+// We need to get the value out of the register file and select bit 1 or 0 depending on the shift
+// We can't get it all the time since there are not enough register file ports.
+always_ff@(posedge clk) begin
+	if (reset)
+		partialProduct_en <= 0;
+	else if (StalluOp)
+		partialProduct_en <= partialProduct_en;
+	else if (state == MUL_mov_Rs)
+		partialProduct_en <= Rs_D[0];
+	else if (state == MUL_shift_Rd_RdHi)
+		partialProduct_en <= Rs_D[1];
+	else
+		partialProduct_en <= partialProduct_en;
+end
+
+// Whether to use shiftercarryoutcycle2 as a carry in for the shifter or ALU(bit 0)
+// Or to use ALUCarryOutCycle2
+assign multCarryIn[1] = (state == MUL_add_Cout);
+assign multCarryIn[0] = (state == MUL_shift_Rz) | (state == MUL_shift_Rd_RdHi);
+
+assign multPrevZFlag = state == MUL_replace_RdHi;
+
+
+// -----------------------------------------------------------------------------
+// --------------------------- END SPECIAL LOGIC -------------------------------
+// -----------------------------------------------------------------------------
 
 // set reset state to READY, else set state to nextState
 always_ff @ (posedge clk)
@@ -202,7 +232,7 @@ always_comb
 				debugText = "multiply";
 				InstrMuxD = 1;
 				uOpStallD = 1;
-				KeepVD = 1;
+				KeepVD = 0;
 				PrevCycleCarry = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b100}; // 5th bit of WA3, RA2D and RA1D
@@ -1055,7 +1085,7 @@ always_comb
 		MUL_add_Cout: begin
 			InstrMuxD = 1;
 			uOpStallD = 1;
-			PrevCycleCarry = 1;
+			PrevCycleCarry = 0;
 			KeepVD = 0;
 			regFileRz = {1'b0, // Control inital mux for RA1D
 						3'b000}; // 5th bit of WA3, RA2D and RA1D
@@ -1099,7 +1129,7 @@ always_comb
 		MUL_shift_Rz: begin
 			InstrMuxD = 1;
 			uOpStallD = 1;
-			PrevCycleCarry = 1;
+			PrevCycleCarry = 0;
 			KeepVD = 0;
 			regFileRz = {1'b0, // Control inital mux for RA1D
 						3'b110}; // 5th bit of WA3, RA2D and RA1D
@@ -1120,8 +1150,8 @@ always_comb
 		//  shift in Rz[0], shift out Rd[0] or RdHi[0]
 		MUL_shift_Rd_RdHi: begin
 			InstrMuxD = 1;
-			uOpStallD = 1;
-			PrevCycleCarry = 1;
+			uOpStallD = ~MUL_done | defaultInstrD[23] | defaultInstrD[20];
+			PrevCycleCarry = 0;
 			KeepVD = 0;
 			regFileRz = {1'b0, // Control inital mux for RA1D
 						3'b000}; // 5th bit of WA3, RA2D and RA1D
@@ -1143,7 +1173,7 @@ always_comb
 			InstrMuxD = 1;
 			uOpStallD = 1;
 			PrevCycleCarry = 0;
-			KeepVD = 0;
+			KeepVD = 1;
 			regFileRz = {1'b0, // Control inital mux for RA1D
 						3'b000}; // 5th bit of WA3, RA2D and RA1D
 			nextState = MUL_replace_RdHi;
@@ -1162,9 +1192,9 @@ always_comb
 		// Carry-shift multiplication: Put the value in Rz (RdHi) in its place
 		MUL_replace_RdHi: begin
 			InstrMuxD = 1;
-			uOpStallD = 1;
+			uOpStallD = 0;
 			PrevCycleCarry = 0;
-			KeepVD = 0;
+			KeepVD = 1;
 			regFileRz = {1'b0, // Control inital mux for RA1D
 						3'b010}; // 5th bit of WA3, RA2D and RA1D
 			nextState = ready;
@@ -1183,9 +1213,9 @@ always_comb
 		// Carry-shift multiplication: Generate flags if we need to by moving Rd into itself
 		MUL_gen_flags: begin
 			InstrMuxD = 1;
-			uOpStallD = 1;
+			uOpStallD = 0;
 			PrevCycleCarry = 0;
-			KeepVD = 0;
+			KeepVD = 1;
 			regFileRz = {1'b0, // Control inital mux for RA1D
 						3'b000}; // 5th bit of WA3, RA2D and RA1D
 			nextState = ready;

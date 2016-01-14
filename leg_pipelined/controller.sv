@@ -13,12 +13,14 @@ module controller (
   input  logic [ 3:0] ALUFlagsE              ,
   input  logic [31:0] ALUResultE, DefaultInstrD,
   input  logic        ShifterCarryOutE,
+  input  logic [1:0]  Rs_D, // for multiply partial products
   /// ------ To   Datapath ------
   output logic [ 1:0] RegSrcD, ImmSrcD       ,
   output logic        ALUSrcE, ALUSrcD, BranchTakenE,
   output logic [ 3:0] ALUControlE            ,
   output logic        MemWriteM              ,
   output logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE,
+  output logic        shiftCarryInE,
   // For ALU logic unit
   output logic [ 2:0] ALUOperationE,
   output logic        DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryInE,
@@ -92,6 +94,9 @@ module controller (
   logic        CondExM, CondExW;
   logic        CondAndD;
   logic        bkpt_D, bkpt_E;
+  logic  [1:0] multCarryInD, multCarryInE;
+  logic        ALUCarryIn_0E;
+  logic        multPrevZFlagD, multPrevZFlagE;
 
   // For debugging
   logic        validDdebug, validEdebug, validMdebug, validWdebug;
@@ -116,7 +121,7 @@ module controller (
 
 
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevCycleCarryD, 
-    KeepVD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, interrupting); 
+    KeepVD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, interrupting, Rs_D, multCarryInD, multPrevZFlagD); 
   assign MultSelectD = 0;
 
   // === Control Logic for Datapath ===
@@ -245,6 +250,9 @@ module controller (
   // ====================================================================================================
 
   flopenrc #(1) shftrCarryOut(clk, reset, ~StallE, FlushE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
+  flopenrc #(1) aluCarryOut(  clk, reset, ~StallE, FlushE, ALUFlagsE[1],     ALUCarryOut_cycle2E);
+  flopenrc #(2) multcarryin(  clk, reset, ~StallE, FlushE, multCarryInD,     multCarryInE);
+  flopenrc #(2) prevzflop(    clk, reset, ~StallE, FlushE, {multPrevZFlagD, FlagsNext0E[2]}, {multPrevZFlagE, zFlagPrevE});
   flopenrc #(1) restoreCPSR_DE(clk, reset, ~StallE, FlushE, restoreCPSR_D, restoreCPSR_E);
   flopenrc #(3) undef_exception(clk, reset, ~StallE, FlushE, {undefD, SWI_D, bkpt_D}, {undefE, SWI_0E, bkpt_E});
   flopenrc #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);
@@ -261,7 +269,9 @@ module controller (
   flopenrc #(1) flushWBE(clk, reset, ~StallE, FlushE, nonFlushedInstrD, nonFlushedInstrE);
 
   // === ALU Decoding ===
-  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryInE, DoNotWriteRegE);
+  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryIn_0E, DoNotWriteRegE);
+  assign ALUCarryInE = multCarryInE[1] ? ALUCarryOut_cycle2E : ALUCarryIn_0E;
+  assign shiftCarryInE = multCarryInE[0] ? ShifterCarryOut_cycle2E : 1'b0;
   // === END ===
 
   /*** BRIEF ***
@@ -279,7 +289,7 @@ module controller (
   // === CONDITIONAL EXECUTION CHECKING ===
   assign FlagsE     = SetNextFlagsM ? FlagsNextM : (SetNextFlagsW ? FlagsNextW : CPSRW[31:28]);
   assign FlagsNextE = (RegtoCPSR_E & InstrE[19]) ? ALUResultE[31:28] : FlagsNext0E; // If flags field is set by MSR, update flags now!
-  conditional Cond(CondE, FlagsE, ALUFlagsE, FlagWriteE, CondExE, FlagsNext0E, FlagsOutE, ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevCycleCarryE, CVUpdateE);
+  conditional Cond(CondE, FlagsE, ALUFlagsE, FlagWriteE, CondExE, FlagsNext0E, FlagsOutE, ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevCycleCarryE, CVUpdateE, zFlagPrevE, multPrevZFlagE);
   assign BranchTakenE    = BranchE & CondExE;
   assign RegWritepreMuxE = (RegWriteE & CondExE);
   assign MemWriteGatedE  = MemWriteE & CondExE;

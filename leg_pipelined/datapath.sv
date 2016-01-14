@@ -13,6 +13,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE, ExceptionSavePC,
                   input  logic [31:0] InstrE, PSR_W, 
                   input  logic [2:0]  VectorPCnextF,
+                  input  logic        shiftCarryInE,
                   // Handling data-processing Instrs (ALU)
                   input  logic [3:0]  FlagsE,
                   input  logic [2:0]  ALUOperationE,
@@ -36,6 +37,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   output logic [3:0]  ALUFlagsE, 
                   output logic [31:0] ALUResultE, DefaultInstrD,
                   output logic        ShifterCarryOutE,
+                  output logic [1:0]  Rs_D,
 
                 /// ------ From Hazard ------
                   input  logic [1:0]  ForwardAE, ForwardBE,
@@ -93,6 +95,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                  Rd1D, Rd2D); 
   extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25], noRotateD);
   rotator   rotat(ExtImmD, InstrD, RotImmD, ZeroRotateD, noRotateD); 
+  assign Rs_D = Rd2D[1:0];
 
 
   // ====================================================================================
@@ -115,7 +118,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
 
   // TODO: implement as a barrel shift
-  shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE, LDRSTRshiftE, ZeroRotateE, FlagsE[1:0], ShiftOpCode_E, ShifterCarryOutE);
+  shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE, LDRSTRshiftE, ZeroRotateE, FlagsE[1:0], ShiftOpCode_E, shiftCarryInE, ShifterCarryOutE);
   
   alu         alu(SrcAE, SrcBE, ALUOperationE, InvertBE, ReverseInputsE, ALUCarryInE, ALUOutputE, ALUFlagsE); 
   zero_counter clz(SrcBE, ZerosE);

@@ -63,7 +63,7 @@ module addresspath( /// ------ From TOP ------
   assign WA3_4b_D = InstrD[15:12];
 
   // If InstrD[3:0] is actually an immediate, we don't want to match. 
-  assign regR2_D = (~MultSelectD & ~RegSrcD[1]) & ~ALUSrcD;
+  assign regR2_D = ~RegSrcD[1] & ~ALUSrcD;
 
   addressdecode address_decoder1(RA1_4b_D, RegFileRzD[0], ModeOneHotD, RA1D);
   addressdecode address_decoder2(RA2_4b_D, RegFileRzD[1], ModeOneHotD, RA2D);

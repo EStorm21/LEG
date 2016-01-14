@@ -6,7 +6,8 @@ module conditional(input  logic [3:0] Cond,
                    output logic [3:0] FlagsNext,  // The new flags to base conditions on in the future
                    output logic [3:0] FlagsOut,   // The flags from the ALU or multiplier. Used by micro ops.
                    input  logic ShifterCarryOut_cycle2E, ShifterCarryOut_cycle1E, PrevCycleCarryE, // Extra junk for using the shifter carry in a micro op
-                   input  logic [2:0] CVUpdate); // Classes of ALU operations that do special things to the flags  
+                   input  logic [2:0] CVUpdate,  // Classes of ALU operations that do special things to the flags
+                   input  logic zFlagPrevE,multPrevZFlagE);     // Previous Z flag, needed for long multiplies
 
 /***** Brief Description *******
  * First Created by Ivan Wong for Clay Wolkin 2014-2015
@@ -51,8 +52,8 @@ module conditional(input  logic [3:0] Cond,
   assign negNext = ALUFlagsE[3];
 
   // Zero flag
-  // No special case when no long multiplies
-  assign zeroNext = ALUFlagsE[2];
+  // long multiplies require RdLo and RdHi to be 0
+  assign zeroNext = multPrevZFlagE ? ALUFlagsE[2] & zFlagPrevE : ALUFlagsE[2];
 
 
   // Carry flag

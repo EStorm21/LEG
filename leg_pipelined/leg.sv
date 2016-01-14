@@ -32,6 +32,7 @@ module leg(input  logic        clk, reset,
   logic        MultStallD, MultStallE;
   logic        WriteMultLoE, WriteMultLoKeptE;
   logic        ShifterCarryOutE, CarryHiddenE;
+  logic  [1:0] Rs_D;
   
 
   /// Output from Controller
@@ -57,6 +58,7 @@ module leg(input  logic        clk, reset,
   logic [31:0] PSR_W;
   logic RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW;
   logic        ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD;
+  logic shiftCarryInE;
 
   /// Output from AddressPath
   logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_1D_E, Match_2D_E, ExceptionVectorSelectW;
