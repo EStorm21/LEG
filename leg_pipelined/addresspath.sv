@@ -33,7 +33,7 @@ module addresspath( /// ------ From TOP ------
   
   logic [31:0]  WA3D, WA3M, WA3E, RA1E, RA2E;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D, WA3_4b_D;
-  logic user_sys, fiq, irq, svc, abort, undef, system;
+  logic user_sys, fiq, irq, svc, abort, undef;
   logic [5:0] ModeOneHotD;
 
 

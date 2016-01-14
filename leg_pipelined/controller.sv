@@ -56,7 +56,7 @@ module controller (
   logic [ 3:0] ALUControlD, ByteMaskE;
   logic [ 4:0] MSRmaskD, MSRmaskE, MSRmaskM, MSRmaskW;
   logic [ 1:0] MultControlD       ;
-  logic        MemtoRegD, CondExE2;
+  logic        MemtoRegD;
   logic        RegWriteD, RegWriteE, RegWriteGatedE;
   logic        MemWriteD, MemWriteE, MemWriteGatedE;
   logic        SetNextFlagsE, SetNextFlagsM, SetNextFlagsW;

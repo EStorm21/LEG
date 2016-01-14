@@ -25,10 +25,10 @@ string debugText;
 // --------------------------- ADDED FOR LDM/STM -------------------------------
 // -----------------------------------------------------------------------------
 // Conditional Unit
-logic LastCycle, WriteBack, ZeroRegsLeft;
+logic WriteBack, ZeroRegsLeft;
 assign WriteBack = defaultInstrD[21]; 
 // Count ones for LDM/STM
-logic [4:0] numones, defaultNumones;
+logic [4:0] numones;
 logic [3:0] Rd; // Rd is a CURRENT value 
 logic [6:0] start_imm; // start_imm LE 16 << 2 == 1000000 
 logic [15:0] RegistersListNow, RegistersListNext;
