@@ -39,7 +39,7 @@ if (isRtype & ~isLDRSTR_shift) // R type
                 shifterCarryOutE = b[31];
               end
               else begin
-                shiftBE = {shiftCarryIn, b[30:0]} >> a[11:7]; 
+                shiftBE = {shiftCarryIn, b[31:0]} >> a[11:7]; 
                 shifterCarryOutE = b[a[11:7] - 1];
                 end
               end
