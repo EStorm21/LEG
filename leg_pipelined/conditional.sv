@@ -5,7 +5,7 @@ module conditional(input  logic [3:0] Cond,
                    output logic       CondEx,     // whether the instruction will be executed
                    output logic [3:0] FlagsNext,  // The new flags to base conditions on in the future
                    output logic [3:0] FlagsOut,   // The flags from the ALU or multiplier. Used by micro ops.
-                   input  logic ShifterCarryOut_cycle2E, ShifterCarryOut_cycle1E, PrevRSRstateE, // Extra junk for using the shifter carry in a micro op
+                   input  logic ShifterCarryOut_cycle2E, ShifterCarryOut_cycle1E, PrevCycleCarryE, // Extra junk for using the shifter carry in a micro op
                    input  logic [2:0] CVUpdate); // Classes of ALU operations that do special things to the flags  
 
 /***** Brief Description *******
@@ -58,7 +58,7 @@ module conditional(input  logic [3:0] Cond,
   // Carry flag
   // Multiplies never update C.
   // AND, TST, EOR, TEQ, ORR, MOV, MVN, BIC use the shifter carry out. We need to save this shifter carry when we have RSR
-  assign ShifterCarryOut = PrevRSRstateE ? ShifterCarryOut_cycle2E : ShifterCarryOut_cycle1E;
+  assign ShifterCarryOut = PrevCycleCarryE ? ShifterCarryOut_cycle2E : ShifterCarryOut_cycle1E;
   assign carryNext = (CVUpdate == 3'b000) ? ShifterCarryOut : ALUFlagsE[1];
 
   // Overflow flag

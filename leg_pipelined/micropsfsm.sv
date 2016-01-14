@@ -2,7 +2,6 @@ module micropsfsm(input  logic        clk, reset,
                input  logic [31:0] defaultInstrD,
                output logic        InstrMuxD, uOpStallD, LDMSTMforward, Reg_usr_D, MicroOpCPSRrestoreD,
                output logic 	   prevRSRstate, KeepVD, KeepCD, noRotate, ldrstrRtype, 
-               output logic [1:0]  multControlD, 
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
 			   input  logic		   StalluOp, ExceptionSavePC, interrupting);
@@ -115,7 +114,6 @@ always_comb
 				KeepCD = 0;    
 				noRotate = 0;  
 				ldrstrRtype = 0;  
-				multControlD = 0;  
 				regFileRz = 0; 
 				nextState = ready;
 				uOpInstrD = 32'b1110_000_1101_0_0000_1110_00000000_1111; // mov r14, pc
@@ -157,7 +155,6 @@ always_comb
 				KeepCD = 0;  
 				noRotate = 0;  
 				ldrstrRtype = 0;  
-				multControlD = 2'b00;  
 				uOpInstrD = {defaultInstrD[31:25], // Condition bits and RSR-type
 							4'b1101, 1'b0, // MOV instruction, Do not update flags [24:20]
 							4'b0000, 4'b1111, // If we have SBZ then [19:16]  shb 0000, we should use Rz [15:12]
@@ -179,7 +176,6 @@ always_comb
 				KeepCD = 0;  
 				noRotate = 0;  
 				ldrstrRtype = 0;  
-				multControlD = 2'b00;  
 				uOpInstrD = {defaultInstrD[31:28], 5'b01011, // ldr{b} immediate offset
 							defaultInstrD[22], 2'b01, 	// load word or byte; offset mode
 							defaultInstrD[19:16],  // Load from Rn
@@ -196,14 +192,17 @@ always_comb
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b100}; // 5th bit of WA3, RA2D and RA1D
 				nextState = MUL2;
-				multControlD = 2'b00; //unsigned low
 				LDMSTMforward = 0;
 				Reg_usr_D = 0; 
 				MicroOpCPSRrestoreD = 0;
 				KeepCD = 0;   
 				noRotate = 0;  
 				ldrstrRtype = 0;  
-				uOpInstrD = defaultInstrD; 
+				// mov Rd, Rs
+				uOpInstrD = {defaultInstrD[31:28], // Condition bits
+							8'b00011010, // MOV instruction, Do not update flags [24:20]
+							4'h0, 4'hF, //  we should use Rd = Rz
+							8'h00,defaultInstrD[19:16] }; // Rm = Rd 
 			end
 			// Start multiply accumulate
 			else if((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:21] == 7'h01)) begin 
@@ -212,7 +211,6 @@ always_comb
 				uOpStallD = 1;
 				KeepVD = 1;
 				prevRSRstate = 0;
-				multControlD = 2'b00; //unsigned low
 				regFileRz = {1'b1, // Control inital mux for RA1D
 							3'b100}; // 5th bit of WA3, RA2D and RA1D
 				nextState = multiply;
@@ -234,7 +232,6 @@ always_comb
 				uOpStallD = 1;
 				KeepVD = 1;
 				prevRSRstate = 0;
-				multControlD = {defaultInstrD[22], 1'b0}; //unsigned/signed low. [22]==1 if Signed
 				regFileRz = {1'b0, // Control inital mux for RA1D
 							3'b000}; // 5th bit of WA3, RA2D and RA1D
 				nextState = multiply;
@@ -254,7 +251,6 @@ always_comb
 				uOpStallD = 1;
 				KeepVD = 1;
 				prevRSRstate = 0;
-				multControlD = {defaultInstrD[22], 1'b0}; //unsigned/signed low. [22]==1 if Signed
 				regFileRz = {1'b1, // Control inital mux for RA1D
 							3'b100}; // 5th bit of WA3, RA2D and RA1D
 				nextState = multiply;
@@ -281,7 +277,6 @@ always_comb
 				KeepCD = 0;  
 				noRotate = 0;  
 				ldrstrRtype = 0;  
-				multControlD = 2'b00;  
 				uOpInstrD = {defaultInstrD[31:28], // Condition bits
 							3'b001, 4'b0010, 1'b0, // SUB instruction, Do not update flags 
 							4'b1111, 4'b1110, // R15, link register destination
@@ -303,7 +298,6 @@ always_comb
 				KeepCD = 0;  
 				noRotate = 0;  
 				ldrstrRtype = 0;  
-				multControlD = 2'b00;  
 				uOpInstrD = {defaultInstrD[31:28], // Condition bits
 							3'b001, 4'b0010, 1'b0, // SUB instruction, Do not update flags 
 							4'b1111, 4'b1110, // R15, link register destination
@@ -327,7 +321,6 @@ always_comb
 				KeepCD = 0;  
 				noRotate = 0;  
 				ldrstrRtype = 0;  
-				multControlD = 2'b00;  
 				// First instruction should be a ADD or SUB start_imm
 				uOpInstrD = {defaultInstrD[31:28], // Cond
 							 3'b001, 			   // ADD/SUB  I-type
@@ -357,7 +350,6 @@ always_comb
 					KeepVD = 0;  
 					KeepCD = 0;  
 					noRotate = 0;  
-					multControlD = 2'b00;  
 					// We need to calculate Rn + Rm in the first cycle, then second cycle save it! 
 					uOpInstrD = {defaultInstrD[31:28], 3'b001, // I-Type Data processing instr
 						1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
@@ -379,7 +371,6 @@ always_comb
 					KeepVD = 0;  
 					KeepCD = 0;  
 					noRotate = 0;  
-					multControlD = 2'b00;  
 					// We need to calculate Rn + Rm in the first cycle, then second cycle save it! 
 					uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
 						1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
@@ -402,7 +393,6 @@ always_comb
 					KeepVD = 0;  
 					KeepCD = 0;  
 					noRotate = 0;  
-					multControlD = 2'b00;  
 					// (1) <addr> = Rn, (2) Rn = Rn + imm
 					uOpInstrD = {defaultInstrD[31:25], 1'b1, // change to basic ldrh/strh i type
 						defaultInstrD[23:12],
@@ -424,7 +414,6 @@ always_comb
 					KeepVD = 0;  
 					KeepCD = 0;  
 					noRotate = 0;   
-					multControlD = 2'b00;  
 					// (1) <addr> = Rn, (2) Rn = Rn + imm
 					uOpInstrD = {defaultInstrD[31:23], 2'b10, // change to basic ldrh/strh i type
 						defaultInstrD[20:12],
@@ -449,7 +438,6 @@ always_comb
 					MicroOpCPSRrestoreD = 0;
 					KeepVD = 0;   
 					KeepCD = 0;    
-					multControlD = 2'b00;  
 					// We need to calculate the Rn + Rm in the first cycle, then second cycle load value from regfile to store to mem
 					uOpInstrD = {defaultInstrD[31:28], // Condition bits
 								3'b000,				   // R-type data processing instr
@@ -472,7 +460,6 @@ always_comb
 					Reg_usr_D = 0; 
 					MicroOpCPSRrestoreD = 0;
 					KeepCD = 0;  
-					multControlD = 2'b00;  
 				end 
 			end
 			// ALL LOAD and STORE WORDS / BYTES --- ldr, str, ldrb, strb
@@ -495,7 +482,6 @@ always_comb
 					prevRSRstate = 0;  
 					KeepVD = 0;   
 					KeepCD = 0;  
-					multControlD = 2'b00;  
 					// (1) Rz = Rm shifted by shift_imm (R-type instr), (2) Rn = Rn +/- Rz
 					uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
 						1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
@@ -520,7 +506,6 @@ always_comb
 					prevRSRstate = 0;  
 					KeepVD = 0;   
 					KeepCD = 0;  
-					multControlD = 2'b00;  
 					// (1) Rn = Rn + Imm
 					uOpInstrD = {defaultInstrD[31:28], 3'b001, // I-Type Data processing instr
 						1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
@@ -544,7 +529,6 @@ always_comb
 					KeepVD = 0; 
 					KeepCD = 0;  
 					noRotate = 0;  
-					multControlD = 2'b00;  
 					// (1) Rn = Rn + scaled(Rm)
 					uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
 						1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
@@ -568,7 +552,6 @@ always_comb
 					prevRSRstate = 0;  
 					KeepVD = 0;  
 					KeepCD = 0;   
-					multControlD = 2'b00;  
 					// Rz = Rn + <shift operand>
 					uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
 						1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
@@ -592,7 +575,6 @@ always_comb
 					KeepVD = 0;  
 					KeepCD = 0;  
 					noRotate = 0;  
-					multControlD = 2'b00;  
 					// Load immedate byte/word
 					uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
 							defaultInstrD[23:22], 1'b0, 	// 
@@ -616,7 +598,6 @@ always_comb
 					Reg_usr_D = 0; 
 					MicroOpCPSRrestoreD = 0;
 					KeepCD = 0;   
-					multControlD = 2'b00;  
 				end 
 			end
 			/* --- Stay in the READY state ----
@@ -655,7 +636,6 @@ always_comb
 			KeepCD = 0;  
 			noRotate = 0;  
 			ldrstrRtype = 0;  
-			multControlD = 2'b00;  
 			uOpInstrD = {defaultInstrD[31:28], 5'b01011, // str{b} immediate offset
 						defaultInstrD[22], 2'b00, 	// store word or byte; offset mode
 						defaultInstrD[19:16],  // Store to Rn
@@ -678,7 +658,6 @@ always_comb
 			KeepCD = 0;  
 			noRotate = 0;  
 			ldrstrRtype = 0;  
-			multControlD = 2'b00;  
 			uOpInstrD = {defaultInstrD[31:28], 3'b000, // Condition bits and RSR-type
 						4'b1101, 1'b0, // MOV instruction, Do not update flags [24:20]
 						4'b0000, defaultInstrD[15:12], // Store to Rd
@@ -702,7 +681,6 @@ always_comb
 				KeepVD = 0;   
 				KeepCD = 0;  
 				noRotate = 0;   
-				multControlD = 2'b00;  
 				// Load immedate byte/word
 				uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
 							defaultInstrD[23:20], 4'b1111, // Load Rz
@@ -724,7 +702,6 @@ always_comb
 				KeepVD = 0;   
 				KeepCD = 0;  
 				noRotate = 0;  
-				multControlD = 2'b00;  
 				// Load immediate byte/word
 				uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
 							defaultInstrD[23:22], 1'b0, 	// 
@@ -747,7 +724,6 @@ always_comb
 				prevRSRstate = 0;  
 				KeepVD = 0;   
 				KeepCD = 0;  
-				multControlD = 2'b00;  
 				// (1) Rn = Rn + Imm
 				uOpInstrD = {defaultInstrD[31:28], 3'b001, // I-Type Data processing instr
 						1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
@@ -771,7 +747,6 @@ always_comb
 					KeepVD = 0;  
 					KeepCD = 0;   
 					noRotate = 0;  
-					multControlD = 2'b00;  
 					// Load immedate byte/word
 					uOpInstrD = {defaultInstrD[31:28], 4'b0101, // ldrb/strb immediate offset
 							defaultInstrD[23:22], 1'b0, 	// 
@@ -795,7 +770,6 @@ always_comb
 				KeepVD = 0;  
 				KeepCD = 0;   
 				noRotate = 0;  
-				multControlD = 2'b00;  
 				// (1) Rn = Rn + Rm
 				uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
 						1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
@@ -819,7 +793,6 @@ always_comb
 					Reg_usr_D = 0; 
 					MicroOpCPSRrestoreD = 0;
 					KeepCD = 0;  
-					multControlD = 2'b00;  
 			end 
 		end
 
@@ -839,7 +812,6 @@ always_comb
 			KeepVD = 0;  
 			KeepCD = 0;  
 			noRotate = 0;   
-			multControlD = 2'b00;  
 			// Load immedate byte/word
 			uOpInstrD = {defaultInstrD[31:28], 3'b000, // Condition bits and RSR-type
 						4'b1101, 1'b0, // MOV instruction, Do not update flags [24:20]
@@ -863,7 +835,6 @@ always_comb
 				MicroOpCPSRrestoreD = 0;
 				KeepVD = 0;  
 				KeepCD = 0;   
-				multControlD = 2'b00;  
 				// after calculating Rn + shift(Rm), lets store Rd to that address
 				uOpInstrD = {defaultInstrD[31:28], 3'b000, // Cond, I-type ls_halfword store
 							defaultInstrD[24:23], 1'b1, 
@@ -890,7 +861,6 @@ always_comb
 				MicroOpCPSRrestoreD = 0;
 				KeepVD = 0;  
 				KeepCD = 0;  
-				multControlD = 2'b00;  
 				// Store Rn <= Rz
 				uOpInstrD = {defaultInstrD[31:23], 
 							2'b10, // Only make one change: to normal immediate offset mode
@@ -914,7 +884,6 @@ always_comb
 				MicroOpCPSRrestoreD = 0;
 				KeepVD = 0;  
 				KeepCD = 0;  
-				multControlD = 2'b00;  
 				uOpInstrD = {defaultInstrD[31:28], 3'b001, // I-Type Data processing instr
 							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
 							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + imm 
@@ -935,7 +904,6 @@ always_comb
 				MicroOpCPSRrestoreD = 0;
 				KeepVD = 0;  
 				KeepCD = 0;  
-				multControlD = 2'b00;  
 				uOpInstrD = {defaultInstrD[31:28], 3'b000, // R-Type Data processing instr
 							1'b0, defaultInstrD[23], ~defaultInstrD[23], 1'b0, 1'b0, // ADD/SUB, do not set flags
 							defaultInstrD[19:16], defaultInstrD[19:16], // Rn = Rn + Rm
@@ -979,7 +947,6 @@ always_comb
 				KeepCD = 0;  
 				noRotate = 0;  
 				ldrstrRtype = 0;  
-				multControlD = 2'b00;  
 				// Preform LDR/STR Rd, [Rz, #4]!
 				uOpInstrD = {defaultInstrD[31:28],
 							3'b010, 			   // Load SINGLE as I-type
@@ -1010,7 +977,6 @@ always_comb
 			KeepVD = 0;  
 			KeepCD = 0;  
 			ldrstrRtype = 0;  
-			multControlD = 2'b00; 
 			uOpInstrD = {defaultInstrD[31:28], // Cond
 							 3'b001, 			   // ADD/SUB  I-type
 							 1'b0, 				   // part of opcode
@@ -1037,7 +1003,6 @@ always_comb
 			KeepCD = 0;   
 			noRotate = 0;  
 			ldrstrRtype = 0;  
-			multControlD = 2'b00;  
 			uOpInstrD = {defaultInstrD[31:25], 1'b0, defaultInstrD[23:0]};//branch without link
         end
 
@@ -1056,7 +1021,6 @@ always_comb
 				KeepCD = 0;  
 				noRotate = 0;  
 				ldrstrRtype = 0;  
-				multControlD = 2'b00;  
 				uOpInstrD = {defaultInstrD[31:6], 1'b0, defaultInstrD[4:0]};//branch without link
 			end
 	    end
@@ -1075,14 +1039,12 @@ always_comb
 			KeepCD = 0;  
 			noRotate = 0;  
 			ldrstrRtype = 0;  
-			multControlD = 2'b00;  
 			uOpInstrD = {defaultInstrD[31:12], // keep the first 12 bits the same, Rd and Rn are included
 						 8'b0, 4'b1111}; // No shifting, use source Rz
 		end
 
-		multiply:begin
+		MUL2:begin
 			if(defaultInstrD[21] & ~defaultInstrD[23] & (defaultInstrD[7:4] == 4'b1001)) begin //accumulate short
-				debugText = "accumulate short";
 				InstrMuxD = 1;
 				uOpStallD = 0;
 				prevRSRstate = 1;
@@ -1096,65 +1058,9 @@ always_comb
 				MicroOpCPSRrestoreD = 0;
 				noRotate = 0;  
 				ldrstrRtype = 0;  
-				multControlD = 2'b00;  
 				uOpInstrD = {defaultInstrD[31:28], 7'b0000100, defaultInstrD[20], //condition code, ADD funct, flag update
 							 4'b1111, defaultInstrD[19:16], //[19:16] is Rz
 							 8'b00000000, defaultInstrD[15:12]};
-			end
-			else if((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:23] == 5'h01) & ~defaultInstrD[21]) begin //multiply long
-				debugText = "multiply long";
-				InstrMuxD = 1;
-				uOpStallD = 0;
-				KeepVD = 1;
-				prevRSRstate = 0;
-				multControlD = {defaultInstrD[22], 1'b1}; //unsigned/signed high
-				regFileRz = {1'b0, // Control inital mux for RA1D
-							3'b000}; // 5th bit of WA3, RA2D and RA1D
-				nextState = ready;
-				LDMSTMforward = 0;
-				Reg_usr_D = 0; 
-				MicroOpCPSRrestoreD = 0;
-				KeepCD = 0;  
-				noRotate = 0;  
-				ldrstrRtype = 0;  
-				uOpInstrD = {defaultInstrD[31:16], 4'b0, defaultInstrD[11:0]}; 
-			end
-			else if(((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:23] == 5'h01) & defaultInstrD[21])) begin //accumulate long
-				debugText = "accumulate long";
-				InstrMuxD = 1;
-				uOpStallD = 1;
-				prevRSRstate = 1;
-				KeepVD = 1;
-				KeepCD = 1;
-				multControlD = {defaultInstrD[22], 1'b0}; //unsigned/signed high. SD 5/6/2015 not 1, but probably ok for just add
-				regFileRz = {1'b0, // Control inital mux for RA1D
-							3'b001}; // 5th bit of WA3, RA2D and RA1D
-				nextState = mlal1;
-				LDMSTMforward = 0;
-				Reg_usr_D = 0; 
-				MicroOpCPSRrestoreD = 0;
-				noRotate = 0;  
-				ldrstrRtype = 0;  
-				uOpInstrD = {defaultInstrD[31:28], 8'b00001000, //send an add instruction
-						4'b1111, defaultInstrD[15:12], 8'b00000000, defaultInstrD[15:12]}; 
-			end
-			else begin
-				debugText = "multiply else";
-				nextState = ready;
-				InstrMuxD = 0;
-				prevRSRstate = 0;
-				uOpStallD = 0;
-				KeepVD = 1;
-				regFileRz = {1'b0, // Control inital mux for RA1D
-							3'b000}; // 5th bit of RA2D and RA1D
-				LDMSTMforward = 0;
-				Reg_usr_D = 0; 
-				MicroOpCPSRrestoreD = 0;
-				KeepCD = 0;  
-				noRotate = 0;  
-				ldrstrRtype = 0;  
-				multControlD = 2'b00;  
-				uOpInstrD = {defaultInstrD};
 			end
 		end
 
@@ -1165,7 +1071,6 @@ always_comb
 			KeepVD = 1;
 			KeepCD = 0;
 			prevRSRstate = 0;
-			multControlD = {defaultInstrD[22], 1'b1}; //unsigned/signed high
 			regFileRz = {1'b1, // Control inital mux for RA1D
 						3'b100}; // 5th bit of WA3, RA2D and RA1D
 			nextState = mlal2;
@@ -1182,7 +1087,6 @@ always_comb
 			uOpStallD = 0;
 			prevRSRstate = 1;
 			KeepVD = 1;
-			multControlD = {defaultInstrD[22], 1'b1}; //unsigned/signed high
 			regFileRz = {1'b0, // Control inital mux for RA1D
 						3'b001}; // 5th bit of WA3, RA2D and RA1D
 			nextState = ready;
@@ -1210,7 +1114,6 @@ always_comb
 			KeepCD = 0;  
 			noRotate = 0;  
 			ldrstrRtype = 0;  
-			multControlD = 2'b00;  
 			uOpInstrD = {defaultInstrD};
 		end
 	endcase
