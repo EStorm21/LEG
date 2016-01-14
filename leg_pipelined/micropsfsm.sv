@@ -21,7 +21,7 @@ statetype state, nextState;
 string debugText;
 
 // -----------------------------------------------------------------------------
-// --------------------------- ADDED FOR LDM/STM -------------------------------
+// --------------------------- LDM/STM -----------------------------------------
 // -----------------------------------------------------------------------------
 // Conditional Unit
 logic WriteBack, ZeroRegsLeft;
@@ -68,22 +68,24 @@ always_comb
   end
 
 // -----------------------------------------------------------------------------
-// --------------------------- END LDM/STM -------------------------------------
+// --------------------------- MULTIPLIES --------------------------------------
 // -----------------------------------------------------------------------------
-
+// For multiplies, we need to shift and add 32 times. Thus start at 31 and subtract 1 before it is time to check the result.
+// Let's do it in the MUL_add stage, since all paths go through that.
 logic [4:0] MUL_counter;
-
+logic MUL_done;
 always_ff @ (posedge clk)
   begin
   	if (reset | state == ready)
-  		RegistersListNow <= 16'b0;
+  		MUL_counter <= 5'b11111;
   	else if (StalluOp)
-  		RegistersListNow <= RegistersListNow;
-  	else if (state == ready)
-  		RegistersListNow <= defaultInstrD[15:0];
-  	else
-  		RegistersListNow <= RegistersListNext;
+  		MUL_counter <= MUL_counter;
+  	else if (state == MUL_add)
+  		MUL_counter <= MUL_counter - 1'b1;
+  	else 
+  		MUL_counter <= MUL_counter;
   end
+assign MUL_done = MUL_counter == 5'b00000;
 
 
 
