@@ -19,10 +19,11 @@ module data_writeback_associative_cache_controller
 
   logic [      tbits-1:0] PrevPTag;
   logic [$clog2(lines):0] FlushA    ; // Create block address to increment
-  logic                   IncFlush, ResetBlockOff;
+  logic                   IncFlush, ResetBlockOff, WDMaskSel;
   logic                   WordAccess, CWE, Hit, W2Hit, W1Hit, TagSel, writeW1;
   logic                   W2EN, Dirty, NoCount;
   logic             [1:0] CounterMid, Counter, DataCounter;
+  logic             [3:0] WDMask;
 
 
   // Writeback cache states
@@ -97,7 +98,10 @@ module data_writeback_associative_cache_controller
   assign UseWD = ~BlockWE | ( BlockWE & MemWriteM & (WordOffset == DataWordOffset) );
   mux2 #(4)  MaskMux(4'b1111, ByteMask, ( UseWD & ~(state == MEMREAD) ), 
     ActiveByteMask);
-  assign WDSel = ~(ActiveByteMask ^ {4{UseWD}});
+
+  assign WDMaskSel = UseWD & (state == MEMREAD) & (WordOffset == DataWordOffset);
+  mux2 #(4)  WDMaskMux(ActiveByteMask, ByteMask, WDMaskSel, WDMask);
+  assign WDSel = ~(WDMask ^ {4{UseWD}});
 
   // state register
   always_ff @(posedge clk, posedge reset)
