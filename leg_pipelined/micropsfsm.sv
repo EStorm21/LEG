@@ -72,10 +72,6 @@ always_comb
 // --------------------------- END LDM/STM -------------------------------------
 // -----------------------------------------------------------------------------
 
-// Stores shift amount for shift and add multiplication
-logic [4:0] MULShift;
-
-
 // set reset state to READY, else set state to nextState
 always_ff @ (posedge clk)
 	begin
@@ -106,9 +102,6 @@ always_comb
 		 * READY STATE 
 		 */
 		ready: begin
-			// MUL shift is the same for any case in ready state
-			MULShift = 5'b00001;
-
 			// Exception handling: mov r14, pc. By the time this comes back to wb we will be in
 			// the exception mode and thus will use the correct registers
 			if (ExceptionSavePC) begin
@@ -193,17 +186,16 @@ always_comb
 							4'b1111,  // Store into Rz
 							12'b0};	
 			end
-			// Start multiply
-            // SD 5/6/2015 Why have this case? Just put it in controller
-			else if((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:21] == 7'h0)) begin 
+			// Start MUL / MLA
+			else if((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:22] == 6'h0)) begin 
 				debugText = "multiply";
 				InstrMuxD = 1;
-				uOpStallD = 0;
+				uOpStallD = 1;
 				KeepVD = 1;
 				prevRSRstate = 0;
 				regFileRz = {1'b0, // Control inital mux for RA1D
-							3'b000}; // 5th bit of WA3, RA2D and RA1D
-				nextState = ready;
+							3'b100}; // 5th bit of WA3, RA2D and RA1D
+				nextState = MUL2;
 				multControlD = 2'b00; //unsigned low
 				LDMSTMforward = 0;
 				Reg_usr_D = 0; 

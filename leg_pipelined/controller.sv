@@ -55,7 +55,6 @@ module controller (
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
   logic [ 3:0] ALUControlD, ByteMaskE;
   logic [ 4:0] MSRmaskD, MSRmaskE, MSRmaskM, MSRmaskW;
-  logic [ 1:0] MultControlD       ;
   logic        MemtoRegD;
   logic        RegWriteD, RegWriteE, RegWriteGatedE;
   logic        MemWriteD, MemWriteE, MemWriteGatedE;
@@ -117,13 +116,13 @@ module controller (
 
 
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevRSRstateD, 
-    KeepVD, KeepCD, noRotateD, uOpRtypeLdrStrD, MultControlD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, interrupting); 
+    KeepVD, KeepCD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, interrupting); 
   assign MultSelectD = 0;
 
   // === Control Logic for Datapath ===
   always_comb
     casex(InstrD[27:26])
-      // If 2'b00, then this is data processing instruction  SD 10/1/2015: Dangerous! Not all with this code are DP.
+      // If 2'b00, then this is data processing instruction  SD 10/1/2015: Dangerous! Not all with this code are DP. We should catch them with undef though.
       2'b00: if (InstrD[25])                                ControlsD = 13'b00_00_1010_0100; // Data processing immediate   0x52
         else if (InstrD[7:4] == 4'b1001 & ~InstrD[24])      ControlsD = 13'b00_00_0010_0100; // Multiply
         else if (InstrD[22] & InstrD[20] & LdrStr_HalfD)    ControlsD = 13'b00_11_1110_0010;  // LDH I-type
