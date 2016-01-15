@@ -87,7 +87,7 @@ always_ff @ (posedge clk) begin
   	else 
   		MUL_counter <= MUL_counter;
 end
-assign MUL_done = MUL_counter == 5'b00000;
+assign MUL_done = MUL_counter == 5'b11111;
 
 
 // Save the value of Rs[0] when we manipulate it so we will be able to use it later.
@@ -1186,7 +1186,7 @@ always_comb
 			uOpInstrD = {defaultInstrD[31:28], // Condition bits
 						7'b000_1101, defaultInstrD[20], // MOV R type, Set flags if we should
 						4'h0, defaultInstrD[15:12], // Rd = RdLo
-						8'b00001_010, defaultInstrD[19:16] }; // Rm = RdHi
+						8'h00, defaultInstrD[19:16] }; // Rm = RdHi
 		end
 
 		// Carry-shift multiplication: Put the value in Rz (RdHi) in its place
@@ -1207,7 +1207,7 @@ always_comb
 			uOpInstrD = {defaultInstrD[31:28], // Condition bits
 						7'b000_1101, defaultInstrD[20], // MOV R type, Set flags if we should
 						4'h0, defaultInstrD[19:16], // Rd = RdHi
-						8'b00001_010, 4'hF }; // Rm = Rz
+						8'h00, 4'hF }; // Rm = Rz
 		end
 
 		// Carry-shift multiplication: Generate flags if we need to by moving Rd into itself
@@ -1228,7 +1228,7 @@ always_comb
 			uOpInstrD = {defaultInstrD[31:28], // Condition bits
 						8'b000_1101_1, // MOV R type, We can only get here if we set flags
 						4'h0, defaultInstrD[19:16], // Rd = Rd
-						8'b00001_010, defaultInstrD[19:16] }; // Rm = Rd
+						8'h00, defaultInstrD[19:16] }; // Rm = Rd
 		end
 
 
