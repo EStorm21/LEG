@@ -18,15 +18,23 @@ def dumpQemuFile(path):
 
 def dumpQemuState(path):
 	gdb.execute("maint packet qqemu.dumpstate {}".format(os.path.join(path, 'qemu_state_dump')))
+	with open(os.path.join(path, 'qemu_state_dump'),'a') as f:
+		f.write(getCr7()+'\n')
 
 def fullDump(path):
 	print "Dumping Qemu state"
 	dumpQemuFile(path)
 	dumpQemuState(path)
 
+regmatch = re.compile("0x([0-9a-f]+)")
+def getCr7():
+	cr7_raw = gdb.execute("leg-get-cp-reg 7 14 0 3", to_string=True) # basically mrc 15, 0, xx, cr7, cr14, {3}
+	cr7 = regmatch.search(cr7_raw).group(1)
+	return "32'h{}".format(cr7)
+
 def showQemuState():
 	gdb.execute("maint packet qqemu.dumpstate output/tmp_qemu_state_dump")
-	cr7 = gdb.execute("leg-get-cp-reg 7 14 0 3") # basically mrc 15, 0, xx, cr7, cr14, {3}
+
 	line_headers = [
 		'PC: ',
 		'CPSR: ',
@@ -78,5 +86,6 @@ def showQemuState():
 	]
 	with open('output/tmp_qemu_state_dump','r') as f:
 		msg = ''.join(a+b for a,b in zip(line_headers, f))
+		msg += 'coproc[7] (): {}\n'.format(getCr7())
 	return msg
 
