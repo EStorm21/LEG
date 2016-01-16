@@ -57,7 +57,7 @@ module controller (
   logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
   logic [ 3:0] ALUControlD, ByteMaskE;
   logic [ 4:0] MSRmaskD, MSRmaskE, MSRmaskM, MSRmaskW;
-  logic        MemtoRegD;
+  logic        MemtoRegD, MemtoReg_0E;
   logic        RegWriteD, RegWriteE, RegWriteGatedE;
   logic        MemWriteD, MemWriteE, MemWriteGatedE;
   logic        SetNextFlagsE, SetNextFlagsM, SetNextFlagsW;
@@ -263,8 +263,8 @@ module controller (
   flopenrc  #(8) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevCycleCarryD, LDMSTMforwardD, LDRSTRshiftD, LdrStr_HalfD, Ldr_SignHD, Ldr_SignBD},
                                                             {RselectE, ResultSelectE, PrevCycleCarryE, LDMSTMforwardE, LDRSTRshiftE, LdrStr_HalfE, Ldr_SignHE, Ldr_SignBE});
   flopenrc #(11) flushedregsE(clk, reset, ~StallE, FlushE,
-    {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD, ldrstrALUopD, BXInstrD, CPSRtoRegD,  RegtoCPSR_D},
-    {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoRegE, ldrstrALUopE, BXInstrE, CPSRtoReg0E, RegtoCPSR_0E});
+    {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD,   ldrstrALUopD, BXInstrD, CPSRtoRegD,  RegtoCPSR_D},
+    {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoReg_0E, ldrstrALUopE, BXInstrE, CPSRtoReg0E, RegtoCPSR_0E});
   flopenrc #(11)  regsE(clk, reset, ~StallE, FlushE, {ALUSrcD, ALUControlD, PSRtypeD, MSRmaskD},
                                                      {ALUSrcE, ALUControlE, PSRtypeE, MSRmaskE});
   flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE, {(ALUOpD|ldrstrALUopD), InstrD}, {ALUOpE, InstrE});
@@ -295,6 +295,7 @@ module controller (
   assign BranchTakenE    = BranchE & CondExE;
   assign RegWritepreMuxE = (RegWriteE & CondExE);
   assign MemWriteGatedE  = MemWriteE & CondExE;
+  assign MemtoRegE       = MemtoReg_0E & CondExE; // avoid reading memory when we shouldn't. Could cause data abort!
   assign PCSrcGatedE     = PCSrcE & CondExE;
   assign SetNextFlagsE   = (FlagWriteE != 2'b00) & CondExE;
   assign CPSRtoRegE      = CPSRtoReg0E & CondExE;

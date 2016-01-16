@@ -26,6 +26,7 @@ def fullDump(path):
 
 def showQemuState():
 	gdb.execute("maint packet qqemu.dumpstate output/tmp_qemu_state_dump")
+	cr7 = gdb.execute("leg-get-cp-reg 7 14 0 3") # basically mrc 15, 0, xx, cr7, cr14, {3}
 	line_headers = [
 		'PC: ',
 		'CPSR: ',
