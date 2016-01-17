@@ -75,6 +75,8 @@ set cpreg [gets $dumpfile]
 change {/testbench/dut/cp15/rf[5]} $cpreg
 set cpreg [gets $dumpfile]
 change {/testbench/dut/cp15/rf[6]} $cpreg
+set cpreg [gets $dumpfile]
+change {/testbench/dut/cp15/rf[7]} $cpreg
 
 run 4ps
 

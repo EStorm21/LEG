@@ -1,7 +1,6 @@
 module alu_decoder(input  logic       ALUOpE,
            input  logic [24:21] ALUControlE,
            input  logic [1:0] PreviousCVFlag,
-           input  logic       addCarry, CFlagKeptE, 
            input  logic BXInstrE, RegtoCPSR,
            output   logic [2:0] ALUOperation, CVUpdate,
            output   logic     InvertB, ReverseInputs, ALUCarryIn, DoNotWriteReg);
@@ -31,7 +30,6 @@ module alu_decoder(input  logic       ALUOpE,
       5'b10110: ALUCarryIn = PreviousCVFlag[1];   // SBC
       5'b10111: ALUCarryIn = PreviousCVFlag[1];   // RSC
       5'b11010: ALUCarryIn = 1'b1;   // CMP
-      5'b10100: ALUCarryIn = addCarry & CFlagKeptE; // ADD
       default:  ALUCarryIn = 1'b0;
     endcase
   

@@ -75,7 +75,10 @@ always_ff @(negedge clk) begin
     for (j = 1; j < 16; j = j+1) begin // r0 is read only, so we start at r1
       //if(we & reg_select[j]) rf[j] <= wd;	
       if(we & reg_select[j]) begin
-          rf[j] <= wd;	
+          if(j == 7 & ~(CRm == 4'he & opcode_2 == 3'h3)) // only update CR7 if CRm=14 and opc2=3. A linux thing.
+            rf[j] <= rf[j];
+          else
+            rf[j] <= wd;	
           //$display("we: reg %d at time %d", j, $time);
       end
     end
@@ -84,7 +87,11 @@ end
 
 always_comb begin
   for(i = 0; i < 16; i = i+1) begin
-    if(re & reg_select[i]) rd = rf[i];
+    if(re & reg_select[i]) 
+      if(i == 0 & CRm == 4'h0 & opcode_2 == 3'h2)  // Another magic number for Linux. Again a v7 register that we can RAZ
+        rd = 32'b0;
+      else
+        rd = rf[i];
   end
 end
 

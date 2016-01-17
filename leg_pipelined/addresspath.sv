@@ -2,7 +2,7 @@ module addresspath( /// ------ From TOP ------
                     input  logic        clk, reset,
                     /// From Controller
                     input  logic [31:0] InstrE,					  
-                    input  logic        WriteMultLoE, MultSelectD, ALUSrcD, 
+                    input  logic        ALUSrcD, 
                     input  logic [3:0]  RegFileRzD,
                     input  logic [1:0]  RegSrcD,
                     input  logic [7:0]  CPSR8_W, 
@@ -31,9 +31,9 @@ module addresspath( /// ------ From TOP ------
   * -- Also needed for exception vector addresses in the Writeback stage.
   */
   
-  logic [31:0]  WA3D, WA3M, WA3E, RA1E, RA2E, RdLoE;
+  logic [31:0]  WA3D, WA3M, WA3E, RA1E, RA2E;
   logic [3:0]  RA1_4b_D, RA1_RnD, RA2_4b_D, WA3_4b_D;
-  logic user_sys, fiq, irq, svc, abort, undef, system;
+  logic user_sys, fiq, irq, svc, abort, undef;
   logic [5:0] ModeOneHotD;
 
 
@@ -55,15 +55,15 @@ module addresspath( /// ------ From TOP ------
   assign ModeOneHotD    = {user_sys, fiq, irq, svc, abort, undef};
 
   // Selecting appropriate register for Regfile RA1, RA2 and WA3
-  mux3 #(4) ra1mux(InstrD[19:16], 4'b1111, InstrD[3:0], {MultSelectD, RegSrcD[0]}, RA1_RnD);
-  // Why do we need a mux3 to do this?
-  mux3 #(4) ra1RSRmux(RA1_RnD, InstrD[11:8], RA1_RnD, {MultSelectD, (RegFileRzD[2] & RegFileRzD[3])}, RA1_4b_D);
+  mux2 #(4) ra1mux(InstrD[19:16], 4'b1111, RegSrcD[0], RA1_RnD);
   
-  mux3 #(4) ra2mux(InstrD[3:0], InstrD[15:12], InstrD[11:8], {MultSelectD, RegSrcD[1]}, RA2_4b_D);
-  mux2 #(4) destregmux(InstrD[15:12], InstrD[19:16], MultSelectD, WA3_4b_D);
+  mux2 #(4) ra1RSRmux(RA1_RnD, InstrD[11:8], (RegFileRzD[2] & RegFileRzD[3]), RA1_4b_D);
+  
+  mux2 #(4) ra2mux(InstrD[3:0], InstrD[15:12], RegSrcD[1], RA2_4b_D);
+  assign WA3_4b_D = InstrD[15:12];
 
   // If InstrD[3:0] is actually an immediate, we don't want to match. 
-  assign regR2_D = (~MultSelectD & ~RegSrcD[1]) & ~ALUSrcD;
+  assign regR2_D = ~RegSrcD[1] & ~ALUSrcD;
 
   addressdecode address_decoder1(RA1_4b_D, RegFileRzD[0], ModeOneHotD, RA1D);
   addressdecode address_decoder2(RA2_4b_D, RegFileRzD[1], ModeOneHotD, RA2D);
@@ -82,8 +82,6 @@ module addresspath( /// ------ From TOP ------
 
   eqcmp #(32) m4a(WA3E, RA1D, Match_1D_E);
   eqcmp #(32) m4b(WA3E, RA2D, Match_2D_E);
-  
-  longmult_addressdecode multAddr(InstrE[15:12], CPSR8_W, RdLoE);
   
 
 

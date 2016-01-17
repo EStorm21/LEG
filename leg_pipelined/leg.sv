@@ -32,12 +32,13 @@ module leg(input  logic        clk, reset,
   logic        MultStallD, MultStallE;
   logic        WriteMultLoE, WriteMultLoKeptE;
   logic        ShifterCarryOutE, CarryHiddenE;
+  logic  [1:0] Rs_D;
   
 
   /// Output from Controller
   logic [1:0]  RegSrcD, ImmSrcD;
   logic [3:0]  ALUControlE;
-  logic        ALUSrcE, ALUSrcD, BranchTakenE, MemtoRegW, PCSrcW, RegWriteW, Reg_usr_D;
+  logic        ALUSrcE, ALUSrcD, BranchTakenE, MemtoRegW, PCSrcW, RegWriteW, Reg_usr_D, ResultSelectE;
   logic [6:4]  ShiftOpCode_E;
   logic [31:0] InstrE, ALUResultE;
   logic        RegWriteM, MemtoRegE, PCWrPendingF, WriteByteE, StrHalfwordE, LdrHalfwordW, HalfwordOffsetW;
@@ -45,7 +46,7 @@ module leg(input  logic        clk, reset,
   logic        DoNotWriteRegE, PrevRSRstateD, PrevRSRstateE, CPSRtoRegW;
   logic        LDMSTMforwardD, LDMSTMforwardE, LDRSTRshiftE, MultSelectD, RselectE;
   logic [3:0]  FlagsE; // [1] is C, [0] is V
-  logic [1:0]  ResultSelectE, ByteOffsetW;
+  logic [1:0]  ByteOffsetW;
   logic [1:0]  MultControlE;
   logic        KeepVE, noRotateD, InstrMuxD;
   logic [31:0] uOpInstrD;
@@ -57,6 +58,7 @@ module leg(input  logic        clk, reset,
   logic [31:0] PSR_W;
   logic RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW;
   logic        ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD;
+  logic shiftCarryInE;
 
   /// Output from AddressPath
   logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_1D_E, Match_2D_E, ExceptionVectorSelectW;

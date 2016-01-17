@@ -1,7 +1,7 @@
 From c0bd5f75c90ebd074e386586f4d9d4556591ce9b Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Thu, 19 Nov 2015 20:04:11 -0800
-Subject: [PATCH 08/10] Change dumping to check for current mode spsr
+Subject: [PATCH 08/11] Change dumping to check for current mode spsr
 
 The spsr for the current mode is stored separately from the banked versions
 for other modes. Before, this meant when we dumped state we pulled down an
