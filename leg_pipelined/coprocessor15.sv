@@ -87,7 +87,11 @@ end
 
 always_comb begin
   for(i = 0; i < 16; i = i+1) begin
-    if(re & reg_select[i]) rd = rf[i];
+    if(re & reg_select[i]) 
+      if(i == 0 & CRm == 4'h0 & opcode_2 == 3'h2)  // Another magic number for Linux. Again a v7 register that we can RAZ
+        rd = 32'b0;
+      else
+        rd = rf[i];
   end
 end
 
