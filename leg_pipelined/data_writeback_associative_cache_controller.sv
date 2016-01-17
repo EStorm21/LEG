@@ -200,7 +200,7 @@ module data_writeback_associative_cache_controller
     ((state == READY) & ~Hit & Dirty & ~clean) |
     (nextstate == DWRITE) | 
     (state == DWRITE);
-  assign HRequestM = (state == READY) & MemtoRegM & PAReady |
+  assign HRequestM = (state == READY) & MemtoRegM & PAReady & ~enable |
 		(state == READY) & MemWriteM & enable & ~Hit & PAReady |
 		(state == DWRITE) & ~BusReady |
     (state == LASTREAD) & ~BusReady |
@@ -217,7 +217,6 @@ module data_writeback_associative_cache_controller
   ( (state == READY) & ~Hit & ~Dirty );
   assign ResetBlockOff = ((state == READY) & Hit) |
   (state == READY) & ~PAReady |
-  (state == WRITEBACK) & (Counter == 3) & BusReady |
   (state == NEXTINSTR) |
   (state == WAIT) |
   (state == FLUSH);
@@ -226,7 +225,8 @@ module data_writeback_associative_cache_controller
   assign WaySelMid = enable & W1Hit | ~enable;
   
   // CacheIn Logic
-  assign CacheRDSel = HWriteM ? Counter : WordOffset;
+  // assign CacheRDSel = HWriteM ? DataCounter : WordOffset;
+  assign CacheRDSel = DataWordOffset;
 
   // Cached address selection
   assign UseCacheA = enable & HWriteM;
