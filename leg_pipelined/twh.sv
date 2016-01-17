@@ -82,7 +82,7 @@ case (state)
                   nextstate <= READY;
                 end else if(HRData[1:0] == 2'b01) begin
                   nextstate <= COARSEFETCH;
-                end else if(HRData[1:0] == 2'b11) begin
+                end else begin
                   nextstate <= FINEFETCH;
                 end
 

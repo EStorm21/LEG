@@ -27,7 +27,7 @@ module data_writeback_associative_cache_controller
 
 
   // Writeback cache states
-  typedef enum logic[2:0] {READY, MEMREAD, LASTREAD, WRITEBACK, 
+  typedef enum logic[3:0] {READY, MEMREAD, LASTREAD, WRITEBACK, LASTWRITEBACK,
                            NEXTINSTR, FLUSH, WAIT, DWRITE} statetype;
   statetype state, nextstate;
 
@@ -37,7 +37,7 @@ module data_writeback_associative_cache_controller
     if(reset | ResetBlockOff | ~enable) begin
         CounterMid <= 0;
     end else begin
-        if (BusReady | (nextstate == MEMREAD) & MSel) begin
+        if (BusReady | (nextstate == MEMREAD) & MSel | (nextstate == WRITEBACK) & MSel) begin
             CounterMid <= CounterMid + 1;
         end else begin
             CounterMid <= CounterMid;
@@ -142,7 +142,12 @@ module data_writeback_associative_cache_controller
       WRITEBACK: if (clean & (Counter == 3) ) begin
         nextstate <= FLUSH;
       end else begin
-        nextstate <= ( BusReady &  (Counter == 3) ) ? MEMREAD : WRITEBACK;
+        nextstate <= ( BusReady &  (Counter == 3) ) ? LASTWRITEBACK : WRITEBACK;
+      end
+      LASTWRITEBACK: if (clean & BusReady) begin
+        nextstate <= FLUSH;
+      end else begin
+        nextstate <= BusReady ? MEMREAD : LASTWRITEBACK;
       end
       // If all four words have been fetched from memory, then move on.
       // If the cache is disabled, then only read one line. (line isn't valid)
@@ -182,6 +187,7 @@ module data_writeback_associative_cache_controller
   assign Stall = (state == MEMREAD) |
     (state == LASTREAD) |
     (state == WRITEBACK) |
+    (state == LASTWRITEBACK) |
     (state == FLUSH) |
     (state == DWRITE) |
     ( (state == READY) &
@@ -199,6 +205,7 @@ module data_writeback_associative_cache_controller
 		(state == DWRITE) & ~BusReady |
     (state == LASTREAD) & ~BusReady |
     (state == MEMREAD) |
+    (state == LASTWRITEBACK) |
     (state == WRITEBACK); 
 
   // RDSel makes WD the output for disabled cache behavior
@@ -210,6 +217,7 @@ module data_writeback_associative_cache_controller
   ( (state == READY) & ~Hit & ~Dirty );
   assign ResetBlockOff = ((state == READY) & Hit) |
   (state == READY) & ~PAReady |
+  (state == WRITEBACK) & (Counter == 3) & BusReady |
   (state == NEXTINSTR) |
   (state == WAIT) |
   (state == FLUSH);

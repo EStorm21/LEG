@@ -60,8 +60,7 @@ module data_writeback_associative_cache #(
     assign WordOffset = VirtA[3:2]; // Create word offset for cache controller
     data_writeback_associative_cache_controller #(lines, bsize, tbits) dcc(.*);
 
-    // HWData Mux
-    // mux2 #(32) HWDataMux(W2RD, W1RD, W1EN, HWData);
+    // HWData
     assign HWData = RD;
 
     // HAddr Mux's
