@@ -222,7 +222,10 @@ module data_writeback_associative_cache_controller
   (state == FLUSH);
 
   // Select output from Way 1 or Way 2
-  assign WaySelMid = enable & W1Hit | ~enable;
+  assign WaySelMid = enable & W1Hit | 
+   ~enable | 
+    W1EN & (state == WRITEBACK) |
+    W1EN & (state == LASTWRITEBACK);
   
   // CacheIn Logic
   // assign CacheRDSel = HWriteM ? DataCounter : WordOffset;
