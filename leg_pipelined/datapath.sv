@@ -118,7 +118,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
 
   // TODO: implement as a barrel shift
-  shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE, LDRSTRshiftE, ZeroRotateE, FlagsE[1:0], ShiftOpCode_E, shiftCarryInE, ShifterCarryOutE);
+  shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE, LDRSTRshiftE, ZeroRotateE, FlagsE[1], ShiftOpCode_E, shiftCarryInE, ShifterCarryOutE);
   
   alu         alu(SrcAE, SrcBE, ALUOperationE, InvertBE, ReverseInputsE, ALUCarryInE, ALUOutputE, ALUFlagsE); 
   zero_counter clz(SrcBE, ZerosE);

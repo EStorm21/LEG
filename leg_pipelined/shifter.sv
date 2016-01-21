@@ -2,7 +2,7 @@ module shifter(input  logic [31:0] a,
 			        input logic [31:0] b,
               output logic [31:0] shiftBE,
               input logic isRtype, isRSRtype, isLDRSTR_shift, ZeroRotate,
-              input logic [1:0] prevCVflag, // [1] is C, [0] is V
+              input logic prevCflag,
               input logic [6:4] shiftOpCode_E,
               input logic       shiftCarryIn, // for multiplies. There may be a more elegant way
               output logic      shifterCarryOutE);
@@ -29,7 +29,7 @@ if (isRtype & ~isLDRSTR_shift) // R type
   		2'b00: begin // LSL
                 shiftBE = b << a[11:7]; 
                 if(a[11:7] == 5'b0)
-                  shifterCarryOutE = prevCVflag[1];
+                  shifterCarryOutE = prevCflag;
                 else
                   shifterCarryOutE = b[32-a[11:7]];
               end
@@ -63,7 +63,7 @@ if (isRtype & ~isLDRSTR_shift) // R type
               end
   		2'b11: begin 
               if (a[11:7] == 5'b0) begin  //RRX
-                 shiftBE = (b >> 1) | {prevCVflag[1], 31'b0}; 
+                 shiftBE = (b >> 1) | {prevCflag, 31'b0}; 
                  shifterCarryOutE = b[0];
                  end
               else begin // ROR
@@ -80,7 +80,7 @@ else if (isRSRtype & ~isLDRSTR_shift) // RSR type - b is rm, a is rs
   	casex(shiftOpCode_E[6:5])
   		2'b00: begin // LSL
             if(a[7:0] == 0) begin 
-              shifterCarryOutE = prevCVflag[1];
+              shifterCarryOutE = prevCflag;
               shiftBE = b;
               end
             else if (a[7:0] < 32) begin
@@ -98,7 +98,7 @@ else if (isRSRtype & ~isLDRSTR_shift) // RSR type - b is rm, a is rs
             end
   		2'b01: begin // LSR
             if(a[7:0] == 0) begin
-              shifterCarryOutE = prevCVflag[1];
+              shifterCarryOutE = prevCflag;
               shiftBE = b;
               end
             else if (a[7:0] < 32) begin
@@ -117,7 +117,7 @@ else if (isRSRtype & ~isLDRSTR_shift) // RSR type - b is rm, a is rs
   		2'b10: begin // ASR
             if(a[7:0] == 0) begin
               shiftBE = b;
-              shifterCarryOutE = prevCVflag[1];
+              shifterCarryOutE = prevCflag;
               end
             else if (a[7:0] < 32) begin
               shiftBE = $signed(b) >>> a[7:0];
@@ -137,7 +137,7 @@ else if (isRSRtype & ~isLDRSTR_shift) // RSR type - b is rm, a is rs
   		2'b11: begin // ROR 
               if (a[7:0] == 8'b0) begin
                 shiftBE = b;
-                shifterCarryOutE = prevCVflag[1];
+                shifterCarryOutE = prevCflag;
                 end
               else if (a[4:0] == 5'b0) begin
                 shiftBE = b;
@@ -166,7 +166,7 @@ else if (isLDRSTR_shift)
               end
       2'b11: begin 
               if (a[11:7] == 5'b0)  //RRX
-                 shiftBE = (b >> 1) | {prevCVflag[1], 31'b0}; 
+                 shiftBE = (b >> 1) | {prevCflag, 31'b0}; 
               else begin // ROR
                 temp = {b,b} >> a[11:7];
                 shiftBE = temp[31:0];
@@ -178,7 +178,7 @@ else
   begin
     shiftBE = b[31:0];
     if(ZeroRotate)
-        shifterCarryOutE = prevCVflag[1];
+        shifterCarryOutE = prevCflag;
     else
         shifterCarryOutE = b[31];
   end
