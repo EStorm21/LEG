@@ -193,8 +193,10 @@ module controller (
 
   // === BASIC DATAPATH SELECTION
   assign RselectD      = (InstrD[27:25] == 3'b000 & InstrD[4] == 0) | (LdrStrRtypeD & ~LDMSTMforwardD); // Is a R-type instruction or R-type load store
+  // SD 1/21/3016: may be able to remove the complex logic if we determine it is not necesary for correct shifter operation. 
+  //               Then can simplify interaction with clzselect.
   //                      DP RSR-type                 rest of bits: These look like RSR, but are not. c.f. note 2, page A3-3
-  assign RSRselectD    = (InstrD[27:25] == 3'b000 & ~InstrD[7] & InstrD[4] == 1) & ~(InstrD[24:23] == 2'b10 & ~InstrD[20]);
+  assign RSRselectD    = (InstrD[27:25] == 3'b000 & ~InstrD[7] & InstrD[4]) & ~(InstrD[24:23] == 2'b10 & ~InstrD[20]);
   // SD 11/19/2015 Should this really be | BranchD? This has the effect of stalling everything when there may be a branch
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~RegFileRzD[2] & ~CPSRtoRegD & ~RegtoCPSR_D) | BranchD); // Chooses program counter either from DMEM or from ALU calculation
   assign PSRtypeD      = (CPSRtoRegD & InstrD[22]);
