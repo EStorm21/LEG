@@ -71,7 +71,7 @@
 //    1101  Signed less/equal             N != V | Z = 1
 //    1110  Always                        any
 //`define ECACHES 5
-`include "cfg.vh"
+//`include "cfg.vh"
 
 module testbench();
 

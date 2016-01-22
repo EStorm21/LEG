@@ -1,6 +1,6 @@
 module mmu #(parameter tbits = 22) (
   input  logic        clk, reset, MMUExtInt, RequestPA, RequestPAM,
-  input  logic        HWrite, HReadyT,
+  input  logic        HWrite, HReadyT, TSel,
   input  logic        DataAccess, CPSR4,
   input  logic        SupMode, WordAccess,
   input  logic        StallD, FlushD, FlushE,

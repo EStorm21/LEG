@@ -14,21 +14,20 @@ logic [$clog2(lines)-1:0] RAM_Adr;
 priority_encoder #(lines) pe(Match, RAM_Adr);
 
 // Initialize RAM to 0
-// FIXME: Replace RAM with register bank
 integer i;
-initial
-  begin 
-    for(i = 0; i < lines; i = i + 1) begin
-      RAM[i] = '0;
-    end
-  end
 
 // RAM Write
 always_ff @(posedge clk)
   begin
-    if (write & enable) begin
-      // Word Write
-      RAM[RAM_Adr] <= RData;
+    if(reset) begin
+      for(i = 0; i < lines; i = i + 1) begin
+        RAM[i] <= '0;
+      end
+    end else begin
+      if (write & enable) begin
+        // Word Write
+        RAM[RAM_Adr] <= RData;
+      end
     end
   end
 

@@ -10,19 +10,19 @@ logic [wordsize-1:0] RAM[lines-1:0];
 
 // Initialize CAM to 0
 integer i;
-initial
-  begin 
-    for(i = 0; i < lines; i = i + 1) begin
-      RAM[i] = '0;
-    end
-  end
 
 // RAM Write
 always_ff @(posedge clk)
   begin
-    if (write & enable) begin
-      // Word Write
-      RAM[CAdr] <= CData;
+    if(reset) begin
+      for(i = 0; i < lines; i = i + 1) begin
+        RAM[i] <= '0;
+      end
+    end else begin
+      if (write & enable) begin
+        // Word Write
+        RAM[CAdr] <= CData;
+      end
     end
   end
 

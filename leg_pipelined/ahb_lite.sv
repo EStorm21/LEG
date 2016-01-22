@@ -13,33 +13,40 @@ module ahb_lite (
   // TODO: Make memRE functional
   logic [ 1:0] HSEL   ;
   logic [31:0] HRDATA0, HRDATA1; // NOTE: This assumes memory outputs 4 words at a time
-  logic        HREADY0, HREADY1;
+  logic        HREADY0, HREADY1, HSELDEL;
   logic [31:0] rawFIQVec, rawIRQVecPart, rawIRQVec, rawSICVec;
   logic        SICinterrupt; // says whether an interrupt is pending in the SIC
+  logic        HREADYR;
 
   //Interrupt Vectors
   assign rawFIQVec = 32'b0;
   assign rawIRQVecPart = 32'b0;
   assign rawSICVec = 32'b0;
   assign rawIRQVec = {rawIRQVecPart[31:27], SICinterrupt, rawIRQVecPart[25:0]};
+
+  // Delay enable logic
+  mux2 #(1) HREADYmux(HREADY, 1'b1, HRESETn, HREADYR);
+
+  // Delay address for decoder and mux
+  // flopenr #(32) adrreg(HCLK, ~HRESETn, HREADYR, HADDR, HADDRDEL);
+  flopenr #(32) selreg(HCLK, ~HRESETn, HREADYR, HSEL, HSELDEL);
   
   // Memory map decoding
-  ahb_decoder dec (HADDR,HSEL);
-  ahb_mux #(32) mux (HSEL,HRDATA0,HRDATA1,HRDATA);
-  ahb_mux #(1) ready_mux (HSEL,HREADY0,HREADY1,HREADY);
+  ahb_decoder dec (HADDR, HSEL);
+  ahb_mux #(32) mux (HSELDEL,HRDATA0,HRDATA1,HRDATA);
+  ahb_mux #(1) ready_mux (HSELDEL,HREADY0,HREADY1,HREADY);
   
   dmem_ahb mem (
-    .clk    (HCLK              ),
-    .we     (HWRITE            ),
-    .re     (HREQUEST & ~HWRITE),
-    .HSEL   (HSEL[0]           ),
-    .HReady (HREADY            ),
-    .HResetn(HRESETn           ),
-    .a      (HADDR             ),
-    .wd     (HWDATA            ),
-    .HSIZE  (HSIZE             ),
-    .rd     (HRDATA0           ),
-    .Valid  (HREADY0           )
+    .clk     (HCLK    ),
+    .HWRITE  (HWRITE  ),
+    .HSEL    (HSEL[0] ),
+    .HREADY  (HREADY  ),
+    .HResetn (HRESETn ),
+    .a       (HADDR   ),
+    .wd      (HWDATA  ),
+    .HSIZE   (HSIZE   ),
+    .rd      (HRDATA0 ),
+    .Valid   (HREADY0 )
   );
 
   io_fwd_shim ioShim (    .*,

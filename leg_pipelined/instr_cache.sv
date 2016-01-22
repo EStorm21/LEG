@@ -9,7 +9,7 @@ module instr_cache #(
     parameter blockbits = $clog2(bsize),
     parameter tbits = 30-blockbits-setbits
 ) (
-    input  logic             clk, reset, enable, BusReady, invalidate,
+    input  logic             clk, reset, CP15en, BusReady, invalidate,
     input  logic             PAReadyF, FSel, uOpStallD,
     input  logic [     31:0] A       ,
     input  logic [tbits-1:0] PhysTag , 
@@ -34,7 +34,7 @@ module instr_cache #(
 
     assign CacheWD        = HRData;
     assign CacheRDSel     = WordOffset;
-    assign vin            = enable; // Only validate cache lines when enabled
+    assign vin            = CP15en; // Only validate cache lines when CP15end
 
     // Disable writeback behavior (read only cache)
     assign DirtyIn        = 1'b0;   

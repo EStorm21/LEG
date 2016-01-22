@@ -3,7 +3,7 @@
 // Instruction Cache Controller for LEG Processor
 
 module instr_cache_controller #(parameter tbits = 14) (
-  input  logic             clk, reset, enable, PAReadyF, W1V, W2V, CurrLRU, BusReady,
+  input  logic             clk, reset, CP15en, PAReadyF, W1V, W2V, CurrLRU, BusReady,
   input  logic             FSel, uOpStallD,
   input  logic [      1:0] WordOffset   ,
   input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag,
@@ -15,9 +15,11 @@ module instr_cache_controller #(parameter tbits = 14) (
   output logic [      1:0] DataWordOffset
 );
 
-  logic             W1EN, W2EN, Hit, W2Hit, AdvanceCounter;
+  logic             W1EN, W2EN, Hit, W2Hit, enable, AdvanceCounter;
   logic [tbits-1:0] PrevPTag;
   logic [      1:0] CounterMid, DataCounter, WayWordOffset;
+
+  assign enable = CP15en;
   
   // FSM States
   typedef enum logic [1:0] {READY, MEMREAD, LASTREAD, NEXTINSTR} statetype;

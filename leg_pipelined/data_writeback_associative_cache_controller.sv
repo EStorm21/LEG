@@ -1,14 +1,15 @@
 module data_writeback_associative_cache_controller 
   #(parameter lines, parameter bsize, parameter tbits = 14)
-  (input  logic clk, reset, enable, W1V, W2V, CurrLRU, W1D, W2D, clean,
+  (input  logic clk, reset, CP15en, W1V, W2V, CurrLRU, W1D, W2D, clean,
    input  logic IStall, MemWriteM, MemtoRegM, BusReady, PAReady, MSel,
+   input  logic CurrCBit,
    input  logic [1:0] WordOffset,
    input  logic [3:0] ByteMask,
    input  logic [31:0] A,
    input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag, VirtTag, 
    output logic Stall, HWriteM, HRequestM, BlockWE, 
    output logic W1WE, W2WE, W1EN, UseWD, UseCacheA, DirtyIn, WaySel, RDSel,
-   output logic cleanCurr, RequestPA,
+   output logic cleanCurr, RequestPA, enable,
    output logic [1:0] CacheRDSel, 
    output logic [3:0] ActiveByteMask, WDSel,
    output logic [tbits-1:0] CachedTag, Tag,
@@ -21,7 +22,7 @@ module data_writeback_associative_cache_controller
   logic [$clog2(lines):0] FlushA    ; // Create block address to increment
   logic                   IncFlush, ResetBlockOff, WDMaskSel;
   logic                   WordAccess, CWE, Hit, W2Hit, W1Hit, TagSel, writeW1;
-  logic                   W2EN, Dirty, NoCount;
+  logic                   W2EN, Dirty, NoCount, PrevCBit, CBit;
   logic             [1:0] CounterMid, Counter, DataCounter;
   logic             [3:0] WDMask;
 
@@ -45,6 +46,7 @@ module data_writeback_associative_cache_controller
     end
 
   assign DataCounter = CounterMid -1'b1;
+  assign enable = CP15en & CBit;
 
   // ----------------FLUSHING--------------------
   // Create the flush c ounter (count through all blocks and each way per block)
@@ -60,8 +62,8 @@ module data_writeback_associative_cache_controller
   assign WordAccess = (ByteMask == 4'b1111);
 
   //-----------------TAG LOGIC--------------------
-  flopenr #(tbits) tagReg(clk, reset, PAReady, PhysTag, PrevPTag);
-  mux2 #(tbits) tagMux(PrevPTag, PhysTag, (state == READY), Tag);
+  flopenr #(tbits+1) tagReg(clk, reset, PAReady, {PhysTag, CurrCBit}, {PrevPTag, PrevCBit});
+  mux2 #(tbits+1) tagMux({PrevPTag, PrevCBit}, {PhysTag, CurrCBit}, (state == READY), {Tag, CBit});
 
   //------------HIT, DIRTY, VALID-----------------
   // Create Dirty Signal

@@ -41,7 +41,7 @@ module io_fwd_shim(input  logic        HCLK,
                     HRDATA <= readVals.pop_front();
                 end else begin
                     // This is an invalid read. Give garbage data
-                    $displayh("IO read invalid data (xxxxxxxx) from %h", HADDR);
+                    $displayh("IO read invalid data (xxxxxxxx) from %h, @ %d ps", HADDR, $time);
                     HRDATA <= 32'hxxxxxxxx;
                 end
             end

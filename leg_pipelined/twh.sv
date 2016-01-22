@@ -5,6 +5,7 @@ module twh #(parameter tagbits = 16) (
   input  logic               Enable        ,
   // input  logic               Fault         , TODO: Reconnect
   input  logic               PAReady       ,
+  input  logic               TSel,
   input  logic               RequestPA   ,
   input  logic               DataAccess    ,
   input  logic               PrefetchAbort ,
@@ -68,7 +69,7 @@ always_comb
 case (state)
   READY:        if ( Enable & Fault ) begin
                   nextstate <= DataAccess ? FAULTFSR : INSTRFAULT;
-                end else if (~HReadyT | ~RequestPA | ~Enable | Fault | reset | PAReady) begin 
+                end else if (~HReadyT & ~TSel | ~RequestPA | ~Enable | Fault | reset | PAReady) begin 
                   nextstate <= READY;
                 end else begin
                   nextstate <= FLD;
@@ -134,18 +135,18 @@ always_comb
 case (state)
   READY:        HAddrT = PAReady ? {TableEntry[tagbits+8:9], VirtAdr[31-tagbits:0]} : 
                            {TBase,  VirtAdr[31:20], 2'b00};
-  FLD:          HAddrT = {PHRData[31:20], VirtAdr[19:0]}; 
-  COARSEFETCH:  HAddrT = {PHRData[31:10], VirtAdr[19:12], 2'b0};
-  FINEFETCH:    HAddrT = {PHRData[31:12], VirtAdr[19:10], 2'b0};
-  FINED:        if(PHRData[1:0] == 2'b10) begin 
-                  HAddrT = {PHRData[31:12], VirtAdr[11:0]}; // Small Trans
+  FLD:          HAddrT = {HRData[31:20], VirtAdr[19:0]}; 
+  COARSEFETCH:  HAddrT = {HRData[31:10], VirtAdr[19:12], 2'b0};
+  FINEFETCH:    HAddrT = {HRData[31:12], VirtAdr[19:10], 2'b0};
+  FINED:        if(HRData[1:0] == 2'b10) begin 
+                  HAddrT = {HRData[31:12], VirtAdr[11:0]}; // Small Trans
                 end else begin
-                  HAddrT = {PHRData[31:10], VirtAdr[9:0]};  // Tiny Trans
+                  HAddrT = {HRData[31:10], VirtAdr[9:0]};  // Tiny Trans
                 end
-  COARSED:      if(PHRData[1:0] == 2'b01) begin 
-                  HAddrT = {PHRData[31:16], VirtAdr[15:0]}; // Large Trans
+  COARSED:      if(HRData[1:0] == 2'b01) begin 
+                  HAddrT = {HRData[31:16], VirtAdr[15:0]}; // Large Trans
                 end else begin
-                  HAddrT = {PHRData[31:12], VirtAdr[11:0]}; // Small Trans
+                  HAddrT = {HRData[31:12], VirtAdr[11:0]}; // Small Trans
                 end
   default: HAddrT = 32'h9999_9999;
 endcase
@@ -158,7 +159,8 @@ assign HRequestT = ( (state == COARSEFETCH) |
                 (state == FINEFETCH) |
                 (state == COARSED)   & ~HReadyT |
                 (state == FINED)   & ~HReadyT |
-               ( (state == READY) & RequestPA & ~PAReady) ) & Enable;
+                (state == FLD) & (~HReadyT | (PHRData[1:0] == 2'b01) | (PHRData[1:0] == 2'b11)) |
+              ( (state == READY) & RequestPA & ~PAReady) ) & Enable;
 
 // CPUHReadyT Logic  
 //assign CPUHReadyTMid = PAReady;
