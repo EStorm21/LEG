@@ -11,9 +11,9 @@ module ahb_lite (
 );
               
   // TODO: Make memRE functional
-  logic [ 1:0] HSEL   ;
+  logic [ 1:0] HSEL, HSELDEL;
   logic [31:0] HRDATA0, HRDATA1; // NOTE: This assumes memory outputs 4 words at a time
-  logic        HREADY0, HREADY1, HSELDEL;
+  logic        HREADY0, HREADY1;
   logic [31:0] rawFIQVec, rawIRQVecPart, rawIRQVec, rawSICVec;
   logic        SICinterrupt; // says whether an interrupt is pending in the SIC
   logic        HREADYR;
@@ -29,7 +29,7 @@ module ahb_lite (
 
   // Delay address for decoder and mux
   // flopenr #(32) adrreg(HCLK, ~HRESETn, HREADYR, HADDR, HADDRDEL);
-  flopenr #(32) selreg(HCLK, ~HRESETn, HREADYR, HSEL, HSELDEL);
+  flopenr #(2) selreg(HCLK, ~HRESETn, HREADYR, HSEL, HSELDEL);
   
   // Memory map decoding
   ahb_decoder dec (HADDR, HSEL);

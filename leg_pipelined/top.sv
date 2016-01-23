@@ -90,7 +90,7 @@ module top (
     .FlushD(FlushD), 
     .FlushE(FlushE));
 
-  //`define ECACHES 1
+  `define ECACHES 1
   initial
     begin
       `ifdef ECACHES
@@ -141,7 +141,7 @@ module top (
   instr_cache #(ibsize,iLines) instr_cache (
     .clk       (clk      ),
     .reset     (reset    ),
-    .enable    (ENI      ),
+    .CP15en    (ENI),
     .uOpStallD  (uOpStallD),
     .invalidate(INVI     ),
     .BusReady  (HReadyF  ),
@@ -164,7 +164,8 @@ module top (
   data_writeback_associative_cache #(dbsize,dLines) data_cache (
     .clk       (clk       ),
     .reset     (reset     ),
-    .enable    (END       ),
+    .CP15en    (END),
+    .CurrCBit  (1'b1),
     .invalidate(INVD      ),
     .clean     (CLEAND    ),
     .PAReady   (PAReadyM  ),

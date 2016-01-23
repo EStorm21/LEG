@@ -20,12 +20,11 @@ module data_writeback_associative_cache_controller
 
   logic [      tbits-1:0] PrevPTag;
   logic [$clog2(lines):0] FlushA    ; // Create block address to increment
-  logic                   IncFlush, ResetBlockOff, WDMaskSel;
+  logic                   IncFlush, ResetBlockOff, WDMaskSel, IncCounter;
   logic                   WordAccess, CWE, Hit, W2Hit, W1Hit, TagSel, writeW1;
   logic                   W2EN, Dirty, NoCount, PrevCBit, CBit;
   logic             [1:0] CounterMid, Counter, DataCounter;
   logic             [3:0] WDMask;
-
 
   // Writeback cache states
   typedef enum logic[3:0] {READY, MEMREAD, LASTREAD, WRITEBACK, LASTWRITEBACK,
@@ -38,7 +37,7 @@ module data_writeback_associative_cache_controller
     if(reset | ResetBlockOff | ~enable) begin
         CounterMid <= 0;
     end else begin
-        if (BusReady | (nextstate == MEMREAD) & MSel | (nextstate == WRITEBACK) & MSel) begin
+        if (IncCounter) begin
             CounterMid <= CounterMid + 1;
         end else begin
             CounterMid <= CounterMid;
@@ -47,6 +46,9 @@ module data_writeback_associative_cache_controller
 
   assign DataCounter = CounterMid -1'b1;
   assign enable = CP15en & CBit;
+  assign IncCounter = BusReady | 
+    (state == READY) & (nextstate == MEMREAD) & MSel |
+    (state == READY) & (nextstate == WRITEBACK) & MSel;
 
   // ----------------FLUSHING--------------------
   // Create the flush c ounter (count through all blocks and each way per block)
