@@ -175,17 +175,18 @@ module tfh (
 
   // terminal and vector exception Logic
   // TODO: Separate behavior for instruction and data fault
-  always_comb
-    if(TerminalException) begin
-      FaultCode <= TERMFAULT;
-      Fault <= 1'b1;
-    end else if(VectorException) begin
-      FaultCode <= VECTORFAULT;
-      Fault <= 1'b1;
-    end else begin
-      FaultCode <= FaultCodeMid;
-      Fault <= FaultMid;
-    end
+  assign Fault = 1'b0; // TODO: Enable this logic
+  // always_comb
+  //   if(TerminalException) begin
+  //     FaultCode <= TERMFAULT;
+  //     Fault <= 1'b1;
+  //   end else if(VectorException) begin
+  //     FaultCode <= VECTORFAULT;
+  //     Fault <= 1'b1;
+  //   end else begin
+  //     FaultCode <= FaultCodeMid;
+  //     Fault <= FaultMid;
+  //   end
 
   // DomainMatch Logic
   assign Dom = 32'hffff_ffff; // Full permissions to all domains
@@ -256,10 +257,12 @@ module tfh (
   assign instr_abort = (Fault & ~DataAccess) & ~(state == INSTRFAULT);
 
   // Instruction Fault
-  assign PrefetchAbort = (state == INSTRFAULT) & InstrExecuting;
+  // assign PrefetchAbort = (state == INSTRFAULT) & InstrExecuting;
+  assign PrefetchAbort = 1'b0; // TODO: Enable this
 
   // Data Abort
-  assign DataAbort = Fault & DataAccess;
+  // assign DataAbort = Fault & DataAccess;
+  assign DataAbort = 1'b0;
 
   // CP15 Logic (WDSel, MMUEn, MMUWriteEn)
   assign MMUEn = (state == READY) & HReadyT;

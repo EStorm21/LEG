@@ -36,14 +36,14 @@ module twh #(parameter tagbits = 16) (
 // ================== TLB Control ============================================
 // ===========================================================================
 //FIXME: Placeholders
-logic B;
+logic B, C;
 logic [1:0] AP;
 logic [3:0] Domain;
 logic Fault = 1'b0;
-assign CurrCBit = HRData[3];
+assign C = HRData[3];
 assign B = HRData[2];
-assign TableEntry = TLBwe ? {HAddrT[31:32-tagbits], CurrCBit, B, AP, Domain, 1'b1} : 'bz;
-
+assign TableEntry = TLBwe ? {HAddrT[31:32-tagbits], C, B, AP, Domain, 1'b1} : 'bz;
+assign CurrCBit = TableEntry[8];
 
 // ===========================================================================
 // ================== Translation State Machine ==============================

@@ -27,22 +27,21 @@ module io_fwd_shim(input  logic        HCLK,
     assign HREADY = HREQUEST_d & HSEL_d;
 
     always_ff @(posedge HCLK ) begin
-        if(HREQUEST_d & HSEL_d) begin
-            if(HWRITE_d) begin
-                $displayh("IO write data %h to %h", HWDATA, HADDR_d);
-                // Ignore writes (Qemu can handle it)
+        if(HREQUEST_d & HSEL_d & HWRITE_d) begin
+            $displayh("IO write data %h to %h", HWDATA, HADDR_d);
+            // Ignore writes (Qemu can handle it)
+        end
+        if(HREQUEST & HSEL & ~HWRITE) begin
+            // $display("IO read data from %h", HADDR);
+            if(readAddrs[0] == HADDR) begin
+                // Pop the recorded read off, to match Qemu
+                $displayh("IO read data %h from %h, @ %d ps", readVals[0], readAddrs[0], $time);
+                void'( readAddrs.pop_front() );
+                HRDATA <= readVals.pop_front();
             end else begin
-                // $display("IO read data from %h", HADDR);
-                if(readAddrs[0] == HADDR_d) begin
-                    // Pop the recorded read off, to match Qemu
-                    $displayh("IO read data %h from %h, @ %d ps", readVals[0], readAddrs[0], $time);
-                    void'( readAddrs.pop_front() );
-                    HRDATA <= readVals.pop_front();
-                end else begin
-                    // This is an invalid read. Give garbage data
-                    $displayh("IO read invalid data (xxxxxxxx) from %h, @ %d ps", HADDR, $time);
-                    HRDATA <= 32'hxxxxxxxx;
-                end
+                // This is an invalid read. Give garbage data
+                $displayh("IO read invalid data (xxxxxxxx) from %h, @ %d ps", HADDR, $time);
+                HRDATA <= 32'hxxxxxxxx;
             end
         end
     end
