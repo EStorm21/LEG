@@ -21,7 +21,7 @@ module top (
   logic PAReady, PAReadyF, PAReadyM;
 
   // ----- data cache -----
-  logic        Valid, DStall, END, CLEAND;
+  logic        Valid, DStall, END, CLEAND, CurrCBit;
   logic [31:0] ReadDataM, DANew;
   logic [3:0]  ByteMaskM;
 
@@ -165,7 +165,7 @@ module top (
     .clk       (clk       ),
     .reset     (reset     ),
     .CP15en    (END),
-    .CurrCBit  (1'b1),
+    .CurrCBit  (CurrCBit),
     .invalidate(INVD      ),
     .clean     (CLEAND    ),
     .PAReady   (PAReadyM  ),

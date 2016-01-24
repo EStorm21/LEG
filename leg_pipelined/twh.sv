@@ -18,12 +18,12 @@ module twh #(parameter tagbits = 16) (
   input  logic [       31:0] PHRData       ,
   output logic [       31:0] HAddrT ,
   output logic [        3:0] statebits     ,
-  //output logic               SelPrevAddr   ,
   output logic               TLBwe         ,
   output logic               HRequestT,
   output logic               MMUEn         ,
   output logic               MMUWriteEn    ,
   output logic               WDSel         ,
+  output logic               CurrCBit,
   inout  logic [tagbits+8:0] TableEntry      // Physical Tag to write data into TLB
 );
 
@@ -36,15 +36,13 @@ module twh #(parameter tagbits = 16) (
 // ================== TLB Control ============================================
 // ===========================================================================
 //FIXME: Placeholders
-logic C, B;
+logic B;
 logic [1:0] AP;
 logic [3:0] Domain;
 logic Fault = 1'b0;
-assign C = 1'b1;
-assign B = 1'b1;
-assign AP = 2'b11;
-assign Domain = 4'b1111;
-assign TableEntry = TLBwe ? {HAddrT[31:32-tagbits], C, B, AP, Domain, 1'b1} : 'bz;
+assign CurrCBit = HRData[3];
+assign B = HRData[2];
+assign TableEntry = TLBwe ? {HAddrT[31:32-tagbits], CurrCBit, B, AP, Domain, 1'b1} : 'bz;
 
 
 // ===========================================================================
@@ -151,8 +149,44 @@ case (state)
   default: HAddrT = 32'h9999_9999;
 endcase
 
-// SelPrevAddr 
-//assign SelPrevAddr = (state == READY) & (PStall & ~IStall & ~DStall);
+// Access Permission Logic
+// mux4 #(2) apMux(HRData[5:4], HRData[7:6], HRData[9:8], HRData[11:10], )
+always_comb
+case (state)
+  FLD:    AP = HRData[5:4];
+  FINED:  if(HRData[1:0] == 2'b10) begin // Small Trans
+            case (VirtAdr[11:10])
+              2'b00: AP = HRData[5:4];
+              2'b01: AP = HRData[7:6];
+              2'b10: AP = HRData[9:8];
+              2'b11: AP = HRData[11:10];
+              default : AP = HRData[5:4];
+            endcase
+          end else begin                 // Tiny Trans
+            AP = HRData[5:4];
+          end
+  COARSED: if(HRData[1:0] == 2'b01) begin// Large Trans
+            case (VirtAdr[15:14])
+              2'b00: AP = HRData[5:4];
+              2'b01: AP = HRData[7:6];
+              2'b10: AP = HRData[9:8];
+              2'b11: AP = HRData[11:10];
+              default : AP = HRData[5:4];
+            endcase
+          end else begin                 // Small Trans
+            case (VirtAdr[11:10])      
+              2'b00: AP = HRData[5:4];
+              2'b01: AP = HRData[7:6];
+              2'b10: AP = HRData[9:8];
+              2'b11: AP = HRData[11:10];
+              default : AP = HRData[5:4];
+            endcase
+          end
+  default : AP = HRData[5:4];
+endcase
+
+// Domain Flop
+flopenr #(4) domainFlop(clk, reset, (state == FLD), HRData[8:5], Domain);
 
 // HRequestT Logic
 assign HRequestT = ( (state == COARSEFETCH) |

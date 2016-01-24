@@ -12,7 +12,7 @@ module mmu #(parameter tbits = 22) (
   output logic [tbits-1:0] PhysTag,
   output logic [ 3:0] CP15A    ,
   output logic        MMUWriteEn,HRequestT,
-  PrefetchAbort, DataAbort, MMUEn, PAReady
+  PrefetchAbort, DataAbort, MMUEn, PAReady, CurrCBit
 );
                         // PrefetchAbort, DataAbort, MMUEn);
   
@@ -42,14 +42,17 @@ module mmu #(parameter tbits = 22) (
   logic        Fault;
   logic [3:0]  Domain, FaultCode;
   logic [31:0] FSR, FAR, Dom;
+
   // Translation Signals
   logic [31:0] VirtAdr; // TODO Remove VirtAdr
   logic [31:0] PHRData;
   logic [3:0]  statebits; // Carry state from twh to tfh
+
   // Signals for the Instruction Counter
   logic        InstrExecuting;
   logic        InstrCancelled;
   logic        instr_abort;
+
   // TLB Signals
   logic TLBwe;
   tri [tbits+8:0] TableEntry;
