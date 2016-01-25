@@ -24,14 +24,11 @@ module shift_control(input  logic [1:0] shtype,
 
   // Create control signals for barrel shifter based on type of instruction
   always_comb 
-    casex({shtype, isRSRtype, rrx})
-      4'b00_?_? : {shift, left, arith} = 3'b110; // LSL
-      4'b01_?_? : {shift, left, arith} = 3'b100; // LSR
-      4'b10_?_? : {shift, left, arith} = 3'b101; // ASR
-      4'b11_1_? : {shift, left, arith} = 3'b000; // ROR
-      4'b11_0_0 : {shift, left, arith} = 3'b000; // ROR
-      4'b11_0_1 : {shift, left, arith} = 3'b100; // RRX, looks like LSR but we magically insert C flag
-      default   : {shift, left, arith} = 3'b110; // shouldn't get here
+    case(shtype)
+      4'b00   : {shift, left, arith} = 3'b110; // LSL
+      4'b01   : {shift, left, arith} = 3'b100; // LSR
+      4'b10   : {shift, left, arith} = 3'b101; // ASR
+      4'b11   : {shift, left, arith} = 3'b000; // ROR
     endcase
 
   // Select carry in for RRX. If not rrx, always select the lsb of the shifter input
@@ -57,7 +54,7 @@ module shift_control(input  logic [1:0] shtype,
       7'b1_0_?10_00 : shifterCarryOut = prevCflag;  // LSL (should never get here) 
       7'b1_0_?10_01 : shifterCarryOut = a31; // LSR 
       7'b1_0_?10_10 : shifterCarryOut = a31; // ASR 
-      7'b1_0_?10_11 : shifterCarryOut = a0;  // RRX
+      7'b1_0_?10_11 : shifterCarryOut = a0;  // RRX (would be rot31, but gets clobbered by RRX)
     // RSR type shifts by 0
       7'b1_1_001_?? : shifterCarryOut = prevCflag;  // ALL
     // RSR type shifts by 32
