@@ -1,5 +1,6 @@
 module barrel_shifter(input  logic [31:0] a,
-                      input  logic [ 4:0] shamt,
+                      input  logic [ 4:0] shctl_5,
+                      input  logic [ 7:0] shctl_8,
                       input  logic        rrx_in, // C flag if rrx, a[0] otherwise. Special bit for shift of 1.
                       input  logic        longshift, // 32 or more bit shift for mask
                       input  logic        left, shift, arith,
@@ -7,21 +8,14 @@ module barrel_shifter(input  logic [31:0] a,
                       output logic        a0, a31, rot0, rot31); // C flag will be selected between these bits
 
   logic [31:0] x, rotOut; // intermediate signals
-  logic [4:0] mux5_ctl;
-  logic [7:0] mux8_ctl;
-
-
-  // decode shamt to one-hot
-  shift_decode dec(shamt, left, 
-                   mux5_ctl, mux8_ctl);
 
   // 5:1 ror followed by 8:1 ror from CMOS VLSI Design 4th ed. 
   // First stage is ROR 0-3, +1 for left shift
   // Second stage is ROR 0,4,8,12,16,20,24,28 
-  mux5_onehot sh5(a, {rrx_in,a[31:1]}, {a[1:0],a[31:2]}, {a[2:0],a[31:3]}, {a[3:0],a[31:4]}, mux5_ctl, 
+  mux5_onehot sh5(a, {rrx_in,a[31:1]}, {a[1:0],a[31:2]}, {a[2:0],a[31:3]}, {a[3:0],a[31:4]}, shctl_5, 
                   x);
 
-  mux8_onehot sh8(x, {x[3:0],x[31:4]}, {x[7:0],x[31:8]}, {x[11:0],x[31:12]}, {x[15:0],x[31:16]}, {x[19:0],x[31:20]}, {x[23:0],x[31:24]}, {x[27:0],x[31:28]}, mux8_ctl, 
+  mux8_onehot sh8(x, {x[3:0],x[31:4]}, {x[7:0],x[31:8]}, {x[11:0],x[31:12]}, {x[15:0],x[31:16]}, {x[19:0],x[31:20]}, {x[23:0],x[31:24]}, {x[27:0],x[31:28]}, shctl_8, 
                   rotOut);
 
   // Mask off some bits for shift, fill in with sign or 0

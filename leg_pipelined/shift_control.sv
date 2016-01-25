@@ -3,8 +3,8 @@ module shift_control(input  logic [1:0] shtype,
                      input  logic [7:0] RSR_shamt,
                      input  logic       isRtype, isRSRtype, zeroRotate, prevCflag, multCsel,
                      input  logic       multCarryIn, a0, a31, rot0, rot31,
-                     output logic [4:0] shctl_5, // done
-                     output logic [7:0] shctl_8, // done
+                     output logic [4:0] shctl_5, 
+                     output logic [7:0] shctl_8, 
                      output logic       shift, left, arith, longshift, rrx_in, shifterCarryOut);
 
   logic rrx, longShift, shiftSelect;
