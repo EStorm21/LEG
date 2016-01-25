@@ -28,8 +28,8 @@ module shift_control(input  logic [1:0] shtype,
       4'b00_?_? : {shift, left, arith} = 3'b110; // LSL
       4'b01_?_? : {shift, left, arith} = 3'b100; // LSR
       4'b10_?_? : {shift, left, arith} = 3'b101; // ASR
-      4'b11_1_? : {shift, left, arith} = 3'b001; // ROR
-      4'b11_0_0 : {shift, left, arith} = 3'b001; // ROR
+      4'b11_1_? : {shift, left, arith} = 3'b000; // ROR
+      4'b11_0_0 : {shift, left, arith} = 3'b000; // ROR
       4'b11_0_1 : {shift, left, arith} = 3'b100; // RRX, looks like LSR but we magically insert C flag
       default   : {shift, left, arith} = 3'b110; // shouldn't get here
     endcase

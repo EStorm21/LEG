@@ -50,7 +50,7 @@ module shift_mask(input  logic [31:0] a,
   // now fill in the masked bits with the correct value
   assign fill = arith & sign;
   assign kill = shift ? mask : 32'b0;
-  assign y = (a & ~kill) | ({32{fill}} & mask);
+  assign y = (a & ~kill) | ({32{fill}} & kill);
 
 endmodule // shift_mask
 
