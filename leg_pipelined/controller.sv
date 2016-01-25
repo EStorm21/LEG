@@ -32,7 +32,7 @@ module controller (
   output logic [ 3:0] FlagsE                 ,
   // For micro-op decoding
   output logic        RselectE, LDRSTRshiftE, LDMSTMforwardD, LDMSTMforwardE,
-  output logic        RSRSelectE          ,
+  output logic        RSRselectE          ,
   output logic [ 6:4] ShiftOpCode_E          ,
   output logic        MultSelectD,
   output logic [31:0] InstrE                 ,
@@ -266,8 +266,8 @@ module controller (
   flopenrc #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);
   flopenrc #(3) CoprocE(clk, reset, ~StallE, FlushE, {CoProc_FlagUpd_D, CoProc_EnD, CoProc_WrEnD}, {CoProc_FlagUpd_E, CoProc_EnE, CoProc_WrEnE});
   flopenrc #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
-  flopenrc  #(8) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, RSRSelectD, PrevCycleCarryD, LDMSTMforwardD, LDRSTRshiftD, LdrStr_HalfD, Ldr_SignHD, Ldr_SignBD},
-                                                            {RselectE, RSRSelectE, PrevCycleCarryE, LDMSTMforwardE, LDRSTRshiftE, LdrStr_HalfE, Ldr_SignHE, Ldr_SignBE});
+  flopenrc  #(8) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, RSRselectD, PrevCycleCarryD, LDMSTMforwardD, LDRSTRshiftD, LdrStr_HalfD, Ldr_SignHD, Ldr_SignBD},
+                                                            {RselectE, RSRselectE, PrevCycleCarryE, LDMSTMforwardE, LDRSTRshiftE, LdrStr_HalfE, Ldr_SignHE, Ldr_SignBE});
   flopenrc #(11) flushedregsE(clk, reset, ~StallE, FlushE,
     {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD,   ldrstrALUopD, BXInstrD, CPSRtoRegD,  RegtoCPSR_D},
     {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoReg_0E, ldrstrALUopE, BXInstrE, CPSRtoReg0E, RegtoCPSR_0E});

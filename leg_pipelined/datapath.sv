@@ -23,7 +23,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic        InvertBE, ReverseInputsE, ALUCarryInE,
                   // To handle micro-op decoding
                   input  logic        RselectE, LDRSTRshiftE, 
-                  input  logic        RSRSelectE,
+                  input  logic        RSRselectE,
                   input  logic [6:4]  ShiftOpCode_E,
                   // To handle load-store half-words and bytes
                   input  logic        LoadLengthW, HalfwordOffsetW, Ldr_SignBW, Ldr_SignHW,
@@ -125,7 +125,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   zero_counter clz(SrcBE, ZerosE);
   mux2 #(32) aluorclzmux(ALUOutputE, ZerosE, ClzSelectE, OperationOutputE);
   
-  mux2 #(32)  aluoutputmux(OperationOutputE, ShiftBE, RSRSelectE, ALUResultE); 
+  mux2 #(32)  aluoutputmux(OperationOutputE, ShiftBE, RSRselectE, ALUResultE); 
   data_replicator memReplicate(WriteByteE, StrHalfwordE, WriteDataE, WriteDataReplE);
   
   // ====================================================================================
