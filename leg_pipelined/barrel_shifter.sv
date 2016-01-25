@@ -1,4 +1,5 @@
 module barrel_shifter(input  logic [31:0] a,
+                      input  logic [ 4:0] shamt,
                       input  logic [ 4:0] shctl_5,
                       input  logic [ 7:0] shctl_8,
                       input  logic        rrx_in, // C flag if rrx, a[0] otherwise. Special bit for shift of 1.

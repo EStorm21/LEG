@@ -13,6 +13,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE, ExceptionSavePC,
                   input  logic [31:0] InstrE, PSR_W, 
                   input  logic [2:0]  VectorPCnextF,
+                  input  logic [ 4:0] shamtE,
                   input  logic [ 4:0] shctl_5E,
                   input  logic [ 7:0] shctl_8E,
                   input  logic        rrx_inE, longshiftE, leftE, shiftE, arithE,
@@ -117,7 +118,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcBE);
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
 
-  barrel_shifter shifter(ALUSrcBE, shctl_5E, shctl_8E, rrx_inE, longshiftE, leftE, shiftE, arithE, ShiftBE, sh_a0E, sh_a31E, sh_rot0E, sh_rot31E);
+  barrel_shifter shifter(ALUSrcBE, shamtE, shctl_5E, shctl_8E, rrx_inE, longshiftE, leftE, shiftE, arithE, ShiftBE, sh_a0E, sh_a31E, sh_rot0E, sh_rot31E);
   assign SrcA70E = SrcAE[7:0];
   
   alu         alu(SrcAE, SrcBE, ALUOperationE, InvertBE, ReverseInputsE, ALUCarryInE, ALUOutputE, ALUFlagsE); 

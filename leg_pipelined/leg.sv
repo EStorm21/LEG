@@ -61,6 +61,7 @@ module leg(input  logic        clk, reset,
   logic [31:0] PSR_W;
   logic RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW;
   logic        ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD;
+  logic [ 4:0] shamtE;
   logic [ 4:0] shctl_5E;
   logic [ 7:0] shctl_8E;
   logic        rrx_inE, longshiftE, leftE, shiftE, arithE;

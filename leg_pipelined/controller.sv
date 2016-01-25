@@ -22,6 +22,7 @@ module controller (
   output logic [ 3:0] ALUControlE            ,
   output logic        MemWriteM              ,
   output logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE,
+  output logic [ 4:0] shamtE,
   output logic [ 4:0] shctl_5E,
   output logic [ 7:0] shctl_8E,
   output logic        rrx_inE, longshiftE, leftE, shiftE, arithE,
@@ -278,7 +279,7 @@ module controller (
 
   // SD 1/24/2016: Could move to D? think about timing
   shift_control shctl(InstrE[6:5], InstrE[11:7], SrcA70E, RselectE, RSRselectE, ZeroRotateE, FlagsE[1], multCarryInE[0], ShifterCarryOut_cycle2E, sh_a0E, sh_a31E, sh_rot0E, sh_rot31E, 
-                      shctl_5E, shctl_8E, shiftE, leftE, arithE, longshiftE, rrx_inE, ShifterCarryOutE);
+                      shamtE, shctl_5E, shctl_8E, shiftE, leftE, arithE, longshiftE, rrx_inE, ShifterCarryOutE);
 
   // === ALU Decoding ===
   alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryIn_0E, DoNotWriteRegE);
