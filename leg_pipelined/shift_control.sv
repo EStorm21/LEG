@@ -8,18 +8,18 @@ module shift_control(input  logic [1:0] shtype,
                      output logic [7:0] shctl_8, 
                      output logic       shift, left, arith, longshift, rrx_in, shifterCarryOut);
 
-  logic rrx, longShift, shiftSelect;
+  logic rrx, shiftSelect;
   logic [4:0] R_shamt;
-  logic [5:0] actualShift;
+  logic [6:0] actualShift;
   assign rrx = (shtype == 2'b11) & ~isRSRtype & (R_shamt0 == 5'b00000);
   assign R_shamt = rrx ? 5'b00001 : R_shamt0;
   assign shiftSelect = isRSRtype | isRtype;
   // Exactly what it says on the tin. Take all the possibilities. Output 0 when we don't use shifter.
   // Note that LSL and RRX don't shift by 32 even when shift amount is 0
-  assign actualShift = {6{shiftSelect}} & (isRSRtype ? {(|RSR_shamt[7:5]),RSR_shamt[4:0]} 
-                                                     : {((shtype != 2'b00) & (R_shamt == 0)), R_shamt});
+  assign actualShift = {7{shiftSelect}} & (isRSRtype ? {(|RSR_shamt[7:6]),RSR_shamt[5],RSR_shamt[4:0]} 
+                                                     : {0,((shtype != 2'b00) & (R_shamt == 0)), R_shamt});
   // A shift of 32+. Tells the shifter to mask everything.
-  assign longshift = actualShift[5];
+  assign longshift = |actualShift[6:5];
   assign shamt = actualShift[4:0];
 
   // Create control signals for barrel shifter based on type of instruction
@@ -38,9 +38,10 @@ module shift_control(input  logic [1:0] shtype,
   shift_decoder shdec(actualShift[4:0], left, shctl_5, shctl_8);
 
   // Select the proper carry out based on the shift type. This depends on RSR, shift type, and shift amount
-  logic shift0 =  actualShift == 6'b000000;
-  logic shift32 = actualShift == 6'b100000 | rrx;
-  logic shift33 = actualShift  > 6'b100000;
+  logic shift0, shift32, shift33;
+  assign shift0 =  actualShift == 7'b0000000;
+  assign shift32 = actualShift == 7'b0100000 | rrx;
+  assign shift33 = actualShift  > 7'b0100000;
   always_comb
     casez({shiftSelect, isRSRtype, shift33, shift32, shift0, shtype})
     // Shifts by 1-31
