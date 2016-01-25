@@ -57,7 +57,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnext2F, PCnextF, PCPlus4D, PCPlus0D, PC_in;
   logic [31:0] ExtImmD, Rd1D, Rd2D, PCPlus8D, RotImmD;
-  logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ShiftBE;
+  logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ALUSrcBE, ShiftBE;
   logic [31:0] ReadDataRawW, ReadDataW, Result1_W, ResultW;
   logic [31:0] ZerosE, OperationOutputE;
   logic [31:0] ALUorCP15_M;

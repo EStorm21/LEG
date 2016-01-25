@@ -24,7 +24,7 @@ module barrel_shifter(input  logic [31:0] a,
                     y);
 
   assign a0 = a[0];
-  assign sign = a[31];
+  assign a31 = a[31];
   assign rot0 = rotOut[0];
   assign rot31 = rotOut[31];
 
