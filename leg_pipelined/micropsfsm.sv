@@ -1184,11 +1184,11 @@ always_comb
 			MicroOpCPSRrestoreD = 0;
 			noRotate = 0;  
 			ldrstrRtype = 0;  
-			// mov Rz, Rz LSR #1
+			// mov Rz, Rz, RRX
 			uOpInstrD = {defaultInstrD[31:28], // Condition bits
 						8'b000_1101_0, // MOV R type, Do not update flags
 						4'h0, 4'hF, // Rd = Rz
-						8'b00001_010, 4'hF }; // Rz LSR #1
+						8'b00000_110, 4'hF }; // Rz RRX
 		end
 
 		// Carry-shift multiplication: shift Rd or RdHi right by 1, 
@@ -1206,11 +1206,11 @@ always_comb
 			MicroOpCPSRrestoreD = 0;
 			noRotate = 0;  
 			ldrstrRtype = 0;  
-			// mov Rd, Rd LSR #1
+			// mov Rd, Rd, RRX
 			uOpInstrD = {defaultInstrD[31:28], // Condition bits
 						8'b000_1101_0, // MOV R type, Do not update flags
 						4'h0, defaultInstrD[19:16], // Rd = Rd
-						8'b00001_010, defaultInstrD[19:16] }; // Rd LSR #1
+						8'b00000_110, defaultInstrD[19:16] }; // Rd RRX
 		end
 
 		// Carry-shift multiplication: Put the value in RdHi (RdLo) in its place
