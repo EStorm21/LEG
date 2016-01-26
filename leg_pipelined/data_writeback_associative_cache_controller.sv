@@ -65,7 +65,7 @@ module data_writeback_associative_cache_controller
 
   //-----------------TAG LOGIC--------------------
   flopenr #(tbits+1) tagReg(clk, reset, PAReady, {PhysTag, CurrCBit}, {PrevPTag, PrevCBit});
-  mux2 #(tbits+1) tagMux({PrevPTag, PrevCBit}, {PhysTag, CurrCBit}, (state == READY), {Tag, CBit});
+  mux2 #(tbits+1) tagMux({PrevPTag, PrevCBit}, {PhysTag, CurrCBit}, (state == READY) & PAReady, {Tag, CBit});
 
   //------------HIT, DIRTY, VALID-----------------
   // Create Dirty Signal

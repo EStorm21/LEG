@@ -33,7 +33,7 @@ set temp_t 0
 # 	sim:/testbench/dut/leg/dp/InstrE \
 # 	sim:/testbench/dut/leg/dp/InstrF; list
 
-run 223ps
+run 221ps
 
 set dumpfile [open $dumpStateFile r]
 

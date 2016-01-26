@@ -17,7 +17,8 @@ module dmem (
   assign Valid = re | we;
 
   // MEMORY DEBUGGING
-  logic [31:0] watchmem [$] = {32'h00585f4c};
+  logic [31:0] watchmem [$] = {32'h00585f04, 32'h00585f00, 32'h00585f08, 
+                              32'h00585f0c};
 
   // ------------------ Actual Memory ----------------------
   integer i;
@@ -71,18 +72,18 @@ module dmem (
       end
 
       // MEMORY DEBUGGING
-      //if(a inside {watchmem}) begin
-//	 if(we) begin
- //          $display("Writing %h to addr %h at time %d", wd, a, $time);
-//	 end else begin
- //          $display("Reading %h from addr %h at time %d", rd, a, $time);
-//	 end
- //     end
+      if(a inside {watchmem}) begin
+      	if(we) begin
+               $display("Writing %h to addr %h at time %d", wd, a, $time);
+      	end else begin
+               $display("Reading %h from addr %h at time %d", rd, a, $time);
+        end
+      end
       // end MEMORY DEBUGGING
     end
 
   // Called from ModelSim using
-  // call sim:/testbench/dut/ahb/mem/loadMemory simFile clearFirst
+  // call sim:/testbench/dut/ahb/mem/m/loadMemory simFile clearFirst
   function void loadMemory(string simFile, bit clearFirst);
       if (clearFirst) begin
         $display("Resetting memory to zero");
@@ -92,6 +93,11 @@ module dmem (
       end
       $display("Loading memory data from %s",simFile);
       $readmemh(simFile, RAM);
+  endfunction
+
+  // call sim:/testbench/dut/ahb/mem/m/viewMemory viewAddr
+  function void viewMemory(logic[31:0] viewAddr);
+      $display("%h stored at %h", RAM[viewAddr[$clog2(MEM_SIZE)+1:2]], viewAddr);
   endfunction
 
 endmodule

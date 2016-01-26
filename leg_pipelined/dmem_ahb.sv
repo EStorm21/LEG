@@ -22,11 +22,9 @@ module dmem_ahb (
   assign we = HWRITE;
   assign re = ~HWRITE;
 
-  mux2 #(1) HREADYMux(HREADY, 1'b1, HResetn, HREADYR);
-
-  flopenr #(32) addrFlop(clk, ~HResetn, HREADYR, a, a_d);
-  flopenr #(3) hsizeFlop(clk, ~HResetn, HREADYR, HSIZE, HSIZE_d);
-  flopenr #(3) bitDelayFlop(clk, ~HResetn, HREADYR, {we, re, HSEL}, {we_d, re_d, HSEL_d});
+  flopr #(32) addrFlop(clk, ~HResetn, a, a_d);
+  flopr #(3) hsizeFlop(clk, ~HResetn, HSIZE, HSIZE_d);
+  flopr #(3) bitDelayFlop(clk, ~HResetn, {we, re, HSEL}, {we_d, re_d, HSEL_d});
 
   dmem m(.clk(clk), 
         .we(we_d), 

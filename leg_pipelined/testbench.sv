@@ -134,7 +134,7 @@ module testbench();
   // initialize test
   initial
     begin
-      reset <= 1; # 220; reset <= 0;
+      reset <= 1; # 222; reset <= 0;
     end
 
   // generate clock to sequence tests

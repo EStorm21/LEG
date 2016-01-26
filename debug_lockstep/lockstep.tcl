@@ -213,6 +213,8 @@ while {1} {
 
 			if { $i >= $MAX_STEPS_BEFORE_ABORT } {
 				puts "Too many ticks without advance."
+				puts "($i) ticks"
+				puts "time = ($time)"
 				puts $outFifo "fail-nochange"
 			}
 		}

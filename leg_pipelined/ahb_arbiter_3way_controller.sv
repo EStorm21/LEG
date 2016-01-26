@@ -71,10 +71,10 @@ module ahb_arbiter_3way_controller (
     // ============= Address Phase Logic ===============
 
     // Determine current selection
-    assign TSel = (state == SINGLE) &  HRequestT;
-    assign MSel = (state == SINGLE) & ~HRequestT & HRequestM |
+    assign TSel = (state == SINGLE) &  HRequestT & ~reset;
+    assign MSel = (state == SINGLE) & ~HRequestT & HRequestM & ~reset |
                 (state == TMF2) | (state == TM);
-    assign FSel = (state == SINGLE) & HRequestF & ~HRequestM & ~HRequestT |
+    assign FSel = (state == SINGLE) & HRequestF & ~HRequestM & ~HRequestT & ~reset |
                 (state == TF) | (state == TMF3) | (state == MF);
 
     // AddrMux
@@ -94,7 +94,8 @@ module ahb_arbiter_3way_controller (
     assign NoDataPending = ~PTSel & ~PMSel & ~PFSel;
 
     // Data phase logic is based on the previous address phase
-    flopenr #(3) prevSel(clk, reset, HReady | NoDataPending & ~reset, {FSel, TSel, MSel}, {PFSel, PTSel, PMSel});
+    flopenr #(3) prevSel(clk, reset, HReady | NoDataPending & ~reset, 
+        {FSel, TSel, MSel}, {PFSel, PTSel, PMSel});
 
     assign HReadyT = PTSel & HReady;
     assign HReadyM = PMSel & HReady;

@@ -15,6 +15,12 @@ def hexToBinStr(hexStr):
 	num = int(hexStr, 16)
 	return str( bin(num) )[2:].rjust(32, '0')
 
+def rslHex(hexStr, smnt):
+	"""Right shift logical a hex string"""
+	if(smnt == 0):
+		return hexStr
+	return binToHexStr(str( hexToBinStr(hexStr))[:-smnt].rjust(32,'0'))
+
 def gb(num, high, low):
 	"""Return the bit slice for a word"""
 	n = len(num)

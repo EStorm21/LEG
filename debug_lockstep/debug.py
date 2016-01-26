@@ -424,8 +424,10 @@ class LegBugSearchCommand (gdb.Command):
 			
 			if(same):
 				print 'failed at step {}'.format(index+1)
+				print 'output matched after stepping {}'.format(index)
 			else:
 				print 'failed at step {}'.format(index)
+				print 'output mismatched after stepping {}'.format(index)
 		else:
 			print "leg-bugsearch STARTJUMPLOC STARTOFFSET ENDOFFSET"
 

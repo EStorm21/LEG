@@ -53,8 +53,10 @@ module tfh (
   // ============================== Fault Output Logic =========================
   // ===========================================================================
 
-  typedef enum logic [3:0] {READY, SECTIONTRANS, COARSEFETCH, FINEFETCH, 
-  SMALLTRANS, LARGETRANS, TINYTRANS, INSTRFAULT, FAULTFSR, FAULTFAR} statetype;
+// typedef enum logic [3:0] {READY, FLD, COARSEFETCH, FINEFETCH, FINED, 
+// COARSED, INSTRFAULT, FAULTFSR, FAULTFAR} statetype;
+  typedef enum logic [3:0] {READY, SECTIONTRANS, COARSEFETCH, FINEFETCH, SMALLTRANS, 
+  TINYTRANS, LARGETRANS, INSTRFAULT, FAULTFSR, FAULTFAR} statetype;
   statetype state;
   assign state = statetype'(statebits);
 

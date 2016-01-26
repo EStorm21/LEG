@@ -9,5 +9,6 @@ module ahb_mux #(parameter WIDTH = 32) (
     casez(HSEL)
       2'b?1: OUT <= IN0;
       2'b10: OUT <= IN1;
+      default: OUT <= IN0;
     endcase
 endmodule

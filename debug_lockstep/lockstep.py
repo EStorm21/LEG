@@ -142,7 +142,7 @@ def build_bug_no_data(qmon):
 	msg += "\n"
 	return msg
 
-def build_bug_writeback_mismatch(qmon, bad_state):
+def build_bug_writeback_mismatch(qmon, bad_state, t="none"):
 	interrupt_msg = build_bug_interrupts_notimplemented(qmon, bad_state)
 	if interrupt_msg is not None:
 		return interrupt_msg
@@ -167,6 +167,7 @@ def build_bug_writeback_mismatch(qmon, bad_state):
 	msg += "\n"
 	msg += build_qemu_msg()
 	msg += "\n"
+	msg += "time = " + str(t)
 	return msg
 
 def build_bug_interrupts_notimplemented(qmon, bad_state):
@@ -377,7 +378,7 @@ def lockstep(lsim, qemu_proc, is_linux, goal_pc, ignore_irq):
 					return (LOCKSTEP_BUG_RESUMABLE if not should_stop[0] else LOCKSTEP_BUG_ABORT,
 						qmon.get_state_prev_writeback(),
 						qmon.get_state_writeback(),
-						build_bug_writeback_mismatch(qmon,advance_w_state))
+						build_bug_writeback_mismatch(qmon,advance_w_state, t=time))
 
 		if advance_e_state_plus_irq is not None:
 			advance_e_state, irq_assert_trigger, fiq_assert_trigger, interrupt_trigger, high_vec = advance_e_state_plus_irq

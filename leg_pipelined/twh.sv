@@ -49,7 +49,8 @@ assign CurrCBit = TableEntry[8];
 // ================== Translation State Machine ==============================
 // ===========================================================================
 
-typedef enum logic [3:0] {READY, FLD, COARSEFETCH, FINEFETCH, FINED, COARSED, INSTRFAULT, FAULTFSR, FAULTFAR} statetype;
+typedef enum logic [3:0] {READY, FLD, COARSEFETCH, FINEFETCH, FINED, 
+COARSED, INSTRFAULT, FAULTFSR, FAULTFAR} statetype;
 
 // import mmu_pkg::statetype;
 statetype state, nextstate;
