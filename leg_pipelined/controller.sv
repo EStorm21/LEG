@@ -31,7 +31,7 @@ module controller (
   output logic        DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryInE,
   output logic [ 3:0] FlagsE                 ,
   // For micro-op decoding
-  output logic        RselectE, LDRSTRshiftE, LDMSTMforwardD, LDMSTMforwardE,
+  output logic        RselectE, LDMSTMforwardD, LDMSTMforwardE,
   output logic        RSRselectE          ,
   output logic [ 6:4] ShiftOpCode_E          ,
   output logic        MultSelectD,
@@ -101,7 +101,7 @@ module controller (
   logic  [1:0] multCarryInD, multCarryInE;
   logic        ALUCarryIn_0E;
   logic        multPrevZFlagD, multPrevZFlagE;
-  logic        ZeroRotateE;
+  logic        ZeroRotateE, LDRSTRshiftD, LDRSTRshiftE;
 
   // For debugging
   logic        validDdebug, validEdebug, validMdebug, validWdebug;
@@ -278,7 +278,7 @@ module controller (
   flopenrc #(1) zrotflop(clk, reset, ~StallE, FlushE, ZeroRotateD, ZeroRotateE);
 
   // SD 1/24/2016: Could move to D? think about timing
-  shift_control shctl(InstrE[6:5], InstrE[11:7], SrcA70E, RselectE, RSRselectE, ZeroRotateE, FlagsE[1], multCarryInE[0], ShifterCarryOut_cycle2E, sh_a0E, sh_a31E, sh_rot0E, sh_rot31E, 
+  shift_control shctl(InstrE[6:5], InstrE[11:7], SrcA70E, RselectE, RSRselectE, LDRSTRshiftE, ZeroRotateE, FlagsE[1], multCarryInE[0], ShifterCarryOut_cycle2E, sh_a0E, sh_a31E, sh_rot0E, sh_rot31E, 
                       shamtE, shctl_5E, shctl_8E, shiftE, leftE, arithE, longshiftE, rrx_inE, ShifterCarryOutE);
 
   // === ALU Decoding ===

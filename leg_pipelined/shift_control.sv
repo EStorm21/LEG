@@ -1,7 +1,7 @@
 module shift_control(input  logic [1:0] shtype,
                      input  logic [4:0] R_shamt0,
                      input  logic [7:0] RSR_shamt,
-                     input  logic       isRtype, isRSRtype, zeroRotate, prevCflag, multCsel,
+                     input  logic       isRtype, isRSRtype, isLDRSTRRtype, zeroRotate, prevCflag, multCsel,
                      input  logic       multCarryIn, a0, a31, rot0, rot31,
                      output logic [4:0] shamt,
                      output logic [4:0] shctl_5, 
@@ -13,7 +13,7 @@ module shift_control(input  logic [1:0] shtype,
   logic [6:0] actualShift;
   assign rrx = (shtype == 2'b11) & ~isRSRtype & (R_shamt0 == 5'b00000);
   assign R_shamt = rrx ? 5'b00001 : R_shamt0;
-  assign shiftSelect = isRSRtype | isRtype;
+  assign shiftSelect = (isRSRtype | isRtype) & ~isLDRSTRRtype;
   // Exactly what it says on the tin. Take all the possibilities. Output 0 when we don't use shifter.
   // Note that LSL and RRX don't shift by 32 even when shift amount is 0
   assign actualShift = {7{shiftSelect}} & (isRSRtype ? {(|RSR_shamt[7:6]),RSR_shamt[5],RSR_shamt[4:0]} 

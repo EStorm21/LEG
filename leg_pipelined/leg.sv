@@ -47,7 +47,7 @@ module leg(input  logic        clk, reset,
   logic        RegWriteM, MemtoRegE, PCWrPendingF, WriteByteE, StrHalfwordE, LdrHalfwordW, HalfwordOffsetW;
   logic        Ldr_SignBW, Ldr_SignHW;
   logic        DoNotWriteRegE, uOpStallD, PrevRSRstateD, PrevRSRstateE, CPSRtoRegW;
-  logic        LDMSTMforwardD, LDMSTMforwardE, LDRSTRshiftE, MultSelectD, RselectE;
+  logic        LDMSTMforwardD, LDMSTMforwardE, MultSelectD, RselectE;
   logic [3:0]  FlagsE; // [1] is C, [0] is V
   logic [1:0]  ByteOffsetW;
   logic [1:0]  MultControlE;

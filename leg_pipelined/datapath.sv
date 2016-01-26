@@ -22,7 +22,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic [2:0]  ALUOperationE,
                   input  logic        InvertBE, ReverseInputsE, ALUCarryInE,
                   // To handle micro-op decoding
-                  input  logic        RselectE, LDRSTRshiftE, 
+                  input  logic        RselectE,
                   input  logic        RSRselectE,
                   input  logic [6:4]  ShiftOpCode_E,
                   // To handle load-store half-words and bytes
