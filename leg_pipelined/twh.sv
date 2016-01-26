@@ -81,9 +81,9 @@ case (state)
                 end else if(HRData[1:0] == 2'b10) begin // section Trans
                   nextstate <= READY;
                 end else if(HRData[1:0] == 2'b01) begin
-                  nextstate <= COARSEFETCH;
+                  nextstate <= COARSED;
                 end else begin
-                  nextstate <= FINEFETCH;
+                  nextstate <= FINED;
                 end
 
   COARSEFETCH:  if ( Fault ) begin
@@ -134,9 +134,13 @@ always_comb
 case (state)
   READY:        HAddrT = PAReady ? {TableEntry[tagbits+8:9], VirtAdr[31-tagbits:0]} : 
                            {TBase,  VirtAdr[31:20], 2'b00};
-  FLD:          HAddrT = {HRData[31:20], VirtAdr[19:0]}; 
-  COARSEFETCH:  HAddrT = {HRData[31:10], VirtAdr[19:12], 2'b0};
-  FINEFETCH:    HAddrT = {HRData[31:12], VirtAdr[19:10], 2'b0};
+  FLD:          if(HRData[1:0] == 2'b10) begin
+                  HAddrT = {HRData[31:20], VirtAdr[19:0]};  // section fld
+                end else if(HRData[1:0] == 2'b01) begin
+                  HAddrT = {HRData[31:10], VirtAdr[19:12], 2'b0}; // coarse fld
+                end else begin
+                  HAddrT = {HRData[31:12], VirtAdr[19:10], 2'b0}; // fine fld
+                end
   FINED:        if(HRData[1:0] == 2'b10) begin 
                   HAddrT = {HRData[31:12], VirtAdr[11:0]}; // Small Trans
                 end else begin
@@ -194,7 +198,7 @@ assign HRequestT = ( (state == COARSEFETCH) |
                 (state == FINEFETCH) |
                 (state == COARSED)   & ~HReadyT |
                 (state == FINED)   & ~HReadyT |
-                (state == FLD) & (~HReadyT | (PHRData[1:0] == 2'b01) | (PHRData[1:0] == 2'b11)) |
+                (state == FLD) & (~HReadyT | (HRData[1:0] == 2'b01) | (HRData[1:0] == 2'b11)) |
               ( (state == READY) & RequestPA & ~PAReady) ) & Enable;
 
 // CPUHReadyT Logic  

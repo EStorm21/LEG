@@ -72,13 +72,13 @@ module dmem (
       end
 
       // MEMORY DEBUGGING
-      if(a inside {watchmem}) begin
-      	if(we) begin
-               $display("Writing %h to addr %h at time %d", wd, a, $time);
-      	end else begin
-               $display("Reading %h from addr %h at time %d", rd, a, $time);
-        end
-      end
+      // if(a inside {watchmem}) begin
+      // 	if(we) begin
+      //          $display("Writing %h to addr %h at time %d", wd, a, $time);
+      // 	end else begin
+      //          $display("Reading %h from addr %h at time %d", rd, a, $time);
+      //   end
+      // end
       // end MEMORY DEBUGGING
     end
 
