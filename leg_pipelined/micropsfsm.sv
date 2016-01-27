@@ -32,7 +32,7 @@ assign WriteBack = defaultInstrD[21];
 // Count ones for LDM/STM
 logic [4:0] numones;
 logic [3:0] Rd; // Rd is a CURRENT value 
-logic [6:0] start_imm; // start_imm LE 16 << 2 == 1000000 
+logic [4:0] start_imm; // start_imm LE 16 << 2 == 1000000. Add the last 2'b00 later 
 logic [15:0] RegistersListNow, RegistersListNext;
 
 /* Gives you the next register to Load/Store during LDM or STM, even handles first cycle
@@ -62,10 +62,10 @@ always_comb
 	// start_imm is added or subtracted from Rn based on defaultInstrD[23] to generate ONE BEFORE the first address.
 	// SD 12/9/2015: Don't need to shift here. Do it by adding 00 in uopinstrD
 	casex(defaultInstrD[24:23])
-	  2'b00:   start_imm = ((numones)<<2); // DA: Rn is highest address, writeback subtracts numones<<2
-	  2'b01:   start_imm = 4;                // IA: Rn is lowest address, writeback adds numones<<2
-	  2'b10:   start_imm = ((numones+1)<<2);   // DB: Rn is one past highest address, writeback subtracts numones<<2
-	  2'b11:   start_imm = 0;                // IB: Rn is one before lowest address, writeback adds numones<<2
+	  2'b00:   start_imm = numones;     // DA: Rn is highest address, writeback subtracts numones<<2
+	  2'b01:   start_imm = 1;           // IA: Rn is lowest address, writeback adds numones<<2
+	  2'b10:   start_imm = numones+1;   // DB: Rn is one past highest address, writeback subtracts numones<<2
+	  2'b11:   start_imm = 0;           // IB: Rn is one before lowest address, writeback adds numones<<2
 	  default: start_imm = 0;
 	endcase
   end
@@ -312,7 +312,7 @@ always_comb
 							 2'b00,					// don't set flags 
 							 defaultInstrD[19:16],	// Read from Rn
 							 4'b1111,				// Put result in Rz
-							 5'b00000, start_imm	// 5+7 bits of start_imm, calculated from above
+							 5'b00000, start_imm, 2'b00	// 5+5+2 bits of start_imm, calculated from above
 							 };
 			end 
 			// LOAD/STORE HALF-WORDS
@@ -1184,11 +1184,11 @@ always_comb
 			MicroOpCPSRrestoreD = 0;
 			noRotate = 0;  
 			ldrstrRtype = 0;  
-			// mov Rz, Rz LSR #1
+			// mov Rz, Rz, RRX
 			uOpInstrD = {defaultInstrD[31:28], // Condition bits
 						8'b000_1101_0, // MOV R type, Do not update flags
 						4'h0, 4'hF, // Rd = Rz
-						8'b00001_010, 4'hF }; // Rz LSR #1
+						8'b00000_110, 4'hF }; // Rz RRX
 		end
 
 		// Carry-shift multiplication: shift Rd or RdHi right by 1, 
@@ -1206,11 +1206,11 @@ always_comb
 			MicroOpCPSRrestoreD = 0;
 			noRotate = 0;  
 			ldrstrRtype = 0;  
-			// mov Rd, Rd LSR #1
+			// mov Rd, Rd, RRX
 			uOpInstrD = {defaultInstrD[31:28], // Condition bits
 						8'b000_1101_0, // MOV R type, Do not update flags
 						4'h0, defaultInstrD[19:16], // Rd = Rd
-						8'b00001_010, defaultInstrD[19:16] }; // Rd LSR #1
+						8'b00000_110, defaultInstrD[19:16] }; // Rd RRX
 		end
 
 		// Carry-shift multiplication: Put the value in RdHi (RdLo) in its place
