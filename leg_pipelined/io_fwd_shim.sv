@@ -58,7 +58,9 @@ module io_fwd_shim(input  logic        HCLK,
     // call sim:/testbench/dut/ahb/ioShim/setInterrupts <irq> <fiq>
     function void setInterrupts;
         input logic irqset, fiqset;
-        $display("Set interrupts, irq = %b, fiq = %b @ %d", irqset, fiqset, $time);
+        if(~(irq == irqset) | ~(fiq==fiqset)) begin
+            $display("Set interrupts, irq = %b, fiq = %b @ %d", irqset, fiqset, $time);
+        end
         irq <= irqset;
         fiq <= fiqset;
     endfunction
