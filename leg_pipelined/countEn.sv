@@ -1,15 +1,9 @@
 // Create an n bit counter with reset and enable
 module countEn #(parameter n)
-	(input logic clk, reset, en,
-	 output logic[n-1:0] q);
-	always_ff @(posedge clk)
-    if(reset) begin
-        q <= 0;
-    end else begin
-        if (en) begin
-            q <= q + 1;
-        end else begin
-            q <= q;
-        end
-    end
+	(input  logic         clk, reset, en,
+	 output logic [n-1:0] q);
+
+	logic [n-1:0] d;
+	assign d = q + 1;
+    flopenr #(n) cnt(clk, reset, en, d, q);
 endmodule
