@@ -12,22 +12,27 @@ module controller (
   input  logic [31:0] InstrD, ALUOutW        ,
   input  logic [ 3:0] ALUFlagsE              ,
   input  logic [31:0] ALUResultE, DefaultInstrD,
-  input  logic        ShifterCarryOutE,
+  input  logic        ZeroRotateD,
   input  logic [1:0]  Rs_D, // for multiply partial products
+  input  logic        sh_a0E, sh_a31E, sh_rot0E, sh_rot31E,
+  input  logic [7:0]  SrcA70E,
   /// ------ To   Datapath ------
   output logic [ 1:0] RegSrcD, ImmSrcD       ,
   output logic        ALUSrcE, ALUSrcD, BranchTakenE,
   output logic [ 3:0] ALUControlE            ,
   output logic        MemWriteM              ,
   output logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE,
-  output logic        shiftCarryInE,
+  output logic [ 4:0] shamtE,
+  output logic [ 4:0] shctl_5E,
+  output logic [ 7:0] shctl_8E,
+  output logic        rrx_inE, longshiftE, leftE, shiftE, arithE,
   // For ALU logic unit
   output logic [ 2:0] ALUOperationE,
   output logic        DoNotWriteRegE, InvertBE, ReverseInputsE, ALUCarryInE,
   output logic [ 3:0] FlagsE                 ,
   // For micro-op decoding
-  output logic        RselectE, LDRSTRshiftE, LDMSTMforwardD, LDMSTMforwardE,
-  output logic        ResultSelectE          ,
+  output logic        RselectE, LDMSTMforwardD, LDMSTMforwardE,
+  output logic        RSRselectE          ,
   output logic [ 6:4] ShiftOpCode_E          ,
   output logic        MultSelectD,
   output logic [31:0] InstrE                 ,
@@ -73,7 +78,6 @@ module controller (
   logic        PCSrcD, PCSrcE, PCSrcM;
   logic [ 3:0] FlagsNext0E, FlagsNextE, FlagsNextM, FlagsNext0M, FlagsNextW, CondE;
   logic        RegWritepreMuxE, RselectD, RSRselectD, LdrStrRtypeD;
-  logic        ResultSelectD      ;
   logic        ByteOrWordE, ByteOrWordM, LdrStr_HalfD, LdrStr_HalfE, LdrHalfwordE, LdrHalfwordM;
   logic        Ldr_SignBD, Ldr_SignHD, Ldr_SignBE, Ldr_SignHE, Ldr_SignBM, Ldr_SignHM;
   logic [ 1:0] ByteOffsetE, ByteOffsetM;
@@ -97,6 +101,7 @@ module controller (
   logic  [1:0] multCarryInD, multCarryInE;
   logic        ALUCarryIn_0E;
   logic        multPrevZFlagD, multPrevZFlagE;
+  logic        ZeroRotateE, LDRSTRshiftD, LDRSTRshiftE;
 
   // For debugging
   logic        validDdebug, validEdebug, validMdebug, validWdebug;
@@ -193,12 +198,13 @@ module controller (
 
   // === BASIC DATAPATH SELECTION
   assign RselectD      = (InstrD[27:25] == 3'b000 & InstrD[4] == 0) | (LdrStrRtypeD & ~LDMSTMforwardD); // Is a R-type instruction or R-type load store
+  // SD 1/21/3016: may be able to remove the complex logic if we determine it is not necesary for correct shifter operation. 
+  //               Then can simplify interaction with clzselect.
   //                      DP RSR-type                 rest of bits: These look like RSR, but are not. c.f. note 2, page A3-3
-  assign RSRselectD    = (InstrD[27:25] == 3'b000 & ~InstrD[7] & InstrD[4] == 1) & ~(InstrD[24:23] == 2'b10 & ~InstrD[20]);
+  assign RSRselectD    = (InstrD[27:25] == 3'b000 & ~InstrD[7] & InstrD[4]) & ~(InstrD[24:23] == 2'b10 & ~InstrD[20]);
   // SD 11/19/2015 Should this really be | BranchD? This has the effect of stalling everything when there may be a branch
   assign PCSrcD        = (((InstrD[15:12] == 4'b1111) & RegWriteD & ~RegFileRzD[2] & ~CPSRtoRegD & ~RegtoCPSR_D) | BranchD); // Chooses program counter either from DMEM or from ALU calculation
   assign PSRtypeD      = (CPSRtoRegD & InstrD[22]);
-  assign ResultSelectD = RSRselectD;
   // CLZ: looks like MVN but S not set. Actually in the misc. instructions group. 
   // We need to check all these things to extract only this case. 
   // Check all of 7:4 in case we implement E variant later. Really could do just (~7 & 4)
@@ -260,8 +266,8 @@ module controller (
   flopenrc #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);
   flopenrc #(3) CoprocE(clk, reset, ~StallE, FlushE, {CoProc_FlagUpd_D, CoProc_EnD, CoProc_WrEnD}, {CoProc_FlagUpd_E, CoProc_EnE, CoProc_WrEnE});
   flopenrc #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
-  flopenrc  #(8) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, ResultSelectD, PrevCycleCarryD, LDMSTMforwardD, LDRSTRshiftD, LdrStr_HalfD, Ldr_SignHD, Ldr_SignBD},
-                                                            {RselectE, ResultSelectE, PrevCycleCarryE, LDMSTMforwardE, LDRSTRshiftE, LdrStr_HalfE, Ldr_SignHE, Ldr_SignBE});
+  flopenrc  #(8) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, RSRselectD, PrevCycleCarryD, LDMSTMforwardD, LDRSTRshiftD, LdrStr_HalfD, Ldr_SignHD, Ldr_SignBD},
+                                                            {RselectE, RSRselectE, PrevCycleCarryE, LDMSTMforwardE, LDRSTRshiftE, LdrStr_HalfE, Ldr_SignHE, Ldr_SignBE});
   flopenrc #(11) flushedregsE(clk, reset, ~StallE, FlushE,
     {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD,   ldrstrALUopD, BXInstrD, CPSRtoRegD,  RegtoCPSR_D},
     {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoReg_0E, ldrstrALUopE, BXInstrE, CPSRtoReg0E, RegtoCPSR_0E});
@@ -269,11 +275,15 @@ module controller (
                                                      {ALUSrcE, ALUControlE, PSRtypeE, MSRmaskE});
   flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE, {(ALUOpD|ldrstrALUopD), InstrD}, {ALUOpE, InstrE});
   flopenrc #(1) flushWBE(clk, reset, ~StallE, FlushE, nonFlushedInstrD, nonFlushedInstrE);
+  flopenrc #(1) zrotflop(clk, reset, ~StallE, FlushE, ZeroRotateD, ZeroRotateE);
+
+  // SD 1/24/2016: Could move to D? think about timing
+  shift_control shctl(InstrE[6:5], InstrE[11:7], SrcA70E, RselectE, RSRselectE, LDRSTRshiftE, ZeroRotateE, FlagsE[1], multCarryInE[0], ShifterCarryOut_cycle2E, sh_a0E, sh_a31E, sh_rot0E, sh_rot31E, 
+                      shamtE, shctl_5E, shctl_8E, shiftE, leftE, arithE, longshiftE, rrx_inE, ShifterCarryOutE);
 
   // === ALU Decoding ===
   alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryIn_0E, DoNotWriteRegE);
   assign ALUCarryInE = multCarryInE[1] ? ALUCarryOut_cycle2E : ALUCarryIn_0E;
-  assign shiftCarryInE = multCarryInE[0] ? ShifterCarryOut_cycle2E : 1'b0;
   // === END ===
 
   /*** BRIEF ***

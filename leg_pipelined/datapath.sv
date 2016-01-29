@@ -13,14 +13,17 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   input  logic        MemtoRegW, PCSrcW, RegWriteW, CPSRtoRegW, ClzSelectE, ExceptionSavePC,
                   input  logic [31:0] InstrE, PSR_W, 
                   input  logic [2:0]  VectorPCnextF,
-                  input  logic        shiftCarryInE,
+                  input  logic [ 4:0] shamtE,
+                  input  logic [ 4:0] shctl_5E,
+                  input  logic [ 7:0] shctl_8E,
+                  input  logic        rrx_inE, longshiftE, leftE, shiftE, arithE,
                   // Handling data-processing Instrs (ALU)
                   input  logic [3:0]  FlagsE,
                   input  logic [2:0]  ALUOperationE,
                   input  logic        InvertBE, ReverseInputsE, ALUCarryInE,
                   // To handle micro-op decoding
-                  input  logic        RselectE, LDRSTRshiftE, 
-                  input  logic        ResultSelectE,
+                  input  logic        RselectE,
+                  input  logic        RSRselectE,
                   input  logic [6:4]  ShiftOpCode_E,
                   // To handle load-store half-words and bytes
                   input  logic        LoadLengthW, HalfwordOffsetW, Ldr_SignBW, Ldr_SignHW,
@@ -36,8 +39,10 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   output logic [31:0] ALUOutM, ALUOutW,
                   output logic [3:0]  ALUFlagsE, 
                   output logic [31:0] ALUResultE, DefaultInstrD,
-                  output logic        ShifterCarryOutE,
+                  output logic        ZeroRotateD,
                   output logic [1:0]  Rs_D,
+                  output logic        sh_a0E, sh_a31E, sh_rot0E, sh_rot31E,
+                  output logic [7:0]  SrcA70E,
 
                 /// ------ From Hazard ------
                   input  logic [1:0]  ForwardAE, ForwardBE,
@@ -52,8 +57,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                           
   logic [31:0] PCPlus4F, PCnext1F, PCnext2F, PCnextF, PCPlus4D, PCPlus0D, PC_in;
   logic [31:0] ExtImmD, Rd1D, Rd2D, PCPlus8D, RotImmD;
-  logic ZeroRotateD, ZeroRotateE;
-  logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ShifterAinE, ALUSrcBE, ShiftBE;
+  logic [31:0] Rd1E, Rd2E, ExtImmE, SrcAE, SrcBE, WriteDataE, WriteDataReplE, ALUOutputE, ALUSrcBE, ShiftBE;
   logic [31:0] ReadDataRawW, ReadDataW, Result1_W, ResultW;
   logic [31:0] ZerosE, OperationOutputE;
   logic [31:0] ALUorCP15_M;
@@ -105,8 +109,6 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   flopenrc #(32) rd1reg(clk, reset, ~StallE, FlushE, Rd1D, Rd1E);
   flopenrc #(32) rd2reg(clk, reset, ~StallE, FlushE, Rd2D, Rd2E);
   flopenrc #(32) immreg(clk, reset, ~StallE, FlushE, RotImmD, ExtImmE);
-  // SD 10/6/2015: Do something about this. We don't want 1 bit signals in DP
-  flopenrc #(1) zerorotatereg(clk, reset, ~StallE, FlushE, ZeroRotateD, ZeroRotateE);
   // pass on PC for debugging
   flopenrc #(32) pcereg(clk, reset, ~StallE, FlushE, PCD, PCE);
   flopenrc #(32) instrereg(clk, reset, ~StallE, FlushE, DefaultInstrD, instrEdebug);
@@ -114,17 +116,16 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   mux3 #(32)  byp1mux(Rd1E, ResultW, ALUorCP15_M, ForwardAE, SrcAE);
   mux3 #(32)  byp2mux(Rd2E, ResultW, ALUorCP15_M, ForwardBE, WriteDataE);
   mux2 #(32)  srcbmux(WriteDataE, ExtImmE, ALUSrcE, ALUSrcBE);
-  mux2 #(32)  shifterAin(SrcAE, ExtImmE, RselectE, ShifterAinE); 
   mux2 #(32)  shifterOutsrcB(ALUSrcBE, ShiftBE, RselectE, SrcBE);
 
-  // TODO: implement as a barrel shift
-  shifter     shiftLogic(ShifterAinE, ALUSrcBE, ShiftBE, RselectE, ResultSelectE, LDRSTRshiftE, ZeroRotateE, FlagsE[1:0], ShiftOpCode_E, shiftCarryInE, ShifterCarryOutE);
+  barrel_shifter shifter(ALUSrcBE, shamtE, shctl_5E, shctl_8E, rrx_inE, longshiftE, leftE, shiftE, arithE, ShiftBE, sh_a0E, sh_a31E, sh_rot0E, sh_rot31E);
+  assign SrcA70E = SrcAE[7:0];
   
   alu         alu(SrcAE, SrcBE, ALUOperationE, InvertBE, ReverseInputsE, ALUCarryInE, ALUOutputE, ALUFlagsE); 
   zero_counter clz(SrcBE, ZerosE);
   mux2 #(32) aluorclzmux(ALUOutputE, ZerosE, ClzSelectE, OperationOutputE);
   
-  mux2 #(32)  aluoutputmux(OperationOutputE, ShiftBE, ResultSelectE, ALUResultE); 
+  mux2 #(32)  aluoutputmux(OperationOutputE, ShiftBE, RSRselectE, ALUResultE); 
   data_replicator memReplicate(WriteByteE, StrHalfwordE, WriteDataE, WriteDataReplE);
   
   // ====================================================================================
