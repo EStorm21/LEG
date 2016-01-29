@@ -10,17 +10,8 @@ module instr_tracker(input logic clk, instr_abort, StallD, FlushD, FlushE,
                     output logic InstrCancelled, InstrExecuting);
 
   logic AbortD;
-  always_ff @(posedge clk)
-    if(FlushD | InstrCancelled)
-      AbortD <= 0;
-    else if(~StallD)
-      AbortD <= instr_abort;
-
-  always_ff @(posedge clk)
-    if(FlushE)
-      InstrExecuting <= 0;
-    else
-      InstrExecuting <= AbortD;
+  flopenr #(1) abortflop(clk, FlushD | InstrCancelled, ~StallD, instr_abort, AbortD);
+  flopr   #(1) exeflop(clk, FlushE, AbortD, InstrExecuting);
 
   assign InstrCancelled = FlushD | FlushE;
 

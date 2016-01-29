@@ -43,17 +43,9 @@ countones cntones(defaultInstrD[15:0], numones);
 /* Updates the Current Registers List that we need to select from. 
  * In the first cycle this list is from the instruction
  */
-always_ff @ (posedge clk)
-  begin
-  	if (reset)
-  		RegistersListNow <= 16'b0;
-  	else if (StalluOp)
-  		RegistersListNow <= RegistersListNow;
-  	else if (state == ready)
-  		RegistersListNow <= defaultInstrD[15:0];
-  	else
-  		RegistersListNow <= RegistersListNext;
-  end
+logic [15:0] nextregs;
+assign nextregs = (state == ready) ? defaultInstrD : RegistersListNext;
+flopenr #(16) reglistflop(clk, reset, ~StalluOp, nextregs, RegistersListNow);
 
 always_comb 
   begin
@@ -76,17 +68,16 @@ always_comb
 // For multiplies, we need to shift and add 32 times. Thus start at 31 and subtract 1 before it is time to check the result.
 // Let's do it in the MUL_add stage, since all paths go through that.
 logic [4:0] MUL_counter;
-logic MUL_done, partialProduct_en;
-always_ff @ (posedge clk) begin
-  	if (reset | state == ready)
-  		MUL_counter <= 5'b11111;
-  	else if (StalluOp)
-  		MUL_counter <= MUL_counter;
-  	else if (state == MUL_add)
-  		MUL_counter <= MUL_counter - 1'b1;
-  	else 
-  		MUL_counter <= MUL_counter;
-end
+logic MUL_done;
+logic [4:0] next_MUL_counter;
+always_comb
+	if(reset | state == ready)
+		next_MUL_counter = 5'b11111;
+	else if (state == MUL_add)
+		next_MUL_counter = MUL_counter - 1'b1;
+	else
+		next_MUL_counter = MUL_counter;
+flopenr #(5) mulcntflop(clk, 1'b0, ~StalluOp | (reset | state == ready), next_MUL_counter, MUL_counter);
 assign MUL_done = MUL_counter == 5'b11111;
 
 
@@ -94,18 +85,15 @@ assign MUL_done = MUL_counter == 5'b11111;
 // This is in the states MUL_mov_Rs and MUL_shift_Rd_RdHi.
 // We need to get the value out of the register file and select bit 1 or 0 depending on the shift
 // We can't get it all the time since there are not enough register file ports.
-always_ff@(posedge clk) begin
-	if (reset)
-		partialProduct_en <= 0;
-	else if (StalluOp)
-		partialProduct_en <= partialProduct_en;
-	else if (state == MUL_mov_Rs)
-		partialProduct_en <= Rs_D[0];
+logic partialProduct_en, ppen_next;
+always_comb
+	if (state == MUL_mov_Rs)
+		ppen_next = Rs_D[0];
 	else if (state == MUL_shift_Rd_RdHi)
-		partialProduct_en <= Rs_D[1];
+		ppen_next = Rs_D[1];
 	else
-		partialProduct_en <= partialProduct_en;
-end
+		ppen_next = partialProduct_en;
+flopenr #(1) ppflop(clk, reset, ~StalluOp, ppen_next, partialProduct_en);
 
 // Whether to use shiftercarryoutcycle2 as a carry in for the shifter or ALU(bit 0)
 // Or to use ALUCarryOutCycle2

@@ -23,6 +23,7 @@ logic [lines-1:0] LRU;     // LRU Table
 
 // Create LRU Table
 assign set = ANew[bsize+setbits-1:bsize];  // ANew only modifies the block offset
+// SD 1/28/2016: slightly different from flopenr: reset clears all, otherwise only update set
 always_ff @(posedge clk, posedge reset) begin
   if(reset) begin
       LRU <= 'b0;

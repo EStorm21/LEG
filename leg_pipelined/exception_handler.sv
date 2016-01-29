@@ -36,6 +36,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
 
 
   // FSM states and boilerplate
+  // SD 1/28/2016: Can't conver to flopr because of statetype!
   always_ff @ (posedge clk)
     if (reset)  state <= ready;
     else        state <= nextState;
