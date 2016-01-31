@@ -15,6 +15,7 @@ module top (
   logic [31:0] HAddrT, HAddrM, HAddrF, HAddr;
   logic [31:0] HWData, HWDataM;
   logic [31:0] HRData; 
+  logic [1:0] Hsel;
 
   // ----- tlb arbiter -----
   logic RequestPA, RequestPAM, RequestPAF;
@@ -196,19 +197,33 @@ module top (
 
   // Create an ahb memory
   // TODO: Partition into on chip and off chip
-  ahb_lite ahb (
+  //ahb_lite ahb (
+  //  .HCLK    (clk     ),
+  //  .HRESETn (~reset   ),
+  //  .HADDR   (HAddr   ),
+  //  .HWRITE  (HWrite  ),
+  //  .HREQUEST(HRequest),
+  //  .HSIZE   (HSIZE),
+  //  .HWDATA  (HWData  ),
+  //  .HRDATA  (HRData  ),
+  //  .HREADY  (HReady  ),
+  //  .irq     (IRQ     ),
+  //  .fiq     (FIQ     )
+  //);
+
+  peripherals peri(    
     .HCLK    (clk     ),
     .HRESETn (~reset   ),
-    .HADDR   (HAddr   ),
     .HWRITE  (HWrite  ),
     .HREQUEST(HRequest),
+    .HSEL    (Hsel),
+    .HADDR   (HAddr   ),
     .HSIZE   (HSIZE),
     .HWDATA  (HWData  ),
     .HRDATA  (HRData  ),
     .HREADY  (HReady  ),
-    .irq     (IRQ     ),
-    .fiq     (FIQ     )
-  );
+    .irq     (IRQ),
+    .fiq     (FIQ));
 
   // Create the mmu
   mmu #(tbits) mmuInst (.*);

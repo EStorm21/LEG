@@ -29,10 +29,11 @@ module ahb_lite (
 
   // Delay address for decoder and mux
   // flopenr #(32) adrreg(HCLK, ~HRESETn, HREADYR, HADDR, HADDRDEL);
-  flopenr #(2) selreg(HCLK, ~HResetn, HREADYR, HSEL, HSELDEL);
+  flopenr #(2) selreg(HCLK, ~HRESETn, HREADYR, HSEL, HSELDEL);
   
   // Memory map decoding
   ahb_decoder dec (HADDR, HSEL);
+  // SD 1/31/2016 put off chip
   ahb_mux #(32) mux (HSELDEL,HRDATA0,HRDATA1,HRDATA);
   ahb_mux #(1) ready_mux (HSELDEL,HREADY0,HREADY1,HREADY);
   

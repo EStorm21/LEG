@@ -24,15 +24,29 @@ module ahb_arbiter_3way (
     output logic        HReadyF, HReadyM, HReadyT,
     output logic        FSel, MSel, TSel,
     output logic        HWrite   ,
-    output logic        HRequest,
+    output logic        HRequest ,
+    output logic [ 1:0] Hsel     ,
     output logic [ 2:0] HSIZE    ,
     output logic [31:0] HWData, HAddr
 );
-    
+
     logic [1:0] HAddrSel;
+
+    logic [31:0] rawFIQVec, rawIRQVecPart, rawIRQVec, rawSICVec;
+    logic        SICinterrupt; // says whether an interrupt is pending in the SIC
+  
+
+    //Interrupt Vectors
+    assign rawFIQVec = 32'b0;
+    assign rawIRQVecPart = 32'b0;
+    assign rawSICVec = 32'b0;
+    assign rawIRQVec = {rawIRQVecPart[31:27], SICinterrupt, rawIRQVecPart[25:0]};
     
     mux3 #(32) HAddrArbMux(HAddrT, HAddrM, HAddrF, HAddrSel, HAddr);
     assign HWData = HWDataM;
+
+    // Memory map decoding
+    ahb_decoder dec (HAddr, Hsel);
 
     ahb_arbiter_3way_controller c(.*);
 

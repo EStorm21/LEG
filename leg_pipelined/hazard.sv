@@ -63,11 +63,5 @@ module hazard(input  logic       clk, reset,
   // FlushD cannot propagate bad stuff to E stage because writeback is killed in this case.
   assign FlushE = ldrStallD | BranchTakenE | ExceptionFlushE; 
   assign FlushD = PCWrPendingF | PCSrcW | BranchTakenE | IStall | RegtoCPSR | CPSRtoReg | CoProc_En | ExceptionFlushD;
-
-
-
-
-  // TODO: Add stalls for CP15 instructions (i.e. enabling I$)
-  // TODO: Add stalls for self modifying code
   
 endmodule
