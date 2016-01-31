@@ -261,7 +261,7 @@ module data_writeback_associative_cache_controller
   assign NoCountD = ~enable & ~(state == WRITEBACK) & 
     ~(nextstate == WRITEBACK) & ~(state == LASTWRITEBACK) | 
     ResetBlockOff; 
-  assign NoCountA = NoCountD | (state == LASTWRITEBACK) & BusReady;
+  assign NoCountA = NoCountD | (state == LASTWRITEBACK) & BusReady & ~enable;
 
   // Create the block offset for the cache
   mux2 #($clog2(bsize)) AddrWordOffsetMux(Counter, WordOffset, 

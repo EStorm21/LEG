@@ -1,7 +1,7 @@
 module ahb_lite (
   input  logic        HCLK    ,
   input  logic        HRESETn ,
-  input  logic        HREQUEST,
+  input  logic        HREQUEST, // TODO: Remove from io shim
   input  logic [ 2:0] HSIZE   ,
   input  logic [31:0] HADDR   ,
   input  logic        HWRITE  ,

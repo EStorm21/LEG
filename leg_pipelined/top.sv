@@ -199,9 +199,9 @@ module top (
   ahb_lite ahb (
     .HCLK    (clk     ),
     .HRESETn (~reset   ),
+    .HREQUEST(HRequest),
     .HADDR   (HAddr   ),
     .HWRITE  (HWrite  ),
-    .HREQUEST(HRequest),
     .HSIZE   (HSIZE),
     .HWDATA  (HWData  ),
     .HRDATA  (HRData  ),
@@ -219,11 +219,8 @@ module top (
 
   assign WordAccess = 1'b0;   // Assuming byte or halfword accesses
   assign SupMode    = 1'b1;   // in supervisor mode
-  // assign SBit = control[7];         // Give the most permissions with S and R SD 1/10/2016: S is bit 8
-  // assign RBit = control[9];
   assign DataAccess = 1'b1;   // Trying to access data memory, not instruction memory
   assign CPSR4      = 1'b1;
-  // assign FullTBase = 32'h0030_0000; // Fix the translation base
   assign TBase     = FullTBase[31:14];
   assign MMUExtInt = 1'b0;          // No External Interrupt
 
