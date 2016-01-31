@@ -195,22 +195,6 @@ module top (
 
   tlb_arbiter tarb(.*);
 
-  // Create an ahb memory
-  // TODO: Partition into on chip and off chip
-  //ahb_lite ahb (
-  //  .HCLK    (clk     ),
-  //  .HRESETn (~reset   ),
-  //  .HADDR   (HAddr   ),
-  //  .HWRITE  (HWrite  ),
-  //  .HREQUEST(HRequest),
-  //  .HSIZE   (HSIZE),
-  //  .HWDATA  (HWData  ),
-  //  .HRDATA  (HRData  ),
-  //  .HREADY  (HReady  ),
-  //  .irq     (IRQ     ),
-  //  .fiq     (FIQ     )
-  //);
-
   peripherals peri(    
     .HCLK    (clk     ),
     .HRESETn (~reset   ),

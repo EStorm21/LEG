@@ -221,12 +221,12 @@ while {1} {
 		"ioread" {
 			gets $inFifo readAddr
 			gets $inFifo readValue
-			call sim:/testbench/dut/ahb/ioShim/pushRead $readAddr $readValue
+			call sim:/testbench/dut/peri/ioShim/pushRead $readAddr $readValue
 		}
 		"setirq" {
 			gets $inFifo irq
 			gets $inFifo fiq
-			call sim:/testbench/dut/ahb/ioShim/setInterrupts $irq $fiq
+			call sim:/testbench/dut/peri/ioShim/setInterrupts $irq $fiq
 		}
 		"checkpoint" {
 			gets $inFifo path
