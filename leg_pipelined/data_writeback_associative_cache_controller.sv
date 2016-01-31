@@ -213,7 +213,8 @@ module data_writeback_associative_cache_controller
       ( clean | (MemtoRegM | MemWriteM) & ~Hit )
     );
   assign CWE =  (state == MEMREAD) & BusReady |
-    (state == READY) & ( (MemWriteM & Hit) | MemWriteM & ~enable ) |
+    (state == READY) & ( (MemWriteM & Hit) | 
+      MemWriteM & ~enable & ~(nextstate ==WRITEBACK) ) |
     (state == LASTREAD) & BusReady;
   assign HWriteM = (state == WRITEBACK) |
     ((state == READY) & ~Hit & Dirty & ~clean) |
