@@ -22,7 +22,7 @@ module data_writeback_associative_cache_controller
   logic [$clog2(lines):0] FlushA    ; // Create block address to increment
   logic                   IncFlush, ResetBlockOff, WDMaskSel, IncCounter;
   logic                   WordAccess, CWE, Hit, W2Hit, W1Hit, TagSel, writeW1;
-  logic                   W2EN, Dirty, NoCount, PrevCBit, CBit;
+  logic                   W2EN, Dirty, NoCountD, PrevCBit, CBit, ResetCountMid;
   logic             [1:0] CounterMid, Counter, DataCounter;
   logic             [3:0] WDMask;
 
@@ -32,9 +32,13 @@ module data_writeback_associative_cache_controller
   statetype state, nextstate;
 
   // Control Signals
+  assign ResetCountMid = reset |
+    ResetBlockOff | 
+    ~enable & ~(state == WRITEBACK);
+
   // Create Counter for sequential bus access
   always_ff @(posedge clk, posedge reset)
-    if(reset | ResetBlockOff | ~enable) begin
+    if(ResetCountMid) begin
         CounterMid <= 0;
     end else begin
         if (IncCounter) begin
@@ -110,7 +114,12 @@ module data_writeback_associative_cache_controller
   // state register
   always_ff @(posedge clk, posedge reset)
     if (reset) state <= READY;
-    else state <= nextstate;
+    else begin 
+      if(clean) begin // TODO fix cleaning
+        $display("cleaning data cache: warning, cleaning not functional @ %d ps",$time);
+      end
+      state <= nextstate;
+    end
 
   // next state logic
   always_comb
@@ -124,7 +133,10 @@ module data_writeback_associative_cache_controller
       )
       begin
         nextstate <= READY;
-      end
+      end 
+      else if(~Hit & ~clean & Dirty) begin
+        nextstate <= WRITEBACK;
+      end 
       else if ( ~enable & MemWriteM ) begin
         nextstate <= DWRITE;
       end
@@ -134,12 +146,10 @@ module data_writeback_associative_cache_controller
       else if( IStall & enable & ~clean & Hit ) begin
         nextstate <= WAIT;
       end
-      else if( ~Dirty ) begin
+      else begin
         nextstate <= MEMREAD;
       end
-      else begin
-        nextstate <= WRITEBACK;
-      end
+      
 
       // If we have finished writing back four words, start reading from memory
       // If the cache is disabled, then only write one line. (line isn't valid)
@@ -150,8 +160,12 @@ module data_writeback_associative_cache_controller
       end
       LASTWRITEBACK: if (clean & BusReady) begin
         nextstate <= FLUSH;
-      end else begin
+      end else if(enable) begin
         nextstate <= BusReady ? MEMREAD : LASTWRITEBACK;
+      end else if(MemWriteM) begin
+        nextstate <= DWRITE;
+      end else begin
+        nextstate <= BusReady ? LASTREAD : LASTWRITEBACK;
       end
       // If all four words have been fetched from memory, then move on.
       // If the cache is disabled, then only read one line. (line isn't valid)
@@ -174,7 +188,8 @@ module data_writeback_associative_cache_controller
       NEXTINSTR: nextstate <= IStall ? WAIT : READY;
       WAIT:      nextstate <= IStall ? WAIT : READY;
       DWRITE:    nextstate <= BusReady ? NEXTINSTR : DWRITE;
-      FLUSH:    if ( W1D | W2D ) begin
+      FLUSH:    
+      if ( W1D | W2D ) begin
         nextstate <= WRITEBACK;
       end else if( FlushA[$clog2(lines):1] == (lines) ) begin
         nextstate <= READY;
@@ -205,11 +220,12 @@ module data_writeback_associative_cache_controller
     (nextstate == DWRITE) | 
     (state == DWRITE);
   assign HRequestM = (state == READY) & MemtoRegM & PAReady & ~enable |
+    (state == READY) & ((nextstate == WRITEBACK) | (nextstate == MEMREAD)) & PAReady |
 		(state == READY) & MemWriteM & enable & ~Hit & PAReady |
 		(state == DWRITE) & ~BusReady |
     (state == LASTREAD) & ~BusReady |
     (state == MEMREAD) |
-    (state == LASTWRITEBACK) |
+    (state == LASTWRITEBACK) & ((nextstate == LASTREAD) | (nextstate == MEMREAD)) |
     (state == WRITEBACK); 
 
   // RDSel makes WD the output for disabled cache behavior
@@ -236,18 +252,23 @@ module data_writeback_associative_cache_controller
   assign CacheRDSel = DataWordOffset;
 
   // Cached address selection
-  assign UseCacheA = enable & HWriteM;
+  assign UseCacheA = enable & HWriteM | 
+    ~enable & (nextstate == WRITEBACK)|
+    ~enable & (state == WRITEBACK);
 
   // Ignore counter logic
-  assign NoCount = ~enable & ~(state == WRITEBACK) | ResetBlockOff;
+  assign NoCountD = ~enable & ~(state == WRITEBACK) & 
+    ~(nextstate == WRITEBACK) & ~(state == LASTWRITEBACK) | 
+    ResetBlockOff; 
+  assign NoCountA = NoCountD | (state == LASTWRITEBACK) & BusReady;
 
   // Create the block offset for the cache
   mux2 #($clog2(bsize)) AddrWordOffsetMux(Counter, WordOffset, 
-                                          NoCount,
+                                          NoCountA,
                                           AddrWordOffset);
   mux2 #($clog2(bsize)) DataWordOffsetMux(DataCounter, 
                                           WordOffset, 
-                                          NoCount,
+                                          NoCountD,
                                           DataWordOffset);
 
   // -------------Flush controls------------

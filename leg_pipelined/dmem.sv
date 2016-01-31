@@ -17,8 +17,7 @@ module dmem (
   assign Valid = re | we;
 
   // MEMORY DEBUGGING
-  logic [31:0] watchmem [$] = {32'h00585f04, 32'h00585f00, 32'h00585f08, 
-                              32'h00585f0c};
+  logic [31:0] watchmem [$] = {32'h00584004};
 
   // ------------------ Actual Memory ----------------------
   integer i;
@@ -72,13 +71,16 @@ module dmem (
       end
 
       // MEMORY DEBUGGING
-      // if(a inside {watchmem}) begin
-      // 	if(we) begin
-      //          $display("Writing %h to addr %h at time %d", wd, a, $time);
-      // 	end else begin
-      //          $display("Reading %h from addr %h at time %d", rd, a, $time);
-      //   end
-      // end
+      //`define MEMDEBUG 0
+      `ifdef MEMDEBUG
+      if(a inside {watchmem}) begin
+      	if(we) begin
+               $display("Writing %h to addr %h at time %d", wd, a, $time);
+      	end else begin
+               $display("Reading %h from addr %h at time %d", rd, a, $time);
+        end
+      end
+      `endif
       // end MEMORY DEBUGGING
     end
 

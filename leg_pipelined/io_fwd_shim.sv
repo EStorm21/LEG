@@ -28,7 +28,7 @@ module io_fwd_shim(input  logic        HCLK,
 
     always_ff @(posedge HCLK ) begin
         if(HREQUEST_d & HSEL_d & HWRITE_d) begin
-            $displayh("IO write data %h to %h", HWDATA, HADDR_d);
+            $displayh("IO write data %h to %h, @ %d", HWDATA, HADDR_d, $time);
             // Ignore writes (Qemu can handle it)
         end
         if(HREQUEST & HSEL & ~HWRITE) begin
@@ -50,6 +50,7 @@ module io_fwd_shim(input  logic        HCLK,
     // call sim:/testbench/dut/ahb/ioShim/pushRead <address> <value>
     function void pushRead;
         input [31:0] addr, val;
+        $display("pushRead addr = %h, data = %h, time = %d", addr, val, $time);
         readAddrs.push_back(addr);
         readVals.push_back(val);
     endfunction
