@@ -52,11 +52,5 @@ module data_writeback_associative_cache_way
       // Clean the block if writing an entire block
       DirtyBits[set]<= DirtyIn;            
     end
-  // Dirty memory
-  always_ff @(posedge clk, posedge reset)
-    if (reset | invalidate) begin
-      DirtyBits <= 'b0;
-    end else if (WE | cleanCurr) begin
-      DirtyBits[set] <= DirtyIn;
-    end
+
 endmodule
