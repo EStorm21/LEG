@@ -603,6 +603,8 @@ elif COMMAND[0]=="divideandconquer":
 	goal_pc = COMMAND[3]
 	if start_pc != 0:
 		gdb.execute("leg-jump *{}".format(start_pc))
+	if(len(COMMAND)>4): # Dump qemu
+		gdb.execute("leg-qemu-full-dump")	
 	gdb.execute("leg-lockstep-goal {}".format(goal_pc))
 	gdb.execute("leg-stop")
 else:
