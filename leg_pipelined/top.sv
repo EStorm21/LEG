@@ -181,12 +181,13 @@ module top (
     .VirtA     (DataAdrM  ),
     .WD        (WriteDataM),
     .HRData    (HRData    ),
-    .ByteMask  (ByteMaskM ),
+    .ByteMaskM (ByteMaskM ),
     .HWData    (HWDataM   ),
     .RD        (ReadDataM ),
     .HAddr     (HAddrM    ),
     .Stall     (DStall    ),
     .HRequestM (HRequestM ),
+    .HSizeM    (HSizeM),
     .HWriteM   (HWriteM   )
   );
 
@@ -212,10 +213,6 @@ module top (
 
   // Create the mmu
   mmu #(tbits) mmuInst (.*);
-
-  // Set HSIZE from bytemask
-  // FIXME: Use signals from control unit
-  mask_to_hsize mth(ByteMaskM, HSizeM);
 
   assign WordAccess = 1'b0;   // Assuming byte or halfword accesses
   assign SupMode    = 1'b1;   // in supervisor mode

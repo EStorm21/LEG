@@ -4,14 +4,15 @@ module data_writeback_associative_cache_controller
    input  logic IStall, MemWriteM, MemtoRegM, BusReady, PAReady, MSel,
    input  logic CurrCBit,
    input  logic [1:0] WordOffset,
-   input  logic [3:0] ByteMask,
+   input  logic [3:0] ByteMaskM,
    input  logic [31:0] A,
    input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag, VirtTag, 
    output logic Stall, HWriteM, HRequestM, BlockWE, 
    output logic W1WE, W2WE, W1EN, UseWD, UseCacheA, DirtyIn, WaySel, RDSel,
    output logic cleanCurr, RequestPA, enable,
-   output logic [1:0] CacheRDSel, 
-   output logic [3:0] ActiveByteMask, WDSel,
+   output logic [1:0] CacheRDSel,
+   output logic [2:0] HSizeM,
+   output logic [3:0] ActiveByteMask, WDSel, 
    output logic [tbits-1:0] CachedTag, Tag,
    output logic [$clog2(lines)-1:0] BlockNum,
    output logic [$clog2(bsize)-1:0] AddrWordOffset,
@@ -23,7 +24,9 @@ module data_writeback_associative_cache_controller
   logic                   IncFlush, ResetBlockOff, WDMaskSel, IncCounter;
   logic                   WordAccess, CWE, Hit, W2Hit, W1Hit, TagSel, writeW1;
   logic                   W2EN, Dirty, NoCountD, PrevCBit, CBit, ResetCountMid;
+  logic                   HWriteWord;
   logic             [1:0] CounterMid, Counter, DataCounter;
+  logic             [2:0] HSizeMid;
   logic             [3:0] WDMask;
 
   // Writeback cache states
@@ -65,11 +68,13 @@ module data_writeback_associative_cache_controller
   mux2 #(2) cenMux(WordOffset, CounterMid, 
     (enable & (state != NEXTINSTR) | (state == WRITEBACK)), Counter);
   // Word Access
-  assign WordAccess = (ByteMask == 4'b1111);
+  assign WordAccess = (ByteMaskM == 4'b1111);
 
   //-----------------TAG LOGIC--------------------
-  flopenr #(tbits+1) tagReg(clk, reset, PAReady, {PhysTag, CurrCBit}, {PrevPTag, PrevCBit});
-  mux2 #(tbits+1) tagMux({PrevPTag, PrevCBit}, {PhysTag, CurrCBit}, (state == READY) & PAReady, {Tag, CBit});
+  flopenr #(tbits+1) tagReg(clk, reset, PAReady, 
+    {PhysTag, CurrCBit}, {PrevPTag, PrevCBit});
+  mux2 #(tbits+1) tagMux({PrevPTag, PrevCBit}, {PhysTag, CurrCBit}, 
+    (state == READY) & PAReady, {Tag, CBit});
 
   //------------HIT, DIRTY, VALID-----------------
   // Create Dirty Signal
@@ -81,7 +86,7 @@ module data_writeback_associative_cache_controller
   assign CHit = (W1Hit | W2Hit);
   assign Hit = CHit & enable & (PAReady | ~(state == READY)); 
   
-  // Write-to logic
+  // -------------Write-to logic------------------
   // IN: W1V, W2V, LRU 
   // OUT: W1EN, W2EN
   always_comb
@@ -104,12 +109,17 @@ module data_writeback_associative_cache_controller
 
   // Select Data source and Byte Mask for the data cache
   assign UseWD = ~BlockWE | ( BlockWE & MemWriteM & (WordOffset == DataWordOffset) );
-  mux2 #(4)  MaskMux(4'b1111, ByteMask, ( UseWD & ~(state == MEMREAD) ), 
+  mux2 #(4)  MaskMux(4'b1111, ByteMaskM, ( UseWD & ~(state == MEMREAD) ), 
     ActiveByteMask);
-
   assign WDMaskSel = UseWD & (state == MEMREAD) & (WordOffset == DataWordOffset);
-  mux2 #(4)  WDMaskMux(ActiveByteMask, ByteMask, WDMaskSel, WDMask);
+  mux2 #(4)  WDMaskMux(ActiveByteMask, ByteMaskM, WDMaskSel, WDMask);
   assign WDSel = ~(WDMask ^ {4{UseWD}});
+
+  // ---------------HSIZE Logic------------------
+  // Always writeback the full word
+  assign HWriteWord = (state == WRITEBACK) | (state == LASTWRITEBACK);
+  mask_to_hsize mth(ByteMaskM, HSizeMid);
+  mux2 #(3) HSizeMux(HSizeMid, 3'b010, HWriteWord, HSizeM);
 
   // state register
   always_ff @(posedge clk, posedge reset)

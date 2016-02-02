@@ -13,11 +13,12 @@ module data_writeback_associative_cache #(
     // BusReady, IStall, invalidate, clean,
     input  logic [     31:0] VirtA, WD,
     input  logic [     31:0] HRData  ,
-    input  logic [      3:0] ByteMask,
+    input  logic [      3:0] ByteMaskM,
     input  logic [tbits-1:0] PhysTag ,
     output logic [     31:0] HWData ,
     output logic [     31:0] RD, HAddr, ANew,
-    output logic             Stall, HRequestM, HWriteM, RequestPA
+    output logic             Stall, HRequestM, HWriteM, RequestPA,
+    output logic [      2:0] HSizeM
 );
 
     // Cache way outputs

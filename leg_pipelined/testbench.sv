@@ -141,33 +141,35 @@ module testbench();
                            NEXTINSTR, FLUSH, WAIT, DWRITE} statetype;
   statetype state, nextstate;
   
-  logic [31:0] watchmem [1] = {32'h00585ec0};
-  logic [9:0] watchset [$size(watchmem)];
+  logic [31:0] watchmem [1] = {32'h0090a86e};
+  logic [29:0] watchmemword [$size(watchmem)];
+  logic [7:0] watchset [$size(watchmem)];
   always_comb
   begin
     for (int i = 0; i < $size(watchmem); i++) begin
-      watchset[i] = watchmem[i][9:0];
+      watchmemword[i] = watchmem[i][31:2];
+      watchset[i] = watchmem[i][9:2];
     end
   end
 
-  always @(posedge clk) begin
+  always @(negedge clk) begin
 
     // dmem
-    if(dut.ahb.mem.m.a inside {watchmem}) begin
+    if(dut.ahb.mem.m.a[31:2] inside {watchmemword}) begin
       if(dut.ahb.mem.m.we) begin
-             $display("Writing %h to addr %h at PCM = %h, time %d", dut.ahb.mem.m.wd, 
-              dut.ahb.mem.m.a, dut.leg.dp.PCM, $time);
+             $display("Writing %h to addr %h at PCM = %h, HSIZE: %h time %d", dut.ahb.mem.m.wd, 
+              dut.ahb.mem.m.a, dut.leg.dp.PCM, dut.ahb.mem.m.HSIZE, $time);
       end else begin
-             $display("Reading %h from addr %h at PCM = %h, time %d", dut.ahb.mem.m.rd, 
-              dut.ahb.mem.m.a, dut.leg.dp.PCM, $time);
+             $display("Reading %h from addr %h at PCM = %h, HSIZE: %h time %d", dut.ahb.mem.m.rd, 
+              dut.ahb.mem.m.a, dut.leg.dp.PCM, dut.ahb.mem.m.HSIZE, $time);
       end
     end
 
     // D$ Set
-    if(dut.data_cache.ANew[9:0] inside {watchset}) begin
+    if(dut.data_cache.ANew[9:2] inside {watchset}) begin
 
       // if(dut.data_cache.dcc.CWE) begin
-        $display("D$ W1E:%b W2E:%b AN:%h CWD:%h 1RD:%h 2RD:%h W1T:%h W2T:%h W1D:%b W2D:%b EN:%b at PCM:%h, time:%d", 
+        $display("D$ W1E:%b W2E:%b AN:%h CWD:%h 1RD:%h 2RD:%h W1T:%h W2T:%h W1D:%b W2D:%b BM: %b EN:%b at PCM:%h, time:%d S:%s", 
           dut.data_cache.dcc.W1WE, 
           dut.data_cache.dcc.W2WE, 
           dut.data_cache.ANew, 
@@ -178,8 +180,11 @@ module testbench();
           dut.data_cache.W2Tag, 
           dut.data_cache.W1D, 
           dut.data_cache.W2D, 
+          dut.data_cache.ByteMaskM,
           dut.data_cache.dcc.enable,
-          dut.leg.dp.PCM, $time);
+          dut.leg.dp.PCM, 
+          $time,
+          dut.data_cache.dcc.state);
       // end else begin
       //   $display("D$             AN:%h WM:%b MM:%b 1RD:%h 2RD:%h W1T:%h W2T:%h W1D:%b W2D:%b @:%d",
       //     dut.data_cache.ANew,
