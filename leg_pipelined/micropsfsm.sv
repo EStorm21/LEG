@@ -21,8 +21,6 @@ module micropsfsm(input  logic        clk, reset,
 typedef enum {ready, rsr, ldmstm, bl, ldmstmWriteback, ls_word, str, blx, strHalf, ls_halfword, ls_word_byte, ls_word_byte_wb, swp_str, swp_mov, MUL_nop, MUL_zero_Rz, MUL_add, MUL_mov_Rs, MUL_shift_Rz, MUL_add_Cout, MUL_gen_flags, MUL_mov_RdHi, MUL_shift_RdLo, MUL_replace_RdHi, MUL_shift_Rd_RdHi, MUL_replace_RdLo} statetype; // theres a bug if we get rid of strHalf... need to figoure out why
 statetype state, nextState;
 
-string debugText;
-
 // -----------------------------------------------------------------------------
 // --------------------------- LDM/STM -----------------------------------------
 // -----------------------------------------------------------------------------
@@ -167,7 +165,7 @@ always_comb
 			end
 
 			else if (interrupting) begin 
-				debugText = "stay in ready";
+				
 				nextState = ready;
 				InstrMuxD = 1;
 				uOpStallD = 0;
@@ -187,7 +185,7 @@ always_comb
 			else if (defaultInstrD[27:25] == 3'b0 & defaultInstrD[7] == 0 & defaultInstrD[4] == 1 
 				// don't treat opcode 10xx with s==0 as RSR. instead misc. instructions. c.f. note2, A3-3
 			  & ~(defaultInstrD[24:23] == 2'b10 & ~defaultInstrD[20])) begin 
-			  	debugText = "rsr type data processing instr";
+			  	
 				InstrMuxD = 1;
 				uOpStallD = 1;
 				regFileRz = {1'b1, // Control inital mux for RA1D
@@ -229,7 +227,7 @@ always_comb
 			// Start MUL / MLA
 			// A good resource: http://users.utcluj.ro/~baruch/book_ssce/SSCE-Shift-Mult.pdf
 			else if((defaultInstrD[7:4] == 4'b1001) & (defaultInstrD[27:24] == 4'h0)) begin 
-				debugText = "multiply";
+				
 				InstrMuxD = 1;
 				uOpStallD = 1;
 				KeepVD = 0;
@@ -249,7 +247,7 @@ always_comb
 							8'h00,defaultInstrD[15:12] }; // Rm = Rn/RdLo
 			end
 			else if(defaultInstrD[27:24]== 4'b1011) begin // bl
-				debugText = "bl";
+				
 				InstrMuxD = 1;
 				uOpStallD = 1;
 				regFileRz = {1'b0, // Control inital mux for RA1D
@@ -269,7 +267,7 @@ always_comb
 
 			end
 			else if(defaultInstrD[27:4]== {8'b00010010, 12'hfff, 4'b0011}) begin // blx
-				debugText = "blx";
+				
 				InstrMuxD = 1;
 				uOpStallD = 1;
 				regFileRz = {1'b0, // Control inital mux for RA1D
@@ -291,7 +289,6 @@ always_comb
 			// LOAD MULTIPLE & STORE MULTIPLE
 			// First instruction is save start_address to Rz. This Rz value is updated to get next addresses
 			else if(defaultInstrD[27:25] == 3'b100) begin 
-				debugText = "ldm / stm step 1";
 				InstrMuxD = 1;
 				uOpStallD = 1;
 				LDMSTMforward = 0;
@@ -317,7 +314,7 @@ always_comb
 			end 
 			// LOAD/STORE HALF-WORDS
 			else if (defaultInstrD[27:25] == 3'b000 & defaultInstrD[7] & defaultInstrD[4]) begin // LDRH and STRH only
-				debugText = "ldrh/strh";
+				
 				// COMMENT: ldrh/strh immediate pre indexed (yes both load and store!)
 				if (defaultInstrD[24] & defaultInstrD[22:21] == 2'b11) begin
 					nextState = ls_halfword;
@@ -441,7 +438,7 @@ always_comb
 			end
 			// ALL LOAD and STORE WORDS / BYTES --- ldr, str, ldrb, strb
 			else if (defaultInstrD[27:26] == 2'b01) begin // ldrb or strb   & defaultInstrD[22]
-				debugText = "ldr/str/ldrb/strb";
+				
 				// Scaled Register offests ldr/str/ldrb/strb
 				// SD 5/1/2015 Why? Don't need to use Rz for data processing immediate shift. Why not all at once
 				if (defaultInstrD[25:24] == 2'b11 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
@@ -468,7 +465,6 @@ always_comb
 				// Immediate pre indexed ldrb/strb
 				// Can't do pre-indexed all at once since can only write to 1 reg per cycle
 				end else if (defaultInstrD[25:24] == 2'b01 & defaultInstrD[21]) begin
-					debugText = "ldr/str/ldrb/strb pre-indexed immediate";
 					nextState = ls_word_byte;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -490,7 +486,6 @@ always_comb
 				// (Scaled) register pre indexed ldrb/strb
 				// Can't do pre-indexed all at once since can only write to 1 reg per cycle
 				end else if (defaultInstrD[25:24] == 2'b11 & defaultInstrD[21] & ~defaultInstrD[4]) begin
-					debugText = "ldr/str/ldrb/strb pre-indexed (scaled) register";
 					nextState = ls_word_byte;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -534,7 +529,7 @@ always_comb
 				// post indexed ldrb/strb where Rd != Rm
 				// 	SD 5/6/2015 Maybe should not check [21]. Still valid post-indexed, just privilege change
 				end else if (~defaultInstrD[24] & ~defaultInstrD[21]) begin
-					debugText = "ldr/str/ldrb/strb post indexed";
+					
 					nextState = ls_word_byte;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -554,7 +549,7 @@ always_comb
 							defaultInstrD[15:12], 		   // Store into Rd
 							12'b0};	
 				end else begin // NOT POST-INCREMENT OR !
-					debugText = "ldr/str/ldrb/strb else case";
+					
 					nextState = ready;
 					InstrMuxD = 0;
 					uOpStallD = 0;
@@ -574,7 +569,7 @@ always_comb
 			/* --- Stay in the READY state ----
 			 */
 			else begin 
-				debugText = "stay in ready";
+				
 				nextState = ready;
 				InstrMuxD = 0;
 				uOpStallD = 0;
@@ -635,7 +630,6 @@ always_comb
 		ls_word_byte: begin
 			// scaled register
 			if(defaultInstrD[25:24] == 2'b11 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
-				debugText = "ldr/str/ldrb/strb cycle 2 scaled register";
 				nextState = ready;
 				InstrMuxD = 1;
 				ldrstrRtype = 0;
@@ -655,7 +649,6 @@ always_comb
 							12'b0};						   // no offset
 			// pre-indexed
 			end else if (defaultInstrD[24] & defaultInstrD[21]) begin
-				debugText = "ldr/str/ldrb/strb cycle 2 pre index";
 				nextState = ready;
 				InstrMuxD = 1;
 				ldrstrRtype = 0;
@@ -676,7 +669,6 @@ always_comb
 							12'b0};	
 			// immediate post indexed
 			end else if (defaultInstrD[25:24] == 2'b00 & ~defaultInstrD[21]) begin
-				debugText = "ldr/str/ldrb/strb cycle 2 immediate post index";
 				nextState = ready;
 				InstrMuxD = 1;
 				ldrstrRtype = 0;
@@ -698,7 +690,6 @@ always_comb
 			// (scaled) register post indexed, Rd == Rm
 			// see note below
 			end else if (defaultInstrD[25:24] == 2'b10 & (defaultInstrD[15:12] == defaultInstrD[3:0])) begin
-					debugText = "ldr/str/ldrb/strb post indexed in ls_word_byte";
 					nextState = ls_word_byte_wb;
 					InstrMuxD = 1;
 					ldrstrRtype = 0;
@@ -720,7 +711,6 @@ always_comb
 			// (scaled) register post indexed, Rd != Rm
 			// SD 5/6/2015 maybe can combine with above
 			end else if (defaultInstrD[25:24] == 2'b10 & ~defaultInstrD[21] & ~defaultInstrD[4]) begin
-				debugText = "ldr/str/ldrb/strb cycle 2 (scaled) register post index";
 				nextState = ready;
 				InstrMuxD = 1;
 				ldrstrRtype = 0;
@@ -740,7 +730,6 @@ always_comb
 						defaultInstrD[11:0] // add Rm
 						};
 			end else begin // NOT POST-INCREMENT OR !
-					debugText = "ldr/str/ldrb/strb cycle 2 else case";
 					nextState = ready;
 					InstrMuxD = 0;
 					uOpStallD = 0;
@@ -760,7 +749,6 @@ always_comb
 
 		ls_word_byte_wb: begin
 			// only one case gets us here
-			debugText = "ldr/str/ldrb/strb post-indexed actual writeback";
 			nextState = ready;
 			InstrMuxD = 1;
 			ldrstrRtype = 0;
@@ -893,7 +881,6 @@ always_comb
 				nextState = ldmstm;
 
 			begin			// load next register
-				debugText = "ldmstm part2";
 				InstrMuxD = 1;
 				uOpStallD = ~(ZeroRegsLeft & ~defaultInstrD[21]);
 				PrevCycleCarry = 0;
@@ -919,7 +906,7 @@ always_comb
 		end
 
 		ldmstmWriteback: begin
-			debugText = "ldmstm Writeback";
+			
 			nextState = ready;
 			InstrMuxD = 1;
 			noRotate = 0;
