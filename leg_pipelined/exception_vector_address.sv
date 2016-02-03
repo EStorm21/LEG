@@ -21,6 +21,7 @@ always_comb begin
   else if (VectorAddressW[4]) VectorPCnextF = 3'b100; // 0x10
   else if (VectorAddressW[5]) VectorPCnextF = 3'b110; // 0x18
   else if (VectorAddressW[6]) VectorPCnextF = 3'b111; // 0x1c
+  else                        VectorPCnextF = 3'b000; // Never
 end
 
 endmodule

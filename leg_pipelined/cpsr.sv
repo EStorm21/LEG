@@ -165,13 +165,13 @@ module cpsr(input  logic        clk, reset,
   always_comb
     case(cpsr[4:0])
       5'b10000: begin SPSRdata = cpsr;  end     // User mode
-      5'b10001: begin SPSRdata = spsr[4]; regnumber = 4;  end   // FIQ mode
+      5'b10001: begin SPSRdata = spsr[4]; regnumber = 4;  end  // FIQ mode
       5'b10010: begin SPSRdata = spsr[3]; regnumber = 3;  end  // IRQ mode
       5'b10011: begin SPSRdata = spsr[0]; regnumber = 0;  end  // Supervisor mode
       5'b10111: begin SPSRdata = spsr[1]; regnumber = 1;  end  // Abort mode
-      5'b11011: begin SPSRdata = spsr[2]; regnumber = 2;  end // Undef mode
-      5'b11111: begin SPSRdata = cpsr;  end     // System mode
-      default: SPSRdata = cpsr;
+      5'b11011: begin SPSRdata = spsr[2]; regnumber = 2;  end  // Undef mode
+      5'b11111: begin SPSRdata = cpsr;    regnumber = 0;  end  // System mode, doesn't really have regnumber
+      default:  begin SPSRdata = cpsr;    regnumber = 0;  end  // don't go here
     endcase
 
 endmodule

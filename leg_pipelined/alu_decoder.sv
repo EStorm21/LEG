@@ -76,7 +76,7 @@ module alu_decoder(input  logic       ALUOpE,
       5'b11101:  CVUpdate = 3'b000; // MOV
       5'b11111:  CVUpdate = 3'b000; // MVN
       5'b11110:  CVUpdate = 3'b000; // BIC
-      //default: Result = 32'bx;
+      default:   CVUpdate = 3'b000; // Don't get here
     endcase
 
 endmodule 

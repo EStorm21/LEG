@@ -81,6 +81,7 @@ module mux5_onehot(input  logic [31:0] a0, a1, a2, a3, a4,
       5'b??1?? : y = a2;
       5'b?1??? : y = a3;
       5'b1???? : y = a4;
+      default  : y = a0; // should not get here
     endcase
 endmodule // mux5_onehot
 
@@ -99,5 +100,6 @@ module mux8_onehot(input  logic [31:0] a0, a1, a2, a3, a4, a5, a6, a7,
       8'b??1????? : y = a5;
       8'b?1?????? : y = a6;
       8'b1??????? : y = a7;
+      default     : y = a0; // should not get here
     endcase
 endmodule // mux8_onehot
