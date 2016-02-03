@@ -55,6 +55,7 @@ module controller (
   output logic  [2:0] VectorPCnextF);
 
   logic [11:0] ControlsD          ;
+  logic [3:0]  ALUControlE;
   logic        CondExE, ALUOpD, ldrstrALUopD;
   logic [ 3:0] ALUControlD, ByteMaskE;
   logic [ 4:0] MSRmaskD, MSRmaskE, MSRmaskM, MSRmaskW;
