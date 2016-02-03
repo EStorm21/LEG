@@ -33,8 +33,6 @@ module controller (
   // For micro-op decoding
   output logic        RselectE, LDMSTMforwardD, LDMSTMforwardE,
   output logic        RSRselectE          ,
-  output logic [ 6:4] ShiftOpCode_E          ,
-  output logic        MultSelectD,
   output logic [31:0] InstrE                 ,
   // To handle memory load/store byte and halfword
   output logic [ 3:0] ByteMaskM              ,
@@ -50,7 +48,7 @@ module controller (
   /// ------ To   Hazard ------
   output logic        RegWriteM, MemtoRegE, PCWrPendingF,
   output logic        RegtoCPSR, CPSRtoReg, CoProc_En,
-  output logic        RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW,
+  output logic        CPSRtoReg_EMW, CoProc_En_EMW,
   output logic        ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD,
   // For exceptions
   input  logic        PrefetchAbort, DataAbort, IRQ, FIQ,
@@ -59,7 +57,7 @@ module controller (
   output logic  [2:0] VectorPCnextF);
 
   logic [11:0] ControlsD          ;
-  logic        CondExE, ALUOpD, ldrstrALUopD, ldrstrALUopE;
+  logic        CondExE, ALUOpD, ldrstrALUopD;
   logic [ 3:0] ALUControlD, ByteMaskE;
   logic [ 4:0] MSRmaskD, MSRmaskE, MSRmaskM, MSRmaskW;
   logic        MemtoRegD, MemtoReg_0E;
@@ -87,7 +85,6 @@ module controller (
   logic        CoProc_FlagUpd_E, CoProc_FlagUpd_M, CoProc_FlagUpd_W;
   logic        CoProc_WrEnE, CoProc_EnE;
   logic        BXInstrD, BXInstrE;
-  logic [ 3:0] FlagsOutE;
   logic [31:0] SPSRW, CPSRW;
   logic        nonFlushedInstrD, nonFlushedInstrE, nonFlushedInstrM, nonFlushedInstrW;
   logic        SWI_0E, SWI_E, SWI_D, SWI_W;
@@ -130,7 +127,6 @@ module controller (
 
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevCycleCarryD, 
     KeepVD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, interrupting, Rs_D, multCarryInD, multPrevZFlagD); 
-  assign MultSelectD = 0;
 
   // === Control Logic for Datapath ===
   always_comb
@@ -223,10 +219,8 @@ module controller (
   assign RegtoCPSRi_D      = (InstrD[27:23] == 5'b00110 & InstrD[21:20] == 2'b10 & InstrD[15:12] == 4'hF); // Move immediate to CPSR/SPSR (MSR instruction I type)
   assign RegtoCPSR_D       = RegtoCPSRr_D | RegtoCPSRi_D;
   assign RegtoCPSR         = RegtoCPSR_D | RegtoCPSR_E | RegtoCPSR_M | RegtoCPSR_W;
-  assign RegtoCPSR_EMW     = RegtoCPSR_E | RegtoCPSR_M | RegtoCPSR_W; // necessary to flushE in the correct place
   assign CPSRtoRegD        = (InstrD[27:23] == 5'b00010 & InstrD[21:16] == 6'b001111 & ~(|InstrD[11:0])); // MRS instruction
   assign CPSRtoReg         = CPSRtoRegD | CPSRtoRegE | CPSRtoRegM | CPSRtoRegW;
-  assign CPSRtoReg_EMW     = CPSRtoRegE | CPSRtoRegM | CPSRtoRegW; // necessary to flushE in the correct place
   assign MSRmaskD          = (RegtoCPSR_D) ? {InstrD[22], InstrD[19:16]} : 5'b0; // 5 bits are {R, field_mask}
   assign DataRestoreCPSR_D = ALUOpD & ((InstrD[24:12] == 13'b1101_1_0000_1111) | (InstrD[24:20] == 5'b00101 & InstrD[15:12] == 4'hF)); // Instruction for restoring CPSR (MOV/SUB)
   assign restoreCPSR_D     = DataRestoreCPSR_D | MicroOpCPSRrestoreD;
@@ -239,7 +233,6 @@ module controller (
   assign CoProc_EnD       = CoProc_MRC_D | CoProc_MCR_D;
   assign CoProc_WrEnD     = CoProc_MCR_D;
   assign CoProc_En        = CoProc_EnD | CoProc_EnE | CoProc_EnM | CoProc_FlagUpd_W;
-  assign CoProc_En_EMW    = CoProc_EnE | CoProc_EnM | CoProc_FlagUpd_W; // necessary to flushE in the correct place
   // === END ===
 
   // === EXCEPTION HANDLING ===
@@ -268,14 +261,13 @@ module controller (
   flopenrc #(1) prevzflop(    clk, reset, ~StallE, FlushE, (~multPrevZFlagE | ALUFlagsE[2]), zFlagPrevE); 
   flopenrc #(1) restoreCPSR_DE(clk, reset, ~StallE, FlushE, restoreCPSR_D, restoreCPSR_E);
   flopenrc #(3) undef_exception(clk, reset, ~StallE, FlushE, {undefD, SWI_D, bkpt_D}, {undefE, SWI_0E, bkpt_E});
-  flopenrc #(3) shiftOpCodeE(clk, reset, ~StallE, FlushE, InstrD[6:4],ShiftOpCode_E[6:4]);
   flopenrc #(3) CoprocE(clk, reset, ~StallE, FlushE, {CoProc_FlagUpd_D, CoProc_EnD, CoProc_WrEnD}, {CoProc_FlagUpd_E, CoProc_EnE, CoProc_WrEnE});
   flopenrc #(4) condregE(clk, reset, ~StallE, FlushE, InstrD[31:28], CondE);
   flopenrc  #(8) shifterregE (clk, reset, ~StallE, FlushE,  {RselectD, RSRselectD, PrevCycleCarryD, LDMSTMforwardD, LDRSTRshiftD, LdrStr_HalfD, Ldr_SignHD, Ldr_SignBD},
                                                             {RselectE, RSRselectE, PrevCycleCarryE, LDMSTMforwardE, LDRSTRshiftE, LdrStr_HalfE, Ldr_SignHE, Ldr_SignBE});
-  flopenrc #(11) flushedregsE(clk, reset, ~StallE, FlushE,
-    {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD,   ldrstrALUopD, BXInstrD, CPSRtoRegD,  RegtoCPSR_D},
-    {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoReg_0E, ldrstrALUopE, BXInstrE, CPSRtoReg0E, RegtoCPSR_0E});
+  flopenrc #(10) flushedregsE(clk, reset, ~StallE, FlushE,
+    {FlagWriteD, BranchD, MemWriteD, RegWriteD, PCSrcD, MemtoRegD,   BXInstrD, CPSRtoRegD,  RegtoCPSR_D},
+    {FlagWriteE, BranchE, MemWriteE, RegWriteE, PCSrcE, MemtoReg_0E, BXInstrE, CPSRtoReg0E, RegtoCPSR_0E});
   flopenrc #(11)  regsE(clk, reset, ~StallE, FlushE, {ALUSrcD, ALUControlD, PSRtypeD, MSRmaskD},
                                                      {ALUSrcE, ALUControlE, PSRtypeE, MSRmaskE});
   flopenrc #(33) passALUinstr(clk, reset, ~StallE, FlushE, {(ALUOpD|ldrstrALUopD), InstrD}, {ALUOpE, InstrE});
@@ -287,7 +279,7 @@ module controller (
                       shamtE, shctl_5E, shctl_8E, shiftE, leftE, arithE, longshiftE, rrx_inE, ShifterCarryOutE);
 
   // === ALU Decoding ===
-  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryIn_0E, DoNotWriteRegE);
+  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1], BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryIn_0E, DoNotWriteRegE);
   assign ALUCarryInE = multCarryInE[1] ? ALUCarryOut_cycle2E : ALUCarryIn_0E;
   // === END ===
 
@@ -306,7 +298,7 @@ module controller (
   // === CONDITIONAL EXECUTION CHECKING ===
   assign FlagsE     = SetNextFlagsM ? FlagsNextM : (SetNextFlagsW ? FlagsNextW : CPSRW[31:28]);
   assign FlagsNextE = (RegtoCPSR_E & InstrE[19]) ? ALUResultE[31:28] : FlagsNext0E; // If flags field is set by MSR, update flags now!
-  conditional Cond(CondE, FlagsE, ALUFlagsE, FlagWriteE, CondExE, FlagsNext0E, FlagsOutE, ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevCycleCarryE, CVUpdateE, zFlagPrevE);
+  conditional Cond(CondE, FlagsE, ALUFlagsE, FlagWriteE, CondExE, FlagsNext0E, ShifterCarryOut_cycle2E, ShifterCarryOutE, PrevCycleCarryE, CVUpdateE, zFlagPrevE);
   assign BranchTakenE    = BranchE & CondExE;
   assign RegWritepreMuxE = (RegWriteE & CondExE);
   assign MemWriteGatedE  = MemWriteE & CondExE;

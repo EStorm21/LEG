@@ -1,8 +1,6 @@
 module addresspath( /// ------ From TOP ------
                     input  logic        clk, reset,
-                    /// From Controller
-                    input  logic [31:0] InstrE,					  
-                    input  logic        ALUSrcD, 
+                    /// From Controller					  
                     input  logic [3:0]  RegFileRzD,
                     input  logic [1:0]  RegSrcD,
                     input  logic [7:0]  CPSR8_W, 
@@ -16,7 +14,7 @@ module addresspath( /// ------ From TOP ------
                     output logic [31:0]  WA3W, RA1D, RA2D,
 
           					/// From Hazard
-                    input  logic        StallF, StallD, FlushD, StallE, StallM, FlushM, FlushW, StallW, 
+                    input  logic        StallE, StallM, FlushM, FlushW, StallW, 
 
           					/// To Hazard
                     output logic        Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, 

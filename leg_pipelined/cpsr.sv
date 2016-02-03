@@ -164,7 +164,7 @@ module cpsr(input  logic        clk, reset,
   // OUTPUT SPSR DATA
   always_comb
     case(cpsr[4:0])
-      5'b10000: begin SPSRdata = cpsr;  end     // User mode
+      5'b10000: begin SPSRdata = cpsr;    regnumber = 0;  end  // User mode, doesn't really have regnumber
       5'b10001: begin SPSRdata = spsr[4]; regnumber = 4;  end  // FIQ mode
       5'b10010: begin SPSRdata = spsr[3]; regnumber = 3;  end  // IRQ mode
       5'b10011: begin SPSRdata = spsr[0]; regnumber = 0;  end  // Supervisor mode
