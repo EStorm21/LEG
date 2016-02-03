@@ -150,12 +150,14 @@ module controller (
         else if (InstrD[20] & InstrD[25])                   ControlsD = 13'b00_01_0110_0010; // LDR, "R-Type" 0xb0
         else if (~InstrD[20] & ~InstrD[25])                 ControlsD = 13'b10_01_1001_0010; // STR, "I-type"
         else if (~InstrD[20] & InstrD[25])                  ControlsD = 13'b10_01_0001_0010; // STR, "R-type"
+        else                                                ControlsD = 13'b0;               // NEVER
       2'b10:                                                ControlsD = 13'b01_10_1000_1000; // B                         
       2'b11: if(InstrD[25:24] == 2'b11)                     ControlsD = 13'b00_00_0000_0000; // Exception: SWI
         else if (CoProc_MCR_D)                              ControlsD = 13'b10_00_0000_0000; // MCR (move to coprocessor from register)
         else if (CoProc_MRC_D & InstrD[15:12] == 4'hF)      ControlsD = 13'b10_00_0000_0000; // MRC (R15 update flags only)
         else if (CoProc_MRC_D)                              ControlsD = 13'b10_00_0010_0000; // MRC (move to register from coprocessor)
-      default:                                              ControlsD = 13'bx;      // unimplemented
+        else                                                ControlsD = 13'b0;               // NEVER
+      default:                                              ControlsD = 13'bx;               // unimplemented
     endcase
 
   // Notes: ldrstrALUopD gives Loads and Stores the ability to choose alu function add or subtract.
