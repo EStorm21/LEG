@@ -129,7 +129,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   // Normally we StallD in interrupts so the next instruction address is preserved. 
   // But when an interrupt follows a branch we need to get the BTA into the decode stage.
   // By unstalling at the right time the PC gets in and the rest of the stuff is still thrown out.
-  assign ExceptionStallD = (state == Int_E) | ((state == Int_M) & ~UnstallD) | ((state == ready) & (DataAbort | instrTriggeredException)) | (state == ExceptionM);
+  assign ExceptionStallD = (((state == Int_E) | (state == Int_M)) & ~UnstallD) | ((state == ready) & (DataAbort | instrTriggeredException)) | (state == ExceptionM);
 
 
   // PC vectoring
