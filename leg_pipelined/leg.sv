@@ -40,14 +40,12 @@ module leg(input  logic        clk, reset,
 
   /// Output from Controller
   logic [1:0]  RegSrcD, ImmSrcD;
-  logic [3:0]  ALUControlE;
   logic        ALUSrcE, ALUSrcD, BranchTakenE, MemtoRegW, PCSrcW, RegWriteW, Reg_usr_D, RSRselectE;
-  logic [6:4]  ShiftOpCode_E;
   logic [31:0] InstrE, ALUResultE;
   logic        RegWriteM, MemtoRegE, PCWrPendingF, WriteByteE, StrHalfwordE, LdrHalfwordW, HalfwordOffsetW;
   logic        Ldr_SignBW, Ldr_SignHW;
-  logic        DoNotWriteRegE, PrevRSRstateD, PrevRSRstateE, CPSRtoRegW;
-  logic        LDMSTMforwardD, LDMSTMforwardE, MultSelectD, RselectE;
+  logic        PrevRSRstateD, PrevRSRstateE, CPSRtoRegW;
+  logic        LDMSTMforwardD, LDMSTMforwardE, RselectE;
   logic [3:0]  FlagsE; // [1] is C, [0] is V
   logic [1:0]  ByteOffsetW;
   logic [1:0]  MultControlE;
@@ -59,7 +57,6 @@ module leg(input  logic        clk, reset,
   logic        ShifterCarryOut_cycle2E, CoProc_En, AddZeroE, ClzSelectE;
   logic [7:0]  CPSR8_W;
   logic [31:0] PSR_W;
-  logic RegtoCPSR_EMW, CPSRtoReg_EMW, CoProc_En_EMW;
   logic        ExceptionFlushD, ExceptionFlushE, ExceptionFlushM, ExceptionFlushW, ExceptionStallD;
   logic [ 4:0] shamtE;
   logic [ 4:0] shctl_5E;

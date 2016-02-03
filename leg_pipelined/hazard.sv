@@ -1,5 +1,4 @@
-module hazard(input  logic       clk, reset,
-              input  logic       Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_1D_E, Match_2D_E,
+module hazard(input  logic       Match_1E_M, Match_1E_W, Match_2E_M, Match_2E_W, Match_1D_E, Match_2D_E,
               input  logic       RegWriteM, RegWriteW,
               input  logic       BranchTakenE, MemtoRegE,
               input  logic       PCWrPendingF, PCSrcW, 

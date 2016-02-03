@@ -24,7 +24,6 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   // To handle micro-op decoding
                   input  logic        RselectE,
                   input  logic        RSRselectE,
-                  input  logic [6:4]  ShiftOpCode_E,
                   // To handle load-store half-words and bytes
                   input  logic        LoadLengthW, HalfwordOffsetW, Ldr_SignBW, Ldr_SignHW,
                   input  logic [1:0]  ByteOffsetW,
