@@ -62,9 +62,6 @@ module addresspath( /// ------ From TOP ------
   mux2 #(4) ra2mux(InstrD[3:0], InstrD[15:12], RegSrcD[1], RA2_4b_D);
   assign WA3_4b_D = InstrD[15:12];
 
-  // If InstrD[3:0] is actually an immediate, we don't want to match. 
-  assign regR2_D = ~RegSrcD[1] & ~ALUSrcD;
-
   addressdecode address_decoder1(RA1_4b_D, RegFileRzD[0], ModeOneHotD, RA1D);
   addressdecode address_decoder2(RA2_4b_D, RegFileRzD[1], ModeOneHotD, RA2D);
   addressdecode address_decoder3(WA3_4b_D, RegFileRzD[2], ModeOneHotD, WA3D);
@@ -72,9 +69,6 @@ module addresspath( /// ------ From TOP ------
   // ====================================================================================
   // ================================ Execute Stage =====================================
   // ====================================================================================
-  
-  // pass on whether we are using InstrD[3:0] as our Rd2. If this is an immediate then we shouldn't match. 
-  flopenr #(1) notimmreg(clk, reset, ~StallE, regR2_D, regR2_E);
 
   flopenr #(32) wa3ereg(clk, reset, ~StallE, WA3D, WA3E); 
   flopenr #(32) ra1reg( clk, reset, ~StallE, RA1D, RA1E);

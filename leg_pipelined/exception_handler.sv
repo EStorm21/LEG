@@ -12,6 +12,7 @@ module exception_handler(input  logic clk, reset, UndefinedInstrE, SWIE, Prefetc
   //--Need to change load and store to use Base Restored Abort Model
 
   logic IRQEn_sync, FIQEn_sync, interruptPending, UnstallD, instrTriggeredException;
+  logic SWIM, PrefetchAbortM, UndefinedInstrM;
   logic [6:0] PCVectorAddress;
   typedef enum {ready, DataAbort2, Int_E, Int_M, Int_W, ExceptionM, ExceptionW} statetype;
   statetype state, nextState;

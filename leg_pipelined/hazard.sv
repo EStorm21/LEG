@@ -48,6 +48,7 @@ module hazard(input  logic       clk, reset,
 
   // flopr #(1)  MultOutputSrc(clk, reset, MultStallE, WriteMultLoE);
   // assign WriteMultLoD = MultStallD;
+  logic Match_12D_E, ldrStallD;
   assign Match_12D_E = Match_1D_E | Match_2D_E;
 
   assign ldrStallD = Match_12D_E & MemtoRegE & ~LDMSTMforwardD;

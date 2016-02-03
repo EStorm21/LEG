@@ -109,6 +109,9 @@ module controller (
   logic        uOpProgEdebug, uOpProgMdebug, uOpProgWdebug;
   logic        advancingEdebug, advancingWdebug;
 
+  // Undeclared signals added on 2/2/2016
+  logic KeepVD, ShifterCarryOutE, ShifterCarryOut_cycle2E, ALUCarryOut_cycle2E, zFlagPrevE, PrevCycleCarryE, ALUOpE, PCSrcGatedE;
+
   /***** Brief Description *******
   * Created by Ivan Wong for Clay Wolkin 2014-2015
   * Controller contains all control signals (no predefined width)
