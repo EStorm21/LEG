@@ -464,11 +464,7 @@ class LegQemuFullDumpCommand (gdb.Command):
 		super (LegQemuFullDumpCommand, self).__init__ ("leg-qemu-full-dump", gdb.COMMAND_USER)
 
 	def invoke (self, arg, from_tty):
-                if(len(arg) > 0):
-			path = arg
-		else:
-			path = '.'
-		print("Saving to {}".format(path))
+                path = '.'
 		print qemuDump.fullDump(path)
 
 LegQemuFullDumpCommand()

@@ -242,7 +242,7 @@ if __name__ == '__main__':
 			test_file = "" 
 		else:
 			test_file = sys.argv[2]
-	#test_file = sys.argv[2] if len(sys.argv) > 2 else ""
+	test_file = sys.argv[2] if len(sys.argv) > 2 else ""
 
 	divs = load_divisions(division_file)
 	run_divisions(test_file, divs, dump)
