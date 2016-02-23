@@ -133,7 +133,7 @@ module testbench();
   
   // MEMORY DEBUGGING
 
-  `define MEMDEBUG 0
+  //`define MEMDEBUG 0
   `ifdef MEMDEBUG
 
   // Writeback cache states
