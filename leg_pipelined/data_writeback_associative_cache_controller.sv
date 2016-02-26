@@ -117,7 +117,8 @@ module data_writeback_associative_cache_controller
 
   // ---------------HSIZE Logic------------------
   // Always writeback the full word
-  assign HWriteWord = (state == WRITEBACK) | (state == LASTWRITEBACK);
+  assign HWriteWord = (nextstate == WRITEBACK) | 
+    (state == WRITEBACK) | (state == LASTWRITEBACK);
   mask_to_hsize mth(ByteMaskM, HSizeMid);
   mux2 #(3) HSizeMux(HSizeMid, 3'b010, HWriteWord, HSizeM);
 
@@ -227,7 +228,7 @@ module data_writeback_associative_cache_controller
       MemWriteM & ~enable & ~(nextstate ==WRITEBACK) ) |
     (state == LASTREAD) & BusReady;
   assign HWriteM = (state == WRITEBACK) |
-    ((state == READY) & ~Hit & Dirty & ~clean) |
+    ((state == READY) & ~Hit & Dirty & ~clean & (MemtoRegM | MemWriteM)) |
     (nextstate == DWRITE) | 
     (state == DWRITE);
   assign HRequestM = (state == READY) & MemtoRegM & PAReady & ~enable |

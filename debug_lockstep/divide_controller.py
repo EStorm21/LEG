@@ -20,13 +20,15 @@ def load_divisions(divfile):
 	with open(divfile,'r') as f:
 		return [ map(int, line.split(',')) for line in f ]
 
-def start_division(test_file, division, rundir):
+def start_division(test_file, division, rundir, dump=False):
 	division_cmd = ['./debug.sh']
 	if test_file != "":
 		division_cmd += ['-t', test_file]
 	division_dir = os.path.join(rundir,format_division(division))
 	os.mkdir(division_dir)
 	division_cmd += ['--divideandconquer', division_dir, hex(division[0]), hex(division[1])]
+	if(dump):
+		division_cmd += ['-dump']
 	return subprocess.Popen(division_cmd, stdin=open(os.devnull, 'r'), stdout=open(os.path.join(division_dir,'stdout'),'w'), stderr=subprocess.STDOUT, preexec_fn=os.setpgrp), division_dir
 
 def record_pids(rundir, subprocs):
@@ -62,6 +64,7 @@ def restart_division(test_file, rundir, subprocs, divisions, target):
 				print "Restarting {}".format(target)
 				dt = datetime.datetime.today()
 				os.rename(sdir, sdir+"_old_{}".format(dt.strftime("%Y-%m-%d_%H:%M:%S_%f")))
+				dump = False
 				subprocs[i] = start_division(test_file, division, rundir)
 			break
 	else:
@@ -158,10 +161,10 @@ def print_help():
 	
 	
 
-def run_divisions(test_file, divisions):
+def run_divisions(test_file, divisions, dump=False):
 	rundir = get_run_directory(test_file)
 	print "Starting all divisions in parallel!"
-	subprocs = [start_division(test_file, d, rundir) for d in divisions]
+	subprocs = [start_division(test_file, d, rundir, dump) for d in divisions]
 	print "Started all divisions!"
 	record_pids(rundir, subprocs)
 	target_dict = dict(enumerate(divisions))
@@ -230,7 +233,16 @@ if __name__ == '__main__':
 	leg.compile()
 
 	division_file = sys.argv[1]
+
+	dump = False
+	# Parse commands
+	if(len(sys.argv) > 2):
+		if(sys.argv[2] == "-dump"):
+			dump = True
+			test_file = "" 
+		else:
+			test_file = sys.argv[2]
 	test_file = sys.argv[2] if len(sys.argv) > 2 else ""
 
 	divs = load_divisions(division_file)
-	run_divisions(test_file, divs)
+	run_divisions(test_file, divs, dump)

@@ -133,7 +133,7 @@ module testbench();
   
   // MEMORY DEBUGGING
 
-  `define MEMDEBUG 0
+  // `define MEMDEBUG 0
   `ifdef MEMDEBUG
 
   // Writeback cache states
@@ -141,7 +141,8 @@ module testbench();
                            NEXTINSTR, FLUSH, WAIT, DWRITE} statetype;
   statetype state, nextstate;
   
-  logic [31:0] watchmem [1] = {32'h0090a86e};
+  logic [31:0] watchdata[$] = {32'h000000ff, 32'h000001ff};
+  logic [31:0] watchmem [1] = {32'h90a840};
   logic [29:0] watchmemword [$size(watchmem)];
   logic [7:0] watchset [$size(watchmem)];
   always_comb
@@ -155,7 +156,10 @@ module testbench();
   always @(negedge clk) begin
 
     // dmem
-    if(dut.ahb.mem.m.a[31:2] inside {watchmemword}) begin
+    if(dut.ahb.mem.m.a[31:2] inside {watchmemword} |
+       dut.ahb.mem.rd inside {watchdata} |
+       dut.ahb.mem.wd inside {watchdata}
+       ) begin
       if(dut.ahb.mem.m.we) begin
              $display("Writing %h to addr %h at PCM = %h, HSIZE: %h time %d", dut.ahb.mem.m.wd, 
               dut.ahb.mem.m.a, dut.leg.dp.PCM, dut.ahb.mem.m.HSIZE, $time);
@@ -185,21 +189,31 @@ module testbench();
           dut.leg.dp.PCM, 
           $time,
           dut.data_cache.dcc.state);
-      // end else begin
-      //   $display("D$             AN:%h WM:%b MM:%b 1RD:%h 2RD:%h W1T:%h W2T:%h W1D:%b W2D:%b @:%d",
-      //     dut.data_cache.ANew,
-      //     dut.data_cache.MemWriteM,
-      //     dut.data_cache.MemtoRegM,
-      //     dut.data_cache.W1RD, 
-      //     dut.data_cache.W2RD, 
-      //     dut.data_cache.W1Tag, 
-      //     dut.data_cache.W2Tag, 
-      //     dut.data_cache.W1D, 
-      //     dut.data_cache.W2D, 
-      //     $time);
-      // end
     end
 
+    // D$ Set
+    if(dut.data_cache.W1RD inside {watchdata} |
+       dut.data_cache.W2RD inside {watchdata}
+      ) begin
+
+      // if(dut.data_cache.dcc.CWE) begin
+        $display("D$ W1E:%b W2E:%b AN:%h CWD:%h 1RD:%h 2RD:%h W1T:%h W2T:%h W1D:%b W2D:%b BM: %b EN:%b at PCM:%h, time:%d S:%s", 
+          dut.data_cache.dcc.W1WE, 
+          dut.data_cache.dcc.W2WE, 
+          dut.data_cache.ANew, 
+          dut.data_cache.CacheWD, 
+          dut.data_cache.W1RD, 
+          dut.data_cache.W2RD, 
+          dut.data_cache.W1Tag, 
+          dut.data_cache.W2Tag, 
+          dut.data_cache.W1D, 
+          dut.data_cache.W2D, 
+          dut.data_cache.ByteMaskM,
+          dut.data_cache.dcc.enable,
+          dut.leg.dp.PCM, 
+          $time,
+          dut.data_cache.dcc.state);
+    end
     // Log writeback events
     // if(dut.data_cache.dcc.state == READY && dut.data_cache.dcc.nextstate == WRITEBACK) begin
       
