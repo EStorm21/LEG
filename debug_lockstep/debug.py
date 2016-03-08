@@ -11,6 +11,10 @@
 # 	["divideandconquer", rundir, start_pc, goal_pc] - Use the
 # 		given run directory. Jump to the start_pc, then debug
 # 		until reaching goal_pc. Finally, quit.
+# 	["divideandconquer", rundir, start_pc, goal_pc, dump, dumpdir] - Use the
+# 		given run directory. Jump to the start_pc, then dump
+#		the current processor state and start debuging
+# 		until reaching goal_pc. Finally, quit.
 
 import gdb
 import pdb
@@ -464,7 +468,10 @@ class LegQemuFullDumpCommand (gdb.Command):
 		super (LegQemuFullDumpCommand, self).__init__ ("leg-qemu-full-dump", gdb.COMMAND_USER)
 
 	def invoke (self, arg, from_tty):
-                path = '.'
+		if(arg == ''):
+                	path = '.'
+		else:
+			path = arg
 		print qemuDump.fullDump(path)
 
 LegQemuFullDumpCommand()
@@ -563,6 +570,8 @@ atexit.register(cleanup)
 
 setup()
 
+print("Command in debug.py = {}".format(COMMAND))
+
 if COMMAND[0]=="divideandconquer":		
 	should_cleanup_dir = False
 	run_dir = COMMAND[1]
@@ -604,7 +613,8 @@ elif COMMAND[0]=="divideandconquer":
 	if start_pc != 0:
 		gdb.execute("leg-jump *{}".format(start_pc))
 	if(len(COMMAND)>4): # Dump qemu
-		gdb.execute("leg-qemu-full-dump")	
+		dumpdir = COMMAND[5]
+		gdb.execute("leg-qemu-full-dump {}".format(dumpdir))	
 	gdb.execute("leg-lockstep-goal {}".format(goal_pc))
 	gdb.execute("leg-stop")
 else:

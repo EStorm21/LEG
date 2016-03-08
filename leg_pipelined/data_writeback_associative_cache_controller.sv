@@ -109,9 +109,10 @@ module data_writeback_associative_cache_controller
 
   // Select Data source and Byte Mask for the data cache
   assign UseWD = ~BlockWE | ( BlockWE & MemWriteM & (WordOffset == DataWordOffset) );
-  mux2 #(4)  MaskMux(4'b1111, ByteMaskM, ( UseWD & ~(state == MEMREAD) ), 
+  mux2 #(4)  MaskMux(4'b1111, ByteMaskM, 
+    ( UseWD & ~(state == MEMREAD | state == LASTREAD) ), 
     ActiveByteMask);
-  assign WDMaskSel = UseWD & (state == MEMREAD) & (WordOffset == DataWordOffset);
+  assign WDMaskSel = UseWD & (state == MEMREAD | state == LASTREAD) & (WordOffset == DataWordOffset);
   mux2 #(4)  WDMaskMux(ActiveByteMask, ByteMaskM, WDMaskSel, WDMask);
   assign WDSel = ~(WDMask ^ {4{UseWD}});
 
@@ -233,8 +234,8 @@ module data_writeback_associative_cache_controller
     (state == DWRITE);
   assign HRequestM = (state == READY) & MemtoRegM & PAReady & ~enable |
     (state == READY) & ((nextstate == WRITEBACK) | (nextstate == MEMREAD)) & PAReady |
-		(state == READY) & MemWriteM & enable & ~Hit & PAReady |
-		(state == DWRITE) & ~BusReady |
+    (state == READY) & MemWriteM & enable & ~Hit & PAReady |
+    (state == DWRITE) & ~BusReady |
     (state == LASTREAD) & ~BusReady |
     (state == MEMREAD) |
     (state == LASTWRITEBACK) & ((nextstate == LASTREAD) | (nextstate == MEMREAD)) |
@@ -285,7 +286,7 @@ module data_writeback_associative_cache_controller
 
   // -------------Flush controls------------
   assign IncFlush = (state == FLUSH) & ~(W1D & W1V) & ~(W2D & W2V);
-  assign cleanCurr = (state == WRITEBACK) & BusReady;
+  assign cleanCurr = (state == WRITEBACK | state == LASTWRITEBACK) & BusReady;
 
   // Flushing MUX
   mux2 #($clog2(lines)) BlockNumMux(A[$clog2(lines)-1 + 4:4], 

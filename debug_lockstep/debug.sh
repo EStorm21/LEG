@@ -8,8 +8,11 @@ key="$1"
 
 case $key in
 	-t|--test)
-	TESTFILE="$2"
-	shift # past argument
+	if [ "$2" != "--dump" ]
+	then
+		TESTFILE="$2"
+		shift # past argument
+	fi
 	;;
 	-a|--auto)
 	COMMAND="['autorun']"
@@ -21,6 +24,13 @@ case $key in
 	;;
 	--divideandconquer)
 	COMMAND="['divideandconquer', '$2', $3, $4]"
+	# Handle the dump parameter
+	if [ "$5" == "--dump" ]
+	then
+		COMMAND="['divideandconquer', '$2', $3, $4, '$5', '$6']"
+		shift
+		shift
+	fi
 	shift # past argument
 	shift # past argument
 	shift # past argument

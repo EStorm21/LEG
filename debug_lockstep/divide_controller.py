@@ -28,7 +28,8 @@ def start_division(test_file, division, rundir, dump=False):
 	os.mkdir(division_dir)
 	division_cmd += ['--divideandconquer', division_dir, hex(division[0]), hex(division[1])]
 	if(dump):
-		division_cmd += ['-dump']
+		division_cmd += ['--dump']
+		division_cmd += [os.path.join(division_dir)]
 	return subprocess.Popen(division_cmd, stdin=open(os.devnull, 'r'), stdout=open(os.path.join(division_dir,'stdout'),'w'), stderr=subprocess.STDOUT, preexec_fn=os.setpgrp), division_dir
 
 def record_pids(rundir, subprocs):
@@ -237,12 +238,12 @@ if __name__ == '__main__':
 	dump = False
 	# Parse commands
 	if(len(sys.argv) > 2):
-		if(sys.argv[2] == "-dump"):
+		if(sys.argv[2] == "--dump"):
 			dump = True
 			test_file = "" 
 		else:
 			test_file = sys.argv[2]
-	test_file = sys.argv[2] if len(sys.argv) > 2 else ""
+	#test_file = sys.argv[2] if len(sys.argv) > 2 else ""
 
 	divs = load_divisions(division_file)
 	run_divisions(test_file, divs, dump)
