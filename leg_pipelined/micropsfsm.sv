@@ -6,6 +6,7 @@ module micropsfsm(input  logic        clk, reset,
 			   output logic [31:0] uOpInstrD,
 			   input  logic		   StalluOp, ExceptionSavePC, interrupting, 
 			   input  logic [1:0]  Rs_D,
+			   input  logic 	   Rm_sign,
 			   output logic [1:0]  multCarryIn,
 			   output logic        multPrevZFlag);
 
@@ -88,6 +89,18 @@ always_ff @ (posedge clk) begin
   		MUL_counter <= MUL_counter;
 end
 assign MUL_done = MUL_counter == 5'b11111;
+
+// Save the sign bit of Rm when we access it in MUL_ADD
+// This will allow us to determine whether we use the sign 
+// extension on the high bits of the result.
+logic MUL_negative;
+always_ff@(posedge clk)
+	if(reset)
+		MUL_negative <= 0;
+	else if (state == MUL_add)
+		MUL_negative <= Rm_sign;
+	else
+		MUL_negative <= MUL_negative;
 
 
 // Save the value of Rs[0] when we manipulate it so we will be able to use it later.
@@ -1139,12 +1152,19 @@ always_comb
 			Reg_usr_D = 0; 
 			MicroOpCPSRrestoreD = 0;
 			noRotate = 0;  
-			ldrstrRtype = 0;  
-			// add RdLo, RdLo, #0 (with carry in)
-			uOpInstrD = {defaultInstrD[31:28], // Condition bits
-						8'b001_0100_0, // ADD I type, Do not update flags
-						defaultInstrD[15:12], defaultInstrD[15:12], // Rn = RdLo, Rd = RdLo
-						12'h000}; // Rm = Rm
+			ldrstrRtype = 0;
+			if(MUL_negative)
+				// sub RdLo, RdLo, #1 (with carry in)
+				uOpInstrD = {defaultInstrD[31:28], // Condition bits
+							8'b001_0010_0, // SUB I type, Do not update flags
+							defaultInstrD[15:12], defaultInstrD[15:12], // Rn = RdLo, Rd = RdLo
+							12'h001}; // Rm = Rm
+			else 
+				// add RdLo, RdLo, #0 (with carry in)
+				uOpInstrD = {defaultInstrD[31:28], // Condition bits
+							8'b001_0100_0, // ADD I type, Do not update flags
+							defaultInstrD[15:12], defaultInstrD[15:12], // Rn = RdLo, Rd = RdLo
+							12'h000}; // Rm = Rm
 		end
 
 		// Carry-shift multiplication: shift RdLo right by 1, 
