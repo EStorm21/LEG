@@ -32,7 +32,8 @@ module leg(input  logic        clk, reset,
   logic        MultStallD, MultStallE;
   logic        WriteMultLoE, WriteMultLoKeptE;
   logic        ZeroRotateD, CarryHiddenE;
-  logic  [1:0] Rs_D;
+  logic        R1_D;
+  logic  [2:0] R2_D;
   logic        sh_a0E, sh_a31E, sh_rot0E, sh_rot31E;
   logic  [7:0] SrcA70E;
 
