@@ -1,7 +1,7 @@
 module alu_decoder(input  logic       ALUOpE,
            input  logic [24:21] ALUControlE,
            input  logic [1:0] PreviousCVFlag,
-           input  logic BXInstrE, RegtoCPSR,
+           input  logic BXInstrE, RegtoCPSR, multNegateRs,
            output   logic [2:0] ALUOperation, CVUpdate,
            output   logic     InvertB, ReverseInputs, ALUCarryIn, DoNotWriteReg);
 
@@ -12,8 +12,9 @@ module alu_decoder(input  logic       ALUOpE,
  * Which flags to update are also handled by ALU_Decoder
  *
  ******************************/
-  assign ReverseInputs = (ALUOpE & (ALUControlE[24:21] == 4'b0011 | //RSB
-                          ALUControlE[24:21] == 4'b0111)); //RSC
+  assign ReverseInputs = ALUOpE & (ALUControlE[24:21] == 4'b0011 | //RSB
+                                   ALUControlE[24:21] == 4'b0111 | //RSC
+                                   multNegateRs); 
  
   assign InvertB = (ALUOpE & ((ALUControlE[24:22] == 3'b001) |   //SUB, RSB
                    (ALUControlE[24:22] == 3'b011) |   //SBC, RSC

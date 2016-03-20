@@ -5,10 +5,13 @@ module micropsfsm(input  logic        clk, reset,
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
 			   input  logic		   StalluOp, ExceptionSavePC, interrupting, 
+			   input  logic 	   Rs_sign,
 			   input  logic [1:0]  Rs_D,
-			   input  logic 	   Rm_sign,
+			   input  logic 	   Rm_sign, // aka Rs_D[2], since the datapath signal is the same
 			   output logic [1:0]  multCarryIn,
-			   output logic        multPrevZFlag);
+			   output logic        multPrevZFlag,
+			   output logic 	   multNegative,
+			   output logic 	   multNegateRs_out);
 
  /***** Brief Description *******
  * First Created by Ivan Wong for Clay Wolkin 2014-2015
@@ -19,7 +22,8 @@ module micropsfsm(input  logic        clk, reset,
 
 
 // define states READY and RSR 
-typedef enum {ready, rsr, ldmstm, bl, ldmstmWriteback, ls_word, str, blx, strHalf, ls_halfword, ls_word_byte, ls_word_byte_wb, swp_str, swp_mov, MUL_nop, MUL_zero_Rz, MUL_add, MUL_mov_Rs, MUL_shift_Rz, MUL_add_Cout, MUL_gen_flags, MUL_mov_RdHi, MUL_shift_RdLo, MUL_replace_RdHi, MUL_shift_Rd_RdHi, MUL_replace_RdLo} statetype; // theres a bug if we get rid of strHalf... need to figoure out why
+typedef enum {ready, rsr, ldmstm, bl, ldmstmWriteback, ls_word, str, blx, strHalf, ls_halfword, ls_word_byte, ls_word_byte_wb, swp_str, swp_mov, 
+			  MUL_nop, MUL_zero_Rz, MUL_add, MUL_mov_Rs, MUL_negate_Rm, MUL_unNegate_Rm, MUL_shift_Rz, MUL_add_Cout, MUL_gen_flags, MUL_mov_RdHi, MUL_shift_RdLo, MUL_replace_RdHi, MUL_shift_Rd_RdHi, MUL_replace_RdLo} statetype; // theres a bug if we get rid of strHalf... need to figoure out why
 statetype state, nextState;
 
 string debugText;
@@ -91,17 +95,30 @@ end
 assign MUL_done = MUL_counter == 5'b11111;
 
 // Save the sign bit of Rm when we access it in MUL_ADD
-// This will allow us to determine whether we use the sign 
-// extension on the high bits of the result.
-logic MUL_negative;
+// This will allow us to determine what to carry to the high
+// resutl bits.
+// We subtract when Rm is negative.
 always_ff@(posedge clk)
 	if(reset)
-		MUL_negative <= 0;
+		multNegative <= 0;
 	else if (state == MUL_add)
-		MUL_negative <= Rm_sign;
+		multNegative <= Rm_sign;
 	else
-		MUL_negative <= MUL_negative;
+		multNegative <= multNegative;
 
+// Check the sign of Rs in signed multiply. 
+// If it is negative we need to negate it and negate Rm
+// multNegateRs_out is used in the rest of the controller, 
+// and multNegateRs is a delayed internal signal so we remember to un-negate Rm.
+logic multNegateRs;
+always_ff@(posedge clk)
+	if(reset)
+		multNegateRs <= 0;
+	else if (state == MUL_mov_Rs)
+		multNegateRs <= Rs_sign && defaultInstrD[22];
+	else
+		multNegateRs <= multNegateRs;
+assign multNegateRs_out = Rs_sign && defaultInstrD[22] && state == MUL_mov_Rs;
 
 // Save the value of Rs[0] when we manipulate it so we will be able to use it later.
 // This is in the states MUL_mov_Rs and MUL_shift_Rd_RdHi.
@@ -122,11 +139,12 @@ end
 
 // Whether to use shiftercarryoutcycle2 as a carry in for the shifter or ALU(bit 0)
 // Or to use ALUCarryOutCycle2
+// Bit 1 controls ALU Cin for propagating the addition to the high bits for MUL_add_Cout
+// Bit 0 controls the shifter carry in during RRX for MUL_shift_Rz and MUL_shift_Rd_RdHi
 assign multCarryIn[1] = (state == MUL_add_Cout);
 assign multCarryIn[0] = (state == MUL_shift_Rz) | (state == MUL_shift_Rd_RdHi);
 
 assign multPrevZFlag = state == MUL_replace_RdLo;
-
 
 // -----------------------------------------------------------------------------
 // --------------------------- END SPECIAL LOGIC -------------------------------
@@ -1060,14 +1078,16 @@ always_comb
 		// Carry-shift multiplication: Put Rs in Rd/RdHi
 		// In long mult, we clobber Rs when Rs == RdLo. Thus pick it from Rz instead.
 		// Don't do for mul since it was garbage
+		// We may need to negate Rs if we are doing signed multiply,
+		// so we use sub and sneakily convert to rsb in alu_decoder if necessary.
 		MUL_mov_Rs:begin
 			InstrMuxD = 1;
 			uOpStallD = 1;
 			PrevCycleCarry = 0;
 			KeepVD = 0;
 			regFileRz = {1'b0, // Control inital mux for RA1D
-						1'b0, defaultInstrD[23] & (defaultInstrD[15:12] == defaultInstrD[11:8]), 1'b0}; // 5th bit of WA3, RA2D and RA1D
-			nextState = defaultInstrD[21] ? MUL_add : MUL_zero_Rz;
+						2'b00, defaultInstrD[23] & (defaultInstrD[15:12] == defaultInstrD[11:8])}; // 5th bit of WA3, RA2D and RA1D
+			nextState = multNegateRs_out ? MUL_negate_Rm : (defaultInstrD[21] ? MUL_add : MUL_zero_Rz);
 			LDMSTMforward = 0;
 			Reg_usr_D = 0; 
 			MicroOpCPSRrestoreD = 0;
@@ -1075,18 +1095,39 @@ always_comb
 			ldrstrRtype = 0;  
 			// if long and same register
 			if (defaultInstrD[23] & defaultInstrD[15:12] == defaultInstrD[11:8])
-				// mov Rd/RdHi, Rz
+				// sub Rd/RdHi, Rz, #0
 				uOpInstrD = {defaultInstrD[31:28], // Condition bits
-							8'b000_1101_0, // MOV R type, Do not update flags
-							4'h0, defaultInstrD[19:16],  // Rd = Rd/RdHi
-							8'h00, 4'hF }; // Rm = Rz
+							8'b001_0010_0, // SUB I type, Do not update flags
+							4'hF, defaultInstrD[19:16],  // Rn = Rz, Rd = Rd/RdHi
+							12'h000}; // #0
 			else
-				// mov Rd/RdHi, Rs
+				// sub Rd/RdHi, Rs, #0
 				uOpInstrD = {defaultInstrD[31:28], // Condition bits
-							8'b000_1101_0, // MOV R type, Do not update flags
-							4'h0, defaultInstrD[19:16],  // Rd = Rd/RdHi
-							8'h00,defaultInstrD[11:8] }; // Rm = Rs
+							8'b001_0010_0, // SUB I type, Do not update flags
+							defaultInstrD[11:8], defaultInstrD[19:16],  // Rn = Rs, Rd = Rd/RdHi
+							12'h000}; // #0
 		end
+
+		// Carry-shift multiplication: Negate Rm when Rs is negative.
+		MUL_negate_Rm:begin
+			InstrMuxD = 1;
+			uOpStallD = 1;
+			PrevCycleCarry = 0;
+			KeepVD = 0;
+			regFileRz = {1'b0, // Control inital mux for RA1D
+						3'b000}; // 5th bit of WA3, RA2D and RA1D
+			nextState = defaultInstrD[21] ? MUL_add : MUL_zero_Rz;
+			LDMSTMforward = 0;
+			Reg_usr_D = 0; 
+			MicroOpCPSRrestoreD = 0;
+			noRotate = 0;  
+			ldrstrRtype = 0;  
+			// rsb Rm, Rm, #0
+			uOpInstrD = {defaultInstrD[31:28], // Condition bits
+						8'b001_0011_0, // RSB I type, Do not update flags
+						defaultInstrD[3:0], defaultInstrD[3:0],  // Rn = Rm, Rd = Rm
+						12'h000};
+		end		
 
 		// Carry-shift multiplication: If not accumulate, then we need to clear Rz
 		MUL_zero_Rz:begin
@@ -1140,6 +1181,7 @@ always_comb
 		end
 
 		// Carry-shift multiplication: add carry out of low partial product for long multiplies 
+		// In signed multiplies, subtract 1 if no carry and subtract 0 if carry
 		MUL_add_Cout: begin
 			InstrMuxD = 1;
 			uOpStallD = 1;
@@ -1153,18 +1195,18 @@ always_comb
 			MicroOpCPSRrestoreD = 0;
 			noRotate = 0;  
 			ldrstrRtype = 0;
-			if(MUL_negative)
-				// sub RdLo, RdLo, #1 (with carry in)
+			if(multNegative)
+				// sub RdLo, RdLo, #0 (but if carry in, turn off the usual subtraction Cin to get #1)
 				uOpInstrD = {defaultInstrD[31:28], // Condition bits
 							8'b001_0010_0, // SUB I type, Do not update flags
 							defaultInstrD[15:12], defaultInstrD[15:12], // Rn = RdLo, Rd = RdLo
-							12'h001}; // Rm = Rm
+							12'h000}; // #0
 			else 
 				// add RdLo, RdLo, #0 (with carry in)
 				uOpInstrD = {defaultInstrD[31:28], // Condition bits
 							8'b001_0100_0, // ADD I type, Do not update flags
 							defaultInstrD[15:12], defaultInstrD[15:12], // Rn = RdLo, Rd = RdLo
-							12'h000}; // Rm = Rm
+							12'h000}; // #0
 		end
 
 		// Carry-shift multiplication: shift RdLo right by 1, 
@@ -1220,7 +1262,7 @@ always_comb
 			KeepVD = 0;
 			regFileRz = {1'b0, // Control inital mux for RA1D
 						3'b000}; // 5th bit of WA3, RA2D and RA1D
-			nextState = MUL_done ? (defaultInstrD[23] ? MUL_replace_RdLo : (defaultInstrD[20] ? MUL_gen_flags : ready)) : MUL_add;
+			nextState = MUL_done ? (defaultInstrD[23] ? (multNegateRs ? MUL_unNegate_Rm : MUL_replace_RdLo) : (defaultInstrD[20] ? MUL_gen_flags : ready)) : MUL_add;
 			LDMSTMforward = 0;
 			Reg_usr_D = 0; 
 			MicroOpCPSRrestoreD = 0;
@@ -1231,6 +1273,27 @@ always_comb
 						8'b000_1101_0, // MOV R type, Do not update flags
 						4'h0, defaultInstrD[19:16], // Rd = Rd
 						8'b00000_110, defaultInstrD[19:16] }; // Rd RRX
+		end
+
+		// Carry-shift multiplication: Un-Negate Rm when Rs is negative.
+		MUL_unNegate_Rm:begin
+			InstrMuxD = 1;
+			uOpStallD = 1;
+			PrevCycleCarry = 0;
+			KeepVD = 0;
+			regFileRz = {1'b0, // Control inital mux for RA1D
+						3'b000}; // 5th bit of WA3, RA2D and RA1D
+			nextState = MUL_replace_RdLo;
+			LDMSTMforward = 0;
+			Reg_usr_D = 0; 
+			MicroOpCPSRrestoreD = 0;
+			noRotate = 0;  
+			ldrstrRtype = 0;  
+			// rsb Rm, Rm, #0
+			uOpInstrD = {defaultInstrD[31:28], // Condition bits
+						8'b001_0011_0, // RSB I type, Do not update flags
+						defaultInstrD[3:0], defaultInstrD[3:0],  // Rn = Rm, Rd = Rm
+						12'h000};
 		end
 
 		// Carry-shift multiplication: Put the value in RdHi (RdLo) in its place
@@ -1289,7 +1352,7 @@ always_comb
 			MicroOpCPSRrestoreD = 0;
 			noRotate = 0;  
 			ldrstrRtype = 0;  
-			// mov RdLo, RdHi
+			// mov Rd, Rd
 			uOpInstrD = {defaultInstrD[31:28], // Condition bits
 						8'b000_1101_1, // MOV R type, We can only get here if we set flags
 						4'h0, defaultInstrD[19:16], // Rd = Rd

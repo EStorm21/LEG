@@ -13,7 +13,8 @@ module controller (
   input  logic [ 3:0] ALUFlagsE              ,
   input  logic [31:0] ALUResultE, DefaultInstrD,
   input  logic        ZeroRotateD,
-  input  logic [1:0]  Rs_D, // for multiply partial products
+  input  logic        R1_D,
+  input  logic [2:0]  R2_D, // for multiply partial products
   input  logic        sh_a0E, sh_a31E, sh_rot0E, sh_rot31E,
   input  logic [7:0]  SrcA70E,
   /// ------ To   Datapath ------
@@ -126,7 +127,8 @@ module controller (
 
 
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevCycleCarryD, 
-    KeepVD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, interrupting, Rs_D, multCarryInD, multPrevZFlagD); 
+    KeepVD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, interrupting, 
+    R1_D, R2_D[1:0], R2_D[2], multCarryInD, multPrevZFlagD, multNegative, multNegateRs); 
   assign MultSelectD = 0;
 
   // === Control Logic for Datapath ===
@@ -282,8 +284,8 @@ module controller (
                       shamtE, shctl_5E, shctl_8E, shiftE, leftE, arithE, longshiftE, rrx_inE, ShifterCarryOutE);
 
   // === ALU Decoding ===
-  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, RegtoCPSR_E, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryIn_0E, DoNotWriteRegE);
-  assign ALUCarryInE = multCarryInE[1] ? ALUCarryOut_cycle2E : ALUCarryIn_0E;
+  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, RegtoCPSR_E, multNegateRs, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryIn_0E, DoNotWriteRegE);
+  assign ALUCarryInE = multCarryInE[1] ? ALUCarryOut_cycle2E ^ multNegative : ALUCarryIn_0E;
   // === END ===
 
   /*** BRIEF ***

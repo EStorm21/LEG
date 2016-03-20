@@ -33,7 +33,7 @@ module dmem (
       // $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
       // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/LEG/tests/simTest.dat",RAM); //teqrs
       // $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
-      $readmemh("C:/Users/Sam/Documents/CW/LEG/LEG/tests/simTest.dat", RAM);
+      //$readmemh("C:/Users/Sam/Documents/CW/LEG/LEG/tests/simTest.dat", RAM);
     end
   assign rd = RAM[a[$clog2(MEM_SIZE)+1:2]];
 
