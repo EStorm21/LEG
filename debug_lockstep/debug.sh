@@ -5,6 +5,7 @@ COMMAND="['interactive']"
 while [[ $# > 0 ]]
 do
 key="$1"
+NOIRQ=""
 
 case $key in
 	-t|--test)
@@ -34,6 +35,9 @@ case $key in
 	shift # past argument
 	shift # past argument
 	shift # past argument
+	;;
+	--noirq)
+	echo "debug.sh: noirq selected. divide and conquer functionality not implemented"
 	;;
 	-h|--help)
 	echo "Usage:"

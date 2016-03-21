@@ -20,7 +20,7 @@ def load_divisions(divfile):
 	with open(divfile,'r') as f:
 		return [ map(int, line.split(',')) for line in f ]
 
-def start_division(test_file, division, rundir, dump=False):
+def start_division(test_file, division, rundir, dump=False, noirq=False):
 	division_cmd = ['./debug.sh']
 	if test_file != "":
 		division_cmd += ['-t', test_file]
@@ -30,6 +30,8 @@ def start_division(test_file, division, rundir, dump=False):
 	if(dump):
 		division_cmd += ['--dump']
 		division_cmd += [os.path.join(division_dir)]
+	if(noirq):
+		division_cmd += ['--noirq']
 	return subprocess.Popen(division_cmd, stdin=open(os.devnull, 'r'), stdout=open(os.path.join(division_dir,'stdout'),'w'), stderr=subprocess.STDOUT, preexec_fn=os.setpgrp), division_dir
 
 def record_pids(rundir, subprocs):
@@ -236,6 +238,8 @@ if __name__ == '__main__':
 	division_file = sys.argv[1]
 
 	dump = False
+	test_file = ""
+
 	# Parse commands
 	if(len(sys.argv) > 2):
 		if(sys.argv[2] == "--dump"):
@@ -243,6 +247,7 @@ if __name__ == '__main__':
 			test_file = "" 
 		else:
 			test_file = sys.argv[2]
+		
 	#test_file = sys.argv[2] if len(sys.argv) > 2 else ""
 
 	divs = load_divisions(division_file)
