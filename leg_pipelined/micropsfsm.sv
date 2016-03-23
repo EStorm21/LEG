@@ -95,13 +95,13 @@ assign MUL_done = MUL_counter == 5'b11111;
 
 // Save the sign bit of Rm when we access it in MUL_ADD
 // This will allow us to determine what to carry to the high
-// resutl bits.
+// result bits.
 // We subtract when Rm is negative.
 always_ff@(posedge clk)
 	if(reset)
 		multNegative <= 0;
 	else if (state == MUL_add)
-		multNegative <= R2_D[1];
+		multNegative <= R2_D[1] & defaultInstrD[22];
 	else
 		multNegative <= multNegative;
 
@@ -114,10 +114,10 @@ always_ff@(posedge clk)
 	if(reset)
 		multNegateRs <= 0;
 	else if (state == MUL_mov_Rs)
-		multNegateRs <= R1_D[1] && defaultInstrD[22];
+		multNegateRs <= R1_D[1] & defaultInstrD[22];
 	else
 		multNegateRs <= multNegateRs;
-assign multNegateRs_out = R1_D[1] && defaultInstrD[22] && state == MUL_mov_Rs;
+assign multNegateRs_out = R1_D[1] & defaultInstrD[22] & state == MUL_mov_Rs;
 
 // Save the value of Rs[0] when we manipulate it so we will be able to use it later.
 // This is in the states MUL_mov_Rs and MUL_shift_Rd_RdHi.
@@ -1164,8 +1164,9 @@ always_comb
 			MicroOpCPSRrestoreD = 0;
 			noRotate = 0;  
 			ldrstrRtype = 0;  
-			// if Rd[0] or RdLo[0] is 1, cleverly saved from the last time we loaded it
-			if (partialProduct_en) // Long
+			// if Rd[0] or RdHi[0] (holding the value of Rs) is 1, 
+			// cleverly saved from the last time we loaded it
+			if (partialProduct_en)
 				// add Rz, Rz, Rm
 				uOpInstrD = {defaultInstrD[31:28], // Condition bits
 							8'b000_0100_0, // ADD R type, Do not update flags
