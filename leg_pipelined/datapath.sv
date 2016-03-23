@@ -40,8 +40,8 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                   output logic [3:0]  ALUFlagsE, 
                   output logic [31:0] ALUResultE, DefaultInstrD,
                   output logic        ZeroRotateD,
-                  output logic        R1_D,
-                  output logic [2:0]  R2_D,
+                  output logic [1:0]  R1_D,
+                  output logic [1:0]  R2_D,
                   output logic        sh_a0E, sh_a31E, sh_rot0E, sh_rot31E,
                   output logic [7:0]  SrcA70E,
 
@@ -100,8 +100,8 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
                  Rd1D, Rd2D); 
   extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25], noRotateD);
   rotator   rotat(ExtImmD, InstrD, RotImmD, ZeroRotateD, noRotateD); 
-  assign R1_D = Rd1D[31];
-  assign R2_D = {Rd2D[31], Rd2D[1:0]}; // 1st bit is uOp Rm_sign
+  assign R1_D = {Rd1D[31], Rd1D[0]};
+  assign R2_D = {Rd2D[31], Rd2D[1]}; // 1st bit is uOp Rm_sign
 
 
   // ====================================================================================

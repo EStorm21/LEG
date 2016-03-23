@@ -5,9 +5,8 @@ module micropsfsm(input  logic        clk, reset,
                output logic [3:0]  regFileRz,
 			   output logic [31:0] uOpInstrD,
 			   input  logic		   StalluOp, ExceptionSavePC, interrupting, 
-			   input  logic 	   Rs_sign,
-			   input  logic [1:0]  Rs_D,
-			   input  logic 	   Rm_sign, // aka Rs_D[2], since the datapath signal is the same
+			   input  logic [1:0]  R1_D,
+			   input  logic [1:0]  R2_D,
 			   output logic [1:0]  multCarryIn,
 			   output logic        multPrevZFlag,
 			   output logic 	   multNegative,
@@ -102,7 +101,7 @@ always_ff@(posedge clk)
 	if(reset)
 		multNegative <= 0;
 	else if (state == MUL_add)
-		multNegative <= Rm_sign;
+		multNegative <= R2_D[1];
 	else
 		multNegative <= multNegative;
 
@@ -115,10 +114,10 @@ always_ff@(posedge clk)
 	if(reset)
 		multNegateRs <= 0;
 	else if (state == MUL_mov_Rs)
-		multNegateRs <= Rs_sign && defaultInstrD[22];
+		multNegateRs <= R1_D[1] && defaultInstrD[22];
 	else
 		multNegateRs <= multNegateRs;
-assign multNegateRs_out = Rs_sign && defaultInstrD[22] && state == MUL_mov_Rs;
+assign multNegateRs_out = R1_D[1] && defaultInstrD[22] && state == MUL_mov_Rs;
 
 // Save the value of Rs[0] when we manipulate it so we will be able to use it later.
 // This is in the states MUL_mov_Rs and MUL_shift_Rd_RdHi.
@@ -130,9 +129,9 @@ always_ff@(posedge clk) begin
 	else if (StalluOp)
 		partialProduct_en <= partialProduct_en;
 	else if (state == MUL_mov_Rs)
-		partialProduct_en <= Rs_D[0];
+		partialProduct_en <= R1_D[0];
 	else if (state == MUL_shift_Rd_RdHi)
-		partialProduct_en <= Rs_D[1];
+		partialProduct_en <= R2_D[0];
 	else
 		partialProduct_en <= partialProduct_en;
 end
