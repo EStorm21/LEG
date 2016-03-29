@@ -1,4 +1,4 @@
-module tlb_arbiter( input logic PAReady, RequestPAM, RequestPAF, IStall,
+module tlb_arbiter( input logic PAReady, RequestPAM, RequestPAF, IStall, 
                     output logic PAReadyF, PAReadyM, RequestPA);
     assign PAReadyF = RequestPAF & ~RequestPAM & PAReady;
     assign PAReadyM = RequestPAM & PAReady;

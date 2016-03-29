@@ -133,7 +133,7 @@ module testbench();
   
   // MEMORY DEBUGGING
 
-  // `define MEMDEBUG 0
+   // `define MEMDEBUG 0
   `ifdef MEMDEBUG
 
   // Writeback cache states
@@ -141,8 +141,8 @@ module testbench();
                            NEXTINSTR, FLUSH, WAIT, DWRITE} statetype;
   statetype state, nextstate;
   
-  logic [31:0] watchdata[$] = {32'h000000ff, 32'h000001ff};
-  logic [31:0] watchmem [1] = {32'h90a840};
+  logic [31:0] watchdata[$] = {32'h0000dcd5, 32'h0032dcd5};
+  logic [31:0] watchmem [1] = {32'hbefffae8};
   logic [29:0] watchmemword [$size(watchmem)];
   logic [7:0] watchset [$size(watchmem)];
   always_comb

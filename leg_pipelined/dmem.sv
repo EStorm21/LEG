@@ -21,7 +21,7 @@ module dmem (
   initial
     begin
       `ifdef USE_DEFAULT_MEMORY
-        string default_memory = "../sim/simtest.dat";
+        string default_memory = "/home/max/wolkin/LEG/tests/simTest.dat";
         $display("Using default memory %s", default_memory);
         $readmemh(default_memory, RAM);
       `endif

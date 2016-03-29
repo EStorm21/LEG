@@ -1,7 +1,15 @@
+// `define NODECODE 10
+
 module ahb_decoder(input  logic [31:0] HADDR,
                    output logic [1:0]  HSEL);
+
+  `ifdef NODECODE
+  assign HSEL[0] = 1'b1;
+  assign HSEL[1] = 1'b0;
+  `else
   assign HSEL[0] = (HADDR < 32'h10000000);
   assign HSEL[1] = (HADDR >= 32'h10000000);
+  `endif
   //assign HSEL = 1'b1;
   // Decode based on most significant bits of the address
   // assign HSEL[0] = (HADDR[31:16] == 0x0000); // 64KB ROM  at 0x00000000 - 0x0000FFFF

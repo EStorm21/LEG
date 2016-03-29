@@ -165,7 +165,12 @@ def build_bug_writeback_mismatch(qmon, bad_state, t="none"):
 								qmon.get_state_writeback(),
 								bad_state)
 	msg += "\n"
-	msg += build_qemu_msg()
+	try:
+		msg += build_qemu_msg()
+	except Exception, e:
+		print(msg)
+		print("time = {}".format(str(t)))
+		raise e
 	msg += "\n"
 	msg += "time = " + str(t)
 	return msg

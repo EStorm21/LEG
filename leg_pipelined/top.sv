@@ -42,7 +42,7 @@ module top (
   logic [6:0]  TLBCont, Cont;
   logic [17:0] TBase;
   logic [3:0]  CP15A;
-  logic [tbits-1:0] PhysTag;
+  logic [tbits-1:0] PhysTag, dPhysTag, iPhysTag;
 
   // ----- CP15 signals for LEG -----
   logic        CoProc_WrEnM, CoProc_EnM, MMUWriteEn, MMUEn;
@@ -94,9 +94,9 @@ module top (
   initial
     begin
       `ifdef ECACHES
-        $display("Caches Enabled");
+        $display("Caching is allowed");
       `else
-	$display("Caches Disabled");
+	     $display("Caches are permanently disabled");
       `endif
     end
 
@@ -135,6 +135,19 @@ module top (
   );
   // .TLBFlushI(TLBFlushI), .rd(CP15rd_M), .control(controlDummy), .tbase(DummyTBase));
 
+  //`define DISABLETARB 1
+
+  `ifdef DISABLETARB
+    initial
+      $display("TARB is disabled. See top.sv");
+
+    mux2 #(tbits) dTagMux(DataAdrM[31:31-tbits+1], PhysTag, MMUEn, dPhysTag);
+    mux2 #(tbits) iTagMux(PCF[31:31-tbits+1], PhysTag, MMUEn, iPhysTag);
+  `else 
+    assign iPhysTag = PhysTag;
+    assign dPhysTag = PhysTag;
+  `endif
+
   parameter iLines = 64;   // Number of lines in I$
   parameter ibsize = 4; // bsize of the I$
   // I$
@@ -148,7 +161,7 @@ module top (
     .A         (PCF      ),
     .HRData    (HRData   ),
     .RD        (InstrF   ),
-    .PhysTag   (PhysTag  ),
+    .PhysTag   (iPhysTag ),
     .PAReadyF  (PAReadyF ),
     .FSel      (FSel     ),
     .IStall    (IStall   ),
@@ -159,6 +172,8 @@ module top (
 
   parameter dLines = 64;   // Number of lines in D$
   parameter dbsize = 4;     // block size of the D$
+
+
 
   // D$
   data_writeback_associative_cache #(dbsize,dLines) data_cache (
@@ -177,7 +192,7 @@ module top (
     .MemtoRegM (MemtoRegM ),
     .BusReady  (HReadyM   ),
     .IStall    (IStall    ),
-    .PhysTag   (PhysTag   ),
+    .PhysTag   (dPhysTag  ),
     .VirtA     (DataAdrM  ),
     .WD        (WriteDataM),
     .HRData    (HRData    ),
@@ -193,7 +208,11 @@ module top (
 
   ahb_arbiter_3way ahb_arb(.*);
 
+  `ifdef DISABLETARB
+  tlb_arbiter_dis tarb(.*);
+  `else 
   tlb_arbiter tarb(.*);
+  `endif
 
   // Create an ahb memory
   // TODO: Partition into on chip and off chip

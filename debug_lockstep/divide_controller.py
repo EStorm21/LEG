@@ -164,10 +164,10 @@ def print_help():
 	
 	
 
-def run_divisions(test_file, divisions, dump=False):
+def run_divisions(test_file, divisions, dump=False, noirq=False):
 	rundir = get_run_directory(test_file)
 	print "Starting all divisions in parallel!"
-	subprocs = [start_division(test_file, d, rundir, dump) for d in divisions]
+	subprocs = [start_division(test_file, d, rundir, dump=dump, noirq=noirq) for d in divisions]
 	print "Started all divisions!"
 	record_pids(rundir, subprocs)
 	target_dict = dict(enumerate(divisions))
@@ -238,6 +238,7 @@ if __name__ == '__main__':
 	division_file = sys.argv[1]
 
 	dump = False
+	noirq = False
 	test_file = ""
 
 	# Parse commands
@@ -247,8 +248,12 @@ if __name__ == '__main__':
 			test_file = "" 
 		else:
 			test_file = sys.argv[2]
+
+	if(len(sys.argv) > 3):
+		if(sys.argv[3] == "--noirq"):
+			noirq = True
 		
 	#test_file = sys.argv[2] if len(sys.argv) > 2 else ""
 
 	divs = load_divisions(division_file)
-	run_divisions(test_file, divs, dump)
+	run_divisions(test_file, divs, dump=dump, noirq=noirq)

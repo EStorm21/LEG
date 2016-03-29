@@ -5,6 +5,7 @@ transcript off
 project open "../sim/pipelined_processor.mpf"; list
 
 # set dumpDir $1 (essentialy)
+set shouldResetMem 1
 set dumpDataName "qemu_mem_dump"
 set dumpDataFile $dumpDir$dumpDataName.dat
 set dumpStateName "qemu_state_dump"
