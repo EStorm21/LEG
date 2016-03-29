@@ -13,8 +13,8 @@ module controller (
   input  logic [ 3:0] ALUFlagsE              ,
   input  logic [31:0] ALUResultE, DefaultInstrD,
   input  logic        ZeroRotateD,
-  input  logic        R1_D,
-  input  logic [2:0]  R2_D, // for multiply partial products
+  input  logic [1:0]  R1_D, // for multiply. Bits 31,0
+  input  logic [1:0]  R2_D, // for multiply partial products. Bits 31,1
   input  logic        sh_a0E, sh_a31E, sh_rot0E, sh_rot31E,
   input  logic [7:0]  SrcA70E,
   /// ------ To   Datapath ------
@@ -128,7 +128,7 @@ module controller (
 
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevCycleCarryD, 
     KeepVD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, interrupting, 
-    R1_D, R2_D[1:0], R2_D[2], multCarryInD, multPrevZFlagD, multNegative, multNegateRs); 
+    R1_D, R2_D, multCarryInD, multPrevZFlagD, multNegative, multNegateRs); 
   assign MultSelectD = 0;
 
   // === Control Logic for Datapath ===
