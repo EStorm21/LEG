@@ -19,12 +19,12 @@ This is a tool I made to enable fast debugging and testing of the Linux kernel b
 \end{itemize}
 
 \subsection{File structure}
-The run directory on Tera is currently in the Git repo at \texttt{debug_lockstep}.1 The scripts place all of their output in the \texttt{debug_lockstep/output} directory. For each run of the script, a new subdirectory within this directory is created, named according to the appropriate timestamp. Within this directory, the \texttt{bugs} directory contains the full debug output of each found bug, and \texttt{runlog} contains an abbreviated summary of all bugs found in the given run. Duplicate bugs are ignored and do not appear in these files.
+The run directory on Tera is currently in the Git repo at \texttt{debug\_lockstep}.1 The scripts place all of their output in the \texttt{debug\_lockstep/output} directory. For each run of the script, a new subdirectory within this directory is created, named according to the appropriate timestamp. Within this directory, the \texttt{bugs} directory contains the full debug output of each found bug, and \texttt{runlog} contains an abbreviated summary of all bugs found in the given run. Duplicate bugs are ignored and do not appear in these files.
 
 Created checkpoints appear in \texttt{output/checkpoints/} with the provided name.
 
 \subsection{How to Use}
-There are two ways to use the debug_lockstep script: to debug Linux, and to debug a test. To debug linux, simply start the debug script using \texttt{./debug.sh} in your shell on tera. (For now, this only works on tera.) You will be dropped into a GDB prompt, which is connected to a qemu process that runs the kernel. To debug a specific test, run
+There are two ways to use the debug\_lockstep script: to debug Linux, and to debug a test. To debug linux, simply start the debug script using \texttt{./debug.sh} in your shell on tera. (For now, this only works on tera.) You will be dropped into a GDB prompt, which is connected to a qemu process that runs the kernel. To debug a specific test, run
 
 \begin{verbatim}
 ./debug.sh -t path/to/test.bin
