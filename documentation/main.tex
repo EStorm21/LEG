@@ -1,7 +1,16 @@
 \documentclass[12pt]{article}
 
 \usepackage{graphicx}
+
 \usepackage[hidelinks]{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
+\hyphenation{Model-Sim}
 
 \begin{document}
 
@@ -10,14 +19,17 @@ Title page?
 
 \tableofcontents
 
+\section{TODO}
+\begin{itemize}
+\item Copyright signs on programs? (e.g. ModelSim)
+\item Change repository link to public version and verify installation
+\end{itemize}
+
 \section{Getting Started}
 \input{tex/installation.tex}
 
 \section{Testing}
 \input{tex/testing.tex}
-\pagebreak
-
-\input{tex/tera.tex}
 \pagebreak
 
 \input{tex/debug_lockstep.tex}
