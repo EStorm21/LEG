@@ -1,27 +1,57 @@
 \documentclass[12pt]{article}
 
 \usepackage{graphicx}
+
 \usepackage[hidelinks]{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+}
+
+\hyphenation{Model-Sim}
 
 \begin{document}
 
+Title page?
+\pagebreak
+
 \tableofcontents
 
-\input{iwong/datapath.tex}
+\section{TODO}
+\begin{itemize}
+\item Copyright signs on programs? (e.g. ModelSim)
+\item Change repository link to public version and verify installation
+\end{itemize}
+
+\section{Getting Started}
+\input{tex/installation.tex}
+
+\section{Testing}
+\input{tex/testing.tex}
 \pagebreak
 
-\input{mwaugaman/data_cache.tex}
+\input{tex/debug_lockstep.tex}
 \pagebreak
 
-\input{mwaugaman/mmu.tex}
+\section{Subsystems}
+% diagram
+% intro
+% relevant files
+% technical details
+\input{tex/subsystem_template.tex}
 \pagebreak
 
-\input{estorm/testing.tex}
+\input{tex/datapath.tex}
 \pagebreak
 
-\input{zakinator/tera.tex}
+\input{tex/data_cache.tex}
 \pagebreak
 
-\input{ddjohnson/debug_lockstep.tex}
+\input{tex/mmu.tex}
+\pagebreak
+
+
 
 \end{document}

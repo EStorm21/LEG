@@ -18,13 +18,34 @@ This is a tool I made to enable fast debugging and testing of the Linux kernel b
 \item \textbf{qemuDumpRestore.tcl} Tcl script that manipulates the ModelSim state to match a dumped Qemu state.
 \end{itemize}
 
+\subsubsection{Basic Operation on Provided Tests}
+This section demonstrates the most basic operation of the testing framework.
+It will allow you to run a test from the terminal and debug in gdb at a register level.
+\begin{enumerate}
+\item From your local copy of the LEG repository, enter the \texttt{debug\_lockstep} directory.
+\item Provided tests are stored in the \texttt{unitTests} directory. 
+ To run a provided test, type 
+ \begin{verbatim}./debug.sh -t unitTests/testname.bin\end{verbatim}
+ at the terminal. For example, to run the test consisting of 1000 random adc instructions, enter 
+ \begin{verbatim}./debug.sh -t unitTests/adc_1000.bin\end{verbatim}
+\item LEG will now be compiled by ModelSim and instances of QEMU and gdb will be started.
+ If there are no compilation errors, you will be at the prompt of gdb modified with LEG-specific debugging commands.
+ The most basic command is \texttt{leg-lockstep}, which runs LEG until a bug is found.
+ Enter this now.
+\item The test will print a `\texttt{.}' after each successfully executed instruction.
+ If the program completes successfully, a \texttt{PASSED} message will appear.
+ Otherwise debugging information will be printed, including the last correct register state, the current incorrect LEG register state, and the expected register state.
+\item Type \texttt{q} to exit gdb.
+\end{enumerate}
+
+
 \subsection{File structure}
-The run directory on Tera is currently in the Git repo at \texttt{debug_lockstep}.1 The scripts place all of their output in the \texttt{debug_lockstep/output} directory. For each run of the script, a new subdirectory within this directory is created, named according to the appropriate timestamp. Within this directory, the \texttt{bugs} directory contains the full debug output of each found bug, and \texttt{runlog} contains an abbreviated summary of all bugs found in the given run. Duplicate bugs are ignored and do not appear in these files.
+The run directory on Tera is currently in the Git repo at \texttt{debug\_lockstep}.1 The scripts place all of their output in the \texttt{debug\_lockstep/output} directory. For each run of the script, a new subdirectory within this directory is created, named according to the appropriate timestamp. Within this directory, the \texttt{bugs} directory contains the full debug output of each found bug, and \texttt{runlog} contains an abbreviated summary of all bugs found in the given run. Duplicate bugs are ignored and do not appear in these files.
 
 Created checkpoints appear in \texttt{output/checkpoints/} with the provided name.
 
 \subsection{How to Use}
-There are two ways to use the debug_lockstep script: to debug Linux, and to debug a test. To debug linux, simply start the debug script using \texttt{./debug.sh} in your shell on tera. (For now, this only works on tera.) You will be dropped into a GDB prompt, which is connected to a qemu process that runs the kernel. To debug a specific test, run
+There are two ways to use the debug\_lockstep script: to debug Linux, and to debug a test. To debug linux, simply start the debug script using \texttt{./debug.sh} in your shell on tera. (For now, this only works on tera.) You will be dropped into a GDB prompt, which is connected to a qemu process that runs the kernel. To debug a specific test, run
 
 \begin{verbatim}
 ./debug.sh -t path/to/test.bin

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 COMMAND="['interactive']"
 noirq="false"
