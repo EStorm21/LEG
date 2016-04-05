@@ -1,6 +1,6 @@
 #!/usr/local/bin/python2.7
 
-import os, subprocess, datetime, sys, signal, time
+import os, subprocess, datetime, sys, signal, time, argparse, sys
 import leg
 
 OUTPUT_DIR = "output"
@@ -21,17 +21,19 @@ def load_divisions(divfile):
 		return [ map(int, line.split(',')) for line in f ]
 
 def start_division(test_file, division, rundir, dump=False, noirq=False):
+	print("starting division dump = {}, noirq = {}".format(dump, noirq))
 	division_cmd = ['./debug.sh']
-	if test_file != "":
-		division_cmd += ['-t', test_file]
 	division_dir = os.path.join(rundir,format_division(division))
 	os.mkdir(division_dir)
-	division_cmd += ['--divideandconquer', division_dir, hex(division[0]), hex(division[1])]
+	if test_file != "":
+		division_cmd += ['-t', test_file]
 	if(dump):
 		division_cmd += ['--dump']
 		division_cmd += [os.path.join(division_dir)]
 	if(noirq):
 		division_cmd += ['--noirq']
+	division_cmd += ['--divideandconquer', division_dir, hex(division[0]), hex(division[1])]
+	print("divide_controller.py: start_division: command = {}".format(division_cmd))
 	return subprocess.Popen(division_cmd, stdin=open(os.devnull, 'r'), stdout=open(os.path.join(division_dir,'stdout'),'w'), stderr=subprocess.STDOUT, preexec_fn=os.setpgrp), division_dir
 
 def record_pids(rundir, subprocs):
@@ -68,7 +70,7 @@ def restart_division(test_file, rundir, subprocs, divisions, target):
 				dt = datetime.datetime.today()
 				os.rename(sdir, sdir+"_old_{}".format(dt.strftime("%Y-%m-%d_%H:%M:%S_%f")))
 				dump = False
-				subprocs[i] = start_division(test_file, division, rundir)
+				subprocs[i] = start_division(test_file, division, rundir, dump=False, noirq=False)
 			break
 	else:
 		print "Couldn't find that target!"
@@ -235,25 +237,17 @@ if __name__ == '__main__':
 
 	leg.compile()
 
-	division_file = sys.argv[1]
+	# Parse arguments
+	parser = argparse.ArgumentParser(description='Parse input for divide controller')
+	parser.add_argument('div_file')
+	parser.add_argument('-test_file', '-t', default="", help='Use test_file (.bin) to run divide an conquer. Default set to linux')
+	parser.add_argument('--dump', '-d', action='store_true', default=False,
+		help='Dump the qemu state to file for recovery with modelsim. State dumped to the divide and conquer output folder')
+	parser.add_argument('--noirq', action='store_true', default=False, help='Execute tests with IRQ disabled. This can greatly speed up runtime')
+	args = parser.parse_args(sys.argv[1:])
 
-	dump = False
-	noirq = False
-	test_file = ""
+	# Extract divisions from file
+	divs = load_divisions(args.div_file)
 
-	# Parse commands
-	if(len(sys.argv) > 2):
-		if(sys.argv[2] == "--dump"):
-			dump = True
-			test_file = "" 
-		else:
-			test_file = sys.argv[2]
-
-	if(len(sys.argv) > 3):
-		if(sys.argv[3] == "--noirq"):
-			noirq = True
-		
-	#test_file = sys.argv[2] if len(sys.argv) > 2 else ""
-
-	divs = load_divisions(division_file)
-	run_divisions(test_file, divs, dump=dump, noirq=noirq)
+	# Run all divisions
+	run_divisions(args.test_file, divs, dump=args.dump, noirq=args.noirq)

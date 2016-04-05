@@ -298,6 +298,7 @@ LOCKSTEP_BUG_ABORT = 2
 LOCKSTEP_FINISHED = 3
 def lockstep(lsim, qemu_proc, is_linux, goal_pc, ignore_irq):
 
+	print("Ignore_irq = {}".format(ignore_irq))
 	gdb.execute("set mem inaccessible-by-default on")
 	qmon = QemuMonitor(qemu_proc, NON_LOCKSTEP_INTERRUPTS)
 	interrupt_locs = find_interrupt_locs()

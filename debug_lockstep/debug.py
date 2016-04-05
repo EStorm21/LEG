@@ -132,6 +132,7 @@ class LegLockstepCommand (gdb.Command):
 
 	def invoke (self, arg, from_tty):
 		print "Starting lockstep from here"
+		print("debugging: arg = {}, arg == '--noirq' = {}".format(arg, (arg=="--noirq")))
 		try:
 			lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir, ignore_irq=(arg=="--noirq"))
 		except:
@@ -185,6 +186,13 @@ class LegLockstepToGoalCommand (gdb.Command):
 		super (LegLockstepToGoalCommand, self).__init__ ("leg-lockstep-goal", gdb.COMMAND_USER)
 
 	def invoke (self, arg, from_tty):
+		print("debug.py - lockstep_to_goal: arg = {}".format(arg))
+		noirq = False
+		if "--noirq" in arg:
+			arg = arg.replace('--noirq', '')
+			noirq = True
+		print("debug.py - lockstep_to_goal: noirq={}".format(noirq))
+
 		if arg == "":
 			print "Please pass a location"
 		else:
@@ -192,7 +200,7 @@ class LegLockstepToGoalCommand (gdb.Command):
 				print "Starting lockstep from:"
 				gdb.execute("where 20")
 				print "Seeking goal {}, or {}".format(arg, hex(int(arg,0)))
-				reason = lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir, int(arg, 0))
+				reason = lockstep.debugFromHere(False, qemu, TEST_FILE, found_bugs, run_dir, int(arg, 0), ignore_irq=noirq)
 				if reason == lockstep.LOCKSTEP_BUG_RESUMABLE:
 					print "Stopping automatic lockstep (run leg-lockstep-goal again to resume)"
 					break
@@ -570,7 +578,7 @@ atexit.register(cleanup)
 
 setup()
 
-print("Command in debug.py = {}".format(COMMAND))
+print("debug.py COMMAND = {}".format(COMMAND))
 
 if COMMAND[0]=="divideandconquer":		
 	should_cleanup_dir = False
@@ -610,12 +618,23 @@ elif COMMAND[0]=="bugcheckpoint":
 elif COMMAND[0]=="divideandconquer":
 	start_pc = COMMAND[2]
 	goal_pc = COMMAND[3]
+	noirq = False
 	if start_pc != 0:
 		gdb.execute("leg-jump *{}".format(start_pc))
-	if(len(COMMAND)>4): # Dump qemu
-		dumpdir = COMMAND[5]
+	if("--dump" in COMMAND): # Dump qemu
+		print("div and conq dumping")
+		i = COMMAND.index("--dump")
+		dumpdir = COMMAND[i+1]
 		gdb.execute("leg-qemu-full-dump {}".format(dumpdir))	
-	gdb.execute("leg-lockstep-goal {}".format(goal_pc))
+	if("--noirq" in COMMAND):
+		print("div and conq noirq detected")
+		noirq = True
+			
+	# Handle noirq in divide and conquer mode
+	if(noirq):
+		gdb.execute("leg-lockstep-goal {} --noirq".format(goal_pc))
+	else:
+		gdb.execute("leg-lockstep-goal {}".format(goal_pc))
 	gdb.execute("leg-stop")
 else:
 	print ""
