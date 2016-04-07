@@ -1,15 +1,15 @@
 module data_writeback_associative_cache_controller 
   #(parameter lines, parameter bsize, parameter tbits = 14)
-  (input  logic clk, reset, CP15en, W1V, W2V, CurrLRU, W1D, W2D, clean,
+  (input  logic clk, reset, CP15en, W1V, W2V, CurrLRU, W1D, W2D, Clean,
    input  logic IStall, MemWriteM, MemtoRegM, BusReady, PAReady, MSel,
-   input  logic CurrCBit,
+   input  logic CurrCBit, InvAllMid, Inv,
    input  logic [1:0] WordOffset,
    input  logic [3:0] ByteMaskM,
    input  logic [31:0] A,
    input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag, VirtTag, 
    output logic Stall, HWriteM, HRequestM, BlockWE, 
    output logic W1WE, W2WE, W1EN, UseWD, UseCacheA, DirtyIn, WaySel, RDSel,
-   output logic RequestPA, enable,
+   output logic RequestPA, enable, InvAll,
    output logic [1:0] CacheRDSel,
    output logic [2:0] HSizeM,
    output logic [3:0] ActiveByteMask, WDSel, 
@@ -20,8 +20,7 @@ module data_writeback_associative_cache_controller
 );
 
   logic [      tbits-1:0] PrevPTag;
-  logic [$clog2(lines):0] FlushA    ; // Create block address to increment
-  logic                   IncFlush, ResetBlockOff, WDMaskSel, IncCounter;
+  logic                   ResetBlockOff, WDMaskSel, IncCounter;
   logic                   WordAccess, CWE, Hit, W2Hit, W1Hit, TagSel, writeW1;
   logic                   W2EN, Dirty, NoCountD, PrevCBit, CBit, ResetCountMid;
   logic                   HWriteWord;
@@ -31,7 +30,7 @@ module data_writeback_associative_cache_controller
 
   // Writeback cache states
   typedef enum logic[3:0] {READY, MEMREAD, LASTREAD, WRITEBACK, LASTWRITEBACK,
-                           NEXTINSTR, FLUSH, WAIT, DWRITE} statetype;
+                           NEXTINSTR, WAIT, DWRITE} statetype;
   statetype state, nextstate;
 
   // Control Signals
@@ -57,11 +56,11 @@ module data_writeback_associative_cache_controller
     (state == READY) & (nextstate == MEMREAD) & MSel |
     (state == READY) & (nextstate == WRITEBACK) & MSel;
 
-  // ----------------FLUSHING--------------------
-  // Create the flush c ounter (count through all blocks and each way per block)
-  countEn #($clog2(lines)+1) fc(.clk(clk), .reset(reset), .en(IncFlush), .q(FlushA));
-  // Create a mux for the way select signal
-  mux2 #(1) waySelMux(WaySelMid, W1D, clean, WaySel);
+  // ----------------FLUSHING/INVALIDATION--------------------
+  mux2 #(1) waySelMux(WaySelMid, W1D, Clean, WaySel);
+  // Keep Cleaning if way 2 is dirty and we aren't currently Cleaning it
+  assign InvAll = InvAllMid & Inv;
+  assign CleanMore = W2D & (WaySel == 1'b1); 
 
   //----------------ENABLING----------------------
   // Counter Disable Mux
@@ -78,7 +77,7 @@ module data_writeback_associative_cache_controller
 
   //------------HIT, DIRTY, VALID-----------------
   // Create Dirty Signal
-  assign DirtyIn = enable & MemWriteM & ~clean;
+  assign DirtyIn = enable & MemWriteM & ~Clean;
 
   // Create Hit signal 
   assign W1Hit = (W1V & (Tag == W1Tag));
@@ -101,7 +100,7 @@ module data_writeback_associative_cache_controller
   assign W2WE = W2EN & CWE;
 
   // Create Cached Tag
-  mux2 #(1) TagSelMux(W1EN, W1D, clean, TagSel);
+  mux2 #(1) TagSelMux(W1EN, W1D, Clean, TagSel);
   mux2 #(tbits) CachedTagMux(W2Tag, W1Tag, TagSel, CachedTag);
 
   // Dirty Mux
@@ -127,26 +126,24 @@ module data_writeback_associative_cache_controller
   always_ff @(posedge clk, posedge reset)
     if (reset) state <= READY;
     else begin 
-      if(clean) begin // TODO fix cleaning
-        $display("cleaning data cache: warning, cleaning not functional @ %d ps",$time);
-      end
       state <= nextstate;
     end
 
   // next state logic
   always_comb
     case (state)
-      READY:    if (clean) begin
-        nextstate <= FLUSH;
-      end
-      else if ( Hit & ~IStall |
+      READY:    if (Clean & Dirty) begin
+        nextstate <= WRITEBACK;
+      end else if (Clean & ~Dirty) begin
+        nextstate <= NEXTINSTR;
+      end else if ( Hit & ~IStall |
         (~MemWriteM & ~MemtoRegM) |
         ~PAReady & (MemWriteM | MemtoRegM)
       )
       begin
         nextstate <= READY;
       end 
-      else if(~Hit & ~clean & Dirty) begin
+      else if(~Hit & ~Clean & Dirty) begin
         nextstate <= WRITEBACK;
       end 
       else if ( ~enable & MemWriteM ) begin
@@ -155,23 +152,24 @@ module data_writeback_associative_cache_controller
       else if( ~enable & MemtoRegM ) begin
         nextstate <= LASTREAD;
       end
-      else if( IStall & enable & ~clean & Hit ) begin
+      else if( IStall & enable & ~Clean & Hit ) begin
         nextstate <= WAIT;
       end
       else begin
         nextstate <= MEMREAD;
       end
       
-
       // If we have finished writing back four words, start reading from memory
       // If the cache is disabled, then only write one line. (line isn't valid)
-      WRITEBACK: if (clean & (Counter == 3) ) begin
-        nextstate <= FLUSH;
-      end else begin
+      WRITEBACK: 
+      begin
         nextstate <= ( BusReady &  (Counter == 3) ) ? LASTWRITEBACK : WRITEBACK;
       end
-      LASTWRITEBACK: if (clean & BusReady) begin
-        nextstate <= FLUSH;
+      // Make sure to Clean both ways. Cleaning always starts with way 1 if its dirty
+      LASTWRITEBACK: if (Clean & BusReady & CleanMore) begin
+        nextstate <= WRITEBACK;
+      end else if(Clean & BusReady) begin
+        nextstate <= NEXTINSTR;
       end else if(enable) begin
         nextstate <= BusReady ? MEMREAD : LASTWRITEBACK;
       end else if(MemWriteM) begin
@@ -200,18 +198,6 @@ module data_writeback_associative_cache_controller
       NEXTINSTR: nextstate <= IStall ? WAIT : READY;
       WAIT:      nextstate <= IStall ? WAIT : READY;
       DWRITE:    nextstate <= BusReady ? NEXTINSTR : DWRITE;
-      FLUSH:    
-      if ( W1D | W2D ) begin
-        nextstate <= WRITEBACK;
-      end else if( FlushA[$clog2(lines):1] == (lines) ) begin
-        nextstate <= READY;
-      end else begin
-        nextstate <= FLUSH;
-      end
-      default:   begin
-        nextstate <= READY;
-        $display("Hit Default D$ Controller State at time %d", $time);
-      end
     endcase
 
   // output logic
@@ -219,17 +205,16 @@ module data_writeback_associative_cache_controller
     (state == LASTREAD) |
     (state == WRITEBACK) |
     (state == LASTWRITEBACK) |
-    (state == FLUSH) |
     (state == DWRITE) |
     ( (state == READY) &
-      ( clean | (MemtoRegM | MemWriteM) & ~Hit )
+      ( Clean | (MemtoRegM | MemWriteM) & ~Hit )
     );
   assign CWE =  (state == MEMREAD) & BusReady |
     (state == READY) & ( (MemWriteM & Hit) | 
       MemWriteM & ~enable & ~(nextstate ==WRITEBACK) ) |
     (state == LASTREAD) & BusReady;
   assign HWriteM = (state == WRITEBACK) |
-    ((state == READY) & ~Hit & Dirty & ~clean & (MemtoRegM | MemWriteM)) |
+    ((state == READY) & ~Hit & Dirty & ~Clean & (MemtoRegM | MemWriteM)) |
     (nextstate == DWRITE) | 
     (state == DWRITE);
   assign HRequestM = (state == READY) & MemtoRegM & PAReady & ~enable |
@@ -251,8 +236,7 @@ module data_writeback_associative_cache_controller
   assign ResetBlockOff = ((state == READY) & Hit) |
   (state == READY) & ~PAReady |
   (state == NEXTINSTR) |
-  (state == WAIT) |
-  (state == FLUSH);
+  (state == WAIT);
 
   // Select output from Way 1 or Way 2
   assign WaySelMid = enable & W1Hit | 
@@ -283,14 +267,6 @@ module data_writeback_associative_cache_controller
                                           WordOffset, 
                                           NoCountD,
                                           DataWordOffset);
-
-  // -------------Flush controls------------
-  // assign IncFlush = (state == FLUSH) & ~(W1D & W1V) & ~(W2D & W2V);
-  // assign cleanCurr = (state == WRITEBACK | state == LASTWRITEBACK) & BusReady;
-
-  // Flushing MUX
-  // mux2 #($clog2(lines)) BlockNumMux(A[$clog2(lines)-1 + 4:4], 
-  //                  FlushA[$clog2(lines)-1:0], clean, BlockNum);
   assign BlockNum = A[$clog2(lines)-1+4:4];
 
   // ----------------MMU-------------------

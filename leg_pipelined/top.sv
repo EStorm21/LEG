@@ -50,7 +50,7 @@ module top (
   logic [31:0] CPUWriteData, MMUWriteData;
   logic [2:0]  CoProc_Op2M;
   logic [3:0]  CoProc_CRmM;
-  logic        StallCP, INVI, INVD, CleanI, CleanD, TLBFlushD, TLBFlushI,
+  logic        StallCP, INVI, INVD, InvAll, CleanI, CleanD, TLBFlushD, TLBFlushI,
     StallD, FlushD, FlushE;
   logic [31:0] CP15rd_M, control, FullTBase, DummyTBase, controlDummy;
 
@@ -125,6 +125,7 @@ module top (
     .StallCP     (StallCP     ),
     .INVI        (INVI        ),
     .INVD        (INVD        ),
+    .InvAll      (InvAll      ),
     .CleanI      (CleanI      ),
     .CleanD      (CleanD      ),
     .TLBFlushD   (TLBFlushD   ),
@@ -133,86 +134,69 @@ module top (
     .control     (control     ),
     .tbase       (FullTBase   )
   );
-  // .TLBFlushI(TLBFlushI), .rd(CP15rd_M), .control(controlDummy), .tbase(DummyTBase));
 
-  //`define DISABLETARB 1
-
-  `ifdef DISABLETARB
-    initial
-      $display("TARB is disabled. See top.sv");
-
-    mux2 #(tbits) dTagMux(DataAdrM[31:31-tbits+1], PhysTag, MMUEn, dPhysTag);
-    mux2 #(tbits) iTagMux(PCF[31:31-tbits+1], PhysTag, MMUEn, iPhysTag);
-  `else 
-    assign iPhysTag = PhysTag;
-    assign dPhysTag = PhysTag;
-  `endif
+  assign iPhysTag = PhysTag;
+  assign dPhysTag = PhysTag;
 
   parameter iLines = 64;   // Number of lines in I$
   parameter ibsize = 4; // bsize of the I$
   // I$
   instr_cache #(ibsize,iLines) instr_cache (
-    .clk       (clk      ),
-    .reset     (reset    ),
-    .CP15en    (ENI),
-    .uOpStallD  (uOpStallD),
-    .invalidate(INVI     ),
-    .BusReady  (HReadyF  ),
-    .A         (PCF      ),
-    .HRData    (HRData   ),
-    .RD        (InstrF   ),
-    .PhysTag   (iPhysTag ),
-    .PAReadyF  (PAReadyF ),
-    .FSel      (FSel     ),
-    .IStall    (IStall   ),
-    .HAddrF    (HAddrF   ),
-    .RequestPA (RequestPAF),
-    .HRequestF (HRequestF)
+    .clk      (clk       ),
+    .reset    (reset     ),
+    .CP15en   (ENI       ),
+    .uOpStallD(uOpStallD ),
+    .Inv      (INVI      ),
+    .InvAllMid(InvAll    ),
+    .BusReady (HReadyF   ),
+    .A        (PCF       ),
+    .HRData   (HRData    ),
+    .RD       (InstrF    ),
+    .PhysTag  (iPhysTag  ),
+    .PAReadyF (PAReadyF  ),
+    .FSel     (FSel      ),
+    .IStall   (IStall    ),
+    .HAddrF   (HAddrF    ),
+    .RequestPA(RequestPAF),
+    .HRequestF(HRequestF )
   );
 
   parameter dLines = 64;   // Number of lines in D$
   parameter dbsize = 4;     // block size of the D$
 
-
-
   // D$
   data_writeback_associative_cache #(dbsize,dLines) data_cache (
-    .clk       (clk       ),
-    .reset     (reset     ),
-    .CP15en    (END),
-    .CurrCBit  (CurrCBit),
-    .invalidate(INVD      ),
-    .clean     (CLEAND    ),
-    .PAReady   (PAReadyM  ),
-    .MSel      (MSel      ),
-    .ANew      (DANew     ),
-    .RequestPA (RequestPAM),
-    // .clean(CLEAND),
-    .MemWriteM (MemWriteM ),
-    .MemtoRegM (MemtoRegM ),
-    .BusReady  (HReadyM   ),
-    .IStall    (IStall    ),
-    .PhysTag   (dPhysTag  ),
-    .VirtA     (DataAdrM  ),
-    .WD        (WriteDataM),
-    .HRData    (HRData    ),
-    .ByteMaskM (ByteMaskM ),
-    .HWData    (HWDataM   ),
-    .RD        (ReadDataM ),
-    .HAddr     (HAddrM    ),
-    .Stall     (DStall    ),
-    .HRequestM (HRequestM ),
-    .HSizeM    (HSizeM),
-    .HWriteM   (HWriteM   )
+    .clk      (clk       ),
+    .reset    (reset     ),
+    .CP15en   (END       ),
+    .CurrCBit (CurrCBit  ),
+    .Inv      (INVD      ),
+    .InvAllMid(InvAll    ),
+    .Clean    (CLEAND    ),
+    .PAReady  (PAReadyM  ),
+    .MSel     (MSel      ),
+    .ANew     (DANew     ),
+    .RequestPA(RequestPAM),
+    .MemWriteM(MemWriteM ),
+    .MemtoRegM(MemtoRegM ),
+    .BusReady (HReadyM   ),
+    .IStall   (IStall    ),
+    .PhysTag  (dPhysTag  ),
+    .VirtA    (DataAdrM  ),
+    .WD       (WriteDataM),
+    .HRData   (HRData    ),
+    .ByteMaskM(ByteMaskM ),
+    .HWData   (HWDataM   ),
+    .RD       (ReadDataM ),
+    .HAddr    (HAddrM    ),
+    .Stall    (DStall    ),
+    .HRequestM(HRequestM ),
+    .HSizeM   (HSizeM    ),
+    .HWriteM  (HWriteM   )
   );
 
   ahb_arbiter_3way ahb_arb(.*);
-
-  `ifdef DISABLETARB
-  tlb_arbiter_dis tarb(.*);
-  `else 
   tlb_arbiter tarb(.*);
-  `endif
 
   // Create an ahb memory
   // TODO: Partition into on chip and off chip
@@ -238,6 +222,6 @@ module top (
   assign DataAccess = 1'b1;   // Trying to access data memory, not instruction memory
   assign CPSR4      = 1'b1;
   assign TBase     = FullTBase[31:14];
-  assign MMUExtInt = 1'b0;          // No External Interrupt
+  assign MMUExtInt = 1'b0;          // No MMU External Interrupt
 
 endmodule

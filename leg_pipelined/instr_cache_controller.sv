@@ -4,11 +4,11 @@
 
 module instr_cache_controller #(parameter tbits = 14) (
   input  logic             clk, reset, CP15en, PAReadyF, W1V, W2V, CurrLRU, BusReady,
-  input  logic             FSel, uOpStallD,
+  input  logic             FSel, uOpStallD, Inv, InvAllMid,
   input  logic [      1:0] WordOffset   ,
   input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag,
   output logic [      1:0] Counter      ,
-  output logic             W1WE, W2WE, WaySel, 
+  output logic             W1WE, W2WE, WaySel, InvAll,
   output logic             IStall, ResetBlockOff, HRequestF, RequestPA,
   output logic [tbits-1:0] Tag,
   output logic [      1:0] AddrWordOffset,
@@ -20,6 +20,7 @@ module instr_cache_controller #(parameter tbits = 14) (
   logic [      1:0] CounterMid, DataCounter, WayWordOffset;
 
   assign enable = CP15en;
+  assign InvAll = InvAllMid & Inv;
   
   // FSM States
   typedef enum logic [1:0] {READY, MEMREAD, LASTREAD, NEXTINSTR} statetype;

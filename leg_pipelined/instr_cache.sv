@@ -9,7 +9,7 @@ module instr_cache #(
     parameter blockbits = $clog2(bsize),
     parameter tbits = 30-blockbits-setbits
 ) (
-    input  logic             clk, reset, CP15en, BusReady, invalidate,
+    input  logic             clk, reset, CP15en, BusReady, InvAllMid, Inv,
     input  logic             PAReadyF, FSel, uOpStallD,
     input  logic [     31:0] A       ,
     input  logic [tbits-1:0] PhysTag , 
@@ -38,7 +38,6 @@ module instr_cache #(
 
     // Disable writeback behavior (read only cache)
     assign DirtyIn        = 1'b0;   
-    // assign cleanCurr      = 1'b0;   
     assign ActiveByteMask = 4'b1111;
 
     data_writeback_associative_cache_memory #(lines,tbits,bsize) icm (
@@ -48,8 +47,7 @@ module instr_cache #(
         .W2WE          (W2WE          ),
         .DirtyIn       (DirtyIn       ),
         .vin           (vin           ),
-        // .cleanCurr     (cleanCurr     ),
-        .invalidate    (invalidate    ),
+        .InvAll        (InvAll    ),
         .CacheWD       (CacheWD       ),
         .ANew          (ANew          ),
         .PhysTag       (PhysTag       ),

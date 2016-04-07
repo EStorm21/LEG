@@ -141,8 +141,8 @@ module testbench();
                            NEXTINSTR, FLUSH, WAIT, DWRITE} statetype;
   statetype state, nextstate;
   
-  logic [31:0] watchdata[$] = {32'h0000dcd5, 32'h0032dcd5};
-  logic [31:0] watchmem [1] = {32'hbefffae8};
+  logic [31:0] watchdata[$] = {32'hc000db60};
+  logic [31:0] watchmem [1] = {32'hcf83def8};
   logic [29:0] watchmemword [$size(watchmem)];
   logic [7:0] watchset [$size(watchmem)];
   always_comb
@@ -222,6 +222,17 @@ module testbench();
   end
   `endif
   // END MEMORY DEBUGGING
+
+  // BEGIN CLEAN AND FLUSH DEBUGGING
+  // `define CACHEDBG 0
+  `ifdef CACHEDBG 
+  always @(negedge clk) begin
+    if(dut.data_cache.dcc.Clean) begin
+      $display("cleaning D$ line DataAdrM:%h PCM:%h @ %d ps", dut.DataAdrM, dut.leg.dp.PCM, $time);
+    end
+  end
+  `endif
+  // END CLEAN AND FLUSH DEBUGGING
 
   // initialize test
   initial

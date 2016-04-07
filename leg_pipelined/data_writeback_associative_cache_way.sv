@@ -1,7 +1,7 @@
 module data_writeback_associative_cache_way 
     #(parameter lines = 65536, parameter tbits = 14, 
       parameter bsize = 4)
-    (input logic clk, reset, WE, DirtyIn, vin, invalidate, 
+    (input logic clk, reset, WE, DirtyIn, vin, InvAll, 
      input logic [31:0] WD, 
      input logic [31:0] A, // TODO: Make a capitalized
      input logic [tbits-1:0] PhysTag,
@@ -40,7 +40,7 @@ module data_writeback_associative_cache_way
 
   // Write to the cache
   always_ff @(posedge clk, posedge reset)
-    if (reset | invalidate) begin
+    if (reset | InvAll) begin
       v         <= 'b0;
       DirtyBits <= 'b0;
     end else if (WE) begin

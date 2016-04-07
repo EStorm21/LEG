@@ -9,8 +9,7 @@ module data_writeback_associative_cache #(
     parameter tbits = 30-blockbits-setbits
 ) (
     input  logic             clk, reset, CP15en, MemWriteM, MemtoRegM,
-    BusReady, IStall, invalidate, clean, PAReady, MSel, CurrCBit,
-    // BusReady, IStall, invalidate, clean,
+    BusReady, IStall, InvAllMid, Inv, Clean, PAReady, MSel, CurrCBit,
     input  logic [     31:0] VirtA, WD,
     input  logic [     31:0] HRData  ,
     input  logic [      3:0] ByteMaskM,
@@ -37,7 +36,7 @@ module data_writeback_associative_cache #(
     logic [setbits-1:0] set       ;
     logic [  tbits-1:0] VirtTag   ;
     logic [        1:0] WordOffset, CacheRDSel;
-    logic enable;
+    logic enable, InvAll;
 
     // Output Control logic
     logic CurrLRU, UseCacheA, WaySel, RDSel;
