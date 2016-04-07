@@ -1,0 +1,59 @@
+Setup
+    Installation
+    Configuration
+
+Using the Testing Framework
+    Relevant Files
+    Basic Operation on Provided Tests
+    Creating Tests
+    Running Tests
+    Debugging Tools
+
+Detailed Simulator Operation
+    Relevant Files
+    debug_lockstep
+    interrupt testing
+    etc
+
+LEG Processor Overview
+    Instruction set
+    Unsupported operations
+    Core and memory integration
+    Interrupt handlers
+
+Datapath
+    Files
+    Fetch
+    Decode
+    Execute
+    Memory
+    Writeback
+
+Controller
+    Files
+    Decode
+    CPSR & Flags
+    MicroOp State Machine
+
+Hazard Unit
+    Files
+    Stalls
+    Flushes
+
+Interrrupt Handler
+    Files
+    State machine
+        integration to rest of system
+    Behavior for each exception and interrupt type
+
+QEMU
+get source from git
+in qemu directory do 
+git checkout -b leg-additions v2.4.0
+git am path/to/LEG/qemu_patches/*
+install c++ compiler
+install libtools
+install zlib1g-dev
+install libglib2.0-dev
+install libpixman-1-dev
+install libfdt-dev

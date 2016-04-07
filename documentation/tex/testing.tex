@@ -1,6 +1,37 @@
-\section{Testing}
 This section describes the procedure for generating and running tests. 
 
+% TODO: Fill out these sections
+\subsection{Relevant Files}
+
+\subsection{Basic Operation on Provided Tests}
+This section demonstrates the most basic operation of the testing framework.
+It will allow you to run a test from the terminal and debug in gdb at a register level.
+\begin{enumerate}
+\item From your local copy of the LEG repository, enter the \texttt{debug\_lockstep} directory.
+\item Provided tests are stored in the \texttt{unitTests} directory. 
+ To run a provided test, type 
+ \begin{verbatim}./debug.sh -t unitTests/testname.bin\end{verbatim}
+ at the terminal. For example, to run the test consisting of 1000 random adc instructions, enter 
+ \begin{verbatim}./debug.sh -t unitTests/adc_1000.bin\end{verbatim}
+\item LEG will now be compiled by ModelSim and instances of QEMU and gdb will be started.
+ If there are no compilation errors, you will be at the prompt of gdb modified with LEG-specific debugging commands.
+ The most basic command is \texttt{leg-lockstep}, which runs LEG until a bug is found.
+ Enter this now.
+\item The test will print a `\texttt{.}' after each successfully executed instruction.
+ If the program completes successfully, a \texttt{PASSED} message will appear.
+ Otherwise debugging information will be printed, including the last correct register state, the current incorrect LEG register state, and the expected register state.
+\item Type \texttt{q} to exit gdb.
+\end{enumerate}
+
+\subsection{Creating Tests}
+
+\subsection{Running Tests}
+
+\subsection{Debugging Tools}
+
+END
+
+% Out of date
 \subsection{Relevant Files}
 \begin{itemize}
 \item \textbf{makeQemuTest.sh} Creates testing files from an assembly source. Results are derived from QEMU. 
