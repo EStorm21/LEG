@@ -1,11 +1,11 @@
-From ef4a243b545f49f1a7d09a6ec327ab60aed6a770 Mon Sep 17 00:00:00 2001
+From f2489eb9a08822fa2644c3a7c86a37c4299c3b70 Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Mon, 30 Nov 2015 18:56:16 -0800
-Subject: [PATCH 10/11] Make initial value be 0
+Subject: [PATCH 10/12] Make initial value be 0
 
 ---
- target-arm/translate.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ target-arm/translate.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/target-arm/translate.c b/target-arm/translate.c
 index 18226fb..c0f0b59 100644
@@ -21,5 +21,5 @@ index 18226fb..c0f0b59 100644
      int prot;
      target_ulong page_size;
 -- 
-1.7.1
+1.9.1
 

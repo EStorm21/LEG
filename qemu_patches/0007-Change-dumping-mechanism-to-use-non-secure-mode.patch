@@ -1,11 +1,11 @@
-From 599032d09f090127b756ea440a56110f617aa317 Mon Sep 17 00:00:00 2001
+From 6542f25de462c8ce0ce232274bb24cbac25b5a28 Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Thu, 5 Nov 2015 18:18:56 -0800
-Subject: [PATCH 07/11] Change dumping mechanism to use non-secure mode
+Subject: [PATCH 07/12] Change dumping mechanism to use non-secure mode
 
 ---
- target-arm/translate.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ target-arm/translate.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
 diff --git a/target-arm/translate.c b/target-arm/translate.c
 index 5038ae5..61ce88e 100644
@@ -26,5 +26,5 @@ index 5038ae5..61ce88e 100644
  
  void arm_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
 -- 
-1.7.1
+1.9.1
 

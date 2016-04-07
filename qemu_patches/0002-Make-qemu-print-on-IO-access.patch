@@ -1,11 +1,11 @@
-From 937346f2bb17baaba5d1d3b3a3071955c4c3563f Mon Sep 17 00:00:00 2001
+From 0a940c326b61fd086ef9eab8a40cfe75c1e11c40 Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Sun, 4 Oct 2015 14:13:00 -0700
-Subject: [PATCH 02/11] Make qemu print on IO access
+Subject: [PATCH 02/12] Make qemu print on IO access
 
 ---
- memory.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ memory.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/memory.c b/memory.c
 index 4eb138a..94870e6 100644
@@ -28,5 +28,5 @@ index 4eb138a..94870e6 100644
  }
  
 -- 
-1.7.1
+1.9.1
 
