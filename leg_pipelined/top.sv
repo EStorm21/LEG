@@ -103,7 +103,7 @@ module top (
   `ifdef ECACHES
     assign ENI = control[12];
     assign END    = control[2];
-    assign CLEAND = 1'b0;
+    assign CLEAND = CleanD;
   `else
     assign ENI    = 1'b0;
     assign END    = 1'b0;

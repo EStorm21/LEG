@@ -6,7 +6,7 @@ module data_writeback_associative_cache_memory #(
   parameter lines = 65536, parameter tbits = 14,
   parameter bsize = 4
 ) (
-  input  logic             clk, reset, W1WE, W2WE, DirtyIn, vin, cleanCurr, invalidate,
+  input  logic             clk, reset, W1WE, W2WE, DirtyIn, vin, invalidate,
   input  logic [     31:0] CacheWD, ANew ,
   input  logic [tbits-1:0] PhysTag       ,
   input  logic [      3:0] ActiveByteMask,
@@ -35,14 +35,14 @@ assign CurrLRU = LRU[set]; // Send the current LRU bit to the output
 // Way 1
 data_writeback_associative_cache_way #(lines, tbits, bsize) way1(
   .clk(clk), .reset(reset), .invalidate(invalidate), .WD(CacheWD), .A(ANew), 
-  .WE(W1WE), .DirtyIn(DirtyIn), .cleanCurr(cleanCurr), .PhysTag   (PhysTag),
+  .WE(W1WE), .DirtyIn(DirtyIn), .PhysTag   (PhysTag),
   .ByteMask(ActiveByteMask), .RV(W1V), .Dirty(W1D), .RTag(W1Tag), .RD(W1BlockOut),
   .vin(vin));
 
 // Way 2
 data_writeback_associative_cache_way #(lines, tbits, bsize) way2(
    .clk(clk), .reset(reset), .invalidate(invalidate), .WD(CacheWD), .A(ANew), 
-   .WE(W2WE), .DirtyIn(DirtyIn), .cleanCurr(cleanCurr), .PhysTag   (PhysTag),
+   .WE(W2WE), .DirtyIn(DirtyIn), .PhysTag   (PhysTag),
    .ByteMask(ActiveByteMask), .RV(W2V), .Dirty(W2D), .RTag(W2Tag), .RD(W2BlockOut),
    .vin(vin));
 

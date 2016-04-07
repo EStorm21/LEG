@@ -9,7 +9,7 @@ module data_writeback_associative_cache_controller
    input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag, VirtTag, 
    output logic Stall, HWriteM, HRequestM, BlockWE, 
    output logic W1WE, W2WE, W1EN, UseWD, UseCacheA, DirtyIn, WaySel, RDSel,
-   output logic cleanCurr, RequestPA, enable,
+   output logic RequestPA, enable,
    output logic [1:0] CacheRDSel,
    output logic [2:0] HSizeM,
    output logic [3:0] ActiveByteMask, WDSel, 
@@ -285,12 +285,13 @@ module data_writeback_associative_cache_controller
                                           DataWordOffset);
 
   // -------------Flush controls------------
-  assign IncFlush = (state == FLUSH) & ~(W1D & W1V) & ~(W2D & W2V);
-  assign cleanCurr = (state == WRITEBACK | state == LASTWRITEBACK) & BusReady;
+  // assign IncFlush = (state == FLUSH) & ~(W1D & W1V) & ~(W2D & W2V);
+  // assign cleanCurr = (state == WRITEBACK | state == LASTWRITEBACK) & BusReady;
 
   // Flushing MUX
-  mux2 #($clog2(lines)) BlockNumMux(A[$clog2(lines)-1 + 4:4], 
-                   FlushA[$clog2(lines)-1:0], clean, BlockNum);
+  // mux2 #($clog2(lines)) BlockNumMux(A[$clog2(lines)-1 + 4:4], 
+  //                  FlushA[$clog2(lines)-1:0], clean, BlockNum);
+  assign BlockNum = A[$clog2(lines)-1+4:4];
 
   // ----------------MMU-------------------
   assign RequestPA = (state == READY) & (MemtoRegM | MemWriteM) 

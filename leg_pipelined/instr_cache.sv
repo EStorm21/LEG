@@ -38,7 +38,7 @@ module instr_cache #(
 
     // Disable writeback behavior (read only cache)
     assign DirtyIn        = 1'b0;   
-    assign cleanCurr      = 1'b0;   
+    // assign cleanCurr      = 1'b0;   
     assign ActiveByteMask = 4'b1111;
 
     data_writeback_associative_cache_memory #(lines,tbits,bsize) icm (
@@ -48,7 +48,7 @@ module instr_cache #(
         .W2WE          (W2WE          ),
         .DirtyIn       (DirtyIn       ),
         .vin           (vin           ),
-        .cleanCurr     (cleanCurr     ),
+        // .cleanCurr     (cleanCurr     ),
         .invalidate    (invalidate    ),
         .CacheWD       (CacheWD       ),
         .ANew          (ANew          ),

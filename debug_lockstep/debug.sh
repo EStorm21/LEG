@@ -56,7 +56,7 @@ case $key in
 	echo "Usage:"
 	echo "  -t TEST, --test TEST             Load a test (.bin) from the given path"
 	echo "  -a, --auto                       Automatically run the test noninteractively"
-	echo "  -dump, --dump [file]			 Dump qemu state to file for loading in modelsim"
+	echo "  --dump, --dump [file]			 Dump qemu state to file for loading in modelsim"
 	echo "  --noirq 						 Run test with IRQ interrupts disabled"
 	# Hidden option:
 	# echo "  --bugcheckpoint BUGFILE DEST   Automatically create a checkpoint for BUGFILE."
