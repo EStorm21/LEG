@@ -50,10 +50,11 @@ QEMU
 get source from git
 in qemu directory do 
 git checkout -b leg-additions v2.4.0
-git am path/to/LEG/qemu_patches/*
+git am path/to/LEG/qemu_patches/*.patch
 install c++ compiler
 install libtools
 install zlib1g-dev
 install libglib2.0-dev
 install libpixman-1-dev
 install libfdt-dev
+sudo make
