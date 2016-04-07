@@ -1,11 +1,11 @@
-From 9fba9b68664de7758748f3cb09818c05fe20ca40 Mon Sep 17 00:00:00 2001
+From e11aafeb2f6494613d6b6e979255e0bb2ab9a6d1 Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Sun, 25 Oct 2015 15:38:07 -0700
-Subject: [PATCH 06/11] Prevent from dying when read bad offsets
+Subject: [PATCH 06/12] Prevent from dying when read bad offsets
 
 ---
- hw/arm/integratorcp.c |   11 ++++++-----
- 1 files changed, 6 insertions(+), 5 deletions(-)
+ hw/arm/integratorcp.c | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
 diff --git a/hw/arm/integratorcp.c b/hw/arm/integratorcp.c
 index 0fbbf99..4f120ef 100644
@@ -58,5 +58,5 @@ index 0fbbf99..4f120ef 100644
  }
  
 -- 
-1.7.1
+1.9.1
 

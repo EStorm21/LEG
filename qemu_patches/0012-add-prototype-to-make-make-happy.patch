@@ -1,0 +1,36 @@
+From f1c74a8cfdee2669ae5dedd0072086b93b4c06e8 Mon Sep 17 00:00:00 2001
+From: Sam Dietrich <sdietrich@hmc.edu>
+Date: Thu, 7 Apr 2016 14:10:26 -0700
+Subject: [PATCH 12/12] add prototype to make make happy
+
+---
+ target-arm/translate.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/target-arm/translate.c b/target-arm/translate.c
+index fc5025f..a9a3087 100644
+--- a/target-arm/translate.c
++++ b/target-arm/translate.c
+@@ -11531,6 +11531,7 @@ unsigned int get_register_in_mode(CPUARMState *env, int mode, int i);
+ unsigned int get_spsr_in_mode(CPUARMState *env, int mode);
+ unsigned int get_coprocessor_reg(ARMCPU *cpu, int crn);
+ hwaddr virt_to_phys(CPUState *cs, target_ulong virt_addr);
++unsigned int get_coprocessor_reg_full(CPUState *cs, int crn, int crm, int opc1, int opc2);
+ 
+ unsigned int get_register_in_mode(CPUARMState *env, int mode, int i) {
+     int cur_mode;
+@@ -11612,9 +11613,9 @@ void arm_cpu_dump_state(CPUState *cs, FILE *f, fprintf_function cpu_fprintf,
+     uint32_t psr;
+ 
+     if (flags & CPU_DUMP_ARM_ALLSTORED) {
+-        int cur_mode;
++        //int cur_mode;
+ 
+-        cur_mode = env->uncached_cpsr & CPSR_M;
++        //cur_mode = env->uncached_cpsr & CPSR_M;
+ 
+         // PC
+         cpu_fprintf(f, "32'h%08x\n", (unsigned int)get_register_in_mode(env, -1, 15));
+-- 
+1.9.1
+

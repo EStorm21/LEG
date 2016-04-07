@@ -1,11 +1,11 @@
-From baf4c62daa6027eba953a9ec001181f12e0d0d15 Mon Sep 17 00:00:00 2001
+From 0de536475fbc301de19f66cd7e4cbaf036f7ea98 Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Sun, 13 Sep 2015 15:44:00 -0700
-Subject: [PATCH 01/11] Add qemu.irqpending query to qemu gdb server stub
+Subject: [PATCH 01/12] Add qemu.irqpending query to qemu gdb server stub
 
 ---
- gdbstub.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ gdbstub.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
 diff --git a/gdbstub.c b/gdbstub.c
 index ffe7e6e..ee07674 100644
@@ -26,5 +26,5 @@ index ffe7e6e..ee07674 100644
              /* "Current thread" remains vague in the spec, so always return
               *  the first CPU (gdb returns the first thread). */
 -- 
-1.7.1
+1.9.1
 
