@@ -8,10 +8,20 @@ Several programs must be installed to use the full LEG debugger.
 However, only the LEG repository must be downloaded if you are simply interested in examining the source files.
 
 \begin{enumerate}
-\item Install git if it is not already installed, and clone the LEG git repository from \url{https://github.com/EStorm21/LEG.git}
-\item Install the free Starter Edition of ModelSim from \url{http://dl.altera.com} or any version of ModelSim you may already have purchased. Note that in Starter Edition performance will be reduced and some features such as checkpoints will be unavailable. LEG has been tested on ModelSim version SE 10.3d. 
-\item Ensure that GDB is installed on your system. Download it from \url{https://www.gnu.org/software/gdb/download/} or through your package manager.
-\item Install QEMU from \url{http://wiki.qemu.org/Download}. (or from package manager?)
+\item Install python 2.7
+\item Install git and clone the LEG git repository from \url{https://github.com/EStorm21/LEG.git}. The next installation steps only need to be one once per machine you are installing the LEG debugging system on.
+\item Install the free Starter Edition of ModelSim from \url{http://dl.altera.com} or any version of ModelSim you may already have purchased. 
+Note that in Starter Edition performance will be reduced and some minor features such as checkpoints will be unavailable. 
+LEG has been tested on ModelSim version SE 10.3d. 
+\item Install GDB for bare metal ARM systems using, for example, \\\texttt{apt-get install gdb-arm-none-eabi}
+\item The QEMU system emulator must be downloaded and installed from source. 
+\textbf{NOTE}: The patches required for LEG will possibly break every QEMU system except qemu-system-arm. 
+	\begin{enumerate}
+	\item Clone the QEMU source into a directory accessible to LEG users: \\\texttt{git clone git://git.qemu-project.org/qemu.git}
+	\item From this QEMU directory, run the following commands: \\\texttt{git checkout -b leg-additions v2.4.0 \\ git am legpath/qemu\_patches/*.patch}
+	
+	where legpath is the path to your LEG installation.
+	\end{enumerate}
 \item Modify configuration files to point to your installation of stuff?
 \end{enumerate}
 

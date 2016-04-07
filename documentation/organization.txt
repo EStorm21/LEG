@@ -58,3 +58,12 @@ install libglib2.0-dev
 install libpixman-1-dev
 install libfdt-dev
 sudo make
+
+GDB
+download tar from https://launchpad.net/gcc-arm-embedded, put in legproj
+run tar xjf gcc-arm-none-eabi-*-yyyymmdd-linux.tar.bz2
+install libpython2.7:i386
+install lib32ncurses5
+install g++
+
+Current: Modelsim problems
