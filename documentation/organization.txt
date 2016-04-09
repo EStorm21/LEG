@@ -66,4 +66,13 @@ install libpython2.7:i386
 install lib32ncurses5
 install g++
 
-Current: Modelsim problems
+Modelsim
+cd altera/15.1/modelsim_ase/linuxaloem
+install libxft2:i386
+install libxext6:i386
+add to bashrc export PATH="/path/to/mslinuxaloem:$PATH"
+
+config
+remove vopt in leg.py:184 and lockstep.tcl"for starter editions of modelsim
+change work.testbench_opt to work.testbench in qemuDumpRestore.tcl:17
+change qemu_cmd in debug.py:88 to qemu location
