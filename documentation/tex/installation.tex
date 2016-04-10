@@ -68,8 +68,17 @@ These steps will get you there.
 These are most likely found in the \texttt{modelsim\_ase/linuxaloem} directory of your ModelSim installation.
 For example, using the path name and ModelSim version referenced in the previous section, we would edit our \texttt{.bashrc} file and add the following line: \\\texttt{export PATH="/legproj/altera/15.1/modelsim\_ase/linuxaloem:\$PATH"}
 
-\item Navigate to \texttt{leg/repo/path/debug\_lockstep} and modify the file \texttt{config\-uration.py}.
-FORMALLY ADD THIS STUFF: change qemu\_cmd in debug.py:88 to qemu location. remove vopt in leg.py:184 and lockstep.tcl. change work.testbench\_opt to work.testbench in qemuDumpRestore.tcl:17. Find out why compile doesn't work.
+\item Navigate to \texttt{leg/repo/path/debug\_lockstep} and modify the file \texttt{config\-uration.py} with the following. 
+Examples are included in the file.
+	\begin{enumerate}
+		\item set \texttt{qemu\_path} to the path to \texttt{qemu\_system\_arm}
+		\item set \texttt{gdb\_path} to the path to \texttt{arm-none-eabi-gdb-py}
+		\item set \texttt{hasVopt} to 0 if you are using ModelSim SE, or 1 if you have a version of ModelSim with vopt.
+	\end{enumerate}
+
+NOTES: For some reason compiling LEG doesn't happen, even though the vlog command is being run. 
+You will need to run the commands in leg.py:compile() manually before running debug.sh.
+You will also need to uncomment the correct lines in debug.sh to work on the clean systems. 
 \end{enumerate}
 
 
