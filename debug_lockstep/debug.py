@@ -35,6 +35,8 @@ import qemuDump
 import leg
 import bin_bugsearch
 
+from configuration import qemu_path
+
 OUTPUT_DIR = "output"
 
 def setup():
@@ -79,7 +81,7 @@ qemuSerialParser = re.compile('char device redirected to ([^ ]+) \(label .+')
 def initialize_qemu():
 	openport = get_open_port()
 
-	qemu_cmd = ['/proj/leg/debugutils/qemu/arm-softmmu/qemu-system-arm', '-M', 'integratorcp', '-m', '256M', '-nographic', '-serial', 'pty', '-icount', '0', '-S', '-gdb', 'tcp::{}'.format(openport)]
+	qemu_cmd = [qemu_path, '-M', 'integratorcp', '-m', '256M', '-nographic', '-serial', 'pty', '-icount', '0', '-S', '-gdb', 'tcp::{}'.format(openport)]
 	
 	if TEST_FILE is "":
 		qemu_cmd += ['-kernel', '/proj/leg/kernel/system.bin']

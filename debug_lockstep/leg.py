@@ -5,6 +5,7 @@ import shutil
 import time
 import select
 import re
+from configuration import hasVopt
 
 validStateMatcher = re.compile("[0-9a-f]{8}")
 def parseVal(val):
@@ -181,4 +182,5 @@ def compile():
 	if not os.path.isdir('../sim/work'):
 		subprocess.call(['vlib','../sim/work'])
 	subprocess.call(['vlog','+acc','../leg_pipelined/*.sv'], cwd='../sim')
-	subprocess.call(['vopt','work.testbench', '-o', 'testbench_opt'], cwd='../sim')
+	if hasVopt==1:
+		subprocess.call(['vopt','work.testbench', '-o', 'testbench_opt'], cwd='../sim')

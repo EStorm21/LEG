@@ -11,7 +11,7 @@ However, only the LEG repository must be downloaded if you are simply interested
 \item Install git and clone the LEG git repository from \url{www.puturlhere.com}. 
 The next installation steps only need to be one once per machine you are installing the LEG debugging system on.
 
-\item We needed to install the packages listed below to run the debugging framework on our 64 bit system.
+\item Install packages required for the debugging tools. We needed to install the packages listed below to run the debugging framework on our 64-bit system, but your requirements may vary.
 They can be installed using your package manager.
 
 \begin{tabular}{|l|l|}
@@ -31,7 +31,7 @@ python (2.7)& debug\_lockstep \\\hline
 \end{tabular}
 
 \item Choose a path on your system to install the required debugging tools. 
-Be sure that this path is accessible to everyone who will be using LEG on your system.
+Be sure that this path is readable by everyone who will be using LEG on your system.
 Throughout the examples in this guide, the path will be \texttt{/legproj/}
 
 \item Install the free Starter Edition of ModelSim from \url{http://dl.altera.com} or any version of ModelSim you may already have purchased. 
@@ -43,7 +43,7 @@ For example, \\\texttt{/legproj/gcc-arm-none-eabi-5\_3-2016q1}.\\
 Instructions for this are provided in the readme available at the same website.
 
 \item The QEMU system emulator must be downloaded and installed from source. 
-\textbf{NOTE}: The patches required for LEG will possibly break every QEMU system except qemu-system-arm. 
+\textbf{NOTE}: The patches required for LEG will possibly break every QEMU system except \texttt{qemu-system-arm}. 
 To keep this guide simple the default QEMU build process is used. 
 You can safely remove systems other than \texttt{arm-softmmu}.
 	\begin{enumerate}
@@ -68,7 +68,7 @@ These steps will get you there.
 These are most likely found in the \texttt{modelsim\_ase/linuxaloem} directory of your ModelSim installation.
 For example, using the path name and ModelSim version referenced in the previous section, we would edit our \texttt{.bashrc} file and add the following line: \\\texttt{export PATH="/legproj/altera/15.1/modelsim\_ase/linuxaloem:\$PATH"}
 
-\item Navigate to \texttt{leg/repo/path/debug\_lockstep} and modify the file \texttt{options.cfg}.
+\item Navigate to \texttt{leg/repo/path/debug\_lockstep} and modify the file \texttt{config\-uration.py}.
 FORMALLY ADD THIS STUFF: change qemu\_cmd in debug.py:88 to qemu location. remove vopt in leg.py:184 and lockstep.tcl. change work.testbench\_opt to work.testbench in qemuDumpRestore.tcl:17. Find out why compile doesn't work.
 \end{enumerate}
 

@@ -13,8 +13,19 @@ set dumpStateFile $dumpDir$dumpStateName
 set ignoredLogName "wlffile.wlf"
 set ignoredLogFile $dumpDir$ignoredLogName
 
+# Read vopt configuration variable
+set cfg "configuration.py"
+set fp [open $cfg r]; list
+set file_data [read $fp]; list
+close $fp
+regexp {hasVopt=([01])} $file_data -> hasVopt
+
 # file copy -force $dumpDataFile "../sim/simTest.dat"; list
-vsim -quiet -wlf "$ignoredLogFile" -wlftlim {1 ns} work.testbench_opt; list
+if ($hasVopt==1) {
+	vsim -quiet -wlf "$ignoredLogFile" -wlftlim {1 ns} work.testbench_opt; list
+} else {
+	vsim -quiet -wlf "$ignoredLogFile" -wlftlim {1 ns} work.testbench; list
+}
 
 call sim:/testbench/dut/ahb/mem/m/loadMemory "$dumpDataFile" $shouldResetMem
 
