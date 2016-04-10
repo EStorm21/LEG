@@ -14,7 +14,7 @@ set ignoredLogName "wlffile.wlf"
 set ignoredLogFile $dumpDir$ignoredLogName
 
 # Read vopt configuration variable
-set cfg "configuration.py"
+set cfg "../debug_lockstep/configuration.py"
 set fp [open $cfg r]; list
 set file_data [read $fp]; list
 close $fp
