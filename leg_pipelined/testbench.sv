@@ -133,7 +133,7 @@ module testbench();
   
   // MEMORY DEBUGGING
 
-   // `define MEMDEBUG 0
+   `define MEMDEBUG 0
   `ifdef MEMDEBUG
 
   // Writeback cache states
@@ -141,15 +141,17 @@ module testbench();
                            NEXTINSTR, FLUSH, WAIT, DWRITE} statetype;
   statetype state, nextstate;
   
-  logic [31:0] watchdata[$] = {32'hc000db60};
-  logic [31:0] watchmem [1] = {32'hcf83def8};
+  // logic [31:0] watchdata[$] = {32'hcf8029c0, 32'hc0585fa4,  32'h00000247, 32'hc05a4938, 32'hc03df700, 32'hc0585f94};
+  logic [31:0] watchdata[$] = {32'hcf8029c0, 32'hc05a4938};
+  logic [31:0] watchmem [1] = {32'hc0585f64};
+  // logic [31:0] watchmem [3] = {32'hc0585f64, 32'hc0585f68, 32'hc0585f6c};
   logic [29:0] watchmemword [$size(watchmem)];
-  logic [7:0] watchset [$size(watchmem)];
+  logic [5:0] watchset [$size(watchmem)];
   always_comb
   begin
     for (int i = 0; i < $size(watchmem); i++) begin
       watchmemword[i] = watchmem[i][31:2];
-      watchset[i] = watchmem[i][9:2];
+      watchset[i] = watchmem[i][9:4];
     end
   end
 
@@ -170,10 +172,10 @@ module testbench();
     end
 
     // D$ Set
-    if(dut.data_cache.ANew[9:2] inside {watchset}) begin
+    if(dut.data_cache.ANew[9:4] inside {watchset}) begin
 
       // if(dut.data_cache.dcc.CWE) begin
-        $display("D$ W1E:%b W2E:%b AN:%h CWD:%h 1RD:%h 2RD:%h W1T:%h W2T:%h W1D:%b W2D:%b BM: %b EN:%b at PCM:%h, time:%d S:%s", 
+        $display("D$ W1E:%b W2E:%b AN:%h CWD:%h 1RD:%h 2RD:%h W1T:%h W2T:%h W1D:%b W2D:%b set:%h EN:%b at PCM:%h, time:%d S:%s", 
           dut.data_cache.dcc.W1WE, 
           dut.data_cache.dcc.W2WE, 
           dut.data_cache.ANew, 
@@ -184,7 +186,8 @@ module testbench();
           dut.data_cache.W2Tag, 
           dut.data_cache.W1D, 
           dut.data_cache.W2D, 
-          dut.data_cache.ByteMaskM,
+          dut.data_cache.A[9:4],
+          // dut.data_cache.ByteMaskM,
           dut.data_cache.dcc.enable,
           dut.leg.dp.PCM, 
           $time,
@@ -197,7 +200,7 @@ module testbench();
       ) begin
 
       // if(dut.data_cache.dcc.CWE) begin
-        $display("D$ W1E:%b W2E:%b AN:%h CWD:%h 1RD:%h 2RD:%h W1T:%h W2T:%h W1D:%b W2D:%b BM: %b EN:%b at PCM:%h, time:%d S:%s", 
+        $display("D$r W1E:%b W2E:%b AN:%h CWD:%h 1RD:%h 2RD:%h W1T:%h W2T:%h W1D:%b W2D:%b set:%h EN:%b at PCM:%h, time:%d S:%s", 
           dut.data_cache.dcc.W1WE, 
           dut.data_cache.dcc.W2WE, 
           dut.data_cache.ANew, 
@@ -208,7 +211,8 @@ module testbench();
           dut.data_cache.W2Tag, 
           dut.data_cache.W1D, 
           dut.data_cache.W2D, 
-          dut.data_cache.ByteMaskM,
+          dut.data_cache.A[9:4],
+          // dut.data_cache.ByteMaskM,
           dut.data_cache.dcc.enable,
           dut.leg.dp.PCM, 
           $time,
@@ -224,15 +228,48 @@ module testbench();
   // END MEMORY DEBUGGING
 
   // BEGIN CLEAN AND FLUSH DEBUGGING
-  // `define CACHEDBG 0
+  `define CACHEDBG 0
   `ifdef CACHEDBG 
   always @(negedge clk) begin
     if(dut.data_cache.dcc.Clean) begin
-      $display("cleaning D$ line DataAdrM:%h PCM:%h @ %d ps", dut.DataAdrM, dut.leg.dp.PCM, $time);
+      $display("Cleaning D$ line DataAdrM:%h set:%h PCM:%h AddrOp:%b @ %d ps", dut.DataAdrM, dut.data_cache.A[9:4], dut.leg.dp.PCM, dut.data_cache.AddrOp, $time);
+    end
+    if(dut.data_cache.dcc.Inv) begin
+      $display("Invalidating D$ line DataAdrM:%h PCM:%h AddrOp:%b @ %d ps", dut.DataAdrM, dut.leg.dp.PCM, dut.data_cache.AddrOp, $time);
+    end
+    if(dut.data_cache.dcc.InvAll) begin
+      $display("Invalidating all D$ lines PCM:%h AddrOp:%b @ %d ps", dut.leg.dp.PCM, dut.data_cache.AddrOp, $time);
+    end
+    if(dut.instr_cache.icc.InvAll) begin
+      $display("Invalidating all I$ lines PCM:%h @ %d ps", dut.leg.dp.PCM, $time);
+    end
+    if(dut.instr_cache.icc.Inv) begin
+      $display("Invalidating I$ line --> Invalidating all I$", dut.leg.dp.PCM, $time);
     end
   end
   `endif
   // END CLEAN AND FLUSH DEBUGGING
+
+  // BEGIN SPECIFIC DEBUGGING
+  `define SDEBUG
+  `ifdef SDEBUG
+  logic [31:0] dbgaddr = 32'hc0585f64;
+  assign dbgset = dbgaddr[9:4];
+  always @(negedge clk) begin
+    if(dut.data_cache.dcmem.way1.set == dbgset) begin
+      if(dut.data_cache.dcmem.way1.Clean) begin
+      $display("Cleaning D$ Set%h DataAdrM:%h A:%h PCM:%h AddrOp:%b @ %d ps",
+        dut.data_cache.dcmem.way1.set, dut.DataAdrM, dut.data_cache.dcmem.way1.A,
+        dut.leg.dp.PCM, dut.data_cache.dcc.AddrOp, $time);
+      end
+      if(dut.data_cache.dcmem.way1.Inv) begin
+      $display("Invalidating D$ Set%h, Way1 PCM:%h AddrOp:%b @ %d ps",
+        dbgset, dut.leg.dp.PCM, dut.data_cache.dcc.AddrOp, $time);
+      end
+    end
+  end
+  `endif
+  // END SPECIFIC DEBUGGING
 
   // initialize test
   initial

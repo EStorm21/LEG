@@ -1,7 +1,7 @@
 module data_writeback_associative_cache_way 
     #(parameter lines = 65536, parameter tbits = 14, 
       parameter bsize = 4)
-    (input logic clk, reset, WE, DirtyIn, vin, InvAll, 
+    (input logic clk, reset, WE, DirtyIn, vin, InvAll, Inv, Clean,
      input logic [31:0] WD, 
      input logic [31:0] A, // TODO: Make a capitalized
      input logic [tbits-1:0] PhysTag,
@@ -19,7 +19,7 @@ module data_writeback_associative_cache_way
   logic [31:0] rd0, rd1, rd2, rd3;          
 
   // Read the data from the cache immediately
-  assign set = A[bsize+setbits-1:bsize];
+  assign set = A[blockoffset+2+setbits-1:blockoffset+2];
   assign word = A[blockoffset+2:2];         // Current word (for writing single words)
   assign RTag = tag[set];
   assign RV = v[set];
@@ -43,6 +43,13 @@ module data_writeback_associative_cache_way
     if (reset | InvAll) begin
       v         <= 'b0;
       DirtyBits <= 'b0;
+    end else if (Inv & ~Clean) begin
+      v[set] <= 1'b0;
+    end else if (~Inv & Clean) begin
+      DirtyBits[set] <= 1'b0;
+    end else if (Inv & Clean) begin
+      v[set] <= 1'b0;
+      DirtyBits[set] <= 1'b0;
     end else if (WE) begin
       // TODO: REmove (used for debugging)
       //$display("Wrote %h to tag[set] at time %d. set = %h", PhysTag, $time, set);

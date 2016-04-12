@@ -45,7 +45,7 @@ module top (
   logic [tbits-1:0] PhysTag, dPhysTag, iPhysTag;
 
   // ----- CP15 signals for LEG -----
-  logic        CoProc_WrEnM, CoProc_EnM, MMUWriteEn, MMUEn;
+  logic        CoProc_WrEnM, CoProc_EnM, MMUWriteEn, MMUEn, AddrOp;
   logic [3:0]  CoProc_AddrM;
   logic [31:0] CPUWriteData, MMUWriteData;
   logic [2:0]  CoProc_Op2M;
@@ -132,6 +132,7 @@ module top (
     .TLBFlushI   (TLBFlushI   ),
     .rd          (CP15rd_M    ),
     .control     (control     ),
+    .AddrOp      (AddrOp      ),
     .tbase       (FullTBase   )
   );
 
@@ -140,6 +141,7 @@ module top (
 
   parameter iLines = 64;   // Number of lines in I$
   parameter ibsize = 4; // bsize of the I$
+
   // I$
   instr_cache #(ibsize,iLines) instr_cache (
     .clk      (clk       ),
@@ -148,6 +150,7 @@ module top (
     .uOpStallD(uOpStallD ),
     .Inv      (INVI      ),
     .InvAllMid(InvAll    ),
+    .AddrOp   (AddrOp    ),
     .BusReady (HReadyF   ),
     .A        (PCF       ),
     .HRData   (HRData    ),
@@ -172,6 +175,7 @@ module top (
     .CurrCBit (CurrCBit  ),
     .Inv      (INVD      ),
     .InvAllMid(InvAll    ),
+    .AddrOp   (AddrOp    ),
     .Clean    (CLEAND    ),
     .PAReady  (PAReadyM  ),
     .MSel     (MSel      ),

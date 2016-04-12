@@ -1,13 +1,15 @@
-module coprocessor15 (input logic         clk, reset,
-															// For CPU and MMU, enable without writeEn means read
-															input logic         CPUWriteEn, CPUEn, MMUWriteEn, MMUEn, 
-															input logic [3:0]   addr,
-															input logic [31:0]  CPUWriteData, MMUWriteData,
-                              input logic [2:0]   opcode_2,
-                              input logic [3:0]   CRm,
-															output logic        StallCP, INVI, INVD, CleanI, CleanD, 
-                              output logic        InvAll, TLBFlushD, TLBFlushI,
-															output logic [31:0] rd, control, tbase);
+module coprocessor15 (
+  input  logic        clk, reset  ,
+  // For CPU and MMU, enable without writeEn means read
+  input  logic        CPUWriteEn, CPUEn, MMUWriteEn, MMUEn,
+  input  logic [ 3:0] addr        ,
+  input  logic [31:0] CPUWriteData, MMUWriteData,
+  input  logic [ 2:0] opcode_2    ,
+  input  logic [ 3:0] CRm         ,
+  output logic        StallCP, INVI, INVD, CleanI, CleanD,
+  output logic        InvAll, TLBFlushD, TLBFlushI, AddrOp,
+  output logic [31:0] rd, control, tbase
+);
 
 /* 
 Brief:
@@ -107,25 +109,30 @@ assign tbase = rf[2];
 
 always_comb
   case ({we, reg_select[7], opcode_2, CRm})
-    // opcode_2 000
-    9'b1_1_000_0111: {INVI, INVD, CleanI, CleanD, InvAll} = 5'b11000;
-    9'b1_1_000_0101: {INVI, INVD, CleanI, CleanD, InvAll} = 5'b10001;
-    9'b1_1_000_0110: {INVI, INVD, CleanI, CleanD, InvAll} = 5'b01001;
-    9'b1_1_000_1011: {INVI, INVD, CleanI, CleanD, InvAll} = 5'b00110;
-    9'b1_1_000_1010: {INVI, INVD, CleanI, CleanD, InvAll} = 5'b00010;
-    9'b1_1_000_1111: {INVI, INVD, CleanI, CleanD, InvAll} = 5'b11110;
-    9'b1_1_000_1110: {INVI, INVD, CleanI, CleanD, InvAll} = 5'b01010;
+    // opcode_2 000 (invalidate all instructions)
+    9'b1_1_000_0111: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b110010;
+    9'b1_1_000_0101: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b100010;
+    9'b1_1_000_0110: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b010010;
 
-    // opcode_2 001
-    9'b1_1_001_0111: {INVI, INVD, CleanI, CleanD, InvAll} = 5'b11000;
-    9'b1_1_001_0101: {INVI, INVD, CleanI, CleanD, InvAll} = 5'b10000;
-    9'b1_1_001_0110: {INVI, INVD, CleanI, CleanD, InvAll} = 5'b01000;
-    9'b1_1_001_1011: {INVI, INVD, CleanI, CleanD, InvAll} = 5'b00110;
-    9'b1_1_001_1010: {INVI, INVD, CleanI, CleanD, InvAll} = 5'b00010;
-    9'b1_1_001_1111: {INVI, INVD, CleanI, CleanD, InvAll} = 5'b11110;
-    9'b1_1_001_1110: {INVI, INVD, CleanI, CleanD, InvAll} = 5'b01010;
+    // opcode_2 001 (virtual address operations)
+    9'b1_1_001_0111: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b110001;
+    9'b1_1_001_0101: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b100001;
+    9'b1_1_001_0110: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b010001;
+    9'b1_1_001_1011: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b001101;
+    9'b1_1_001_1010: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b000101;
+    9'b1_1_001_1111: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b111101;
+    9'b1_1_001_1110: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b010101;
 
-    default: {INVI, INVD, CleanI, CleanD, InvAll} = 5'b00000;
+    // opcode_2 010 (set/index operations)
+    9'b1_1_010_0111: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b110000;
+    9'b1_1_010_0101: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b100000;
+    9'b1_1_010_0110: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b010000;
+    9'b1_1_010_1011: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b001100;
+    9'b1_1_010_1010: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b000100;
+    9'b1_1_010_1111: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b111100;
+    9'b1_1_010_1110: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b010100;
+
+    default: {INVI, INVD, CleanI, CleanD, InvAll, AddrOp} = 6'b000000;
   endcase
 
 always_comb

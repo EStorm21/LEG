@@ -20,7 +20,7 @@ module instr_cache_controller #(parameter tbits = 14) (
   logic [      1:0] CounterMid, DataCounter, WayWordOffset;
 
   assign enable = CP15en;
-  assign InvAll = InvAllMid & Inv;
+  assign InvAll = Inv; // Treat line invalidate as entire cache invalidation
   
   // FSM States
   typedef enum logic [1:0] {READY, MEMREAD, LASTREAD, NEXTINSTR} statetype;

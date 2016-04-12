@@ -10,7 +10,7 @@ module instr_cache #(
     parameter tbits = 30-blockbits-setbits
 ) (
     input  logic             clk, reset, CP15en, BusReady, InvAllMid, Inv,
-    input  logic             PAReadyF, FSel, uOpStallD,
+    input  logic             PAReadyF, FSel, uOpStallD, AddrOp,
     input  logic [     31:0] A       ,
     input  logic [tbits-1:0] PhysTag , 
     input  logic [     31:0] HRData  ,
@@ -25,7 +25,8 @@ module instr_cache #(
     logic [blockbits-1:0] DataWordOffset ;
     logic [blockbits-1:0] AddrWordOffset ;
     logic [          1:0] CacheRDSel, Counter, WordOffset;
-    logic                 W1V, W2V, W1WE, W2WE, ResetBlockOff, CurrLRU, DirtyIn, W1D, W2D, vin, WaySel;
+    logic                 W1V, W2V, W1WE, W2WE, ResetBlockOff, CurrLRU, DirtyIn;
+    logic                 W1D, W2D, vin, WaySel, InvAll, Clean;
 
     // Create New Address using the counter as the word offset
     assign WordOffset     = A[blockbits+1:2];
@@ -39,30 +40,10 @@ module instr_cache #(
     // Disable writeback behavior (read only cache)
     assign DirtyIn        = 1'b0;   
     assign ActiveByteMask = 4'b1111;
+    assign W1Clean          = 1'b0;
+    assign W2Clean          = 1'b0;
 
-    data_writeback_associative_cache_memory #(lines,tbits,bsize) icm (
-        .clk           (clk           ),
-        .reset         (reset         ),
-        .W1WE          (W1WE          ),
-        .W2WE          (W2WE          ),
-        .DirtyIn       (DirtyIn       ),
-        .vin           (vin           ),
-        .InvAll        (InvAll    ),
-        .CacheWD       (CacheWD       ),
-        .ANew          (ANew          ),
-        .PhysTag       (PhysTag       ),
-        .ActiveByteMask(ActiveByteMask),
-        .CacheRDSel    (CacheRDSel    ),
-        .W1V           (W1V           ),
-        .W2V           (W2V           ),
-        .W1D           (W1D           ),
-        .W2D           (W2D           ),
-        .CurrLRU       (CurrLRU       ),
-        .W1Tag         (W1Tag         ),
-        .W2Tag         (W2Tag         ),
-        .W1RD          (W1RD          ),
-        .W2RD          (W2RD          )
-    );
+    data_writeback_associative_cache_memory #(lines,tbits,bsize) icm (.*);
 
     // Cache Controller
     instr_cache_controller #(tbits) icc (.*);

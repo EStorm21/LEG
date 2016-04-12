@@ -2,14 +2,14 @@ module data_writeback_associative_cache_controller
   #(parameter lines, parameter bsize, parameter tbits = 14)
   (input  logic clk, reset, CP15en, W1V, W2V, CurrLRU, W1D, W2D, Clean,
    input  logic IStall, MemWriteM, MemtoRegM, BusReady, PAReady, MSel,
-   input  logic CurrCBit, InvAllMid, Inv,
+   input  logic CurrCBit, InvAllMid, Inv, AddrOp,
    input  logic [1:0] WordOffset,
    input  logic [3:0] ByteMaskM,
    input  logic [31:0] A,
    input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag, VirtTag, 
    output logic Stall, HWriteM, HRequestM, BlockWE, 
    output logic W1WE, W2WE, W1EN, UseWD, UseCacheA, DirtyIn, WaySel, RDSel,
-   output logic RequestPA, enable, InvAll,
+   output logic RequestPA, enable, InvAll, W1Clean, W2Clean,
    output logic [1:0] CacheRDSel,
    output logic [2:0] HSizeM,
    output logic [3:0] ActiveByteMask, WDSel, 
@@ -61,6 +61,9 @@ module data_writeback_associative_cache_controller
   // Keep Cleaning if way 2 is dirty and we aren't currently Cleaning it
   assign InvAll = InvAllMid & Inv;
   assign CleanMore = W2D & (WaySel == 1'b1); 
+  // Set the way clean enable
+  assign W1Inv = Inv & ~AddrOp | AddrOp & Inv & W1Hit & PAReady;
+  assign W2Inv = Inv & ~AddrOp | AddrOp & Inv & W2Hit & PAReady;
 
   //----------------ENABLING----------------------
   // Counter Disable Mux
@@ -132,13 +135,12 @@ module data_writeback_associative_cache_controller
   // next state logic
   always_comb
     case (state)
-      READY:    if (Clean & Dirty) begin
+      READY:
+      if ( Clean & (W1D|W2D) & (AddrOp & Hit | ~AddrOp)) begin
         nextstate <= WRITEBACK;
-      end else if (Clean & ~Dirty) begin
-        nextstate <= NEXTINSTR;
-      end else if ( Hit & ~IStall |
-        (~MemWriteM & ~MemtoRegM) |
-        ~PAReady & (MemWriteM | MemtoRegM)
+      end else if ( Hit & ~IStall | (~MemWriteM & ~MemtoRegM & ~Clean) |
+        ~PAReady & (MemWriteM | MemtoRegM | 
+          (AddrOp & Clean & (W1D|W2D)))
       )
       begin
         nextstate <= READY;
@@ -152,7 +154,7 @@ module data_writeback_associative_cache_controller
       else if( ~enable & MemtoRegM ) begin
         nextstate <= LASTREAD;
       end
-      else if( IStall & enable & ~Clean & Hit ) begin
+      else if( IStall & enable &  Hit | IStall & Clean & AddrOp ) begin
         nextstate <= WAIT;
       end
       else begin
@@ -207,14 +209,16 @@ module data_writeback_associative_cache_controller
     (state == LASTWRITEBACK) |
     (state == DWRITE) |
     ( (state == READY) &
-      ( Clean | (MemtoRegM | MemWriteM) & ~Hit )
+      ( Clean & ~AddrOp & (W1D|W2D) |
+        Clean & AddrOp & (W1D|W2D) & Hit |
+        (MemtoRegM | MemWriteM) & ~Hit )         
     );
   assign CWE =  (state == MEMREAD) & BusReady |
     (state == READY) & ( (MemWriteM & Hit) | 
       MemWriteM & ~enable & ~(nextstate ==WRITEBACK) ) |
     (state == LASTREAD) & BusReady;
   assign HWriteM = (state == WRITEBACK) |
-    ((state == READY) & ~Hit & Dirty & ~Clean & (MemtoRegM | MemWriteM)) |
+    (state == READY) & (nextstate == WRITEBACK | nextstate == LASTWRITEBACK)  |
     (nextstate == DWRITE) | 
     (state == DWRITE);
   assign HRequestM = (state == READY) & MemtoRegM & PAReady & ~enable |
@@ -270,6 +274,10 @@ module data_writeback_associative_cache_controller
   assign BlockNum = A[$clog2(lines)-1+4:4];
 
   // ----------------MMU-------------------
-  assign RequestPA = (state == READY) & (MemtoRegM | MemWriteM) 
+  assign RequestPA = (state == READY) & (MemtoRegM | MemWriteM | 
+    Clean & AddrOp & (W1D | W2D)) 
                     | ~(state == READY) & Stall;
+  // Always clean both cache ways
+  assign W1Clean = Clean & (state == WRITEBACK) & WaySel;
+  assign W2Clean = Clean & (state == WRITEBACK) & ~WaySel;
 endmodule
