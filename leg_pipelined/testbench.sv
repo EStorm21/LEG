@@ -133,7 +133,7 @@ module testbench();
   
   // MEMORY DEBUGGING
 
-   `define MEMDEBUG 0
+   // `define MEMDEBUG 0
   `ifdef MEMDEBUG
 
   // Writeback cache states
@@ -228,7 +228,7 @@ module testbench();
   // END MEMORY DEBUGGING
 
   // BEGIN CLEAN AND FLUSH DEBUGGING
-  `define CACHEDBG 0
+  // `define CACHEDBG 0
   `ifdef CACHEDBG 
   always @(negedge clk) begin
     if(dut.data_cache.dcc.Clean) begin
@@ -251,7 +251,7 @@ module testbench();
   // END CLEAN AND FLUSH DEBUGGING
 
   // BEGIN SPECIFIC DEBUGGING
-  `define SDEBUG
+  // `define SDEBUG
   `ifdef SDEBUG
   logic [31:0] dbgaddr = 32'hc0585f64;
   assign dbgset = dbgaddr[9:4];

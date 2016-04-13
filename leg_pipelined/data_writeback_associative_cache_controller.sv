@@ -138,9 +138,10 @@ module data_writeback_associative_cache_controller
       READY:
       if ( Clean & (W1D|W2D) & (AddrOp & Hit | ~AddrOp)) begin
         nextstate <= WRITEBACK;
-      end else if ( Hit & ~IStall | (~MemWriteM & ~MemtoRegM & ~Clean) |
-        ~PAReady & (MemWriteM | MemtoRegM | 
-          (AddrOp & Clean & (W1D|W2D)))
+      end else if ( Hit & ~IStall | 
+        ~IStall & Clean & ~(W1D|W2D) |
+        (~MemWriteM & ~MemtoRegM & ~Clean) |
+        ~PAReady & (MemWriteM | MemtoRegM | (AddrOp & Clean & (W1D|W2D)))
       )
       begin
         nextstate <= READY;
