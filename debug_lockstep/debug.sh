@@ -71,6 +71,8 @@ esac
 shift # past argument or value
 done
 
+source configuration.py
+# UNCOMMENT THIS FOR TERA
 PYTHONPATH=./:/proj/leg/debugutils/python2.7/install/lib/ \
 	PYTHONHOME=/proj/leg/debugutils/python2.7/install/ \
 	LD_LIBRARY_PATH=/proj/leg/debugutils/python2.7/install/lib/ \
@@ -78,5 +80,12 @@ PYTHONPATH=./:/proj/leg/debugutils/python2.7/install/lib/ \
 	-ex "python TEST_FILE=\"$TESTFILE\"" \
 	-ex "python COMMAND=$COMMAND" \
 	-x debug.py
+
+# UNCOMMENT THIS FOR LEG DISTRIBUTION
+#PYTHONPATH=./ \
+#	$gdb_path/arm-none-eabi-gdb-py -q \
+#	-ex "python TEST_FILE=\"$TESTFILE\"" \
+#	-ex "python COMMAND=$COMMAND" \
+#	-x debug.py
 
 rm transcript

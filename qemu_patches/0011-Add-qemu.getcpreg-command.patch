@@ -1,15 +1,15 @@
-From 5ee3223312f9e86eea9e8ff8422717bc146c126a Mon Sep 17 00:00:00 2001
+From 9241a64bfa2abfbfbdff62020e7435f188075572 Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Tue, 12 Jan 2016 18:17:54 -0800
-Subject: [PATCH 11/11] Add qemu.getcpreg command
+Subject: [PATCH 11/12] Add qemu.getcpreg command
 
 Add a command to get the contents of a cp15 register, for debugging purposes.
 Uses the same function-pointer hack as the virt-to-phys command.
 ---
- gdbstub.c              |   24 ++++++++++++++++++++++++
- include/qom/cpu.h      |    3 +++
- target-arm/translate.c |   15 +++++++++++++++
- 3 files changed, 42 insertions(+), 0 deletions(-)
+ gdbstub.c              | 24 ++++++++++++++++++++++++
+ include/qom/cpu.h      |  3 +++
+ target-arm/translate.c | 15 +++++++++++++++
+ 3 files changed, 42 insertions(+)
 
 diff --git a/gdbstub.c b/gdbstub.c
 index dc3c651..9a6cb86 100644
@@ -108,5 +108,5 @@ index c0f0b59..fc5025f 100644
  
      if (is_a64(env)) {
 -- 
-1.7.1
+1.9.1
 

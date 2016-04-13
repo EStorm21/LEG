@@ -1,7 +1,8 @@
-From f38596e77f5b146d7f38220f04f9245a114c4fee Mon Sep 17 00:00:00 2001
+From fd966d65138cf15527fa5f9fe2df161340a0ccd2 Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Mon, 30 Nov 2015 17:18:07 -0800
-Subject: [PATCH 09/11] Allow virtual to physical address translation from GDB (hacky!)
+Subject: [PATCH 09/12] Allow virtual to physical address translation from GDB
+ (hacky!)
 
 Allows a query command to query qemu's virtual-to-physical address
 translation. To get around the fact that gdb is supposed to be
@@ -13,11 +14,11 @@ general to multiple architectures, we do this by hackily
 - use this horrible misuse of functions to call the specific function
   from the GDB server
 ---
- gdbstub.c              |   15 +++++++++++++++
- include/qom/cpu.h      |    3 +++
- target-arm/helper.c    |   18 +++++++++++++-----
- target-arm/internals.h |    4 ++++
- target-arm/translate.c |   20 ++++++++++++++++++++
+ gdbstub.c              | 15 +++++++++++++++
+ include/qom/cpu.h      |  3 +++
+ target-arm/helper.c    | 18 +++++++++++++-----
+ target-arm/internals.h |  4 ++++
+ target-arm/translate.c | 20 ++++++++++++++++++++
  5 files changed, 55 insertions(+), 5 deletions(-)
 
 diff --git a/gdbstub.c b/gdbstub.c
@@ -177,5 +178,5 @@ index db53ca3..18226fb 100644
  
      if (is_a64(env)) {
 -- 
-1.7.1
+1.9.1
 

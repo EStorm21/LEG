@@ -1,16 +1,91 @@
+\subsection{Installation}
 LEG processor development begins by downloading the code base to your local machine or a shared class drive.
-The code base is small enough for each user to have a local copy.
+The code is small enough for each user to have a local copy for development and testing.
 After cloning the LEG repository, only a few off the shelf programs are required to get the processor running.
 Complete instructions are presented here for Linux systems, but most functionality is available on Windows.
 
 Several programs must be installed to use the full LEG debugger. 
-However, only the LEG repository must be downloaded if you are only interested in examining the source files.
+However, only the LEG repository must be downloaded if you are simply interested in examining the source files.
 
 \begin{enumerate}
-\item Install git if it is not already installed, and clone the LEG git repository from \url{https://github.com/EStorm21/LEG.git}
-\item Install the free Starter Edition of ModelSim from \url{http://dl.altera.com} or any version of ModelSim you may already have purchased. Note that in Starter Edition performance will be reduced and some features such as checkpoints will be unavailable. LEG has been tested on ModelSim version SE 10.3d. 
-\item Ensure that GDB is installed on your system. Download it from \url{https://www.gnu.org/software/gdb/download/} or through your package manager.
-\item Install QEMU from \url{http://wiki.qemu.org/Download}. (or from package manager?)
-\item Modify configuration files to point to your installation of stuff?
+\item Install git and clone the LEG git repository from \url{www.puturlhere.com}. 
+The next installation steps only need to be one once per machine you are installing the LEG debugging system on.
+
+\item Install packages required for the debugging tools. We needed to install the packages listed below to run the debugging framework on our 64-bit system, but your requirements may vary.
+They can be installed using your package manager.
+
+\begin{tabular}{|l|l|}
+\hline 
+\textbf{Package} & \textbf{Needed for...} \\\hline
+g++ & QEMU, GDB, debug\_lockstep \\\hline
+libtools & QEMU \\\hline
+zlib1g-dev & QEMU \\\hline
+libglib2.0-dev & QEMU \\\hline
+libpixman-1-dev & QEMU \\\hline
+libfdt-dev & QEMU \\\hline
+libpython2.7:i386 & GDB \\\hline
+lib32ncurses5 & GDB \\\hline
+libxft2:i386 & ModelSim \\\hline
+libxext6:i386 & ModelSim \\\hline
+python (2.7)& debug\_lockstep \\\hline
+\end{tabular}
+
+\item Choose a path on your system to install the required debugging tools. 
+Be sure that this path is readable by everyone who will be using LEG on your system.
+Throughout the examples in this guide, the path will be \texttt{/legproj/}
+
+\item Install the free Starter Edition of ModelSim from \url{http://dl.altera.com} or any version of ModelSim you may already have purchased. 
+Note that in Starter Edition performance may be reduced and some minor features such as checkpoints will be unavailable. 
+LEG has been tested on ModelSim version SE 10.3d. 
+
+\item Install GDB and GCC for bare metal ARM systems from \url{https://launchpad.net/gcc-arm-embedded} and untar into your LEG installation directory. 
+For example, \\\texttt{/legproj/gcc-arm-none-eabi-5\_3-2016q1}.\\
+Instructions for this are provided in the readme available at the same website.
+
+\item The QEMU system emulator must be downloaded and installed from source. 
+\textbf{NOTE}: The patches required for LEG will possibly break every QEMU system except \texttt{qemu-system-arm}. 
+To keep this guide simple the default QEMU build process is used. 
+You can safely remove systems other than \texttt{arm-softmmu}.
+	\begin{enumerate}
+	\item Clone the QEMU source into your central LEG directory: \\\texttt{git clone git://git.qemu-project.org/qemu.git}
+	\item From this QEMU directory, run the following commands: \\\texttt{git checkout -b leg-additions v2.4.0 \\ git am leg/repo/path/qemu\_patches/*.patch}\\
+	where \texttt{leg/repo/path} is the path to your LEG git repository, not the folder for debugging tools.
+	These commands will apply the custom LEG addons to v2.4.0 of QEMU.
+	\item In the QEMU directory run \\\texttt{./configure \\ sudo make -j20}\\ to build QEMU.
+	\end{enumerate}
 \end{enumerate}
+
+Now all software necessary to run the LEG testing tools should be installed, but some components must still be configured.
+These short steps are described in the next section.
+
+\subsection{Configuration}
+
+Certain variables must be set to provide LEG access to the programs it needs for testing.
+These steps will get you there.
+
+\begin{enumerate}
+\item Add the ModelSim tools (vsim) to your system path.
+These are most likely found in the \texttt{modelsim\_ase/linuxaloem} directory of your ModelSim installation.
+For example, using the path name and ModelSim version referenced in the previous section, we would edit our \texttt{.bashrc} file and add the following line: \\\texttt{export PATH="/legproj/altera/15.1/modelsim\_ase/linuxaloem:\$PATH"}
+
+\item Navigate to \texttt{leg/repo/path/debug\_lockstep} and modify the file \texttt{config\-uration.py} with the following. 
+Examples are included in the file.
+	\begin{enumerate}
+		\item set \texttt{qemu\_path} to the path to \texttt{qemu\_system\_arm}
+		\item set \texttt{gdb\_path} to the path to \texttt{arm-none-eabi-gdb-py}
+		\item set \texttt{hasVopt} to 0 if you are using ModelSim SE, or 1 if you have a version of ModelSim with vopt.
+	\end{enumerate}
+
+NOTES: For some reason compiling LEG doesn't happen, even though the vlog command is being run. 
+You will need to run the commands in leg.py:compile() manually before running debug.sh.
+You will also need to uncomment the correct lines in debug.sh to work on the clean systems. 
+\end{enumerate}
+
+
+
+
+
+
+
+
 

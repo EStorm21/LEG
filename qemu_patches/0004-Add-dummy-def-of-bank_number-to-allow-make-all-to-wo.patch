@@ -1,11 +1,11 @@
-From e62cd435128ccd64ff6dc007437cc2523842faf5 Mon Sep 17 00:00:00 2001
+From 1168b373952696d6727712880acbd01638a760f7 Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Sun, 25 Oct 2015 11:44:48 -0700
-Subject: [PATCH 04/11] Add dummy def of bank_number to allow make all to work
+Subject: [PATCH 04/12] Add dummy def of bank_number to allow make all to work
 
 ---
- target-arm/helper.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ target-arm/helper.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/target-arm/helper.c b/target-arm/helper.c
 index fc2f61a..4d270b5 100644
@@ -25,5 +25,5 @@ index fc2f61a..4d270b5 100644
  
  /* Map CPU modes onto saved register banks.  */
 -- 
-1.7.1
+1.9.1
 

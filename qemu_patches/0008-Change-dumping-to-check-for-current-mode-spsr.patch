@@ -1,15 +1,15 @@
-From c0bd5f75c90ebd074e386586f4d9d4556591ce9b Mon Sep 17 00:00:00 2001
+From 3f938a7dcfa3f2a22f525b6ccfca5380158a1af3 Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Thu, 19 Nov 2015 20:04:11 -0800
-Subject: [PATCH 08/11] Change dumping to check for current mode spsr
+Subject: [PATCH 08/12] Change dumping to check for current mode spsr
 
 The spsr for the current mode is stored separately from the banked versions
 for other modes. Before, this meant when we dumped state we pulled down an
 out-of-date version of the spsr. Update to check what mode we are in and
 use the current spsr if we are dumping for the current mode.
 ---
- target-arm/translate.c |   12 +++++++++++-
- 1 files changed, 11 insertions(+), 1 deletions(-)
+ target-arm/translate.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/target-arm/translate.c b/target-arm/translate.c
 index 61ce88e..db53ca3 100644
@@ -35,5 +35,5 @@ index 61ce88e..db53ca3 100644
  
  unsigned int get_coprocessor_reg(ARMCPU *cpu, int crn) {
 -- 
-1.7.1
+1.9.1
 

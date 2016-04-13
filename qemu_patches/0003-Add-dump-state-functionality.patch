@@ -1,7 +1,7 @@
-From 9b3a0cfba88c9271dcc9afd6e1b9fbc4026bc390 Mon Sep 17 00:00:00 2001
+From 5bd94378353388e6c8a28d73afebb5274b302d6a Mon Sep 17 00:00:00 2001
 From: Daniel Johnson <hexahedria@gmail.com>
 Date: Thu, 22 Oct 2015 20:43:31 -0700
-Subject: [PATCH 03/11] Add dump-state functionality
+Subject: [PATCH 03/12] Add dump-state functionality
 
 Enables dumping of state in a form readable by ModelSim. This is implemented
 as a GDB server query packet, which triggers a modified version of
@@ -10,12 +10,12 @@ arm_cpu_dump_state. Some includes were shifted to expose coprocessor registers.
 Unfortunately, this change breaks non-system builds. However, all we need is
 the qemu-system-arm, generated using `make arm-softmmu`
 ---
- gdbstub.c              |    8 ++++
- include/qom/cpu.h      |    3 +
- target-arm/cpu.h       |    4 ++
- target-arm/helper.c    |    2 +-
- target-arm/translate.c |  109 ++++++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 125 insertions(+), 1 deletions(-)
+ gdbstub.c              |   8 ++++
+ include/qom/cpu.h      |   3 ++
+ target-arm/cpu.h       |   4 ++
+ target-arm/helper.c    |   2 +-
+ target-arm/translate.c | 109 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 125 insertions(+), 1 deletion(-)
 
 diff --git a/gdbstub.c b/gdbstub.c
 index ee07674..8b09742 100644
@@ -218,5 +218,5 @@ index 69ac18c..5038ae5 100644
          aarch64_cpu_dump_state(cs, f, cpu_fprintf, flags);
          return;
 -- 
-1.7.1
+1.9.1
 

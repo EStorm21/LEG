@@ -1,11 +1,6 @@
-% TODO
-\section{debug\_lockstep}
+% TODO: Fill out these new sections and ensure they are up to date
 
-\subsection{Brief Overview}
-
-This is a tool I made to enable fast debugging and testing of the Linux kernel by comparing the registers of qemu with those of the LEG processor simulated in ModelSim.
-
-\subsection{All Relevant Files and Brief Descriptions}
+\subsection{Relevant Files}
 
 \begin{itemize}
 \item \textbf{checkpoint.py} Python file that handles creation of checkpoints.
@@ -18,25 +13,22 @@ This is a tool I made to enable fast debugging and testing of the Linux kernel b
 \item \textbf{qemuDumpRestore.tcl} Tcl script that manipulates the ModelSim state to match a dumped Qemu state.
 \end{itemize}
 
-\subsubsection{Basic Operation on Provided Tests}
-This section demonstrates the most basic operation of the testing framework.
-It will allow you to run a test from the terminal and debug in gdb at a register level.
-\begin{enumerate}
-\item From your local copy of the LEG repository, enter the \texttt{debug\_lockstep} directory.
-\item Provided tests are stored in the \texttt{unitTests} directory. 
- To run a provided test, type 
- \begin{verbatim}./debug.sh -t unitTests/testname.bin\end{verbatim}
- at the terminal. For example, to run the test consisting of 1000 random adc instructions, enter 
- \begin{verbatim}./debug.sh -t unitTests/adc_1000.bin\end{verbatim}
-\item LEG will now be compiled by ModelSim and instances of QEMU and gdb will be started.
- If there are no compilation errors, you will be at the prompt of gdb modified with LEG-specific debugging commands.
- The most basic command is \texttt{leg-lockstep}, which runs LEG until a bug is found.
- Enter this now.
-\item The test will print a `\texttt{.}' after each successfully executed instruction.
- If the program completes successfully, a \texttt{PASSED} message will appear.
- Otherwise debugging information will be printed, including the last correct register state, the current incorrect LEG register state, and the expected register state.
-\item Type \texttt{q} to exit gdb.
-\end{enumerate}
+\subsection{debug\_lockstep}
+
+\subsection{Interrupt Testing}
+
+\subsection{???}
+
+END
+
+
+\subsection{Brief Overview}
+
+This is a tool I made to enable fast debugging and testing of the Linux kernel by comparing the registers of qemu with those of the LEG processor simulated in ModelSim.
+
+
+
+
 
 
 \subsection{File structure}
