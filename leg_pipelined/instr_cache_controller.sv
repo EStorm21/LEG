@@ -29,7 +29,7 @@ module instr_cache_controller #(parameter tbits = 14) (
   // Create Hit signal 
   assign W1Hit = (W1V & (Tag == W1Tag));
   assign W2Hit = (W2V & (Tag == W2Tag));
-  assign Hit = (W1Hit | W2Hit) & (PAReadyF | ~(state == READY));
+  assign Hit = (W1Hit | W2Hit) & (PAReadyF | ~(state == READY)) & enable;
 
   // Select output from Way 1 or Way 2
   assign WaySel = enable & W1Hit | ~enable;
