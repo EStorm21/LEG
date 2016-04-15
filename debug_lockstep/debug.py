@@ -39,7 +39,7 @@ import qemuDump
 import leg
 import bin_bugsearch
 
-from configuration import qemu_path
+from configuration import qemu_path, linux_path
 
 OUTPUT_DIR = "output"
 
@@ -88,7 +88,7 @@ def initialize_qemu():
 	qemu_cmd = [qemu_path, '-M', 'integratorcp', '-m', '256M', '-nographic', '-serial', 'pty', '-icount', '0', '-S', '-gdb', 'tcp::{}'.format(openport)]
 	
 	if TEST_FILE is "":
-		qemu_cmd += ['-kernel', '/proj/leg/kernel/system.bin']
+		qemu_cmd += ['-kernel', os.path.join(linux_path,'system.bin')]
 	
 	print "Starting qemu with port {}".format(openport)
 	qemu = subprocess.Popen(qemu_cmd, stdin=open(os.devnull), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn = os.setpgrp)
@@ -102,7 +102,7 @@ def initialize_qemu():
 			print e
 			print "Port connect error. Retrying..."
 	if TEST_FILE is "":
-		gdb.execute('file /proj/leg/kernel/vmlinux')
+		gdb.execute('file {}'.format(os.path.join(linux_path,'vmlinux')))
 	else:
 		print "Loading script {}".format(TEST_FILE)
 		gdb.execute('restore {} binary'.format(TEST_FILE))
