@@ -16,7 +16,7 @@ They can be installed using your package manager.
 
 \begin{tabular}{|l|l|}
 \hline 
-\textbf{Package} & \textbf{Needed for...} \\\hline
+\textbf{Package} & \textbf{Needed for} \\\hline
 g++ & QEMU, GDB, debug\_lockstep \\\hline
 libtools & QEMU \\\hline
 zlib1g-dev & QEMU \\\hline
@@ -53,6 +53,10 @@ You can safely remove systems other than \texttt{arm-softmmu}.
 	These commands will apply the custom LEG addons to v2.4.0 of QEMU.
 	\item In the QEMU directory run \\\texttt{./configure \\ sudo make -j20}\\ to build QEMU.
 	\end{enumerate}
+	
+\item The Linux executable for LEG debugging must be installed to use it as a test.
+Get it from  ????????.
+Need \texttt{vmlinux} and \texttt{system.bin}
 \end{enumerate}
 
 Now all software necessary to run the LEG testing tools should be installed, but some components must still be configured.
@@ -74,10 +78,12 @@ Examples are included in the file.
 		\item set \texttt{qemu\_path} to the path to \texttt{qemu\_system\_arm}
 		\item set \texttt{gdb\_path} to the path to \texttt{arm-none-eabi-gdb-py}
 		\item set \texttt{hasVopt} to 0 if you are using ModelSim SE, or 1 if you have a version of ModelSim with vopt.
+		\item set \texttt{linux\_path} to the path of the Linux executable.
 	\end{enumerate}
 
 NOTES: For some reason compiling LEG doesn't happen, even though the vlog command is being run. 
 You will need to run the commands in leg.py:compile() manually before running debug.sh.
+Pls fix.
 You will also need to uncomment the correct lines in debug.sh to work on the clean systems. 
 \end{enumerate}
 
