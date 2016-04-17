@@ -1,7 +1,22 @@
-This section describes the procedure for generating and running tests. 
+This section describes the basic procedure for generating and running tests. 
+It covers running a provided test, useful GDB commands, and compiling handwritten tests.
 
 % TODO: Fill out these sections
 \subsection{Relevant Files}
+\begin{itemize}
+\item \textbf{debug\_lockstep/debug.sh} The entry point for the debugging framework. 
+\item \textbf{debug\_lockstep/unitTests/*} Randomized tests for every instruction. 
+Each test is named with the instruction or instruction type followed by the number of instructions in the test. 
+Each test has four or five files
+\begin{itemize}
+\item \texttt{test.s}, the randomly generated assembly.
+\item\texttt{test.dat}, the corresponding hexadecimal machine code.
+\item \texttt{test.dump}, the disassembled machine code.
+\item \texttt{test.elf}, which contains information about how interrupts are raised in exception handler tests.
+\item \texttt{test.bin}, the binary file that runs on the processor and QEMU.
+\end{itemize}
+
+\end{itemize}
 
 \subsection{Basic Operation on Provided Tests}
 This section demonstrates the most basic operation of the testing framework.
@@ -11,36 +26,45 @@ It will allow you to run a test from the terminal and debug in gdb at a register
 \item Provided tests are stored in the \texttt{unitTests} directory. 
  To run a provided test, type 
  \begin{verbatim}./debug.sh -t unitTests/testname.bin\end{verbatim}
- at the terminal. For example, to run the test consisting of 1000 random adc instructions, enter 
+ at the terminal. For example, to run the test consisting of 1000 random \texttt{ADC} instructions, enter 
  \begin{verbatim}./debug.sh -t unitTests/adc_1000.bin\end{verbatim}
-\item LEG will now be compiled by ModelSim and instances of QEMU and gdb will be started.
+\item LEG will now be compiled by ModelSim and instances of QEMU and GDB will be started.
  If there are no compilation errors, you will be at the prompt of gdb modified with LEG-specific debugging commands.
+ Read the list of special commands.
+ 
  The most basic command is \texttt{leg-lockstep}, which runs LEG until a bug is found.
  Enter this now.
 \item The test will print a `\texttt{.}' after each successfully executed instruction.
  If the program completes successfully, a \texttt{PASSED} message will appear.
  Otherwise debugging information will be printed, including the last correct register state, the current incorrect LEG register state, and the expected register state.
-\item Type \texttt{q} to exit gdb.
+\item Debug with any GDB command, or type \texttt{q} to exit GDB.
 \end{enumerate}
 
-\subsection{Creating Tests}
+This guide cannot present a complete tutorial on using GDB, but a few examples of the most useful commands are listed in Table \ref{table:gdb} below.
 
-\subsection{Running Tests}
+\begin{table}
+\centering
+\begin{tabular}{|l|p{10cm}|}
+\hline \textbf{command} & \textbf{effect} \\ 
+\hline \texttt{stepi} & Execute one instruction \\ 
+\hline \texttt{i r} & Print register contents of the current mode, including cpsr \\ 
+\hline \texttt{x/10i \$pc} & Print the next 10 instructions \\ 
+\hline \texttt{x/10w \$sp-20} & Print 10 words of memory, starting 20 addresses below the stack pointer \\ 
+\hline \texttt{x/5b 0xfffdc} & Print 5 bytes of memory, starting at \texttt{0xfffdc} \\ 
+\hline \texttt{b *0x220} & Set a breakpoint at address \texttt{0x220} \\ 
+\hline 
+\end{tabular} 
+\caption{Examples of common GDB commands}
+\label{table:gdb}
+\end{table}
+
+\subsection{Creating Tests}
 
 \subsection{Debugging Tools}
 
 END
 
 % Out of date
-\subsection{Relevant Files}
-\begin{itemize}
-\item \textbf{makeQemuTest.sh} Creates testing files from an assembly source. Results are derived from QEMU. 
-\item \textbf{testManual.sh} Allows the user to single-step assembly in QEMU. 
-\item \textbf{autosim0.tcl} Runs the tests in tests.list against ModelSim. 
-\item \textbf{autoSim1.tcl} Opens a single test in ModelSim with the GUI. 
-\item \textbf{makePiTest.sh} Creates testing files from an assembly source. Results are derived from the raspberry pi. 
-\end{itemize}
-
 \subsection{Creating Tests}
 There are two methods for creating tests, either on tera, verified by QEMU, or on the raspberry pi, verified by GDB on the pi. Both methods currently depend on the Pi for assembly and disassembly. 
 \subsubsection{Creating Tests on Tera}
@@ -68,56 +92,4 @@ The results of this process leave you with 6 files.
 \subsubsection{Creating Tests on the Pi}
 Test creation on the Pi is analagous to tera. 
 The username and password for the pi are pi and strawberry, respectively. Creating tests on the Pi does not generate the QEMU compatible file. Generating tests on the pi does not accomodate mode changes and all instructions are executed in user mode. 
-\subsection{Running Tests}
 
-Running tests requires modification of the default \texttt{autoSim0.tcl} 
-file in the project root directory (assumed in this document to be \texttt{/LEG} )
-and the \texttt{dmem.sv} file in \texttt{LEG/leg\_pipelined/dmem.sv}. 
-Note that the path after \texttt{/LEG} is shown, but absolute paths are 
-required for all files and directories.
-
-\subsubsection{Modifying \texttt{autoSim0.tcl}}
-
-\begin{enumerate}
-	\item Create an empty ModelSim project in your favorite directory.
-	\item Create an unversioned copy of \texttt{autoSim0.tcl} for your own use.
-	\item Modify the entries in the copy to point to the correct locations:
-	\begin{itemize}
-		\item \texttt{project} should point to your ModelSim project.
-		\item On your own computer, \texttt{vlog} should end in \texttt{LEG/leg\_pipelined/*.sv}
-		\item \texttt{testPath} should point to \texttt{LEG/tests}
-		\item \texttt{testList} should point to \texttt{LEG/tests/tests.list}
-		\item In the test for loop, change the location of simTest.dat to a directory 
-		of your choice, e.g. \texttt{LEG/tests/simTest.dat}
-	\end{itemize}
-\end{enumerate}
-
-\subsubsection{Modifying \texttt{dmem.sv}}
-
-\begin{enumerate}
-
-\item Comment out the other \texttt{\$readmemh} lines, and add your own with 
-the same path to the \texttt{simTest.dat} file. Each time you pull from 
-the repository and want to run tests you will need to uncomment 
-the correct line in this file. Alternatively, don't commit this file.
-
-\item In most cases you can also comment out the loop that fills the memory with zeros. 
-This will cause the tests to run faster.
-\end{enumerate}
-
-
-\subsubsection{Run tests and view output}
-
-\begin{enumerate}
-	\item Uncomment the test you want to run in \texttt{LEG/tests/tests.list}.
-	\item Using a shell (Cygwin, PowerShell, cmd on Windows), 
-	navigate to the folder containing your \texttt{autosim.tcl} file. 
-	\item run the command \texttt{vsim -c -do autosim.tcl}
-	\item One way to view in ModelSim on your computer is to use the autoSim1.tcl file
-	(modified for your setup). Run this in command prompt and ModelSim will open. Add waves and restart.
-\end{enumerate}
-
-\subsubsection{autosim1.tcl}
-autosim1.tcl is a script on tera for manually debugging a single test. 
-The test is loaded into dmem.sv, and the GUI is loaded. 
-The user can then add additional signals and quickly restart the simulation. 

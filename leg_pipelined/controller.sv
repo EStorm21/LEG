@@ -103,6 +103,7 @@ module controller (
   logic        ALUCarryIn_0E;
   logic        multPrevZFlagD, multPrevZFlagE;
   logic        ZeroRotateE, LDRSTRshiftD, LDRSTRshiftE;
+  logic        CoProc_MCR_E;
 
   // For debugging
   logic        validDdebug, validEdebug, validMdebug, validWdebug;
@@ -154,7 +155,7 @@ module controller (
         else if (~InstrD[20] & InstrD[25])                  ControlsD = 13'b10_01_0001_0010; // STR, "R-type"
       2'b10:                                                ControlsD = 13'b01_10_1000_1000; // B                         
       2'b11: if(InstrD[25:24] == 2'b11)                     ControlsD = 13'b00_00_0000_0000; // Exception: SWI
-        else if (CoProc_MCR_D)                              ControlsD = 13'b10_00_0000_0000; // MCR (move to coprocessor from register)
+        else if (CoProc_MCR_D)                              ControlsD = 13'b10_00_0000_0100; // MCR (move to coprocessor from register)
         else if (CoProc_MRC_D & InstrD[15:12] == 4'hF)      ControlsD = 13'b10_00_0000_0000; // MRC (R15 update flags only)
         else if (CoProc_MRC_D)                              ControlsD = 13'b10_00_0010_0000; // MRC (move to register from coprocessor)
       default:                                              ControlsD = 13'bx;      // unimplemented
@@ -177,7 +178,7 @@ module controller (
       ALUControlD     = 4'b0010;  // "Subtract" operation
       FlagWriteD[1:0] = 2'b00;
       // Checking for MSR instruction (move register/imm to CPSR/SPSR)
-    end else if (RegtoCPSR_D) begin
+    end else if (RegtoCPSR_D | CoProc_MCR_D) begin
       ALUControlD     = 4'b1101;      // perform MOV instruction so that it takes only input B
       FlagWriteD      = 2'b00;        // Ignore flags for now
     end else if (ALUOpD) begin                     // which Data-processing Instr?
@@ -261,6 +262,7 @@ module controller (
   flopenrc #(1) aluCarryOut(  clk, reset, ~StallE, FlushE, ALUFlagsE[1],     ALUCarryOut_cycle2E);
   flopenrc #(2) multcarryin(  clk, reset, ~StallE, FlushE, multCarryInD,     multCarryInE);
   flopenrc #(1) multprevzflop(clk, reset, ~StallE, FlushE, multPrevZFlagD,   multPrevZFlagE);
+  flopenrc #(1) mcrflop(clk, reset, ~StallE, FlushE, CoProc_MCR_D,   CoProc_MCR_E);
   // pass Z if multPrevZFlag, otherwise pass 1. Use raw ALU flag to record value without need for the instruction to corrupt the flags 
   flopenrc #(1) prevzflop(    clk, reset, ~StallE, FlushE, (~multPrevZFlagE | ALUFlagsE[2]), zFlagPrevE); 
   flopenrc #(1) restoreCPSR_DE(clk, reset, ~StallE, FlushE, restoreCPSR_D, restoreCPSR_E);
@@ -284,7 +286,7 @@ module controller (
                       shamtE, shctl_5E, shctl_8E, shiftE, leftE, arithE, longshiftE, rrx_inE, ShifterCarryOutE);
 
   // === ALU Decoding ===
-  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, RegtoCPSR_E, multNegateRs, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryIn_0E, DoNotWriteRegE);
+  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, RegtoCPSR_E, CoProc_MCR_E, multNegateRs, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryIn_0E, DoNotWriteRegE);
   assign ALUCarryInE = multCarryInE[1] ? ALUCarryOut_cycle2E ^ multNegative : ALUCarryIn_0E;
   // === END ===
 
