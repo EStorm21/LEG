@@ -133,7 +133,7 @@ module testbench();
   
   // MEMORY DEBUGGING
 
-   // `define MEMDEBUG 0
+   `//define MEMDEBUG 0 
   `ifdef MEMDEBUG
 
   // Writeback cache states
@@ -141,10 +141,10 @@ module testbench();
                            NEXTINSTR, FLUSH, WAIT, DWRITE} statetype;
   statetype state, nextstate;
   
-  // logic [31:0] watchdata[$] = {32'hcf8029c0, 32'hc0585fa4,  32'h00000247, 32'hc05a4938, 32'hc03df700, 32'hc0585f94};
-  logic [31:0] watchdata[$] = {32'hcf8029c0, 32'hc05a4938};
-  logic [31:0] watchmem [1] = {32'hc0585f64};
-  // logic [31:0] watchmem [3] = {32'hc0585f64, 32'hc0585f68, 32'hc0585f6c};
+  // logic [31:0] watchdata[$] = {32'hcfffcf10};
+  // logic [31:0] watchmem [1] = {32'hcfffcee8};
+  logic [31:0] watchdata[$] = {32'hc05a4938, 31'hcf8029c0}; // Should be 
+  logic [31:0] watchmem [1] = {32'hc0585f64}; 
   logic [29:0] watchmemword [$size(watchmem)];
   logic [5:0] watchset [$size(watchmem)];
   always_comb
@@ -222,13 +222,17 @@ module testbench();
     // if(dut.data_cache.dcc.state == READY && dut.data_cache.dcc.nextstate == WRITEBACK) begin
       
     // end
+    if(dut.mmuInst.translation_walk_hardware.HRData[1:0] == 2'b00 & 
+      dut.mmuInst.translation_walk_hardware.state == 4'h1) begin
+      $display("Error: Default Case hit in FLD state in twh.sv @ %d", $time);
+    end
 
   end
   `endif
   // END MEMORY DEBUGGING
 
   // BEGIN CLEAN AND FLUSH DEBUGGING
-  // `define CACHEDBG 0
+  //`define CACHEDBG 0
   `ifdef CACHEDBG 
   always @(negedge clk) begin
     if(dut.data_cache.dcc.Clean) begin
@@ -249,6 +253,51 @@ module testbench();
   end
   `endif
   // END CLEAN AND FLUSH DEBUGGING
+
+  // BEGIN ENABLE DISABLE DEBUGGING
+  //`define ENDBGG 0
+  `ifdef ENDBG 
+  // Watch for cache and MMU Enable signals
+  logic PrevDEn, PrevIEn, PrevMMUEn;
+  always_ff @(posedge clk) begin
+    if(reset) begin
+      PrevDEn <= 0;
+      PrevIEn <= 0;
+      PrevMMUEn <= 0;
+    end else begin
+      PrevDEn <= dut.data_cache.dcc.enable;
+      PrevIEn <= dut.instr_cache.icc.enable;
+      PrevMMUEn <= dut.mmuInst.Enable;
+    end
+  end
+  always @(negedge clk) begin
+    if(~(dut.data_cache.dcc.enable == PrevDEn)) begin
+      $display("Changed DEN from %b to %b @ %d ps", PrevDEn, dut.data_cache.dcc.enable, $time);
+    end
+    if(~(dut.instr_cache.icc.enable == PrevIEn)) begin
+      $display("Changed IEN from %b to %b @ %d ps", PrevIEn, dut.instr_cache.icc.enable, $time);
+    end
+    if(~(dut.mmuInst.Enable == PrevMMUEn)) begin
+      $display("Changed MMUEn from %b to %b @ %d ps", PrevMMUEn, dut.mmuInst.Enable, $time);
+    end
+
+  end
+  `endif
+  // END ENABLE DISABLE DEBUGGING
+
+  // BEGIN ENABLE TLB DEBUGGING
+  // `define TLBDBG 0
+  `ifdef TLBDBG 
+  always @(negedge clk) begin
+    if(dut.mmuInst.tlb_inst.we) begin
+      $display("Writing to TLB: Trans %h to %h @ %d ps", dut.mmuInst.tlb_inst.VirtTag, dut.mmuInst.PhysTag,  $time);
+    end
+    // if(dut.mmuInst.translation_walk_hardware.HRData[1:0] == 2'b00 & 
+    //   dut.mmuInst.translation_walk_hardware.state == 4'h1)
+    //   $display("Error: Default Case hit in FLD state in twh.sv @ %d", $time);
+  end
+  `endif
+  // END ENABLE TLB DEBUGGING
 
   // BEGIN SPECIFIC DEBUGGING
   // `define SDEBUG

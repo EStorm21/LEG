@@ -279,6 +279,6 @@ module data_writeback_associative_cache_controller
     Clean & AddrOp & (W1D | W2D)) 
                     | ~(state == READY) & Stall;
   // Always clean both cache ways
-  assign W1Clean = Clean & (state == WRITEBACK) & WaySel;
-  assign W2Clean = Clean & (state == WRITEBACK) & ~WaySel;
+  assign W1Clean = Clean & (state == LASTWRITEBACK) & WaySel;
+  assign W2Clean = Clean & (state == LASTWRITEBACK) & ~WaySel;
 endmodule
