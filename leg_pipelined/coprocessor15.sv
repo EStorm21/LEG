@@ -71,7 +71,7 @@ assign StallCP = (CPUWriteEn & MMUWriteEn) | (CPUEn & MMUEn);
 always_ff @(negedge clk) begin
   if (reset) begin
     rf <= {32'b0, 32'b0, 32'b0, 32'b0, 32'b0, 32'b0,
-           32'b0, 32'b0, 32'b0, 32'b0, 32'b0, 32'b0,
+           32'b0, 32'b0, 32'h40000000, 32'b0, 32'b0, 32'b0,
            32'b0, 32'b0, 32'h00090070, 32'h41069265};
   end
   else begin

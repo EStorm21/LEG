@@ -117,8 +117,16 @@ module testbench();
   // instantiate device to be tested (profiler also instantiates dut)
   top dut(clk, reset, WriteData, DataAdr, MemWrite); 
 
+  //----------------------------- BEGIN DEBUG PRINTING ------------------------
+
+  // `define SDEBUG
+  // `define TLBDBG 0
+  // `define ENDBGG 1
+  // `define MEMDEBUG  1
+  //`define RESETDEBUG 1
+  // `define CACHEDBG 1
+
   // Debug Reset
-  // `define RESETDEBUG 1
   `ifdef RESETDEBUG
   always @(posedge clk)
     if(reset) begin
@@ -133,7 +141,6 @@ module testbench();
   
   // MEMORY DEBUGGING
 
-   `//define MEMDEBUG 0 
   `ifdef MEMDEBUG
 
   // Writeback cache states
@@ -143,8 +150,8 @@ module testbench();
   
   // logic [31:0] watchdata[$] = {32'hcfffcf10};
   // logic [31:0] watchmem [1] = {32'hcfffcee8};
-  logic [31:0] watchdata[$] = {32'hc05a4938, 31'hcf8029c0}; // Should be 
-  logic [31:0] watchmem [1] = {32'hc0585f64}; 
+  logic [31:0] watchdata[$] = {32'h0f80e247}; // Should be 
+  logic [31:0] watchmem [1] = {32'hcf80f00}; 
   logic [29:0] watchmemword [$size(watchmem)];
   logic [5:0] watchset [$size(watchmem)];
   always_comb
@@ -232,7 +239,6 @@ module testbench();
   // END MEMORY DEBUGGING
 
   // BEGIN CLEAN AND FLUSH DEBUGGING
-  //`define CACHEDBG 0
   `ifdef CACHEDBG 
   always @(negedge clk) begin
     if(dut.data_cache.dcc.Clean) begin
@@ -255,7 +261,6 @@ module testbench();
   // END CLEAN AND FLUSH DEBUGGING
 
   // BEGIN ENABLE DISABLE DEBUGGING
-  //`define ENDBGG 0
   `ifdef ENDBG 
   // Watch for cache and MMU Enable signals
   logic PrevDEn, PrevIEn, PrevMMUEn;
@@ -286,7 +291,6 @@ module testbench();
   // END ENABLE DISABLE DEBUGGING
 
   // BEGIN ENABLE TLB DEBUGGING
-  // `define TLBDBG 0
   `ifdef TLBDBG 
   always @(negedge clk) begin
     if(dut.mmuInst.tlb_inst.we) begin
@@ -299,8 +303,18 @@ module testbench();
   `endif
   // END ENABLE TLB DEBUGGING
 
+  // BEGIN CP15 DEBUGGING
+  always @(negedge clk) begin
+    if(dut.cp15.we == 1'b1) begin
+      $display("Writing to CP15: %h to %h op2:%d PCM:%h @ %d ps", dut.cp15.wd, dut.cp15.addr, dut.cp15.opcode_2, dut.leg.dp.PCM, $time);
+    end
+    if(dut.cp15.re == 1'b1) begin
+      $display("Reading CP15: %h from %h op2:%d PCM:%h @ %d ps", dut.cp15.rd, dut.cp15.addr, dut.cp15.opcode_2, dut.leg.dp.PCM, $time);
+    end   
+  end
+  // END CP15 DEBUGGING
+
   // BEGIN SPECIFIC DEBUGGING
-  // `define SDEBUG
   `ifdef SDEBUG
   logic [31:0] dbgaddr = 32'hc0585f64;
   assign dbgset = dbgaddr[9:4];
@@ -319,6 +333,8 @@ module testbench();
   end
   `endif
   // END SPECIFIC DEBUGGING
+
+  //-------------------------------------------- END DEBUG PRINTING ------------------------------------------
 
   // initialize test
   initial

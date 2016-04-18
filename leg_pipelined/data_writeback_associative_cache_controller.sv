@@ -220,6 +220,7 @@ module data_writeback_associative_cache_controller
     (state == LASTREAD) & BusReady;
   assign HWriteM = (state == WRITEBACK) |
     (state == READY) & (nextstate == WRITEBACK | nextstate == LASTWRITEBACK)  |
+    (state == LASTWRITEBACK) & (nextstate == WRITEBACK) |
     (nextstate == DWRITE) | 
     (state == DWRITE);
   assign HRequestM = (state == READY) & MemtoRegM & PAReady & ~enable |
@@ -228,7 +229,7 @@ module data_writeback_associative_cache_controller
     (state == DWRITE) & ~BusReady |
     (state == LASTREAD) & ~BusReady |
     (state == MEMREAD) |
-    (state == LASTWRITEBACK) & ((nextstate == LASTREAD) | (nextstate == MEMREAD)) |
+    (state == LASTWRITEBACK) & ((nextstate == LASTREAD) | (nextstate == MEMREAD) | (nextstate == WRITEBACK)) |
     (state == WRITEBACK); 
 
   // RDSel makes WD the output for disabled cache behavior
@@ -238,7 +239,7 @@ module data_writeback_associative_cache_controller
   (state == MEMREAD) |
   ( (state == NEXTINSTR)  & (~MemWriteM | MemWriteM & ~Dirty) ) |
   ( (state == READY) & ~Hit & ~Dirty );
-  assign ResetBlockOff = ((state == READY) & Hit) |
+  assign ResetBlockOff = ((state == READY) & Hit) & ~(nextstate == WRITEBACK) |
   (state == READY) & ~PAReady |
   (state == NEXTINSTR) |
   (state == WAIT);
