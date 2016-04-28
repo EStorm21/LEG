@@ -1430,7 +1430,7 @@ always_comb
 			PrevCycleCarry = 0;
 			KeepVD = 0;
 			regFileRz = {1'b1, // Control inital mux for RA1D
-						3'b100}; // 5th bit of WA3, RA2D and RA1D
+						3'b101}; // 5th bit of WA3, RA2D and RA1D
 			nextState = cache_done ? ready : cache_mcr;
 			LDMSTMforward = 0;
 			Reg_usr_D = 0; 
