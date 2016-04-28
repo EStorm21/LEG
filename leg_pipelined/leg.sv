@@ -1,4 +1,5 @@
-module leg(input  logic        clk, reset,
+module leg #(parameter dLines, parameter dbsize) // parameters needed for cache clearing micro ops
+          (input  logic        clk, reset,
            output logic [31:0] PCF,
            input  logic [31:0] InstrF, 
            output logic        MemWriteM,
@@ -79,7 +80,7 @@ module leg(input  logic        clk, reset,
   logic [1:0] PCInSelect;
   logic [2:0] VectorPCnextF;
 
-  controller c (.*);
+  controller #(dLines,dbsize) c(.*);
   datapath dp (.*); 
   hazard h(.*);
   addresspath ap(.*);
