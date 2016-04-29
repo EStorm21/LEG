@@ -1,4 +1,5 @@
-module micropsfsm(input  logic        clk, reset,
+module micropsfsm #(parameter dLines, parameter dbsize) // parameters needed for cache clearing micro ops
+			  (input  logic        clk, reset,
                input  logic [31:0] defaultInstrD,
                output logic        InstrMuxD, uOpStallD, LDMSTMforward, Reg_usr_D, MicroOpCPSRrestoreD,
                output logic 	   PrevCycleCarry, KeepVD, noRotate, ldrstrRtype, 
@@ -22,7 +23,8 @@ module micropsfsm(input  logic        clk, reset,
 
 // define states READY and RSR 
 typedef enum {ready, rsr, ldmstm, bl, ldmstmWriteback, ls_word, str, blx, strHalf, ls_halfword, ls_word_byte, ls_word_byte_wb, swp_str, swp_mov, 
-			  MUL_nop, MUL_zero_Rz, MUL_add, MUL_mov_Rs, MUL_negate_Rm, MUL_unNegate_Rm, MUL_shift_Rz, MUL_add_Cout, MUL_gen_flags, MUL_mov_RdHi, MUL_shift_RdLo, MUL_replace_RdHi, MUL_shift_Rd_RdHi, MUL_replace_RdLo, MUL_negate_Rs} statetype; // theres a bug if we get rid of strHalf... need to figoure out why
+			  MUL_nop, MUL_zero_Rz, MUL_add, MUL_mov_Rs, MUL_negate_Rm, MUL_unNegate_Rm, MUL_shift_Rz, MUL_add_Cout, MUL_gen_flags, MUL_mov_RdHi, MUL_shift_RdLo, MUL_replace_RdHi, MUL_shift_Rd_RdHi, MUL_replace_RdLo, MUL_negate_Rs,
+			  cache_inc_Rz, cache_mcr} statetype; // theres a bug if we get rid of strHalf... need to figoure out why
 statetype state, nextState;
 
 string debugText;
@@ -132,6 +134,23 @@ assign multCarryIn = (state == MUL_shift_Rz) | (state == MUL_shift_Rd_RdHi);
 
 assign multPrevZFlag = state == MUL_replace_RdLo;
 
+// -----------------------------------------------------------------------------
+// ----------------------- WRITE BUFFER FLUSHING -------------------------------
+// -----------------------------------------------------------------------------
+// Count the number of lines we have flushed
+logic [$clog2(dLines):0] cache_counter;
+logic cache_done;
+always_ff @ (posedge clk) begin
+  	if (reset | state == ready)
+  		cache_counter <= 0;
+  	else if (StalluOp)
+  		cache_counter <= cache_counter;
+  	else if (state == cache_mcr)
+  		cache_counter <= cache_counter + 1'b1;
+  	else 
+  		cache_counter <= cache_counter;
+end
+assign cache_done = cache_counter == dLines;
 // -----------------------------------------------------------------------------
 // --------------------------- END SPECIAL LOGIC -------------------------------
 // -----------------------------------------------------------------------------
@@ -588,6 +607,29 @@ always_comb
 					MicroOpCPSRrestoreD = 0;
 				end 
 			end
+
+			// WRITE BUFFER CLEANING: mcr 15, 0, [?], cr7, cr10, {4}
+			// First put 0 in Rz, then use Rz as a counter to flush all the lines
+			else if(defaultInstrD[27:16] == 12'he07 & defaultInstrD[11:0] == 12'hf9a) begin 
+				InstrMuxD = 1;
+				uOpStallD = 1;
+				PrevCycleCarry = 0;
+				KeepVD = 0;
+				regFileRz = {1'b0, // Control inital mux for RA1D
+							3'b100}; // 5th bit of WA3, RA2D and RA1D
+				nextState = cache_mcr;
+				LDMSTMforward = 0;
+				Reg_usr_D = 0; 
+				MicroOpCPSRrestoreD = 0;
+				noRotate = 0;  
+				ldrstrRtype = 0;  
+				// mov Rz, #0
+				uOpInstrD = {defaultInstrD[31:28], // Condition bits
+							8'b00_1_1101_0, // MOV I type, Do not update flags
+							4'h0, 4'hF,  // Rd = Rz
+							12'h000 }; // Rm = #0
+			end 
+
 			/* --- Stay in the READY state ----
 			 */
 			else begin 
@@ -1370,6 +1412,50 @@ always_comb
 						8'b000_1101_1, // MOV R type, We can only get here if we set flags
 						4'h0, defaultInstrD[19:16], // Rd = Rd
 						8'h00, defaultInstrD[19:16] }; // Rm = Rd
+		end
+
+		// Cache cleaning: Execute line cleaning MCR
+		cache_mcr:begin
+			InstrMuxD = 1;
+			uOpStallD = 1;
+			PrevCycleCarry = 0;
+			KeepVD = 0;
+			regFileRz = {1'b0, // Control inital mux for RA1D
+						3'b010}; // 5th bit of WA3, RA2D and RA1D
+			nextState = cache_inc_Rz;
+			LDMSTMforward = 0;
+			Reg_usr_D = 0; 
+			MicroOpCPSRrestoreD = 0;
+			noRotate = 0;  
+			ldrstrRtype = 0;  
+			// mcr 15, 0, Rz, cr7, cr14, {2}
+			uOpInstrD = {defaultInstrD[31:28], // Condition bits
+						8'b1110_000_0, // mcr, opcode_1=0
+						12'h7ff,  // Crn=7, Rd=Rz, cp_num=15
+						4'b010_1, // opcode_2=2
+						4'he};    // CRm=14
+		end
+
+		// Cache cleaning: Add dbsize*4 to Rz
+		cache_inc_Rz:begin
+			InstrMuxD = 1;
+			uOpStallD = ~cache_done;
+			PrevCycleCarry = 0;
+			KeepVD = 0;
+			regFileRz = {1'b1, // Control inital mux for RA1D
+						3'b101}; // 5th bit of WA3, RA2D and RA1D
+			nextState = cache_done ? ready : cache_mcr;
+			LDMSTMforward = 0;
+			Reg_usr_D = 0; 
+			MicroOpCPSRrestoreD = 0;
+			noRotate = 0;  
+			ldrstrRtype = 0;  
+			// ADD Rz, Rz, #dbsize*4
+			uOpInstrD = {defaultInstrD[31:28], // Condition bits
+						8'b00_1_0100_0, // add I type, don't set flags
+						8'hff,  // Rn=Rz, Rd=Rz
+						4'b1111, // ROL #2 (to get *4)
+						dbsize[7:0]}; 
 		end
 
 

@@ -55,8 +55,14 @@ module top (
   logic [31:0] CP15rd_M, control, FullTBase, DummyTBase, controlDummy;
 
   synchronizer synchro(.*);
-  // instantiate processor core
-  leg leg(
+
+  parameter dLines = 64;   // Number of lines in D$
+  parameter dbsize = 4;     // block size of the D$. Less than 2^8
+
+  
+  // instantiate processor core. 
+  // Cache parameters are for cleaning micro ops
+  leg #(dLines, dbsize) leg(
     .clk(clk), 
     .reset(reset), 
     .PCF(PCF),
@@ -164,8 +170,6 @@ module top (
     .HRequestF(HRequestF )
   );
 
-  parameter dLines = 64;   // Number of lines in D$
-  parameter dbsize = 4;     // block size of the D$
 
   // D$
   data_writeback_associative_cache #(dbsize,dLines) data_cache (

@@ -1,5 +1,5 @@
-module controller (
-  /// ------ From TOP ------
+module controller #(parameter dLines, parameter dbsize) // parameters needed for cache clearing micro ops
+( /// ------ From TOP ------
   input  logic        clk, reset             ,
   /// ------ To   TOP ------
   output logic        MemtoRegM, CoProc_WrEnM, CoProc_EnM,
@@ -126,7 +126,7 @@ module controller (
   flopenrc #(1) flushWBD(clk, reset | ExceptionResetMicrop, ~StallD, FlushD, 1'b1, nonFlushedInstrD);
 
 
-  micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevCycleCarryD, 
+  micropsfsm #(dLines,dbsize) uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevCycleCarryD, 
     KeepVD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, interrupting, 
     R1_D, R2_D, ALUFlagsE[1], multCarryInD, multPrevZFlagD, multNegateRs); 
   assign MultSelectD = 0;
