@@ -99,8 +99,7 @@ module controller (
   logic        CondExM, CondExW;
   logic        CondAndD;
   logic        bkpt_D, bkpt_E;
-  logic  [1:0] multCarryInD, multCarryInE;
-  logic        ALUCarryIn_0E;
+  logic        multCarryInD, multCarryInE;
   logic        multPrevZFlagD, multPrevZFlagE;
   logic        ZeroRotateE, LDRSTRshiftD, LDRSTRshiftE;
   logic        CoProc_MCR_E;
@@ -129,7 +128,7 @@ module controller (
 
   micropsfsm uOpFSM(clk, reset, DefaultInstrD, InstrMuxD, uOpStallD, LDMSTMforwardD, Reg_usr_D, MicroOpCPSRrestoreD, PrevCycleCarryD, 
     KeepVD, noRotateD, uOpRtypeLdrStrD, RegFileRzD, uOpInstrD, StalluOp, ExceptionSavePC, interrupting, 
-    R1_D, R2_D, multCarryInD, multPrevZFlagD, multNegative, multNegateRs); 
+    R1_D, R2_D, ALUFlagsE[1], multCarryInD, multPrevZFlagD, multNegateRs); 
   assign MultSelectD = 0;
 
   // === Control Logic for Datapath ===
@@ -260,7 +259,7 @@ module controller (
 
   flopenrc #(1) shftrCarryOut(clk, reset, ~StallE, FlushE, ShifterCarryOutE, ShifterCarryOut_cycle2E);
   flopenrc #(1) aluCarryOut(  clk, reset, ~StallE, FlushE, ALUFlagsE[1],     ALUCarryOut_cycle2E);
-  flopenrc #(2) multcarryin(  clk, reset, ~StallE, FlushE, multCarryInD,     multCarryInE);
+  flopenrc #(1) multcarryin(  clk, reset, ~StallE, FlushE, multCarryInD,     multCarryInE);
   flopenrc #(1) multprevzflop(clk, reset, ~StallE, FlushE, multPrevZFlagD,   multPrevZFlagE);
   flopenrc #(1) mcrflop(clk, reset, ~StallE, FlushE, CoProc_MCR_D,   CoProc_MCR_E);
   // pass Z if multPrevZFlag, otherwise pass 1. Use raw ALU flag to record value without need for the instruction to corrupt the flags 
@@ -282,12 +281,11 @@ module controller (
   flopenrc #(1) zrotflop(clk, reset, ~StallE, FlushE, ZeroRotateD, ZeroRotateE);
 
   // SD 1/24/2016: Could move to D? think about timing
-  shift_control shctl(InstrE[6:5], InstrE[11:7], SrcA70E, RselectE, RSRselectE, LDRSTRshiftE, ZeroRotateE, FlagsE[1], multCarryInE[0], ShifterCarryOut_cycle2E, sh_a0E, sh_a31E, sh_rot0E, sh_rot31E, 
+  shift_control shctl(InstrE[6:5], InstrE[11:7], SrcA70E, RselectE, RSRselectE, LDRSTRshiftE, ZeroRotateE, FlagsE[1], multCarryInE, ShifterCarryOut_cycle2E, sh_a0E, sh_a31E, sh_rot0E, sh_rot31E, 
                       shamtE, shctl_5E, shctl_8E, shiftE, leftE, arithE, longshiftE, rrx_inE, ShifterCarryOutE);
 
   // === ALU Decoding ===
-  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, RegtoCPSR_E, CoProc_MCR_E, multNegateRs, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryIn_0E, DoNotWriteRegE);
-  assign ALUCarryInE = multCarryInE[1] ? ALUCarryOut_cycle2E ^ multNegative : ALUCarryIn_0E;
+  alu_decoder alu_dec(ALUOpE, ALUControlE, FlagsE[1:0], BXInstrE, RegtoCPSR_E, CoProc_MCR_E, multNegateRs, ALUOperationE, CVUpdateE, InvertBE, ReverseInputsE, ALUCarryInE, DoNotWriteRegE);
   // === END ===
 
   /*** BRIEF ***

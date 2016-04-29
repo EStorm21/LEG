@@ -101,7 +101,7 @@ module datapath(/// ------ From TOP (Memory & Coproc) ------
   extend      ext(InstrD[23:0], ImmSrcD, ExtImmD, InstrD[25], noRotateD);
   rotator   rotat(ExtImmD, InstrD, RotImmD, ZeroRotateD, noRotateD); 
   assign R1_D = {Rd1D[31], Rd1D[0]};
-  assign R2_D = {Rd2D[31], Rd2D[1]}; // 1st bit is uOp Rm_sign
+  assign R2_D = {WriteDataE[31], Rd2D[1]}; // 1st bit is uOp Rm_sign, using the execute forwarded value. Unfortunate name.
 
 
   // ====================================================================================
