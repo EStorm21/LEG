@@ -1,4 +1,6 @@
 % TODO: Fill out these new sections and ensure they are up to date
+This section describes tools for more in-depth debugging than is possible using GDB alone. 
+It also provides more detailed information about the GDB extensions and debugger output files.
 
 \subsection{Relevant Files}
 
@@ -11,49 +13,75 @@
 \item \textbf{lockstep.py} Python file that handles lockstep debugging on the GDB end.
 \item \textbf{qemuDump.py} Python file that handles dumping Qemu's current state to file.
 \item \textbf{qemuDumpRestore.tcl} Tcl script that manipulates the ModelSim state to match a dumped Qemu state.
+\item \textbf{addAll.do} Adds almost all relevant waveforms for debugging LEG in ModelSim.
 \end{itemize}
 
-\subsection{debug\_lockstep}
+\subsection{Waveform Debugging}\label{sec:MSdebug}
+Finding the root cause of a bug often requires following the values of internal processor signals over time.
+The procedure described here explains the process of loading processor state into ModelSim for signal level debugging.
+
+\begin{enumerate}
+\item Processor state can be dumped from the GDB prompt at any point while debugging.
+ The first step is to determine the instruction at which the bug occurs.
+ Running \texttt{leg-lockstep} will simulate until a bug is reached and then report the location of the bug, for example \texttt{0x258}.
+ Restart the simulation using \texttt{leg-restart} and then jump to a location before the bug, for example \texttt{leg-jump *0x254}.
+ 
+\item Now the simulation has been advanced to just before the bug. Dump qemu's state to a form that can be reloaded into ModelSim. Enter \\\texttt{leg-qemu-full-dump} at the gdb prompt.
+
+\item Copy the dump files \texttt{qemu\_mem\_dump.dat} and \texttt{qemu\_state\_dump} to the ModelSim debugging directory \texttt{MSdebug} set up in Section \ref{sec:cfg}.
+The dump files can be found in \texttt{debug\_lockstep}.
+
+\item Open the ModelSim project created in Section \ref{sec:cfg} and ensure all source files compiled and up to date.
+Then enter 
+\begin{verbatim}source qemuDumpRestore_MS.tcl\end{verbatim}
+in the ModelSim command prompt.
+This will load the state from the dump files and add useful signals to the wave window. 
+
+\item type \texttt{run xxx} to simulate the processor, where \texttt{xxx} is the time to simulate. 
+A value of 200 usually good to start.
+
+\item Watch the program counter, register file, and other signals for the reported bug to appear. 
+Many signal names can be found in the processor description below, and the rest can be found in the source code.
+Happy debugging!
+\end{enumerate}
 
 \subsection{Interrupt Testing}
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
-\subsection{???}
+\subsection{Simulator Operation}
+This section provides more detailed information on the operation of the LEG debugging framework.
 
-END
-
-
-\subsection{Brief Overview}
-
-This is a tool I made to enable fast debugging and testing of the Linux kernel by comparing the registers of qemu with those of the LEG processor simulated in ModelSim.
-
-
-
-
-
-
-\subsection{File structure}
-The run directory on Tera is currently in the Git repo at \texttt{debug\_lockstep}.1 The scripts place all of their output in the \texttt{debug\_lockstep/output} directory. For each run of the script, a new subdirectory within this directory is created, named according to the appropriate timestamp. Within this directory, the \texttt{bugs} directory contains the full debug output of each found bug, and \texttt{runlog} contains an abbreviated summary of all bugs found in the given run. Duplicate bugs are ignored and do not appear in these files.
+\subsubsection{Output File structure}
+The run directory on Tera is currently in the Git repo at \texttt{debug\_lockstep}. The scripts place all of their output in the \texttt{debug\_lockstep/output} directory. For each run of the script, a new subdirectory within this directory is created, named according to the appropriate timestamp. Within this directory, the \texttt{bugs} directory contains the full debug output of each found bug, and \texttt{runlog} contains an abbreviated summary of all bugs found in the given run. Duplicate bugs are ignored and do not appear in these files.
 
 Created checkpoints appear in \texttt{output/checkpoints/} with the provided name.
 
-\subsection{How to Use}
-There are two ways to use the debug\_lockstep script: to debug Linux, and to debug a test. To debug linux, simply start the debug script using \texttt{./debug.sh} in your shell on tera. (For now, this only works on tera.) You will be dropped into a GDB prompt, which is connected to a qemu process that runs the kernel. To debug a specific test, run
 
-\begin{verbatim}
-./debug.sh -t path/to/test.bin
-\end{verbatim}
-
-You can also pass the flag \texttt{-a} to make it automatically begin lockstepping instead of using an interactive prompt.
+\subsubsection{LEG GDB extensions}\label{sec:leggdb}
 
 When you are at the GDB prompt, you can run arbitrary GDB commands, but additional commands are enabled:
 
 \begin{itemize}
 \item \texttt{leg-lockstep}: Starts lockstepping at the current instruction. This dumps the current qemu state to a file, and then starts ModelSim initialized with the current state of qemu. It then begins to single step in qemu and advance time in ModelSim, ensuring that all register changes match between the two. As soon as there is a mismatch, or a ModelSim change takes too long to occur, it outputs bug information and returns control to the GDB prompt.
+
 \item \texttt{leg-lockstep-auto}: Same as \texttt{leg-lockstep}, except that it immediately resumes lockstepping after every found bug, initializing ModelSim with the correct state.
+
+\item \texttt{leg-lockstep-gui}: Opens the ModelSim GUI and allows wave configuration before running \texttt{leg-lockstep}.
+Signals appear in real time in ModelSim, and the simulation is stopped when a bug is reached. 
+The procedure described in Section \ref{sec:MSdebug} is preferred over this command for its increased speed and versatility when debugging processor signals.
+
 \item \texttt{leg-jump} \texttt{\emph{BREAK\_LOC}}: Convenience function to jump to a given location in the kernel. This sets a breakpoint at \texttt{BREAK\_LOC}, continues to it, and then automatically removes the breakpoint.
+
 \item \texttt{leg-frombug} \texttt{\emph{BUGFILE}}: Jumps to the last matching state before a bug. \texttt{BUGFILE} should be a path to a bug output file, specified relative to the \texttt{debug\_lockstep} directory. The resulting state is the last state for which qemu and ModelSim changed together correctly, before the given bug was detected. You can run \texttt{leg-lockstep} to check if the bug still occurs, or run \texttt{leg-checkpoint} to create a checkpoint for ModelSim debugging.
+
 \item \texttt{leg-count}: Prints an estimate of the current instruction count.
-\item \texttt{leg-checkpoint} \texttt{\emph{NAME}}: Dumps the current qemu state, then opens ModelSim and converts the qemu state to a ModelSim checkpoint. \texttt{NAME} gives the desired filename of the created checkpoint.
+
+\item \texttt{leg-checkpoint} \texttt{\emph{NAME}}: Dumps the current qemu state, then opens ModelSim and converts the qemu state to a ModelSim checkpoint. \texttt{NAME} gives the desired filename of the created checkpoint. Note that this command can only be used if your version of ModelSim supports checkpoints. Student Edition does not.
+NOTE: This command has been mostly superseded by \texttt{leg-qemu-full-dump}.
+
+\item \texttt{leg-qemu-full-dump}: Saves qemu's current register state as \texttt{qemu\_state\_dump} and saves qemu's memory as \texttt{qemu\_mem\_dump.dat}. These files can be used by \texttt{qemuDumpRestore.tcl} to initialize the processor simulation to a known state.
+
 \item \texttt{leg-restart}: Stops qemu and restarts it at the beginning of the kernel execution.
+
 \item \texttt{leg-stop}: Gracefully shuts down qemu and then exits GDB. You should use this instead of \texttt{quit}, because otherwise the qemu process will continue in the background and will have to be killed manually.
 \end{itemize}

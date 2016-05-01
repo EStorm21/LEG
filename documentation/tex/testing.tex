@@ -12,15 +12,18 @@ Each test has four or five files
 \item \texttt{test.s}, the randomly generated assembly.
 \item\texttt{test.dat}, the corresponding hexadecimal machine code.
 \item \texttt{test.dump}, the disassembled machine code.
-\item \texttt{test.elf}, which contains information about how interrupts are raised in exception handler tests.
+\item \texttt{test.elf} (optional), which contains information about how interrupts are raised in exception handler tests.
 \item \texttt{test.bin}, the binary file that runs on the processor and QEMU.
 \end{itemize}
 
+\item \textbf{debug\_lockstep/customTests/compileTest.sh} Script for compiling tests for LEG from assembly source. See Section \ref{sec:maketest}.
+
+\item \textbf{debug\_lockstep/customTests/makeRandomAssembly.py} Script to generate random assembly instructions to test on LEG. See Section \ref{sec:randasm}.
 \end{itemize}
 
 \subsection{Basic Operation on Provided Tests}
 This section demonstrates the most basic operation of the testing framework.
-It will allow you to run a test from the terminal and debug in gdb at a register level.
+It will allow you to run a test from the terminal and debug in gdb at a register and instruction level.
 \begin{enumerate}
 \item From your local copy of the LEG repository, enter the \texttt{debug\_lockstep} directory.
 \item Provided tests are stored in the \texttt{unitTests} directory. 
@@ -30,14 +33,14 @@ It will allow you to run a test from the terminal and debug in gdb at a register
  \begin{verbatim}./debug.sh -t unitTests/adc_1000.bin\end{verbatim}
 \item LEG will now be compiled by ModelSim and instances of QEMU and GDB will be started.
  If there are no compilation errors, you will be at the prompt of gdb modified with LEG-specific debugging commands.
- Read the list of special commands.
+ Many of these are explained further in Section \ref{sec:leggdb}
  
  The most basic command is \texttt{leg-lockstep}, which runs LEG until a bug is found.
  Enter this now.
 \item The test will print a `\texttt{.}' after each successfully executed instruction.
  If the program completes successfully, a \texttt{PASSED} message will appear.
  Otherwise debugging information will be printed, including the last correct register state, the current incorrect LEG register state, and the expected register state.
-\item Debug with any GDB command, or type \texttt{q} to exit GDB.
+\item Debug with any GDB command, or type \texttt{leg-stop} to exit.
 \end{enumerate}
 
 This guide cannot present a complete tutorial on using GDB, but a few examples of the most useful commands are listed in Table \ref{table:gdb} below.
@@ -59,37 +62,29 @@ This guide cannot present a complete tutorial on using GDB, but a few examples o
 \end{table}
 
 \subsection{Creating Tests}
+Custom tests can be created from Assembly source and run on LEG using the tools in \texttt{debug\_lockstep/customTests}.
+
+\subsubsection{Generating Assembly}\label{sec:randasm}
+The script \texttt{makeRandomAssembly.py} can be used to easily create random instructions to test LEG with a vast combination of cases.
+Because interrupt handlers, a small stack, and all processor modes are automatically initialized, the output of the script can also be extended with your own additional test vectors.
+For example, to create 1234 random add and load instructions and output the program to \texttt{add\_load.s}, run
+\begin{verbatim}python makeRandomAssembly.py -i add ldr -n 1234 > add_load.s\end{verbatim}
+Run the script with \texttt{-h} to print full usage info.
+
+NOTE: Sometimes immediates produced by the script are not recognized by the compiler. 
+In these cases you must re-run \texttt{makeRandomAssembly.py} or manually change the immediate value that fails compilation.
+
+\subsubsection{Compiling Assembly}\label{sec:maketest}
+Any assembly code compatible with ARMv5 excluding Thumb can tested on LEG.
+Compiling the code uses the ARM bare metal development toolchain that was previously installed in Section \ref{sec:install}.
+Simply run \texttt{compileTest.sh} in \texttt{debug\_lockstep/customTests} with the basename of the assembly code you want to compile. Note that the \texttt{.s} extension is not included.
+
+\begin{verbatim}./compileTest.sh add_load\end{verbatim}
+
+The compiled files will be placed in the \texttt{tests} directory. 
+The test can now be run on LEG from \texttt{debug\_lockstep}:
+
+\begin{verbatim}./debug.sh -t customTests/tests/add_load.bin\end{verbatim}
 
 \subsection{Debugging Tools}
-
-END
-
-% Out of date
-\subsection{Creating Tests}
-There are two methods for creating tests, either on tera, verified by QEMU, or on the raspberry pi, verified by GDB on the pi. Both methods currently depend on the Pi for assembly and disassembly. 
-\subsubsection{Creating Tests on Tera}
-Tests can be created on tera in \texttt{/proj/leg/qemu}. 
-First create an assembly file of instructions to test. 
-This test should have appropriate exception handling setup with branches in the base addresses to each exception handler. 
-The results are compared to the integrator board in QEMU. 
-The bootloader in QEMU initializes the flags and puts values in r0 and r1. 
-To ensure consistent results when comparing ModelSim and QEMU, all tests should start by setting r0, r1, and the condition flags. 
-All assembly files should have a \texttt{.s} file extension, for example \texttt{add.s}. To generate the test files, use \texttt{makeQemuTest.sh}. 
-For example \texttt{sh makeQemuTest.sh add}
-
-Once the script is started, it will transfer several files to and from the Pi. If you intend to create a lot of tests, you should create a public key for the pi so you don't have to keep typing in the password. Once the files have transferred, QEMU will start. To get the results from QEMU type \texttt{info registers} the \texttt{Ctrl+C} to quit QEMU. This will create the test. 
-
-The results of this process leave you with 6 files. 
-\begin{itemize}
-\item \texttt{.bin} file: The binary file which can be run on the Pi for debugging. 
-\item \texttt{.dat} file: The file that runs on ModelSim. 
-\item \texttt{.dump} file: The objdump file that contains useful human readable information about the test.
-\item \texttt{.flash} file: The QEMU readable file. 
-\item \texttt{.s} file: The assembly source file.
-\item \texttt{.val} file: The state of the registers at the end of the program, for comparison against ModelSim. 
-\end{itemize}
-
-\subsubsection{Creating Tests on the Pi}
-Test creation on the Pi is analagous to tera. 
-The username and password for the pi are pi and strawberry, respectively. Creating tests on the Pi does not generate the QEMU compatible file. Generating tests on the pi does not accomodate mode changes and all instructions are executed in user mode. 
 
