@@ -8,19 +8,20 @@ module data_writeback_associative_cache #(
     parameter blockbits = $clog2(bsize),
     parameter tbits = 30-blockbits-setbits
 ) (
-    // From leg controller
+    // From leg 
     input  logic             clk, reset, MemWriteM, MemtoRegM,
-    BusReady, IStall, InvAllMid, PAReady, MSel,
-    // From Coprocessor
-    input  logic             CP15en, Inv, Clean, AddrOp,
-    // From TLB
-    input  logic             CurrCBit ,
-    input  logic [tbits-1:0] PhysTag  ,
+    IStall, 
     input  logic [     31:0] VirtA, WD,
+    // From Coprocessor
+    input  logic             CP15en, Inv, Clean, AddrOp, InvAllMid,
+    // From TLB
+    input  logic             CurrCBit , PAReady,
+    input  logic [tbits-1:0] PhysTag  ,
     // From AHB
     input  logic [      3:0] ByteMaskM,
     input  logic [     31:0] HRData   ,
-    // To leg controller
+    input  logic             BusReady , MSel,
+    // To leg 
     output logic             Stall    ,
     // To TLB
     output logic             RequestPA,
@@ -52,8 +53,6 @@ module data_writeback_associative_cache #(
     // Output Control logic
     logic CurrLRU, UseCacheA, WaySel, RDSel;
 
-
-    // mux2 #(32) CacheWDMux(HRData, WD, UseWD, CacheWD);
     mux2 #(8) CacheWDMux0 (HRData[7:0],WD[7:0],WDSel[0],CacheWD[7:0]);
     mux2 #(8) CacheWDMux1 (HRData[15:8],WD[15:8],WDSel[1],CacheWD[15:8]);
     mux2 #(8) CacheWDMux2 (HRData[23:16],WD[23:16],WDSel[2],CacheWD[23:16]);
@@ -65,7 +64,6 @@ module data_writeback_associative_cache #(
     assign ANew    = {VirtTag, BlockNum, DataWordOffset, VirtA[1:0]};
 
     // Create Cache memory. 
-    // This module contains both way memories and LRU table
     assign vin = enable;
     data_writeback_associative_cache_memory #(lines, tbits, bsize) dcmem(.*);
 
