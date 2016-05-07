@@ -38,10 +38,10 @@ module instr_cache #(
     assign vin            = CP15en; // Only validate cache lines when CP15end
 
     // Disable writeback behavior (read only cache)
-    assign DirtyIn        = 1'b0;   
+    assign DirtyIn        = 1'b0;
     assign ActiveByteMask = 4'b1111;
-    assign W1Clean          = 1'b0;
-    assign W2Clean          = 1'b0;
+    assign W1Clean        = 1'b0;
+    assign W2Clean        = 1'b0;
 
     data_writeback_associative_cache_memory #(lines,tbits,bsize) icm (.*);
 

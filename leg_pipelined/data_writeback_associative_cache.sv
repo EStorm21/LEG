@@ -8,23 +8,27 @@ module data_writeback_associative_cache #(
     parameter blockbits = $clog2(bsize),
     parameter tbits = 30-blockbits-setbits
 ) (
-    // From leg controller 
+    // From leg controller
     input  logic             clk, reset, MemWriteM, MemtoRegM,
-    BusReady, IStall, InvAllMid, PAReady, MSel, 
+    BusReady, IStall, InvAllMid, PAReady, MSel,
     // From Coprocessor
-    input  logic  CP15en, Inv, Clean, AddrOp, 
+    input  logic             CP15en, Inv, Clean, AddrOp,
     // From TLB
-    input  logic  CurrCBit, 
-    input  logic [tbits-1:0] PhysTag ,
+    input  logic             CurrCBit ,
+    input  logic [tbits-1:0] PhysTag  ,
     input  logic [     31:0] VirtA, WD,
     // From AHB
     input  logic [      3:0] ByteMaskM,
-    input  logic [     31:0] HRData  ,
+    input  logic [     31:0] HRData   ,
+    // To leg controller
+    output logic             Stall    ,
+    // To TLB
+    output logic             RequestPA,
     // To AHB
-    output logic [     31:0] HWData ,
-    output logic [     31:0] RD, HAddr, 
-    output logic             Stall, HRequestM, HWriteM, RequestPA,
-    output logic [      2:0] HSizeM
+    output logic [     31:0] HWData   ,
+    output logic [     31:0] RD, HAddr,
+    output logic [      2:0] HSizeM   ,
+    output logic             HRequestM, HWriteM
 );
 
     // Cache way outputs
@@ -34,31 +38,31 @@ module data_writeback_associative_cache #(
     logic [        31:0] W1RD, W2RD, CacheOut, CachedAddr, CacheWD;
 
     // Input Control Logic
-    logic [         31:0] A             ;
-    logic [          3:0] ActiveByteMask, WDSel;
-    logic [blockbits-1:0] AddrWordOffset, DataWordOffset;
-    logic                 DirtyIn, vin;
-    logic                 UseWD, BlockWE, W1Clean, W2Clean;
-    logic [$clog2(lines)-1:0] BlockNum;
-    logic [setbits-1:0] set       ;
-    logic [  tbits-1:0] VirtTag   ;
-    logic [        1:0] WordOffset, CacheRDSel;
-    logic enable, InvAll;
+    logic [             31:0] A             ;
+    logic [              3:0] ActiveByteMask, WDSel;
+    logic [    blockbits-1:0] AddrWordOffset, DataWordOffset;
+    logic                     DirtyIn, vin;
+    logic                     UseWD, BlockWE, W1Clean, W2Clean;
+    logic [$clog2(lines)-1:0] BlockNum      ;
+    logic [      setbits-1:0] set           ;
+    logic [        tbits-1:0] VirtTag       ;
+    logic [              1:0] WordOffset, CacheRDSel;
+    logic                     enable, InvAll;
 
     // Output Control logic
     logic CurrLRU, UseCacheA, WaySel, RDSel;
 
 
     // mux2 #(32) CacheWDMux(HRData, WD, UseWD, CacheWD);
-    mux2 #(8) CacheWDMux0(HRData[7:0],   WD[7:0],   WDSel[0], CacheWD[7:0]);
-    mux2 #(8) CacheWDMux1(HRData[15:8],  WD[15:8],  WDSel[1], CacheWD[15:8]);
-    mux2 #(8) CacheWDMux2(HRData[23:16], WD[23:16], WDSel[2], CacheWD[23:16]);
-    mux2 #(8) CacheWDMux3(HRData[31:24], WD[31:24], WDSel[3], CacheWD[31:24]);
+    mux2 #(8) CacheWDMux0 (HRData[7:0],WD[7:0],WDSel[0],CacheWD[7:0]);
+    mux2 #(8) CacheWDMux1 (HRData[15:8],WD[15:8],WDSel[1],CacheWD[15:8]);
+    mux2 #(8) CacheWDMux2 (HRData[23:16],WD[23:16],WDSel[2],CacheWD[23:16]);
+    mux2 #(8) CacheWDMux3 (HRData[31:24],WD[31:24],WDSel[3],CacheWD[31:24]);
 
     // Create New Address using the counter as the word offset
-    assign A = VirtA;
+    assign A       = VirtA;
     assign VirtTag = VirtA[31:31-tbits+1];
-    assign ANew = {VirtTag, BlockNum, DataWordOffset, VirtA[1:0]};
+    assign ANew    = {VirtTag, BlockNum, DataWordOffset, VirtA[1:0]};
 
     // Create Cache memory. 
     // This module contains both way memories and LRU table
