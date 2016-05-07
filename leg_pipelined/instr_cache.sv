@@ -3,19 +3,28 @@
 // 2-Way Set Associative Instruction cache for LEG Processor
 
 module instr_cache #(
-    parameter bsize = 4,
-    parameter lines = 2,
-    parameter setbits = $clog2(lines),
+    parameter bsize = 4,                    // Block size
+    parameter lines = 2,                    // # of lines
+    parameter setbits = $clog2(lines), 
     parameter blockbits = $clog2(bsize),
     parameter tbits = 30-blockbits-setbits
 ) (
-    input  logic             clk, reset, CP15en, BusReady, InvAllMid, Inv,
-    input  logic             PAReadyF, FSel, uOpStallD, AddrOp,
+    // From leg
+    input  logic             clk, reset, uOpStallD,
     input  logic [     31:0] A       ,
+    // From coprocessor
+    input  logic             CP15en, AddrOp, InvAllMid, Inv,
+    // From TLB
     input  logic [tbits-1:0] PhysTag , 
+    input  logic             PAReadyF,
+    // From AHB
+    input  logic             FSel, BusReady,
     input  logic [     31:0] HRData  ,
-    output logic [     31:0] RD, HAddrF,
-    output logic             IStall, HRequestF, RequestPA
+    // To leg
+    output logic [     31:0] RD,
+    output logic             IStall,
+    // To AHB
+    output logic             HRequestF, HAddrF, RequestPA
 );
 
     // Signal Declaration

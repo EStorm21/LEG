@@ -1,4 +1,3 @@
-% TODO
 \section{Data Cache}
 This section describes the structure of the data cache and its role in the memory system.
 
@@ -12,7 +11,7 @@ The number of lines per way is parameterized, and the replacement policy impleme
 \subsection{Important Diagrams}
 
 	Figure \ref{fig:dcachediag} includes a diagram of the data cache.
-	See the filed for more information.
+	See the code for more information.
 	\begin{figure}
 	\label{fig:dcachediag}
 	\centering
@@ -22,9 +21,10 @@ The number of lines per way is parameterized, and the replacement policy impleme
 
 \subsection{All Relevant Files and Brief Descriptions}
 
-	Table \ref{table:drel} shows the files that are used by the data cache and Table \ref{table:drel} lists the top level inputs and outputs.
+	Table \ref{table:drel} shows the files that are used by the data cache and Table \ref{table:dio} lists the top level inputs and outputs.
 
 	\begin{table}
+	\label{table:drel}
 	\begin{tabular}{|l|p{70mm}|}
 	\hline File  & Description \\ 
 	\hline  data\_writeback\_associative\_cache.sv & Top level D\$ module \\ 
@@ -39,11 +39,11 @@ The number of lines per way is parameterized, and the replacement policy impleme
 	\hline  word\_memory.sv & Byte addressable word memory  \\
 	\hline
 	\end{tabular} 
-	\label{table:drel}
 	\caption{Data cache files}
 	\end{table}
 
 	\begin{table}
+	\label{table:dio}
 	\begin{tabular}{|l|p{85mm}|l|}
 	\hline Port & Description & I/O \\ 
 	\hline clk & Clock input &  I \\ 
@@ -74,9 +74,9 @@ The number of lines per way is parameterized, and the replacement policy impleme
 	\hline HWriteM & AHB write enable & O \\
 	\hline
 	\end{tabular} 
-	\label{table:dio}
 	\caption{Data cache I/O (data\_writeback\_associative\_cache.sv)}
 	\end{table}
+	% TODO: Fix the label and reference
 
 \subsection{Data Cache States}
 \label{sec:dstate}
@@ -108,7 +108,7 @@ Below is an explanation of the data cache states.
 	It waits for the last memory read to complete.
 
 	\item NEXTINSTR:
-	The next instr state removes the stall on the pipeline and allows the instructions to move one stage down the pipeline. If this stage did not exist, then the instruction at the data stage would remain the same and after the requested data is retrieved, the same data would be retrieved again. If the entry were uncachable, then the processor would stall forever.
+	The next instr state removes the stall on the pipeline and allows the instructions to move one stage down the pipeline. If this stage did not exist, then the instruction at the data stage would remain the same and after the requested data is retrieved, the same data would be retrieved again. 
 
 	\item WAIT:
 	The data cache enters this state when simultaneous data and instruction stalls occur. 

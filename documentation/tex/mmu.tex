@@ -1,13 +1,15 @@
-% TODO
-\section{Name of thing that I made}
+\section{Memory Management Unit}
+The memory management unit (MMU) supports most of the memory functions described in ARMv5.
+The functionality implemented is fully described in section \ref{sec:mmufunct}
+The MMU supports virtual address translation using Sections and Large, Small, and Tiny pages.
 
 \subsection{Brief Overview}
 
-% TODO
+The MMU consists of three main modules: the translation lookaside buffer (TLB), translation walk hardware (twh.sv), and the translation fault hardware (tfh.sv). 
 
 \subsection{Important Diagrams}
 
-% TODO - include images or give path to images in git
+% TODO - include image from the paper
 
 \subsection{All Relevant Files and Brief Descriptions}
 
@@ -15,5 +17,12 @@
 
 \subsection{Analysis of Confusing Sections of Code}
 
-% TODO
+\subsection{Functionality}
+\label{sec:mmufunct}
+
+\begin{list}
+\item tfh.sv: 
+The fault detection has been tested using directed tests and waveform inspection, but has not been against qemu or while booting linux.
+For this reason, it is disabled by default.
+\end{list}
 
