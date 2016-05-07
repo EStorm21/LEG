@@ -1,6 +1,6 @@
 // data_writeback_associative_cache.sv
 // mwaugaman@hmc.edu 8 August 2015
-// Data Cache for LEG v5
+// Data Cache for LEG processor
 
 module data_writeback_associative_cache #(
     parameter bsize = 4                   , parameter lines = 2,
@@ -8,14 +8,21 @@ module data_writeback_associative_cache #(
     parameter blockbits = $clog2(bsize),
     parameter tbits = 30-blockbits-setbits
 ) (
-    input  logic             clk, reset, CP15en, MemWriteM, MemtoRegM,
-    BusReady, IStall, InvAllMid, Inv, Clean, PAReady, MSel, CurrCBit, AddrOp,
-    input  logic [     31:0] VirtA, WD,
-    input  logic [     31:0] HRData  ,
-    input  logic [      3:0] ByteMaskM,
+    // From leg controller 
+    input  logic             clk, reset, MemWriteM, MemtoRegM,
+    BusReady, IStall, InvAllMid, PAReady, MSel, 
+    // From Coprocessor
+    input  logic  CP15en, Inv, Clean, AddrOp, 
+    // From TLB
+    input  logic  CurrCBit, 
     input  logic [tbits-1:0] PhysTag ,
+    input  logic [     31:0] VirtA, WD,
+    // From AHB
+    input  logic [      3:0] ByteMaskM,
+    input  logic [     31:0] HRData  ,
+    // To AHB
     output logic [     31:0] HWData ,
-    output logic [     31:0] RD, HAddr, ANew,
+    output logic [     31:0] RD, HAddr, 
     output logic             Stall, HRequestM, HWriteM, RequestPA,
     output logic [      2:0] HSizeM
 );
