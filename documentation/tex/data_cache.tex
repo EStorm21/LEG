@@ -7,36 +7,54 @@ This section describes the structure of the data cache and its role in the memor
 The data cache is a writeback, 2 way associative cache. 
 The cache uses physical tagging and virtual indexing, so the number of bytes in each way is limited to the size of a tiny translation page (1024 bytes). 
 The default cache size is $64 \text{ lines} \cdot 4 \text{ words/line} \cdot 4 \text{ bytes/word} = 1024 \text{ bytes}$. 
-The number of lines in a way and block size are parameterized, and the replacement policy implemented is Least Recently Used (LRU).
-The number of ways is not parameterized, because the Least Recently Used Logic becomes more complex as the number of ways increases.
+The number of lines per way is parameterized, and the replacement policy implemented is Least Recently Used (LRU).
 
 \subsection{Important Diagrams}
 
+	Figure \ref{fig:dcachediag} includes a diagram of the data cache.
+	See the filed for more information.
+	\begin{figure}
+	\label{fig:dcachediag}
+	\centering
+	\includegraphics[width=\textwidth]{images/dataCache.pdf}
+	\caption{Diagram of 2 way set associative data cache. Controller logic in blue}
+	\end{figure}
 
 % TODO - include images or give path to images in git
 
 \subsection{All Relevant Files and Brief Descriptions}
 
-Table \ref{table:drel} shows the files that are used by the data cache and Table \ref{table:drel} lists the top level inputs and outputs.
+	Table \ref{table:drel} shows the files that are used by the data cache and Table \ref{table:drel} lists the top level inputs and outputs.
 
-\begin{tabular}{|l|p{80mm}|}
-\hline File  & Description \\ 
-\hline  data\_writeback\_associative\_cache.sv & Top level D\$ module \\ 
-\hline  data\_writeback\_controller.sv & Controller logic for the D\$.
-Contains the primary state machine described in section \ref{sec:dstate}\\ 
-\hline 
-\label{table:drel}
-\end{tabular} 
+	\begin{tabular}{|l|p{70mm}|}
+	\hline File  & Description \\ 
+	\hline  data\_writeback\_associative\_cache.sv & Top level D\$ module \\ 
+	\hline  data\_writeback\_controller.sv & Controller logic for the D\$.
+	Contains the primary state machine described in section \ref{sec:dstate} \\ 
+	\hline  data\_writeback\_associative\_memory.sv & 
+	Memory module containing the both cache ways, the LRU memory, and way selection mux's.
+	This module is used in both the instruction and data caches.
+	The instruction cache fixes the dirty and clean inputs to zero, because it is a read only cache.\\ 
+	\hline  data\_writeback\_associative\_cache\_way.sv & 
+	Contains the memory associated with one cache way. This includes four words per line along with the valid, dirty, and tag bits. \\ 
+	\hline  word\_memory.sv & Byte addressable word memory  \\
+	\hline
+	\end{tabular} 
+	\label{table:drel}
+	% TODO: add caption to this table
+	% \caption{Data cache files}
 
-\begin{tabular}{|l|l|l|l|}
-\hline Port & Description & Input/Output \\ 
-\hline  &  &  &  \\ 
-\hline  &  &  &  \\ 
-\hline 
-\label{table:dio}
-\end{tabular} 
+	\begin{tabular}{|l|p{60mm}|l|}
+	\hline Port & Description & Input/Output \\ 
+	\hline  &  &  \\ 
+	\hline  &  &  \\ 
+	\hline
+	\end{tabular} 
+	\label{table:dio}
+	% TODO: Add caption to this table
+	% \caption{Inputs and Outputs to data cache (data\_writeback\_associative\_cache.sv)}
 
-\subsection{Analysis of Confusing Sections of Code}
+\subsection{Data Cache State}
 \label{sec:dstate}
 
 Below is an explanation of the states NEXTINSTR, WRITEBYTES, WAIT,and DWRITE.
