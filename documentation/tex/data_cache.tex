@@ -1,20 +1,43 @@
 % TODO
 \section{Data Cache}
+This section describes the structure of the data cache and its role in the memory system.
 
 \subsection{Brief Overview}
 
-The data cache is a writeback, 2 way associative cache. The cache uses physical tagging and virtual indexing, so the number of lines in each way is limited to the size of a tiny translation page or 256 lines where each line consists of four words. This architecture implies that the total cache size is $2 ways \cdot 256 \frac{lines}{way} \cdot 4 \frac{words}{line} \cdot 4 \frac{bytes}{word} = 2048 bytes$
-% TODO
+The data cache is a writeback, 2 way associative cache. 
+The cache uses physical tagging and virtual indexing, so the number of bytes in each way is limited to the size of a tiny translation page (1024 bytes). 
+The default cache size is $64 \text{ lines} \cdot 4 \text{ words/line} \cdot 4 \text{ bytes/word} = 1024 \text{ bytes}$. 
+The number of lines in a way and block size are parameterized, and the replacement policy implemented is Least Recently Used (LRU).
+The number of ways is not parameterized, because the Least Recently Used Logic becomes more complex as the number of ways increases.
 
 \subsection{Important Diagrams}
+
 
 % TODO - include images or give path to images in git
 
 \subsection{All Relevant Files and Brief Descriptions}
 
-% TODO
+Table \ref{table:drel} shows the files that are used by the data cache and Table \ref{table:drel} lists the top level inputs and outputs.
+
+\begin{tabular}{|l|p{80mm}|}
+\hline File  & Description \\ 
+\hline  data\_writeback\_associative\_cache.sv & Top level D\$ module \\ 
+\hline  data\_writeback\_controller.sv & Controller logic for the D\$.
+Contains the primary state machine described in section \ref{sec:dstate}\\ 
+\hline 
+\label{table:drel}
+\end{tabular} 
+
+\begin{tabular}{|l|l|l|l|}
+\hline Port & Description & Input/Output \\ 
+\hline  &  &  &  \\ 
+\hline  &  &  &  \\ 
+\hline 
+\label{table:dio}
+\end{tabular} 
 
 \subsection{Analysis of Confusing Sections of Code}
+\label{sec:dstate}
 
 Below is an explanation of the states NEXTINSTR, WRITEBYTES, WAIT,and DWRITE.
 
