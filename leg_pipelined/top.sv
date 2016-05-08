@@ -22,7 +22,7 @@ module top (
 
   // ----- data cache -----
   logic        Valid, DStall, END, CLEAND, CurrCBit;
-  logic [31:0] ReadDataM, DANew;
+  logic [31:0] ReadDataM;
   logic [3:0]  ByteMaskM;
 
   // ----- instr cache -----
@@ -183,7 +183,6 @@ module top (
     .Clean    (CLEAND    ),
     .PAReady  (PAReadyM  ),
     .MSel     (MSel      ),
-    .ANew     (DANew     ),
     .RequestPA(RequestPAM),
     .MemWriteM(MemWriteM ),
     .MemtoRegM(MemtoRegM ),

@@ -66,13 +66,6 @@ module mmu #(parameter tbits = 22) (
   assign SBit = control[7];
   assign RBit = control[9];
 
-  // TODO: Remove, this is for debugging
-  always_ff @(posedge clk) begin
-    if(Fault) begin
-      $display("Mem fault detected at %d. VirtAdr = %h, FaultCode = %h", $time, VirtAdr, FaultCode);
-    end
-  end
-
   // Bypass translation
   mux2 #(tbits) PhsyTagEn(VirtAdr[31:32-tbits], TableEntry[tbits+8:9], Enable, PhysTag);
 

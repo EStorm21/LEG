@@ -1,9 +1,9 @@
 module word_memory #(parameter lines = 16, parameter setbits = $clog2(lines))
     (input logic clk, we,
-    input logic [31:0] wd,
-    input logic [setbits-1:0] set, 
-    input logic [3:0] ByteMask, 
-    output logic [31:0] rd);
+      input logic [31:0] wd,
+      input logic [setbits-1:0] set,
+      input logic [3:0] ByteMask,
+      output logic [31:0] rd);
 
   // Create 4 byte memories
   logic [7:0] BYTE0[lines-1:0];  // n lines x bsize bits

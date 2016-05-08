@@ -29,7 +29,7 @@ module instr_cache_controller #(parameter tbits = 14) (
   // Create Hit signal 
   assign W1Hit = (W1V & (Tag == W1Tag));
   assign W2Hit = (W2V & (Tag == W2Tag));
-  assign Hit = (W1Hit | W2Hit) & (PAReadyF | ~(state == READY)) & enable;
+  assign Hit   = (W1Hit | W2Hit) & (PAReadyF | ~(state == READY)) & enable;
 
   // Select output from Way 1 or Way 2
   assign WaySel = enable & W1Hit | ~enable;
@@ -62,13 +62,13 @@ module instr_cache_controller #(parameter tbits = 14) (
   // output logic
   assign IStall =  (state == MEMREAD) | ((state == READY) & ~Hit) |
                    (state == LASTREAD);
-  assign CWE    = 
-     (state == MEMREAD) & BusReady | (state == LASTREAD) & BusReady;
-  assign HRequestF  = (state == MEMREAD) |
-    (state == READY) & ~Hit & PAReadyF | 
-    (state == LASTREAD) & ~BusReady;
-  assign ResetBlockOff = ( state == READY ) & ~(nextstate== MEMREAD) | 
-    ( state == NEXTINSTR );
+  assign CWE =
+  (state == MEMREAD) & BusReady | (state == LASTREAD) & BusReady;
+  assign HRequestF = (state == MEMREAD) |
+  (state == READY) & ~Hit & PAReadyF |
+  (state == LASTREAD) & ~BusReady;
+  assign ResetBlockOff = ( state == READY ) & ~(nextstate== MEMREAD) |
+  ( state == NEXTINSTR );
   assign RequestPA = (state == READY);
 
   // This logic assumes the Instruction Cache has continuous control
@@ -103,8 +103,8 @@ module instr_cache_controller #(parameter tbits = 14) (
   always_comb
     begin
       writeW1 = ( (~W1V & W2V) | CurrLRU ) & ~W2Hit;
-      W1EN = writeW1 | W1Hit | ~enable;
-      W2EN = ~W1EN;
+      W1EN    = writeW1 | W1Hit | ~enable;
+      W2EN    = ~W1EN;
     end
 
   // Write Enable And gates

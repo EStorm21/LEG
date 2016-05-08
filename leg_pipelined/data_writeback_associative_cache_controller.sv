@@ -1,32 +1,32 @@
 module data_writeback_associative_cache_controller 
   #(parameter lines, parameter bsize, parameter tbits = 14)
   (input  logic clk, reset, CP15en, W1V, W2V, CurrLRU, W1D, W2D, Clean,
-   input  logic IStall, MemWriteM, MemtoRegM, BusReady, PAReady, MSel,
-   input  logic CurrCBit, InvAllMid, Inv, AddrOp,
-   input  logic [1:0] WordOffset,
-   input  logic [3:0] ByteMaskM,
-   input  logic [31:0] A,
-   input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag, VirtTag, 
-   output logic Stall, HWriteM, HRequestM, BlockWE, 
-   output logic W1WE, W2WE, W1EN, UseWD, UseCacheA, DirtyIn, WaySel, RDSel,
-   output logic RequestPA, enable, InvAll, W1Clean, W2Clean,
-   output logic [1:0] CacheRDSel,
-   output logic [2:0] HSizeM,
-   output logic [3:0] ActiveByteMask, WDSel, 
-   output logic [tbits-1:0] CachedTag, Tag,
-   output logic [$clog2(lines)-1:0] BlockNum,
-   output logic [$clog2(bsize)-1:0] AddrWordOffset,
-   output logic [$clog2(bsize)-1:0] DataWordOffset
+    input  logic IStall, MemWriteM, MemtoRegM, BusReady, PAReady, MSel,
+    input  logic CurrCBit, InvAllMid, Inv, AddrOp,
+    input  logic [1:0] WordOffset,
+    input  logic [3:0] ByteMaskM,
+    input  logic [31:0] A,
+    input  logic [tbits-1:0] W1Tag, W2Tag, PhysTag, VirtTag,
+    output logic Stall, HWriteM, HRequestM, BlockWE,
+    output logic W1WE, W2WE, W1EN, UseWD, UseCacheA, DirtyIn, WaySel, RDSel,
+    output logic RequestPA, enable, InvAll, W1Clean, W2Clean,
+    output logic [1:0] CacheRDSel,
+    output logic [2:0] HSizeM,
+    output logic [3:0] ActiveByteMask, WDSel,
+    output logic [tbits-1:0] CachedTag, Tag,
+    output logic [$clog2(lines)-1:0] BlockNum,
+    output logic [$clog2(bsize)-1:0] AddrWordOffset,
+    output logic [$clog2(bsize)-1:0] DataWordOffset
 );
 
-  logic [      tbits-1:0] PrevPTag;
-  logic                   ResetBlockOff, WDMaskSel, IncCounter;
-  logic                   WordAccess, CWE, Hit, W2Hit, W1Hit, TagSel, writeW1;
-  logic                   W2EN, Dirty, NoCountD, PrevCBit, CBit, ResetCountMid;
-  logic                   HWriteWord;
-  logic             [1:0] CounterMid, Counter, DataCounter;
-  logic             [2:0] HSizeMid;
-  logic             [3:0] WDMask;
+  logic [tbits-1:0] PrevPTag     ;
+  logic             ResetBlockOff, WDMaskSel, IncCounter;
+  logic             WordAccess, CWE, Hit, W2Hit, W1Hit, TagSel, writeW1;
+  logic             W2EN, Dirty, NoCountD, PrevCBit, CBit, ResetCountMid;
+  logic             HWriteWord   ;
+  logic [      1:0] CounterMid, Counter, DataCounter;
+  logic [      2:0] HSizeMid     ;
+  logic [      3:0] WDMask       ;
 
   // Writeback cache states
   typedef enum logic[3:0] {READY, MEMREAD, LASTREAD, WRITEBACK, LASTWRITEBACK,
@@ -51,16 +51,16 @@ module data_writeback_associative_cache_controller
     end
 
   assign DataCounter = CounterMid -1'b1;
-  assign enable = CP15en & CBit;
-  assign IncCounter = BusReady | 
-    (state == READY) & (nextstate == MEMREAD) & MSel |
-    (state == READY) & (nextstate == WRITEBACK) & MSel;
+  assign enable      = CP15en & CBit;
+  assign IncCounter  = BusReady |
+  (state == READY) & (nextstate == MEMREAD) & MSel |
+  (state == READY) & (nextstate == WRITEBACK) & MSel;
 
   // ----------------FLUSHING/INVALIDATION--------------------
   mux2 #(1) waySelMux(WaySelMid, W1D, Clean, WaySel);
   // Keep Cleaning if way 2 is dirty and we aren't currently Cleaning it
-  assign InvAll = InvAllMid & Inv;
-  assign CleanMore = W2D & (WaySel == 1'b1); 
+  assign InvAll    = InvAllMid & Inv;
+  assign CleanMore = W2D & (WaySel == 1'b1);
   // Set the way clean enable
   assign W1Inv = Inv & ~AddrOp | AddrOp & Inv & W1Hit & PAReady;
   assign W2Inv = Inv & ~AddrOp | AddrOp & Inv & W2Hit & PAReady;
@@ -85,8 +85,8 @@ module data_writeback_associative_cache_controller
   // Create Hit signal 
   assign W1Hit = (W1V & (Tag == W1Tag));
   assign W2Hit = (W2V & (Tag == W2Tag));
-  assign CHit = (W1Hit | W2Hit);
-  assign Hit = CHit & enable & (PAReady | ~(state == READY)); 
+  assign CHit  = (W1Hit | W2Hit);
+  assign Hit   = CHit & enable & (PAReady | ~(state == READY));
   
   // -------------Write-to logic------------------
   // IN: W1V, W2V, LRU 
@@ -111,19 +111,21 @@ module data_writeback_associative_cache_controller
 
   // Select Data source and Byte Mask for the data cache
   assign UseWD = ~BlockWE | ( BlockWE & MemWriteM & (WordOffset == DataWordOffset) );
-  mux2 #(4)  MaskMux(4'b1111, ByteMaskM, 
-    ( UseWD & ~(state == MEMREAD | state == LASTREAD) ), 
-    ActiveByteMask);
+  mux2 #(4) MaskMux (
+    4'b1111, ByteMaskM,
+    ( UseWD & ~(state == MEMREAD | state == LASTREAD) ),
+    ActiveByteMask
+  );
   assign WDMaskSel = UseWD & (state == MEMREAD | state == LASTREAD) & (WordOffset == DataWordOffset);
-  mux2 #(4)  WDMaskMux(ActiveByteMask, ByteMaskM, WDMaskSel, WDMask);
+  mux2 #(4) WDMaskMux (ActiveByteMask,ByteMaskM,WDMaskSel,WDMask);
   assign WDSel = ~(WDMask ^ {4{UseWD}});
 
   // ---------------HSIZE Logic------------------
   // Always writeback the full word
-  assign HWriteWord = (nextstate == WRITEBACK) | 
-    (state == WRITEBACK) | (state == LASTWRITEBACK);
+  assign HWriteWord = (nextstate == WRITEBACK) |
+  (state == WRITEBACK) | (state == LASTWRITEBACK);
   mask_to_hsize mth(ByteMaskM, HSizeMid);
-  mux2 #(3) HSizeMux(HSizeMid, 3'b010, HWriteWord, HSizeM);
+  mux2 #(3) HSizeMux (HSizeMid,3'b010,HWriteWord,HSizeM);
 
   // state register
   always_ff @(posedge clk, posedge reset)
@@ -276,9 +278,9 @@ module data_writeback_associative_cache_controller
   assign BlockNum = A[$clog2(lines)-1+4:4];
 
   // ----------------MMU-------------------
-  assign RequestPA = (state == READY) & (MemtoRegM | MemWriteM | 
-    Clean & AddrOp & (W1D | W2D)) 
-                    | ~(state == READY) & Stall;
+  assign RequestPA = (state == READY) & (MemtoRegM | MemWriteM |
+    Clean & AddrOp & (W1D | W2D))
+    | ~(state == READY) & Stall;
   // Always clean both cache ways
   assign W1Clean = Clean & (state == LASTWRITEBACK) & WaySel;
   assign W2Clean = Clean & (state == LASTWRITEBACK) & ~WaySel;

@@ -1,19 +1,30 @@
-\section{Memory Management Unit}
-The memory management unit (MMU) supports most of the memory functions described in ARMv5.
-The functionality implemented is fully described in section \ref{sec:mmufunct}
-The MMU supports virtual address translation using Sections and Large, Small, and Tiny pages.
+\section{Instruction Cache}
+This section describes the structure of the instruction cache and its role in the memory system.
 
 \subsection{Brief Overview}
 
-The MMU consists of three main modules: the translation lookaside buffer (TLB), translation walk hardware (twh.sv), and the translation fault hardware (tfh.sv). 
+The instruction cache is a read only, 2 way associative cache. 
+The instruction cache uses physical tagging and virtual indexing, so the number of bytes in each way is limited to the size of a tiny translation page (1024 bytes). 
+The default cache size is $64 \text{ lines} \cdot 4 \text{ words/line} \cdot 4 \text{ bytes/word} = 1024 \text{ bytes}$. 
+The number of lines per way is parameterized, and the replacement policy implemented is Least Recently Used (LRU).
+The instruction cache uses the same memory modules as the data cache, but disables the dirty and clean signal.
+The controller logic is much simpler for the instruction cache, because it is read only.
 
 \subsection{Important Diagrams}
 
-% TODO - include diagram from the paper
+	% TODO: Get a diagram of the instruction cache
+	Figure \ref{fig:icachediag} includes a diagram of the instruction cache.
+	See the code for more information.
+	\begin{figure}
+	\label{fig:icachediag}
+	\centering
+	\includegraphics[width=\textwidth]{images/dataCache.pdf}
+	\caption{Diagram of 2 way set associative instruction cache. Controller logic in blue}
+	\end{figure}
 
 \subsection{All Relevant Files and Brief Descriptions}
 
-Table \ref{table:mmurel} shows the files that are used by the MMU and Table \ref{table:mmuio} lists the top level inputs and outputs.
+	Table \ref{table:irel} shows the files that are used by the instruction cache and Table \ref{table:instrio} lists the top level inputs and outputs.
 
 	\begin{table}
 	\label{table:irel}
@@ -61,15 +72,28 @@ Table \ref{table:mmurel} shows the files that are used by the MMU and Table \ref
 	\end{tabular} 
 	\caption{Instruction cache I/O (instr\_cache.sv)}
 	\end{table}
+	% TODO: fix the label and reference
 
-\subsection{Analysis of Confusing Sections of Code}
+\subsection{Instruction Cache States}
+\label{sec:istate}
 
-\subsection{Functionality}
-\label{sec:mmufunct}
+Below is an explanation of the instruction cache states.
 
-\begin{list}
-\item tfh.sv: 
-The fault detection has been tested using directed tests and waveform inspection, but has not been against qemu or while booting linux.
-For this reason, it is disabled by default.
-\end{list}
+\begin{enumerate}
+	\item READY 
+	The ready state is the default state for the instruction cache.
+	Upon a cache hit, the instruction cache will remain in the READY state.
 
+	\item MEMREAD:
+	Instruction cache enters this state on a cache miss to read data from memory.
+	The cache reads four words sequentially from the AHB Bus.
+
+	\item LASTREAD:
+	The last memread state in the cache. 
+	During this state, the instruction cache does not request a new memory access.
+	It waits for the last memory read to complete.
+
+	\item NEXTINSTR:
+	The next instr state removes the stall on the pipeline and allows the instructions to move one stage down the pipeline. If this stage did not exist, then the instruction at the fetch stage would remain the same and after the requested instruction is retrieved, the same data would be retrieved again. 
+
+\end{enumerate}
