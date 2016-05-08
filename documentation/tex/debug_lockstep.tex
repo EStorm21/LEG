@@ -14,6 +14,7 @@ It also provides more detailed information about the GDB extensions and debugger
 \item \textbf{qemuDump.py} Python file that handles dumping Qemu's current state to file.
 \item \textbf{qemuDumpRestore.tcl} Tcl script that manipulates the ModelSim state to match a dumped Qemu state.
 \item \textbf{addAll.do} Adds almost all relevant waveforms for debugging LEG in ModelSim.
+\item \textbf{divide\_controller.py} Allows parallel debugging of large executables. 
 \end{itemize}
 
 \subsection{Waveform Debugging}\label{sec:MSdebug}
@@ -46,7 +47,21 @@ Happy debugging!
 \end{enumerate}
 
 \subsection{Interrupt Testing}
-XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+Interrupts are enabled by default and tests with interrupts can be generated using \texttt{makeRandomAssembly.py} with a nonzero \texttt{interrupt\_ratio} (see Section \ref{sec:randasm}).
+Interrupts are also present in Linux.
+
+Interrupts can be disabled in any test by passing the argument \texttt{--noirq} when running \texttt{leg-lockstep}.
+
+\subsection{Linux Testing}
+Since Linux is a large executable, lockstep testing the entire startup process is difficult. 
+Linux can be run from any point by running \texttt{debug.sh} with no arguments and then jumping to the desired location or function, for example \texttt{leg-jump start\_kernel}.
+
+An alternative option that allows parallel simulation of the entire boot process is \texttt{divide\_controller.py}. 
+With an input argument of \\\texttt{parallel-divisions.txt}, worker instances of \texttt{debug.sh} are started for each instruction range in that file. 
+An easy to use monitoring interface is provided.
+This works best on a system with many cores, and \texttt{parallel-divisions.txt} can be customized to the number of parallel instances desired.
+
+\texttt{divide\_controller.py} can also be used with your own executables and custom \texttt{parallel-divisions.txt} files to debug any large program.
 
 \subsection{Simulator Operation}
 This section provides more detailed information on the operation of the LEG debugging framework.
