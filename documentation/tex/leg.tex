@@ -22,8 +22,14 @@ A simplified overview of the processor core is summarized in Figure \ref{fig:cor
 More information about these subsystems can be found in later sections.
 The datapath is described in Section \ref{sec:dp}, the controller in Section \ref{sec:c} and the hazard unit in Section \ref{sec:h}.
 
+The full processor core diagram is shown in Figure \ref{fig:pipelinedfull} and is also included as a high quality PDF in the \texttt{documentation/diagrams} directory.
 
-
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\textwidth]{./diagrams/pipelinedfull.pdf}
+\caption{LEG pipeline showing datapath (black), controller (blue), hazard unit (red), and a register file decoder also called the addresspath (green).}
+\label{fig:pipelinedfull}
+\end{figure}
 
 \subsection{Memory System}
 
