@@ -52,7 +52,6 @@ assign CurrCBit = TableEntry[8];
 typedef enum logic [3:0] {READY, FLD, COARSEFETCH, FINEFETCH, FINED, 
 COARSED, INSTRFAULT, FAULTFSR, FAULTFAR} statetype;
 
-// import mmu_pkg::statetype;
 statetype state, nextstate;
 
 // Output state to translation fault hardware
@@ -129,7 +128,6 @@ endcase
 // ===========================================================================
 
 // HAddrT logic
-// TODO: Make this structural
 always_comb
 case (state)
   READY:        HAddrT = PAReady ? {TableEntry[tagbits+8:9], VirtAdr[31-tagbits:0]} : 
@@ -155,7 +153,6 @@ case (state)
 endcase
 
 // Access Permission Logic
-// mux4 #(2) apMux(HRData[5:4], HRData[7:6], HRData[9:8], HRData[11:10], )
 always_comb
 case (state)
   FLD:    AP = HRData[5:4];
@@ -200,14 +197,6 @@ assign HRequestT = ( (state == COARSEFETCH) |
                 (state == FINED)   & ~HReadyT |
                 (state == FLD) & (~HReadyT | (HRData[1:0] == 2'b01) | (HRData[1:0] == 2'b11)) |
               ( (state == READY) & RequestPA & ~PAReady) ) & Enable;
-
-// CPUHReadyT Logic  
-//assign CPUHReadyTMid = PAReady;
-//assign CPUHReadyTMid = (state == SECTIONTRANS) & HReadyT | 
-//                    (state == LARGETRANS)   & HReadyT |
-//                    (state == TINYTRANS)    & HReadyT |
-//                    (state == READY)        & PAReady |
-//                    (state == SMALLTRANS)   & HReadyT;
 
 // PAReady logic
 // assign PAReady = MMUEn |

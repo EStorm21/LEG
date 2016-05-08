@@ -64,6 +64,8 @@ module data_writeback_associative_cache_controller
   // Set the way clean enable
   assign W1Inv = Inv & ~AddrOp | AddrOp & Inv & W1Hit & PAReady;
   assign W2Inv = Inv & ~AddrOp | AddrOp & Inv & W2Hit & PAReady;
+  // Set the address in the writeba
+  assign CleanTag = W1D & ~((state == LASTWRITEBACK) & (nextstate == WRITEBACK));
 
   //----------------ENABLING----------------------
   // Counter Disable Mux
@@ -103,7 +105,7 @@ module data_writeback_associative_cache_controller
   assign W2WE = W2EN & CWE;
 
   // Create Cached Tag
-  mux2 #(1) TagSelMux(W1EN, W1D, Clean, TagSel);
+  mux2 #(1) TagSelMux(W1EN, CleanTag, Clean, TagSel);
   mux2 #(tbits) CachedTagMux(W2Tag, W1Tag, TagSel, CachedTag);
 
   // Dirty Mux
@@ -227,6 +229,7 @@ module data_writeback_associative_cache_controller
     (state == DWRITE);
   assign HRequestM = (state == READY) & MemtoRegM & PAReady & ~enable |
     (state == READY) & ((nextstate == WRITEBACK) | (nextstate == MEMREAD)) & PAReady |
+    (state == READY) & (nextstate == WRITEBACK) & Clean & ~AddrOp |
     (state == READY) & MemWriteM & enable & ~Hit & PAReady |
     (state == DWRITE) & ~BusReady |
     (state == LASTREAD) & ~BusReady |

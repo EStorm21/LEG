@@ -7,17 +7,24 @@
 *.out
 *.toc
 *.dat
+*.dvi
 *~
+
+## Sublime sftp
+*.json
+
 ## Extras from latexmk
 *.fdb_latexmk
 *.synctex.gz
+
 ## Memory file
 *.flash
-## Python compiled files
-*.pyc
 
 ## Python compiled files
 *.pyc
+
+## Ignore extracted kerne
+kernel/system.bin
 
 ## Extras from google drive
 *.bak

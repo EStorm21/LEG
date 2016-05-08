@@ -1,4 +1,3 @@
-The version of Linux used in LEG was built with BusyBox 1.23.1. (https://www.busybox.net)
 This directory should contain enough to rebuild the linux kernel with a minimal bootloader, device tree, and initial filesystem, so that it can be booted on the integratorcp board.
 
 `kernel-setup-info` contains step-by-step information on how to set up the kernel image from scratch.

@@ -303,9 +303,8 @@ class LegRecordCommand (gdb.Command):
 		dispInstr = False
 
 		# Handle the display instruction flag
-		if(len(args) >= 3):
-			if(args[2] == '-d'):
-				dispInstr = True
+		if('-d' in args):
+			dispInstr = True
 
 		if(len(args) >= 2):
 			N = int(args[0])
@@ -327,6 +326,30 @@ class LegRecordCommand (gdb.Command):
 			print "leg-rec N FILENAME"
 
 LegRecordCommand()
+
+class LegStepMCommand (gdb.Command):
+	""" Step N instructions """
+
+	def __init__ (self):
+		super (LegStepMCommand, self).__init__ ("leg-stepm", gdb.COMMAND_USER)
+
+	def invoke (self, arg, from_tty):
+
+		args = arg.split()
+		dispInstr = False
+
+		N = int(args[0])
+		if(N > 0):
+			print "Stepping {} instructions".format(args[0])
+			for i in range(N):
+				output = gdb.execute('stepi', to_string=True)
+			output = gdb.execute('x/1i $pc', to_string=True)
+			print output
+		else:
+			print "leg-stepm N: N must be a value greater than zero"
+		
+LegStepMCommand()
+
 
 class LegFileBugSearchCommand (gdb.Command):
 	""" Search for a bug using starting points from a file """
@@ -575,6 +598,17 @@ class LegFromBugCommand (gdb.Command):
 
 LegFromBugCommand()
 
+def run_js(js):
+	cmds = js.split(',')
+	print "debug.py cmds:", cmds
+	for cmd in cmds:
+		cmd.replace(' ', '')
+		if('s' in cmd):
+			cmd = cmd.replace('s', '')
+			gdb.execute('leg-stepm {}'.format(cmd))
+		else:
+			gdb.execute('leg-jump *{}'.format(cmd))
+
 ### Things to run ###
 
 atexit.register(cleanup)
@@ -624,6 +658,10 @@ elif COMMAND[0]=="divideandconquer":
 	noirq = False
 	if start_pc != 0:
 		gdb.execute("leg-jump *{}".format(start_pc))
+	if("-js" in COMMAND): # Step instructions before lockstepping
+		i = COMMAND.index("-js")
+		js = COMMAND[i+1]
+		run_js(js)
 	if("--dump" in COMMAND): # Dump qemu
 		print("div and conq dumping")
 		i = COMMAND.index("--dump")

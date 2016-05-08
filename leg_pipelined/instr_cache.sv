@@ -24,7 +24,8 @@ module instr_cache #(
     output logic [     31:0] RD,
     output logic             IStall,
     // To AHB
-    output logic             HRequestF, HAddrF, RequestPA
+    output logic             HRequestF, RequestPA,
+    output logic [     31:0] HAddrF
 );
 
     // Signal Declaration

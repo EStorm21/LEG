@@ -24,10 +24,14 @@ module top (
   logic        Valid, DStall, END, CLEAND, CurrCBit;
   logic [31:0] ReadDataM;
   logic [3:0]  ByteMaskM;
+  parameter dLines = 64;   // Number of lines in D$
+  parameter dbsize = 4;    // Block size of the D$ in words (i.e. 4 words per line)
 
   // ----- instr cache -----
   logic        IStall, ENI;
   logic [31:0] PCF, InstrF;
+  parameter iLines = 64;  // Number of lines in I$
+  parameter ibsize = 4;   // Block size of the I$ in words
 
   // ----- Exception signals -----
   logic DataAbort, PrefetchAbort; // TODO: signals come from MMU
@@ -55,13 +59,7 @@ module top (
   logic [31:0] CP15rd_M, control, FullTBase, DummyTBase, controlDummy;
 
   synchronizer synchro(.*);
-
-  parameter dLines = 64;   // Number of lines in D$
-  parameter dbsize = 4;     // block size of the D$. Less than 2^8
-
-  
-  // instantiate processor core. 
-  // Cache parameters are for cleaning micro ops
+  // instantiate processor core
   leg #(dLines, dbsize) leg(
     .clk(clk), 
     .reset(reset), 
@@ -69,7 +67,7 @@ module top (
     .InstrF(InstrF), 
     .MemWriteM(MemWriteM), 
     .ALUOutM(DataAdrM),
-    // Added for memory (DStall, MemtoRegM)
+    // Added for memory
     .WriteDataM(WriteDataM), 
     .ReadDataM(ReadDataM), 
     .DStall(DStall), 
@@ -145,9 +143,6 @@ module top (
   assign iPhysTag = PhysTag;
   assign dPhysTag = PhysTag;
 
-  parameter iLines = 64;   // Number of lines in I$
-  parameter ibsize = 4; // bsize of the I$
-
   // I$
   instr_cache #(ibsize,iLines) instr_cache (
     .clk      (clk       ),
@@ -169,6 +164,7 @@ module top (
     .RequestPA(RequestPAF),
     .HRequestF(HRequestF )
   );
+
 
 
   // D$
@@ -205,8 +201,7 @@ module top (
   ahb_arbiter_3way ahb_arb(.*);
   tlb_arbiter tarb(.*);
 
-  // Create an ahb memory
-  // TODO: Partition into on chip and off chip
+  // AHB-Lite interface and memory
   ahb_lite ahb (
     .HCLK    (clk     ),
     .HRESETn (~reset   ),
@@ -221,7 +216,7 @@ module top (
     .fiq     (FIQ     )
   );
 
-  // Create the mmu
+  // MMU
   mmu #(tbits) mmuInst (.*);
 
   assign WordAccess = 1'b0;   // Assuming byte or halfword accesses
@@ -229,6 +224,6 @@ module top (
   assign DataAccess = 1'b1;   // Trying to access data memory, not instruction memory
   assign CPSR4      = 1'b1;
   assign TBase     = FullTBase[31:14];
-  assign MMUExtInt = 1'b0;          // No MMU External Interrupt
+  assign MMUExtInt = 1'b0;    // No MMU External Interrupt
 
 endmodule

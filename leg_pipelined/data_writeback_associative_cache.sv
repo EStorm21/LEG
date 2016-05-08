@@ -40,6 +40,7 @@ module data_writeback_associative_cache #(
 
     // Input Control Logic
     logic [             31:0] A             ;
+    logic [             31:0] ANew;
     logic [              3:0] ActiveByteMask, WDSel;
     logic [    blockbits-1:0] AddrWordOffset, DataWordOffset;
     logic                     DirtyIn, vin;

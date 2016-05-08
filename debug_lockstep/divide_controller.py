@@ -17,13 +17,35 @@ def get_run_directory(test_file):
 	return dirpath
 
 def load_divisions(divfile):
+	"""Extract step instructions and jump locations from a divisions file"""
+	div = [] # List of division boundaries
+	js  = [] # List of jumps and steps
 	with open(divfile,'r') as f:
-		return [ map(int, line.split(',')) for line in f ]
+		for line in f:
+			l = line.split(',')
+			print "load_divisions l=",l
+			# Extract the division boundaries
+			div.append([int(l[0]), int(l[-1])])
+			# Extract the extra steps
+			if(len(l) > 2):
+				curr_js = ','.join(l[1:-1])
+				curr_js = curr_js.replace(" ", "")
+				js.append(curr_js)
+			else:
+				js.append('')
+	return div, js
 
-def start_division(test_file, division, rundir, dump=False, noirq=False):
+		# return [ map(int, line.split(',')) for line in f ]
+
+def load_steps(stepfile):
+	with open(stepfile,'r') as f:
+		return [ int(line) for line in f ]
+
+def start_division(test_file, division, rundir, dump=False, noirq=False, js=[]):
 	print("starting division dump = {}, noirq = {}".format(dump, noirq))
 	division_cmd = ['./debug.sh']
-	division_dir = os.path.join(rundir,format_division(division))
+	print 'division', division, 'js', js
+	division_dir = division_dir = os.path.join(rundir,get_identifier(division, js))
 	os.mkdir(division_dir)
 	if test_file != "":
 		division_cmd += ['-t', test_file]
@@ -32,6 +54,8 @@ def start_division(test_file, division, rundir, dump=False, noirq=False):
 		division_cmd += [os.path.join(division_dir)]
 	if(noirq):
 		division_cmd += ['--noirq']
+	if(js):
+		division_cmd += ['-js', js]
 	division_cmd += ['--divideandconquer', division_dir, hex(division[0]), hex(division[1])]
 	print("divide_controller.py: start_division: command = {}".format(division_cmd))
 	return subprocess.Popen(division_cmd, stdin=open(os.devnull, 'r'), stdout=open(os.path.join(division_dir,'stdout'),'w'), stderr=subprocess.STDOUT, preexec_fn=os.setpgrp), division_dir
@@ -44,9 +68,18 @@ def record_pids(rundir, subprocs):
 def format_division(division):
 	return "{}-{}".format(hex(division[0]), hex(division[1]))
 
-def print_inspect(subprocs, divisions, target):
-	for (sp, sdir), division in zip(subprocs,divisions):
-		identifier = format_division(division)
+def format_js(js):
+	return js.replace(',','-')
+
+def get_identifier(division, js):
+	if(js):
+		return format_division(division)+'-'+format_js(js)
+	else:
+		return format_division(division)
+
+def print_inspect(subprocs, divisions, target, js_list):
+	for (sp, sdir), division, js in zip(subprocs,divisions,js_list):
+		identifier = get_identifier(division, js)
 		if identifier == target:
 			runlog = os.path.join(sdir,'runlog')
 			if os.path.isfile(runlog):
@@ -58,9 +91,9 @@ def print_inspect(subprocs, divisions, target):
 	else:
 		print "Couldn't find that target!"
 
-def restart_division(test_file, rundir, subprocs, divisions, target):
-	for i, ((sp, sdir), division) in enumerate(zip(subprocs,divisions)):
-		identifier = format_division(division)
+def restart_division(test_file, rundir, subprocs, divisions, target, js_list):
+	for i, ((sp, sdir), division, js) in enumerate(zip(subprocs,divisions,js_list)):
+		identifier = get_identifier(division, js)
 		if identifier == target:
 			if sp.poll() is None:
 				print "{} is still running! Sending ctrl-c. Run this again to restart once it dies".format(target)
@@ -92,12 +125,12 @@ def overview_msg(subprocs):
 	msg += "{} total bugs found\n".format(nbugs)
 	return msg
 
-def statuslist_msg(subprocs, divisions, running_only):
+def statuslist_msg(subprocs, divisions, running_only, js_list):
 	msg = "Status list:\n"
-	for i, ((sp, sdir), division) in enumerate(zip(subprocs,divisions)):
+	for i, ((sp, sdir), division, js) in enumerate(zip(subprocs,divisions, js_list)):
 		if running_only and sp.poll() is not None:
 			continue
-		identifier = format_division(division)
+		identifier = get_identifier(division, js)
 		is_working = os.path.isfile(os.path.join(sdir,"working"))
 		is_error = os.path.isfile(os.path.join(sdir,"errlog"))
 		if is_error:
@@ -166,13 +199,17 @@ def print_help():
 	
 	
 
-def run_divisions(test_file, divisions, dump=False, noirq=False):
+def run_divisions(test_file, divisions, dump=False, noirq=False, js_list=[]):
 	rundir = get_run_directory(test_file)
 	print "Starting all divisions in parallel!"
-	subprocs = [start_division(test_file, d, rundir, dump=dump, noirq=noirq) for d in divisions]
+
+	subprocs = []
+	for d, js in zip(divisions, js_list):
+		subprocs.append(start_division(test_file, d, rundir, dump=dump, noirq=noirq, js=js))
+
 	print "Started all divisions!"
 	record_pids(rundir, subprocs)
-	target_dict = dict(enumerate(divisions))
+	target_dict = dict(enumerate(zip(divisions, js_list)))
 	print_help()
 	last_command = ""
 
@@ -185,7 +222,7 @@ def run_divisions(test_file, divisions, dump=False, noirq=False):
 				with open(os.path.join(rundir,"summary.txt"),'w') as f:
 					f.write(overview_msg(subprocs))
 					f.write('\n\n')
-					f.write(statuslist_msg(subprocs, divisions, False))
+					f.write(statuslist_msg(subprocs, divisions, False, js_list))
 				break
 			try:
 				command = raw_input("(d&c) ")
@@ -196,9 +233,9 @@ def run_divisions(test_file, divisions, dump=False, noirq=False):
 			if command == "overview":
 				print overview_msg(subprocs)
 			elif command == "list-all":
-				print statuslist_msg(subprocs, divisions, False)
+				print statuslist_msg(subprocs, divisions, False, js_list)
 			elif command == "list-running":
-				print statuslist_msg(subprocs, divisions, True)
+				print statuslist_msg(subprocs, divisions, True, js_list)
 			elif command == "interrupt":
 				print "Interrupting all subprocesses"
 				killall(subprocs)
@@ -206,22 +243,28 @@ def run_divisions(test_file, divisions, dump=False, noirq=False):
 				print_help()
 			elif command.startswith("i "):
 				try:
-					target = format_division(target_dict[int(command[2:])])
-					print_inspect(subprocs, divisions, target)
+					t = target_dict[int(command[2:])]
+					div = t[0]
+					js = t[1]
+					target = get_identifier(div, js)
+					print_inspect(subprocs, divisions, target, js_list)
 				except KeyError:
 					print "Target {} not found".format(target)
 			elif command.startswith("inspect "):
 				target = command[8:]
-				print_inspect(subprocs, divisions, target)
+				print_inspect(subprocs, divisions, target, js_list)
 			elif command.startswith("r "):
 				try:
-					target = format_division(target_dict[int(command[2:])])
-					restart_division(test_file, rundir, subprocs, divisions, target)
+					t = target_dict[int(command[2:])]
+					div = t[0]
+					js = t[1]
+					target = get_identifier(div, js)
+					restart_division(test_file, rundir, subprocs, divisions, target, js_list)
 				except KeyError:
 					print "Target {} not found".format(target)
 			elif command.startswith("restart "):
 				target = command[8:]
-				restart_division(test_file, rundir, subprocs, divisions, target)
+				restart_division(test_file, rundir, subprocs, divisions, target, js_list)
 			last_command = command
 			
 	except:
@@ -239,15 +282,16 @@ if __name__ == '__main__':
 
 	# Parse arguments
 	parser = argparse.ArgumentParser(description='Parse input for divide controller')
-	parser.add_argument('div_file')
+	parser.add_argument('div_file', 
+		help='div_file contains the start PC and end PC for a division along with Jump PC\'s and step instructions. 12, 16, s10, 24 ---> start_pc=12, jump to 16, step 10 instructions, lockstep until pc=24')
 	parser.add_argument('-test_file', '-t', default="", help='Use test_file (.bin) to run divide an conquer. Default set to linux')
 	parser.add_argument('--dump', '-d', action='store_true', default=False,
 		help='Dump the qemu state to file for recovery with modelsim. State dumped to the divide and conquer output folder')
 	parser.add_argument('--noirq', action='store_true', default=False, help='Execute tests with IRQ disabled. This can greatly speed up runtime')
 	args = parser.parse_args(sys.argv[1:])
 
-	# Extract divisions from file
-	divs = load_divisions(args.div_file)
+	# Extract divisions and jump/step info (js) from file
+	[divs, js_list] = load_divisions(args.div_file)
 
 	# Run all divisions
-	run_divisions(args.test_file, divs, dump=args.dump, noirq=args.noirq)
+	run_divisions(args.test_file, divs, dump=args.dump, noirq=args.noirq, js_list=js_list)
