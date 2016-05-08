@@ -54,9 +54,10 @@ You can safely remove systems other than \texttt{arm-softmmu}.
 	\item In the QEMU directory run \\\texttt{./configure \\ sudo make -j20}\\ to build QEMU.
 	\end{enumerate}
 	
-\item The Linux executable for LEG debugging must be installed to use it as a test.
-Get it from  ????????.
-Need \texttt{vmlinux} and \texttt{system.bin}
+\item The Linux executable for LEG debugging can be found in \\\texttt{leg/repo/path/kernel}. 
+LEG uses \href{https://www.busybox.net}{BusyBox} 1.23.1, which can be compiled from source using the instructions in \texttt{kernel-setup-info}.
+Unless you wish to rebuild Linux, the only action necessary is to untar the file \texttt{system.tar.gz}:
+\\In \texttt{kernel/}, run \texttt{tar -zxvf system.tar.gz}
 \end{enumerate}
 
 Now all software necessary to run the LEG testing tools should be installed, but some components must still be configured.
@@ -78,7 +79,7 @@ Examples are included in the file.
 		\item set \texttt{qemu\_path} to the path to \texttt{qemu\_system\_arm}
 		\item set \texttt{gdb\_path} to the path to \texttt{arm-none-eabi-gdb-py}
 		\item set \texttt{hasVopt} to 0 if you are using ModelSim SE, or 1 if you have a version of ModelSim with vopt.
-		\item set \texttt{linux\_path} to the path of the Linux executable.
+		\item set \texttt{linux\_path} to the path of the Linux executable. This should already be set unless you compiled your own version.
 	\end{enumerate}
 	
 \item For waveform debugging it is useful to have another ModelSim project that can quickly load saved processor state from a certain instruction.
@@ -95,7 +96,6 @@ See Section \ref{sec:MSdebug} for information on debugging in ModelSim using thi
 NOTES: For some reason compiling LEG doesn't happen, even though the vlog command is being run. 
 You will need to run the commands in leg.py:compile() manually before running debug.sh.
 Pls fix.
-You will also need to uncomment the correct lines in debug.sh to work on the clean systems. 
 \end{enumerate}
 
 
