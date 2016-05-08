@@ -9,11 +9,58 @@ The MMU consists of three main modules: the translation lookaside buffer (TLB), 
 
 \subsection{Important Diagrams}
 
-% TODO - include image from the paper
+% TODO - include diagram from the paper
 
 \subsection{All Relevant Files and Brief Descriptions}
 
-% TODO
+Table \ref{table:mmurel} shows the files that are used by the MMU and Table \ref{table:mmuio} lists the top level inputs and outputs.
+
+	\begin{table}
+	\label{table:irel}
+	\begin{tabular}{|l|p{70mm}|}
+	\hline File  & Description \\ 
+	\hline  instr\_cache.sv & Top level I\$ module \\ 
+	\hline  instr\_cache\_controller.sv & Controller logic for the I\$.
+	Contains the primary state machine described in section \ref{sec:istate} \\ 
+	\hline  data\_writeback\_associative\_memory.sv & 
+	Memory module containing the both cache ways, the LRU memory, and way selection mux's.
+	This module is used in both the instruction and data caches.
+	The instruction cache fixes the dirty and clean inputs to zero, because it is a read only cache.\\ 
+	\hline  data\_writeback\_associative\_cache\_way.sv & 
+	Contains the memory associated with one cache way. This includes four words per line along with the valid, and tag bits. \\ 
+	\hline  word\_memory.sv & Byte addressable word memory  \\
+	\hline
+	\end{tabular} 
+	\caption{Instruction cache files}
+	\end{table}
+
+	\begin{table}
+	\label{table:instrio}
+	\begin{tabular}{|l|p{85mm}|l|}
+	\hline Port & Description & I/O \\ 
+	\hline clk & Clock input &  I \\ 
+	\hline reset & Global reset signal &  I \\ 
+	\hline uOpStallD & Micro-Op stall signal. This signal is used to prevent repeated memory assesses when the pipeline is stalled &  I \\ 
+	\hline A[31:0] & Virtual address from the leg datapath & I \\
+	\hline CP15en & Enable signal from the coprocessor & I \\
+	\hline AddrOp & Indicates coprocessor is invalidating using a virtual address instead of a set index. When high, only invalidate on a hit in the instruction cache.& I \\
+	\hline InvAllMid & When InvAllMid and Inv are high, invalidate all lines from cache. This signal is driven by the coprocessor & I \\
+	\hline Inv & Invalidate signal from the coprocessor & I \\
+	% \hline CurrCBit & Cachable bit for the current TLB entry & I \\
+	\hline PhysTag[tbits-1:0] & Physical Tag from the TLB & I \\
+	\hline PAReadyF & Indicates TLB entry is valid for the instruction cache. The instruction cache uses the physical address and control bits from the TLB & I \\
+	\hline FSel & Indicates instruction cache has control of the AHB Bus & I \\
+	\hline BusReady & AHB Ready signal & I \\
+	\hline HRData[31:0] & Data from the AHB Bus & I \\
+	\hline RD[31:0] & Data output from the cache. This is the same as HWData. & O \\
+	\hline IStall & IStall signal from the instruction cache controller & O \\
+	\hline HRequestF & Request AHB control & O \\
+	\hline HAddrF[31:0] & AHB address & O \\
+	\hline RequestPA & Request a physical address from the TLB & O \\
+	\hline
+	\end{tabular} 
+	\caption{Instruction cache I/O (instr\_cache.sv)}
+	\end{table}
 
 \subsection{Analysis of Confusing Sections of Code}
 
