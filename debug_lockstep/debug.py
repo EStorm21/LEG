@@ -112,8 +112,9 @@ def initialize_qemu():
 			gdb.execute('file {}'.format(symfile))
 		except gdb.error:
 			print "Symbol file {} not found".format(symfile)
-
-	serialmatch = qemuSerialParser.match(qemu.stderr.readline())
+	serialmatch = None
+	while serialmatch is None:
+		serialmatch = qemuSerialParser.match(qemu.stderr.readline())
 	qemu.serial_in = serialmatch.group(1)
 	print "QEMU is redirecing UART output to {}".format(qemu.serial_in)
 
