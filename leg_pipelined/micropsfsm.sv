@@ -609,6 +609,7 @@ always_comb
 			end
 
 			// WRITE BUFFER CLEANING: mcr 15, 0, [?], cr7, cr10, {4}
+			// These instructions make us flush the whole cache, but we can only flush one line at a time
 			// First put 0 in Rz, then use Rz as a counter to flush all the lines
 			else if(defaultInstrD[27:16] == 12'he07 & defaultInstrD[11:0] == 12'hf9a) begin 
 				InstrMuxD = 1;
@@ -1106,8 +1107,6 @@ always_comb
 		// Carry-shift multiplication: Put Rs in Rd/RdHi
 		// In long mult, we clobber Rs when Rs == RdLo. Thus pick it from Rz instead.
 		// Don't do for mul since it was garbage
-		// We may need to negate Rs if we are doing signed multiply,
-		// so we use sub and sneakily convert to rsb in alu_decoder if necessary.
 		MUL_mov_Rs:begin
 			InstrMuxD = 1;
 			uOpStallD = 1;
