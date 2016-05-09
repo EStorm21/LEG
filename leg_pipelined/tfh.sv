@@ -33,8 +33,8 @@ module tfh (
   input logic InstrExecuting,
   input logic HReadyT,
   input logic HWrite,
-  input logic [31:0] PHRData,
   input logic [31:0] VirtAdr,
+  input logic [31:0] HRData,
   output logic PrefetchAbort, DataAbort, WDSel,
   output logic [3:0] CP15A,
   output logic [3:0] Domain, FaultCode,
@@ -46,7 +46,7 @@ module tfh (
  *
  * tfh (translation fault hardware) detects faults in translation.
  * These faults may trigger the appropriate interrupts.
- * NOTE: Fault detection was not tested against qemu, and likely requires 
+ * NOTE: Fault detection was not tested against qemu, and requires 
  * further validation.
  ******************************/
 
@@ -82,15 +82,15 @@ module tfh (
 
 // typedef enum logic [3:0] {READY, FLD, COARSEFETCH, FINEFETCH, FINED, 
 // COARSED, INSTRFAULT, FAULTFSR, FAULTFAR} statetype;
-  typedef enum logic [3:0] {READY, SECTIONTRANS, COARSEFETCH, FINEFETCH, SMALLTRANS, 
-  TINYTRANS, LARGETRANS, INSTRFAULT, FAULTFSR, FAULTFAR} statetype;
+  typedef enum logic [3:0] {READY, FLD, COARSEFETCH, FINEFETCH, FINED, 
+  COARSED, INSTRFAULT, FAULTFSR, FAULTFAR} statetype;
   statetype state;
   assign state = statetype'(statebits);
 
   // Domain flop: Hold onto the translation domain for faults. 
   // Update when domain is read
   flopenr #(4) DomainFlop(clk, reset, 
-    (state == SECTIONTRANS | state == COARSEFETCH | state == FINEFETCH), PHRData[8:5], Domain);
+    (state == FLD | state == COARSEFETCH | state == FINEFETCH), HRData[8:5], Domain);
   
   always_comb
     case (state)
@@ -113,11 +113,11 @@ module tfh (
           FaultCodeMid <= ALIGNFAULT;      // Alignment fault 
           FaultMid     <= 1'b0;            // No Fault
         end
-      SECTIONTRANS: 
+      FLD: 
         if (MMUExtInt) begin
           FaultCodeMid <= ESLINEFAULT;     // External abort on linefetch
           FaultMid     <= 1'b1;            // TODO: Sould this be linefetch or translation fault?
-        end else if(PHRData[1:0] == 2'b0) begin
+        end else if(HRData[1:0] == 2'b0) begin
           FaultCodeMid <= TSFAULT;         // Section translation fault
           FaultMid     <= 1'b1;
         end else if(DomainFault) begin     // Section Domain Fault
@@ -134,7 +134,7 @@ module tfh (
         if (MMUExtInt) begin
           FaultCodeMid <= ESLINEFAULT;     // External abort on linefetch
           FaultMid     <= 1'b1;            // TODO: Sould this be linefetch or translation fault?
-        end else if(PHRData[1:0] == 2'b0) begin
+        end else if(HRData[1:0] == 2'b0) begin
           FaultCodeMid <= TPFAULT;         // Page translation fault
           FaultMid     <= 1'b1;
         end else if(DomainFault) begin
@@ -148,7 +148,7 @@ module tfh (
         if (MMUExtInt) begin
           FaultCodeMid <= ESLINEFAULT;     // External abort on linefetch
           FaultMid     <= 1'b1;            // TODO: Sould this be linefetch or translation fault?
-        end else if(PHRData[1:0] == 2'b0) begin
+        end else if(HRData[1:0] == 2'b0) begin
           FaultCodeMid <= TPFAULT;         // Page translation fault
           FaultMid     <= 1'b1;
         end else if(DomainFault) begin
@@ -158,7 +158,7 @@ module tfh (
           FaultCodeMid <= ALIGNFAULT;      // No Fault (FaultCode = 4'bxxxx)
           FaultMid     <= 1'b0;
         end
-      SMALLTRANS:   
+      COARSED:   
         if (MMUExtInt) begin
           FaultCodeMid <= ETSECONDTFAULT;  // Second Level external translation abort
           FaultMid     <= 1'b1;            // TODO: Should this be linefetch?
@@ -169,7 +169,7 @@ module tfh (
           FaultCodeMid <= ALIGNFAULT;      // No Fault
           FaultMid     <= 1'b0;
         end
-      TINYTRANS:   
+      FINED:   
         if (MMUExtInt) begin
           FaultCodeMid <= ETSECONDTFAULT;  // Second Level external translation abort
           FaultMid     <= 1'b1;            // TODO: Should this be linefetch?
@@ -178,17 +178,6 @@ module tfh (
           FaultMid     <= 1'b1;
         end else begin
           FaultCodeMid <= ALIGNFAULT;      // No Fault
-          FaultMid     <= 1'b0;
-        end
-      LARGETRANS:
-        if (MMUExtInt) begin
-          FaultCodeMid <= ETSECONDTFAULT;  // Second Level external translation abort
-          FaultMid     <= 1'b1;            // TODO: Should this be linefetch?
-        end else if(APFault) begin
-          FaultCodeMid <= PPFAULT;         // Page SubPermissions fault
-          FaultMid     <= 1'b1;
-        end else begin
-          FaultCodeMid <= ALIGNFAULT;      // No Fault 
           FaultMid     <= 1'b0;
         end
         default: begin FaultCodeMid <= ALIGNFAULT; FaultMid <= 1'b0; end
@@ -245,22 +234,23 @@ module tfh (
   assign DomainFault = (dPerm == 2'b00);
 
   // Access Permissions
+  // TODO: Fix for new twh states
   always_comb
     case(state)
-      SECTIONTRANS: CurrAP <= PHRData[11:10];
-      SMALLTRANS:   case(VirtAdr[11:10])
-                      2'b00: CurrAP <= PHRData[5:4];
-                      2'b01: CurrAP <= PHRData[7:6];
-                      2'b10: CurrAP <= PHRData[9:8];
-                      2'b11: CurrAP <= PHRData[11:10];
-                    endcase
-      TINYTRANS:    CurrAP <= PHRData[5:4];
-      LARGETRANS:   case(VirtAdr[15:14])
-                      2'b00: CurrAP <= PHRData[5:4];
-                      2'b01: CurrAP <= PHRData[7:6];
-                      2'b10: CurrAP <= PHRData[9:8];
-                      2'b11: CurrAP <= PHRData[11:10];
-                    endcase
+      FLD: CurrAP <= HRData[11:10];
+      // SMALLTRANS:   case(VirtAdr[11:10])
+      //                 2'b00: CurrAP <= HRData[5:4];
+      //                 2'b01: CurrAP <= HRData[7:6];
+      //                 2'b10: CurrAP <= HRData[9:8];
+      //                 2'b11: CurrAP <= HRData[11:10];
+      //               endcase
+      FINED:    CurrAP <= HRData[5:4];
+      // LARGETRANS:   case(VirtAdr[15:14])
+      //                 2'b00: CurrAP <= HRData[5:4];
+      //                 2'b01: CurrAP <= HRData[7:6];
+      //                 2'b10: CurrAP <= HRData[9:8];
+      //                 2'b11: CurrAP <= HRData[11:10];
+      //               endcase
       default:      CurrAP <= 2'b11; // Don't care
     endcase
 

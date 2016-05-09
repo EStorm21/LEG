@@ -79,10 +79,10 @@ module testbench();
   //----------------------------- BEGIN DEBUG  ------------------------
   // `define SDEBUG
   // `define TLBDBG 0
-  `define ENDBGG 1
-  `define MEMDEBUG  1
+  // `define ENDBGG 1
+  // `define MEMDEBUG  1
   //`define RESETDEBUG 1
-  `define CACHEDBG 1
+  // `define CACHEDBG 1
   // `define CP15DBG 1
 
   // Debug Reset

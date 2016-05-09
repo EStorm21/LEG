@@ -34,6 +34,9 @@ kernel/system.bin
 wlft*
 .mti
 
+## testing folder
+debug_lockstep/MSdebug
+
 ## Always ignore the pdf for documentation
 documentation/main.pdf
 /autoSimSD.tcl
