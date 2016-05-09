@@ -283,7 +283,8 @@ module data_writeback_associative_cache_controller
   // ----------------MMU-------------------
   assign RequestPA = (state == READY) & (MemtoRegM | MemWriteM |
     Clean & AddrOp & (W1D | W2D))
-    | ~(state == READY) & Stall;
+    | ~(state == READY) & Stall & 
+    ~((state == WRITEBACK | state == LASTWRITEBACK) & Clean & ~AddrOp); // Don't request for 
   // Always clean both cache ways
   assign W1Clean = Clean & (state == LASTWRITEBACK) & WaySel;
   assign W2Clean = Clean & (state == LASTWRITEBACK) & ~WaySel;
