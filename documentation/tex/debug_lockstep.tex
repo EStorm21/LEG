@@ -27,7 +27,7 @@ The procedure described here explains the process of loading processor state int
  Running \texttt{leg-lockstep} will simulate until a bug is reached and then report the location of the bug, for example \texttt{0x258}.
  Restart the simulation using \texttt{leg-restart} and then jump to a location before the bug, for example \texttt{leg-jump *0x254}.
  
-\item Now the simulation has been advanced to just before the bug. Dump qemu's state to a form that can be reloaded into ModelSim. Enter \\\texttt{leg-qemu-full-dump} at the gdb prompt.
+\item Now the simulation has been advanced to just before the bug. Dump qemu's state to a form that can be reloaded into ModelSim. Enter \texttt{leg-qemu-full-dump} at the gdb prompt.
 
 \item Copy the dump files \texttt{qemu\_mem\_dump.dat} and \texttt{qemu\_state\_dump} to the ModelSim debugging directory \texttt{MSdebug} set up in Section \ref{sec:cfg}.
 The dump files can be found in \texttt{debug\_lockstep}.
@@ -47,7 +47,7 @@ Happy debugging!
 \end{enumerate}
 
 \subsection{Interrupt Testing}
-Interrupts are enabled by default and tests with interrupts can be generated using \texttt{makeRandomAssembly.py} with a nonzero \texttt{interrupt\_ratio} (see Section \ref{sec:randasm}).
+Interrupts are enabled by default and tests with interrupts can be generated using \\\texttt{makeRandomAssembly.py} with a nonzero \texttt{interrupt\_ratio} (see Section \ref{sec:randasm}).
 Interrupts are also present in Linux.
 
 Interrupts can be disabled in any test by passing the argument \texttt{--noirq} when running \texttt{leg-lockstep}.
@@ -56,12 +56,12 @@ Interrupts can be disabled in any test by passing the argument \texttt{--noirq} 
 Since Linux is a large executable, lockstep testing the entire startup process is difficult. 
 Linux can be run from any point by running \texttt{debug.sh} with no arguments and then jumping to the desired location or function, for example \texttt{leg-jump start\_kernel}.
 
-An alternative option that allows parallel simulation of the entire boot process is \texttt{divide\_controller.py}. 
+An alternative option that allows parallel simulation of the entire boot process is \\\texttt{divide\_controller.py}. 
 With an input argument of \\\texttt{parallel-divisions.txt}, worker instances of \texttt{debug.sh} are started for each instruction range in that file. 
 An easy to use monitoring interface is provided.
 This works best on a system with many cores, and \texttt{parallel-divisions.txt} can be customized to the number of parallel instances desired.
 
-\texttt{divide\_controller.py} can also be used with your own executables and custom \texttt{parallel-divisions.txt} files to debug any large program.
+\texttt{divide\_controller.py} can also be used with your own executables and custom \\\texttt{parallel-divisions.txt} files to debug any large program.
 
 \subsection{Simulator Operation}
 This section provides more detailed information on the operation of the LEG debugging framework.
@@ -94,7 +94,7 @@ The procedure described in Section \ref{sec:MSdebug} is preferred over this comm
 \item \texttt{leg-checkpoint} \texttt{\emph{NAME}}: Dumps the current qemu state, then opens ModelSim and converts the qemu state to a ModelSim checkpoint. \texttt{NAME} gives the desired filename of the created checkpoint. Note that this command can only be used if your version of ModelSim supports checkpoints. Student Edition does not.
 NOTE: This command has been mostly superseded by \texttt{leg-qemu-full-dump}.
 
-\item \texttt{leg-qemu-full-dump}: Saves qemu's current register state as \texttt{qemu\_state\_dump} and saves qemu's memory as \texttt{qemu\_mem\_dump.dat}. These files can be used by \texttt{qemuDumpRestore.tcl} to initialize the processor simulation to a known state.
+\item \texttt{leg-qemu-full-dump}: Saves qemu's current register state as \texttt{qemu\_state\_dump} and saves qemu's memory as \texttt{qemu\_mem\_dump.dat}. These files can be used by \\\texttt{qemuDumpRestore.tcl} to initialize the processor simulation to a known state.
 
 \item \texttt{leg-restart}: Stops qemu and restarts it at the beginning of the kernel execution.
 

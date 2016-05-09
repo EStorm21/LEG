@@ -43,7 +43,7 @@ For example, \\\texttt{/legproj/gcc-arm-none-eabi-5\_3-2016q1}.\\
 Instructions for this are provided in the readme available at the same website.
 
 \item The QEMU system emulator must be downloaded and installed from source. 
-\textbf{NOTE}: The patches required for LEG will possibly break every QEMU system except \texttt{qemu-system-arm}. 
+\textbf{NOTE}: The patches required for LEG will possibly break every QEMU system except \\\texttt{qemu-system-arm}. 
 To keep this guide simple the default QEMU build process is used. 
 You can safely remove systems other than \texttt{arm-softmmu}.
 	\begin{enumerate}
@@ -91,11 +91,6 @@ See Section \ref{sec:MSdebug} for information on debugging in ModelSim using thi
 		\item Copy \texttt{qemuDumpRestore\_MS.tcl} and \texttt{addAll.do} from \texttt{debug\_lockstep} into the MSdebug folder.
 	\end{enumerate}
 
-
-
-NOTES: For some reason compiling LEG doesn't happen, even though the vlog command is being run. 
-You will need to run the commands in leg.py:compile() manually before running debug.sh.
-Pls fix.
 \end{enumerate}
 
 
