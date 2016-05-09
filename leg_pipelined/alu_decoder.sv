@@ -1,3 +1,21 @@
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 module alu_decoder(input  logic       ALUOpE,
            input  logic [24:21] ALUControlE,
            input  logic [1:0] PreviousCVFlag,
@@ -6,7 +24,7 @@ module alu_decoder(input  logic       ALUOpE,
            output   logic     InvertB, ReverseInputs, ALUCarryIn, DoNotWriteReg);
 
  /***** Brief Description *******
- * First Created by Ivan Wong for Clay Wolkin 2014-2015
+ * First Created by Ivan Wong 2014-2015
  * CONTROLLER EXECUTE STAGE
  * ALU_Decoder is used to generate all necessary controls for the ALU to operate. 
  * Which flags to update are also handled by ALU_Decoder

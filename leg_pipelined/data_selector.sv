@@ -1,3 +1,21 @@
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 module data_selector (input  logic       ByteOrWord, //byte or word 
 					           input  logic  	     Halfword,
 					           input  logic  	     HalfwordOffset, 
@@ -7,7 +25,7 @@ module data_selector (input  logic       ByteOrWord, //byte or word
               		   output logic [31:0] DataOut);
 
 /***** Brief Description *******
- * Created by Eric Storm for Clay Wolkin 2014-2015
+ * Created by Eric Storm 2014-2015
  * 32-BIT DATAPATH WRITEBACK STAGE
  * The data_selector is used for LDR, LDR(S)B and LDR(S)H to select the data (including offset)
  * Gets data from memory (ReadDataM) --> (ReadDataRawW) and chooses output accordingly (ReadDataW).

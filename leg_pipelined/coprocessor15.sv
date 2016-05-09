@@ -1,3 +1,21 @@
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 module coprocessor15 (
   input  logic        clk, reset  ,
   // For CPU and MMU, enable without writeEn means read
@@ -13,7 +31,7 @@ module coprocessor15 (
 
 /* 
 Brief:
-First created by Zakkai Davidson for Clay Wolkin 2014-2015
+First created by Zakkai Davidson 2014-2015
 Coprocessor talks with both LEG datapath/controller and MMU.
 For LEG: CPUWriteEn is high during MCR instructions.
          CPUEn is high during MRC instructions

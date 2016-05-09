@@ -1,10 +1,20 @@
-/***** Brief Description *******
- * First Created by Max Waugaman for Clay Wolkin 2015-2016
- *
- * ahb_arbiter_3way_controller provides the control signals for the mux's in
- * ahb_arbiter. It also creates the HReady responses for each AHB master
- * (mmu.sv, data_writeback_associative_cache.sv, instr_cache.sv)
- ******************************/
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 module ahb_arbiter_3way_controller (
     input  logic       clk, reset,
@@ -18,6 +28,14 @@ module ahb_arbiter_3way_controller (
     output logic [1:0] HAddrSel,
     output logic [2:0] HSIZE
 );
+
+/***** Brief Description *******
+ * First Created by Max Waugaman 2015-2016
+ *
+ * ahb_arbiter_3way_controller provides the control signals for the mux's in
+ * ahb_arbiter. It also creates the HReady responses for each AHB master
+ * (mmu.sv, data_writeback_associative_cache.sv, instr_cache.sv)
+ ******************************/
 
     logic PTSel, PMSel, PFSel; // Indicate stage previously used
 

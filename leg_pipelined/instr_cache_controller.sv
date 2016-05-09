@@ -1,3 +1,20 @@
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 // instr_cache_controller.sv
 // mwaugaman@hmc.edu 8 August 2015
 // Instruction Cache Controller for LEG Processor
@@ -14,6 +31,15 @@ module instr_cache_controller #(parameter tbits = 14) (
   output logic [      1:0] AddrWordOffset,
   output logic [      1:0] DataWordOffset
 );
+
+/***** Brief Description *******
+ * First Created by Max Waugaman 2015
+ *
+ * instr_cache_controller creates control signals for the instruction
+ * cache. The instruction cache is read only, so the controller logic
+ * is much simpler than that of the data cache. Information about each
+ * sate can be found in the pdf documentation for the LEG processor.
+ ******************************/
 
   logic             W1EN, W2EN, Hit, W2Hit, enable, AdvanceCounter;
   logic [tbits-1:0] PrevPTag;

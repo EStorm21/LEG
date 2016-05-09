@@ -1,8 +1,29 @@
-// Decode the shift amount into values for use in one-hot muxes
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 module shift_decoder(input  logic [4:0] shamt0,
                     input  logic       left,
                     output logic [4:0] m5,
                     output logic [7:0] m8);
+
+/***** Brief Description *******
+ * Decode the shift amount into values for use in one-hot muxes
+ ******************************/
 
   // A left shift by k is a right shift by ~k + 1. Invert here, handle +1 in mux5
   logic [4:0] shamt;

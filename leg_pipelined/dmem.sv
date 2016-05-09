@@ -1,6 +1,20 @@
-// dmem.sv
-// mwaugaman@hmc.edu 8 August 2015
-// Byte Addressable Memory simulation for LEG v5
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 // `define USE_DEFAULT_MEMORY 10
 
@@ -12,6 +26,14 @@ module dmem (
   output logic        Valid
 );
 
+/***** Brief Description *******
+ * First Created by Max Waugaman 2015-2016
+ *
+ * dmem is the RAM used by the LEG processor. This RAM
+ * can be reset to zero and loaded from a .dat file for
+ * lockstep testing.
+ ******************************/
+
   parameter MEM_SIZE = 67108864;
   logic [31:0] RAM[MEM_SIZE:0];
   assign Valid = re | we;
@@ -21,19 +43,10 @@ module dmem (
   initial
     begin
       `ifdef USE_DEFAULT_MEMORY
-        string default_memory = "/home/max/wolkin/LEG/tests/simTest.dat";
+        string default_memory = "/path/to/default/memory/simTest.dat";
         $display("Using default memory %s", default_memory);
         $readmemh(default_memory, RAM);
       `endif
-      
-      //$readmemh("C:/Users/maxwaug/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
-      //readmemh("C:/Users/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
-      // $readmemh("D:/Max/Google Drive/Clay-Wolkin/Testing/simTest.dat",RAM);
-      // $readmemh("C:/Users/Max/Google Drive/Clay-Wolkin/SourceTree2/Tests/ldm.dat",RAM);
-      // $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
-      // $readmemh("F:/Academics/Research Clay Wolkin - ARM v4/LEG/tests/simTest.dat",RAM); //teqrs
-      // $readmemh("C:/Users/estor_000/Downloads/simTest.dat",RAM);
-      //$readmemh("C:/Users/Sam/Documents/CW/LEG/LEG/tests/simTest.dat", RAM);
     end
   assign rd = RAM[a[$clog2(MEM_SIZE)+1:2]];
 

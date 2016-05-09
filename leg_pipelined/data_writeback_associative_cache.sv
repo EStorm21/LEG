@@ -1,6 +1,20 @@
-// data_writeback_associative_cache.sv
-// mwaugaman@hmc.edu 8 August 2015
-// Data Cache for LEG processor
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 module data_writeback_associative_cache #(
     parameter bsize = 4                   , parameter lines = 2,
@@ -31,6 +45,14 @@ module data_writeback_associative_cache #(
     output logic [      2:0] HSizeM   ,
     output logic             HRequestM, HWriteM
 );
+
+/***** Brief Description *******
+ * First Created by Max Waugaman 8 August 2015
+ *
+ * data_writeback_associative_cache is the data cache used by the LEG processor.
+ * The cache is a 2-Way set associative writeback cache. It uses least recently
+ * used replacement policy (LRU)
+ ******************************/
 
     // Cache way outputs
     logic                W1V, W2V, W1EN, W1WE, W2WE, W1D, W2D;

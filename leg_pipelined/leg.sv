@@ -1,3 +1,21 @@
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 module leg #(parameter dLines, parameter dbsize) // parameters needed for cache clearing micro ops
           (input  logic        clk, reset,
            output logic [31:0] PCF,
@@ -20,6 +38,11 @@ module leg #(parameter dLines, parameter dbsize) // parameters needed for cache 
            input logic         HighVec, // high exception vectors. To dp
            // Added for MMU
            output logic uOpStallD, StallD, FlushD, FlushE);
+
+/***** Brief Description *******
+ * leg contains the hazard unit, datapath, controller, and addresspath of the 
+ * LEG processor. It excludes the memory system which is instatiated in top.sv.
+ ******************************/
 
   /// Output from Hazard Unit
   logic [1:0]  ForwardAE, ForwardBE;

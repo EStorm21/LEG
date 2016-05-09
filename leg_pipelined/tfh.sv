@@ -1,3 +1,21 @@
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 module tfh (
   //TODO: Organize and describe inputs and outputs
   input logic clk,    // Clock
@@ -22,6 +40,15 @@ module tfh (
   output logic [3:0] Domain, FaultCode,
   output logic Fault
 );
+
+/***** Brief Description *******
+ * First Created by Max Waugaman 2015
+ *
+ * tfh (translation fault hardware) detects faults in translation.
+ * These faults may trigger the appropriate interrupts.
+ * NOTE: Fault detection was not tested against qemu, and likely requires 
+ * further validation.
+ ******************************/
 
   // Note that the faults are listed in priority order.
   typedef enum logic [3:0] {TERMFAULT = 4'b0010, 

@@ -22,9 +22,8 @@ module onehot16 (
  	4'b1110: out = 16'h4000;
  	4'b1111: out = 16'h8000;
  	default: begin
- 		// FIXME: Remove debugging statement
  		out = 16'hffff;
- 		$display("Error: one hot hit default case @ %d", $time);
+ 		// $display("Error: one hot hit default case @ %d", $time);
  	end
  endcase // ByteMask
 

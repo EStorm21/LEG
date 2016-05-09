@@ -1,6 +1,20 @@
-// instr_cache.v
-// mwaugaman@hmc.edu 22 September 2014
-// 2-Way Set Associative Instruction cache for LEG Processor
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 module instr_cache #(
     parameter bsize = 4,                    // Block size
@@ -28,6 +42,14 @@ module instr_cache #(
     output logic [     31:0] HAddrF
 );
 
+/***** Brief Description *******
+ * First Created by Max Waugaman 22 September 2014
+ *
+ * instr_cache is the top level module for a 2-Way set associative
+ * read only cache. This cache uses the same memory modules as the 
+ * data cache, but disables the clean and dirty signals.
+ ******************************/
+
     // Signal Declaration
     logic [         31:0] CacheWD, W1RD, W2RD, CacheOut, ANew;
     logic [    tbits-1:0] W1Tag, W2Tag, Tag; 
@@ -53,6 +75,7 @@ module instr_cache #(
     assign W1Clean        = 1'b0;
     assign W2Clean        = 1'b0;
 
+    // Cache memory
     data_writeback_associative_cache_memory #(lines,tbits,bsize) icm (.*);
 
     // Cache Controller

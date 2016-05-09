@@ -32,6 +32,7 @@ kernel/system.bin
 
 ## Generated files
 wlft*
+.mti
 
 ## Always ignore the pdf for documentation
 documentation/main.pdf

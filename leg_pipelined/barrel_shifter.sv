@@ -1,3 +1,21 @@
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 module barrel_shifter(input  logic [31:0] a,
                       input  logic [ 4:0] shamt,
                       input  logic [ 4:0] shctl_5,
@@ -7,6 +25,12 @@ module barrel_shifter(input  logic [31:0] a,
                       input  logic        left, shift, arith,
                       output logic [31:0] y,
                       output logic        a0, a31, rot0, rot31); // C flag will be selected between these bits
+
+/***** Brief Description *******
+ * First Created by Sam Dietrich 2015-2016
+ *
+ * barrel_shifter implemented in the datapath
+ ******************************/
 
   logic [31:0] x, rotOut; // intermediate signals
 

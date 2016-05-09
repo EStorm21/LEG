@@ -1,3 +1,21 @@
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 module shift_control(input  logic [1:0] shtype,
                      input  logic [4:0] R_shamt0,
                      input  logic [7:0] RSR_shamt,
@@ -7,6 +25,10 @@ module shift_control(input  logic [1:0] shtype,
                      output logic [4:0] shctl_5, 
                      output logic [7:0] shctl_8, 
                      output logic       shift, left, arith, longshift, rrx_in, shifterCarryOut);
+
+/***** Brief Description *******
+ * shift_control controls the shifter in the LEG datapath
+ ******************************/
 
   logic rrx, shiftSelect;
   logic [4:0] R_shamt;

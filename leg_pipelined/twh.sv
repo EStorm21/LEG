@@ -1,3 +1,21 @@
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 module twh #(parameter tagbits = 16) (
   //TODO: Organize and describe input and outputs
   input  logic               clk           , // Clock
@@ -15,7 +33,6 @@ module twh #(parameter tagbits = 16) (
   input  logic [       17:0] TBase         ,
   input  logic [       31:0] VirtAdr      ,
   input  logic [       31:0] HRData        ,
-  input  logic [       31:0] PHRData       ,
   output logic [       31:0] HAddrT ,
   output logic [        3:0] statebits     ,
   output logic               TLBwe         ,
@@ -28,7 +45,7 @@ module twh #(parameter tagbits = 16) (
 );
 
  /***** Brief Description *******
- * First Created by Max Waugaman for Clay Wolkin 2015-2016
+ * First Created by Max Waugaman 2015
  * Perform table walks for address translation
  ******************************/
 

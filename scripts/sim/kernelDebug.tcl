@@ -4,9 +4,7 @@ project open "/proj/leg/sim/pipelined_processor.mpf"; list
 #compile project
 
 vlog /proj/leg/LEG/leg_pipelined/*.sv ; list
-#vlog "F:/Academics/Research Clay Wolkin - LEG v4/LEG/leg_pipelined/*.sv" ; list
 
-#set testPath "F:/Academics/Research Clay Wolkin - LEG v4/LEG/tests/"; list
 set testPath "/proj/leg/LEG/tests/"; list
 
 set test "linux"

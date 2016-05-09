@@ -42,7 +42,7 @@ module addresspath( /// ------ From TOP ------
           					);
 
   /*
-  * First Created by Ivan Wong for Clay Wolkin 2014-2015
+  * First Created by Ivan Wong 2014-2015
   * Handles all addresses for Reg file
   * Contains address decoder that breaks down 4 bit address from InstrD + current mode into a one hot 32-bit line 
   * for RegFile

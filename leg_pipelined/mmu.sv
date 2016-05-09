@@ -1,11 +1,28 @@
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 module mmu #(parameter tbits = 22) (
   input  logic        clk, reset, MMUExtInt, RequestPA, RequestPAM,
   input  logic        HWrite, HReadyT, TSel,
   input  logic        DataAccess, CPSR4,
   input  logic        SupMode, WordAccess,
   input  logic        StallD, FlushD, FlushE,
-  input  logic [31:0] HRData, DataAdrM, PCF, // TODO: Remove DataAdrM, PCF
-  // TODO: fix control signal name
+  input  logic [31:0] HRData, DataAdrM, PCF, 
   input  logic [31:0] control, CP15rd_M, // control[0] is the enable bit
   input  logic [17:0] TBase    ,
   output logic [31:0] MMUWriteData, HAddrT,
@@ -14,9 +31,16 @@ module mmu #(parameter tbits = 22) (
   output logic        MMUWriteEn,HRequestT,
   PrefetchAbort, DataAbort, MMUEn, PAReady, CurrCBit
 );
-                        // PrefetchAbort, DataAbort, MMUEn);
+
+/***** Brief Description *******
+ * First Created by Max Waugaman 2015-2016
+ *
+ * mmu contains the TLB, walk and fault hardware for the LEG processor.
+ * Note that some fault detection logic is disabled. Further testing in QEMU
+ * is necessary to verify fault detection behavior.
+ ******************************/
   
-    // TODO: Assertions
+  // Memory Faults
   // Note that the faults are listed in priority order.
   typedef enum logic [3:0] {
     TERMFAULT = 4'b0010,
@@ -44,8 +68,7 @@ module mmu #(parameter tbits = 22) (
   logic [31:0] FSR, FAR, Dom;
 
   // Translation Signals
-  logic [31:0] VirtAdr; // TODO Remove VirtAdr
-  logic [31:0] PHRData;
+  logic [31:0] VirtAdr;
   logic [3:0]  statebits; // Carry state from twh to tfh
 
   // Signals for the Instruction Counter
@@ -57,14 +80,11 @@ module mmu #(parameter tbits = 22) (
   logic TLBwe;
   tri [tbits+8:0] TableEntry;
 
-  // PHRData flop: Hold onto the previous bus value for current translation
-  flopenr #(32) HRDataFlop(clk, reset, HReadyT, HRData, PHRData);
-  
   assign FSR[7:4] = Domain;    // Define the location of the domain
-  assign FAR = VirtAdr;       // Set the FAR
+  assign FAR = VirtAdr;        // Set the FAR
   assign Enable = control[0];  // Add enable, disable
-  assign SBit = control[7];
-  assign RBit = control[9];
+  assign SBit = control[7];    // Supervisor bit
+  assign RBit = control[9];    // Reserved bit
 
   // Bypass translation
   mux2 #(tbits) PhsyTagEn(VirtAdr[31:32-tbits], TableEntry[tbits+8:9], Enable, PhysTag);
@@ -73,7 +93,6 @@ module mmu #(parameter tbits = 22) (
   mux2 #(32) WDMux(FAR, FSR, WDSel, MMUWriteData);
 
   // Virtual Address MUX TODO: Remove and just use VirtAdr
-  // This mux was placed here to protoype a bug fix
   mux2 #(32) VirtAdrMux(PCF, DataAdrM, RequestPAM, VirtAdr);
 
   // Translation Look-Aside Buffer
@@ -88,8 +107,10 @@ module mmu #(parameter tbits = 22) (
     .PAReady   (PAReady)
   );
 
+  // Translation Walk Hardware
   twh #(tbits) translation_walk_hardware (.*);
 
+  // Translation Fault Hardware
   tfh translation_fault_hardware(.*);
 
 endmodule

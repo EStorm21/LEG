@@ -1,3 +1,21 @@
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 module data_writeback_associative_cache_controller 
   #(parameter lines, parameter bsize, parameter tbits = 14)
   (input  logic clk, reset, CP15en, W1V, W2V, CurrLRU, W1D, W2D, Clean,
@@ -18,6 +36,14 @@ module data_writeback_associative_cache_controller
     output logic [$clog2(bsize)-1:0] AddrWordOffset,
     output logic [$clog2(bsize)-1:0] DataWordOffset
 );
+
+/***** Brief Description *******
+ * First Created by Max Waugaman 2015
+ *
+ * data_writeback_associative_cache_controller is the contoller unit for
+ * the data cache in the LEG processor. A description of each state can be 
+ * found in the pdf documentation for this processor.
+ ******************************/
 
   logic [tbits-1:0] PrevPTag     ;
   logic             ResetBlockOff, WDMaskSel, IncCounter;
