@@ -1,14 +1,49 @@
 \label{sec:dp}
-The datapath
+This section gives an overview of the LEG datapath. 
+The datapath is pipelined with five stages: Fetch, Decode, Execute, Memory, and Writeback. 
+The stages can be flushed or stalled by the Hazard unit, and data flow is selected by the Controller module.
+
+\noindent Datapath components are illustrated in black on the processor diagram \\\texttt{documentation/diagrams/pipelinedfull.pdf}
 
 \subsection{Relevant Files}
 
+\begin{tabular}{|l|p{120mm}|}
+\hline \textbf{File}  & \textbf{Description} \\ 
+\hline datapath.sv & Contains all datapath logic and signals for the LEG processor.  \\ 
+\hline adder.sv & A parameterized adder. \\ 
+\hline addressdecode.sv & Decodes a 4 bit register number and the current processor mode to a one-hot register file select signal. \\ 
+\hline regfile.sv & A 32 entry by 32 bit register file containing the 31 general purpose registers and one scratch register for micro operations. Located in the Decode stage. \\ 
+\hline extend.sv & Handles extending immediate values of varying width to 32 bits. Located in the Decode stage. \\ 
+\hline rotator.sv & A funnel shifter that rotates the 32 bit immediate in data processing instructions. Located in the Decode stage. \\ 
+\hline barrel\_shifter.sv & An efficient two stage logarithmic barrel shifter that implements LSR, ASR, LSL, ROR, and RRX shift types. Located in the Execute stage. \\ 
+\hline alu.sv & Arithmetic Logic Unit that computes and selects between addition, AND, OR, and XOR operations. Located in the Execute stage. \\ 
+\hline zero\_counter.sv & Outputs the number of leading zeros in its input. This module is a good target for optimization in class projects. Located in Execute stage. \\ 
+\hline data\_replicator.sv & Selects the size of data required for a memory operation and replicates it to fill the available byte positions. Located in Execute stage. \\ 
+\hline data\_selector.sv & Masks data words read from memory and extends them to 32 bits. Located in Writeback stage. \\ 
+\hline 
+\end{tabular} 
+
 \subsection{Fetch Stage}
+The Fetch stage reads an instruction from instruction memory using the register 15, the program counter (PC).
+This PC is selected from several sources based on branch or exception status.
+The instruction memory is shown in the datapath in the processor diagram, but is actually implemented externally to the processor core. 
+See Section \ref{sec:i-cache} for more information.
 
 \subsection{Decode Stage}
+In the Decode stage registers are read and immediates are extended and rotated to the form required for arithmetic processing. 
+Note that the instruction processed in the decode stage may not match the instruction read in the execute stage due to micro operation decoding (see Section \ref{sec:uop}).
 
 \subsection{Execute Stage}
+The Execute stage processes instruction operands into a resultant value. 
+First forwarded register values are optionally selected based on signals from the Hazard unit (Section \ref{sec:fwd}).
+Shifts or rotates are applied to the second operand and results are computed by the zero counter and ALU. 
+The second operand is also processed as data for a potential memory operation. 
+Finally, the output is selected from the correct functional unit based on the instruction type.
 
 \subsection{Memory Stage}
+The values computed in the Execute stage may be used as data and address in the Memory stage.
+The result may also bypass the data memory when a store operation is not performed.
+As with the instruction memory, the data memory is drawn in the datapath but is actually a separate functional unit described in Section \ref{sec:d-cache}.
 
 \subsection{Writeback Stage}
+In the Writeback stage the result of the Memory stage is fed back to be written to registers or the PC.

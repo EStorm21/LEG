@@ -24,7 +24,7 @@ module data_replicator (input  logic        ByteorWord, //byte or word
 /***** Brief Description *******
  * Created by Eric Storm 2014-2015
  * 32-BIT DATAPATH EXECUTE STAGE
- * The data_selector is used for STR, STRB and STRH to select the data (including offset)
+ * The data_replicator is used for STR, STRB and STRH to select the data (including offset)
  * Gets data from registers and chooses output to write accordingly to memory.
  *
  ******************************/
