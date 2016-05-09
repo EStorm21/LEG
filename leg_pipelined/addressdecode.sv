@@ -1,9 +1,28 @@
+/*
+   LEG Processor for Education
+   Copyright (C) 2016  Max Waugaman
+
+   This program is free software: you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation, either version 3 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
 module addressdecode(input  logic [3:0]  Reg_4b,
                      input  logic RegFileRzD,			  
                      input  logic [5:0] ModeOneHot, // mode should be {user_sys, fiq, irq, svc, abort, undef}
                      output logic [31:0] RegOneHot);
  /***** Brief Description *******
- * First Created by Ivan Wong for Clay Wolkin 2014-2015
+ * First Created by Ivan Wong 2014-2015
  * Decodes a 4 bit address to a 32 bit address using the following
  * additional information:
  * 1) Current Status Mode
