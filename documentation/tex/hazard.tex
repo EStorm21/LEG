@@ -1,10 +1,29 @@
 \label{sec:h}
-Hazard Unit
+The Hazard unit detects potential conflicts between pipeline stages and stalls, flushes, or forwards values between stages to resolve them.
 
 \subsection{Relevant Files}
+\begin{tabular}{|l|p{120mm}|}
+\hline \textbf{File}  & \textbf{Description} \\ 
+\hline hazard.sv & Generates flush, stall, and forward signals for the datapath and controller based on instruction types and processor state. \\
+\hline eqcmp.sv & Compares register numbers at different pipeline stages to inform forward signals. \\
+\hline 
+\end{tabular} 
 
 \subsection{Stalls}
+All pipeline stages can be stalled, but the Execute, Memory, and Decode stages are stalled only because of data and instruction cache behavior.
+The Fetch stage is additionally stalled during micro ops, coprocessor and CPSR operations, PC writes.
+The Decode stage can be stalled for micro ops and by the exception handler.
+
+Both Fetch and Decode are stalled during a read after write (RAW) hazard when a register is loaded from memory. 
+Other RAW hazards are handled by forwarding.
 
 \subsection{Flushes}
+Various pipeline stages are flushed in the same circumstances as they are stalled. 
+This behavior kills writeback signals during stalls so actions are not performed multiple times.
+Additional flushes take place whenever a branch is taken since LEG does not implement branch prediction.
 
 \subsection{Forwarding}\label{sec:fwd}
+Read after write (RAW) hazards occur when a register that is written by one instruction is read by a later instruction before the change has propagated through to the Writeback stage.
+Most RAW hazards can be solved by forwarding values from the Memory or Writeback stages to the Execute stage rather than stalling.
+These hazards are detected by comparing the register number being used as an operand in each stage and then selecting the appropriate value to forward. 
+This forwarding is gated by the corresponding stage's register writeback signal so values from unexecuted or flushed instructions are not used.
